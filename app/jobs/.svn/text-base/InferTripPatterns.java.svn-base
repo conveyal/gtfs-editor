@@ -1,0 +1,125 @@
+package jobs;
+
+
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import models.transit.Stop;
+import models.transit.StopTime;
+import models.transit.Trip;
+import models.transit.TripPattern;
+import models.transit.TripPatternStop;
+
+import play.Logger;
+import play.Play;
+import play.jobs.Job;
+import play.jobs.OnApplicationStart;
+
+public class InferTripPatterns extends Job {
+
+	private Map<TripPattern, ArrayList<TripPatternStop>> tripPatternStopMap;
+	private Map<Stop, ArrayList<TripPattern>> tripPatternFirstStopMap;
+	
+
+	public InferTripPatterns()
+	{
+		 tripPatternStopMap = new HashMap<TripPattern, ArrayList<TripPatternStop>>();
+		 tripPatternFirstStopMap = new HashMap<Stop, ArrayList<TripPattern>>();
+	}
+	
+	
+	public void doJob() {
+		
+		Logger.info("Inferring trip patterns from existing trips...");
+		
+		initializeLookupTables();
+	
+		processTrips();
+	}
+
+	private void initializeLookupTables()
+	{
+		Collection<TripPattern> patterns = TripPattern.findAll();
+		for( TripPattern pattern : patterns)
+		{
+			addTripPatternToLookup(pattern);
+		}
+	}
+	
+	private void addTripPatternToLookup(TripPattern pattern)
+	{
+		ArrayList<TripPatternStop> patternStops =  new ArrayList(TripPatternStop.find("pattern = ? ORDER BY stopSequence", pattern).fetch());
+		
+		if(!tripPatternFirstStopMap.containsKey(patternStops.get(0).stop))
+			tripPatternFirstStopMap.put(patternStops.get(0).stop, new ArrayList<TripPattern>());
+		
+		tripPatternFirstStopMap.get(patternStops.get(0).stop).add(pattern);
+		tripPatternStopMap.put(pattern, patternStops);
+	}
+	
+	private void processTrips()
+	{
+		int count = 0;
+		Collection<Trip> trips = Trip.findAll();
+		for( Trip trip : trips)
+		{
+			
+			ArrayList<StopTime> stopTimes = trip.getStopTimes();
+			
+			TripPattern pattern = findExistingPattern(stopTimes);
+		
+			
+			if(pattern == null)
+			{
+				pattern = TripPattern.createFromTrip(trip);
+				addTripPatternToLookup(pattern);
+			}		
+			
+			if(trip.pattern != pattern)
+			{
+				Logger.info("Existing pattern found (saving): " + pattern.name);
+				
+				trip.pattern = pattern;
+				trip.save();
+			}
+			
+			count++;
+			
+			if(count > 300)
+				break;
+		}
+	}
+	
+	private TripPattern findExistingPattern(ArrayList<StopTime> stopTimes)
+	{
+		ArrayList<TripPattern> candidatePatterns = tripPatternFirstStopMap.get(stopTimes.get(0).stop);
+		
+		if(candidatePatterns == null)
+			return null;
+		
+		for(TripPattern candidate : candidatePatterns)
+		{
+			ArrayList<TripPatternStop> patternStops = tripPatternStopMap.get(candidate);
+			
+			if(patternStops.size() != stopTimes.size())
+				continue;
+			
+			int index = 0;
+			for(TripPatternStop patternStop : patternStops)
+			{
+				if(patternStop.stop != stopTimes.get(index).stop)
+					continue;
+			}
+			
+			return candidate;
+		}
+		
+		return null;	
+	}
+}
+

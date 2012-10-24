@@ -1,0 +1,7 @@
+package models.gtfs;
+
+public enum GtfsSnapshotSource {
+	AUTOLOAD,
+	UPLOAD,
+    EXPORT;	
+}

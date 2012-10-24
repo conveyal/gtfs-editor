@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 37
+/svn/!svn/ver/29537/arc/tdm/app/utils
+END
+StatusMessage.java
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/!svn/ver/28558/arc/tdm/app/utils/StatusMessage.java
+END
+TimePoint.java
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/29537/arc/tdm/app/utils/TimePoint.java
+END
+PointJsonSerializer.java
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/!svn/ver/28558/arc/tdm/app/utils/PointJsonSerializer.java
+END

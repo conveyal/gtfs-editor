@@ -1,0 +1,30 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# Home page
+GET     /                                       Application.index
+
+
+GET   	/agency/?             					Api.getAgency
+GET   	/agency/{id}             				Api.getAgency
+POST   	/agency		             				Api.createAgency
+PUT   	/agency/{id}             				Api.updateAgency
+DELEE  	/agency/{id}             				Api.deleteAgency
+
+GET   	/route/?             					Api.getRoute
+GET   	/route/{id}             				Api.getRoute
+POST   	/route		             				Api.createRoute
+PUT   	/route/{id}             				Api.updateRoute
+DELEE  	/route/{id}             				Api.deleteRoute
+
+
+
+# Ignore favicon requests
+GET     /favicon.ico                            404
+
+# Map static resources from the /app/public folder to the /public path
+GET     /public/                                staticDir:public
+
+# Catch all
+*       /{controller}/{action}                  {controller}.{action}

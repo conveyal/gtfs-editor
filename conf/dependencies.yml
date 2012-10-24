@@ -1,0 +1,27 @@
+# Application dependencies
+
+require:
+    - play
+    - com.typesafe.akka -> akka-actor 2.0.3
+    - com.typesafe.akka -> akka-remote 2.0.3
+    - gov.sandia.foundry -> gov-sandia-cognition-common-core 3.3.2
+    - gov.sandia.foundry -> gov-sandia-cognition-learning-core 3.3.2
+    - com.google.guava -> guava 11.0.1
+    - com.vividsolutions -> jts 1.12
+    - org.geotools -> gt-main 8.0-M4
+    - org.geotools -> gt-geojson 8.0-M4
+    - org.codehaus.jackson -> jackson-core-asl 1.9.5
+    - org.codehaus.jackson -> jackson-mapper-asl 1.9.5
+    
+    
+repositories:
+    - typesafe:
+        type: iBiblio
+        root: "http://repo.typesafe.com/typesafe/releases/"
+        contains:
+            - com.typesafe.akka -> *
+    - osgeo:
+        type: iBiblio
+        root: "http://download.osgeo.org/webdav/geotools/"
+        contains:
+            - org.geotools -> *

@@ -1,0 +1,102 @@
+package models.transit;
+
+
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Collection;
+
+import javax.persistence.Entity;
+import javax.persistence.EntityManager;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OrderColumn;
+import javax.persistence.Query;
+
+import org.hibernate.annotations.Type;
+
+import play.Logger;
+import play.db.jpa.Model;
+
+import models.gtfs.GtfsSnapshot;
+
+@Entity
+public class TripPattern extends Model {
+	
+    public String name;
+    public String headsign;
+    
+    @ManyToOne
+    public TripShape shape;
+     
+    @ManyToOne
+    public Route route;
+    
+    public TripPattern()
+    {
+    	
+    }
+    
+    public TripPattern(String name, String headsign, TripShape shape, Route route)
+    {
+    	this.name = name;
+    	this.headsign = headsign;
+    	this.shape = shape;
+    	this.route = route;
+    }
+    
+    public static TripPattern createFromTrip(Trip trip)
+    {
+    	TripPattern tripPattern = new TripPattern();
+    	tripPattern.name = trip.route.routeShortName + " (" + trip.tripHeadsign + ")";
+    	tripPattern.route = trip.route;
+    	tripPattern.headsign = trip.tripHeadsign;
+    	
+    	tripPattern.save();
+    	
+    	ArrayList<StopTime> stopTimes = trip.getStopTimes();
+    	
+    	Integer previousDepartureTime = 0;
+    	Double previousDistance = new Double(0);
+    	
+    	Boolean firstStop = true;
+    	
+    	for(StopTime stopTime : stopTimes)
+    	{
+    		TripPatternStop patternStop = new TripPatternStop();
+    		
+    		patternStop.pattern = tripPattern;
+    		patternStop.stop = stopTime.stop;
+    		patternStop.stopSequence = stopTime.stopSequence;
+    		
+    		patternStop.defaultDwellTime = stopTime.departureTime - stopTime.arrivalTime;
+    		
+    		if(firstStop)
+    		{
+    			previousDepartureTime = stopTime.departureTime;
+    				
+    			patternStop.defaultDistance = new Double(0);
+    			patternStop.defaultTravelTime = 0;
+    			
+    			firstStop = false;
+    		}
+    		else
+    		{
+    			patternStop.defaultDistance = stopTime.shapeDistTraveled - previousDistance;
+    			patternStop.defaultTravelTime = stopTime.arrivalTime - previousDepartureTime;
+    			
+    			previousDepartureTime = stopTime.departureTime;
+    			previousDistance = stopTime.shapeDistTraveled;
+    		}
+    		
+    		patternStop.save();
+    	}	
+    	
+    	Logger.info("Adding trip pattern: " + tripPattern.name);
+    	
+    	return tripPattern;
+    }
+}

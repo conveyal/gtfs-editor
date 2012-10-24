@@ -1,0 +1,122 @@
+package jobs;
+
+import java.io.File;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
+
+import org.apache.commons.lang.StringUtils;
+import org.onebusaway.gtfs.impl.GtfsDaoImpl;
+import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.gtfs.serialization.GtfsReader;
+import org.onebusaway.gtfs.serialization.GtfsWriter;
+
+import com.mchange.v2.c3p0.impl.DbAuth;
+
+import models.gtfs.GtfsSnapshotExport;
+import models.gtfs.GtfsSnapshotMerge;
+import models.gtfs.GtfsSnapshotMergeTask;
+import models.gtfs.GtfsSnapshotMergeTaskStatus;
+import models.transit.Agency;
+import models.transit.Route;
+import models.transit.ServiceCalendar;
+import models.transit.ServiceCalendarDate;
+import models.transit.Stop;
+import models.transit.StopTime;
+import models.transit.TripShape;
+import models.transit.Trip;
+
+
+import play.Logger;
+import play.Play;
+import play.jobs.Job;
+import play.jobs.OnApplicationStart;
+
+public class ProcessGtfsSnapshotExport extends Job {
+
+	private Long _gtfsSnapshotExportId;
+	
+	public ProcessGtfsSnapshotExport(Long gtfsSnapshotExportId)
+	{
+		this._gtfsSnapshotExportId = gtfsSnapshotExportId;
+	}
+	
+	public void doJob() {
+		
+		GtfsSnapshotExport snapshotExport = null;
+		while(snapshotExport == null)
+		{
+			snapshotExport = GtfsSnapshotExport.findById(this._gtfsSnapshotExportId);
+			Logger.warn("Waiting for snapshotExport to save...");
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		try 
+		{
+			GtfsWriter writer = new GtfsWriter();
+			GtfsDaoImpl store = new GtfsDaoImpl();
+			
+			File gtfsFile = new File(Play.configuration.getProperty("application.publicGtfsDataDirectory"), snapshotExport.getFilename());
+			
+			writer.setOutputLocation(gtfsFile);
+			
+			
+
+			for(Agency agency : snapshotExport.agencies)
+			{
+				org.onebusaway.gtfs.model.Agency a = new org.onebusaway.gtfs.model.Agency();
+				
+				a.setId(agency.id.toString());
+				a.setName(agency.name);
+				a.setUrl(agency.url);
+				a.setTimezone(agency.timezone);
+				
+				store.saveEntity(a);
+				
+				List<Route> routes = Route.find("agency = ?", agency).fetch();
+				
+				for(Route route : routes)
+				{
+					org.onebusaway.gtfs.model.Route r = new org.onebusaway.gtfs.model.Route();
+					
+					AgencyAndId routeId = new AgencyAndId(); 
+					
+					routeId.setAgencyId(agency.id.toString());
+					routeId.setId(route.id.toString());
+					
+					r.setId(routeId);
+					r.setAgency(a);
+					r.setColor(route.routeColor);
+					r.setDesc(route.routeDesc);
+					r.setLongName(route.routeLongName);
+					r.setShortName(route.routeShortName);
+					r.setType(Route.mapGtfsRouteType(route.routeType));
+					r.setUrl(route.routeUrl);
+					
+					store.saveEntity(r);
+				}
+			}
+			
+			writer.run(store);
+			writer.flush();
+			writer.close();
+			
+		}
+		catch(Exception e)
+		{
+			Logger.error("error", e);
+		}
+	}
+}
+

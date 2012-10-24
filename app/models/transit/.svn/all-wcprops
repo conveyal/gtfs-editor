@@ -1,0 +1,95 @@
+K 25
+svn:wc:ra_dav:version-url
+V 46
+/svn/!svn/ver/29536/arc/tdm/app/models/transit
+END
+TripShape.java
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/!svn/ver/29536/arc/tdm/app/models/transit/TripShape.java
+END
+RouteType.java
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/!svn/ver/28558/arc/tdm/app/models/transit/RouteType.java
+END
+StopTimePickupDropOffType.java
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/!svn/ver/28558/arc/tdm/app/models/transit/StopTimePickupDropOffType.java
+END
+StopTime.java
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/!svn/ver/29536/arc/tdm/app/models/transit/StopTime.java
+END
+Agency.java
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/28585/arc/tdm/app/models/transit/Agency.java
+END
+LocationType.java
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/!svn/ver/28558/arc/tdm/app/models/transit/LocationType.java
+END
+TripPattern.java
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/!svn/ver/29536/arc/tdm/app/models/transit/TripPattern.java
+END
+Trip.java
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/!svn/ver/28595/arc/tdm/app/models/transit/Trip.java
+END
+TripDirection.java
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/!svn/ver/28558/arc/tdm/app/models/transit/TripDirection.java
+END
+TripPatternStop.java
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/!svn/ver/29536/arc/tdm/app/models/transit/TripPatternStop.java
+END
+Stop.java
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/!svn/ver/28619/arc/tdm/app/models/transit/Stop.java
+END
+ServiceCalendarDate.java
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/!svn/ver/29536/arc/tdm/app/models/transit/ServiceCalendarDate.java
+END
+ServiceCalendarDateType.java
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/!svn/ver/28558/arc/tdm/app/models/transit/ServiceCalendarDateType.java
+END
+ServiceCalendar.java
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/!svn/ver/29536/arc/tdm/app/models/transit/ServiceCalendar.java
+END
+Route.java
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/!svn/ver/28619/arc/tdm/app/models/transit/Route.java
+END
