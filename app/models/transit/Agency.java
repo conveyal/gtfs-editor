@@ -6,6 +6,7 @@ import javax.persistence.Entity;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 
+import org.codehaus.jackson.annotate.JsonCreator;
 import org.hibernate.annotations.Type;
 
 import play.db.jpa.Model;
@@ -24,6 +25,11 @@ public class Agency extends Model {
     public String color;
     
     public Boolean systemMap;
+    
+    @JsonCreator
+    public static Agency factory(long id) {
+      return Agency.findById(id);
+    }
     
     public Agency(org.onebusaway.gtfs.model.Agency agency) {
         this.gtfsAgencyId = agency.getId();

@@ -66,10 +66,7 @@ public class Api extends Controller {
             Agency updatedAgency = Agency.em().merge(agency);
             updatedAgency.save();
             
-            Agency updateLaundryList = Agency.em().merge(agency);
-            updateLaundryList.save();
-            
-            renderJSON(agency);
+            renderJSON(updatedAgency);
         } catch (Exception e) {
             e.printStackTrace();
             badRequest();
@@ -107,57 +104,49 @@ public class Api extends Controller {
     }
 
     public static void createRoute(Long agencyId, String routeShortName, String routeLongName, String routeDesc, String routeType, String routeUrl, String routeColor, String routeTextColor) {
+        Route route;
 
-    	if(agencyId == null)
-    		badRequest();
+        try {
+            route = mapper.readValue(params.get("body"), Route.class);
 
-    	Agency agency = Agency.findById(agencyId);
+        	if(Agency.findById(route.agency.id) == null)
+        		badRequest();
 
-    	if(agency == null)
-    		badRequest();
-
-    	Route route = new Route(routeShortName, routeLongName, RouteType.valueOf(routeType), routeDesc,  agency);
-    	route.save();
-
-    	renderJSON(route);
-
+        	// check if gtfsRouteId is specified, if not create from DB id
+        	if(route.gtfsRouteId == null)
+        		route.gtfsRouteId = "ROUTE_" + route.id.toString();
+        	
+            route.save();
+            
+            renderJSON(route);
+        } catch (Exception e) {
+            e.printStackTrace();
+            badRequest();
+        }
     }
 
 
-    public static void updateRoute(Long id, Long agencyId, String gtfsRouteId, String routeShortName, String routeLongName, String routeDesc, String routeType, String routeUrl, String routeColor, String routeTextColor) {
+    public static void updateRoute() {
+        Route route;
 
-    	if(id == null && agencyId != null)
-    		badRequest();
+        try {
+            route = mapper.readValue(params.get("body"), Route.class);
 
-    	Route route = Route.findById(id);
-
-    	if(route == null)
-    		badRequest();
-
-    	route.gtfsRouteId = gtfsRouteId;
-    	route.routeType = RouteType.valueOf(routeType);
-    	route.routeDesc = routeDesc;
-    	route.routeShortName = routeShortName;
-    	route.routeLongName = routeLongName;
-
-    	if(route.agency.id != agencyId)
-    	{
-    		Agency agency = Agency.findById(agencyId);
-
-        	if(agency == null)
+            if(route.id == null || Route.findById(route.id) == null)
         		badRequest();
 
-    		route.agency = agency;
-    	}
-
-    	route.save();
-
-    	// check if gtfsRouteId is specified, if not create from DB id
-    	if(route.gtfsRouteId == null)
-    		route.gtfsRouteId = "ROUTE_" + route.id.toString();
-
-    	renderJSON(route);
-
+        	// check if gtfsRouteId is specified, if not create from DB id
+        	if(route.gtfsRouteId == null)
+        		route.gtfsRouteId = "ROUTE_" + route.id.toString();
+            
+            Route updatedRoute = Route.em().merge(route);
+            updatedRoute.save();
+            
+            renderJSON(updatedRoute);
+        } catch (Exception e) {
+            e.printStackTrace();
+            badRequest();
+        }
     }
 
     public static void deleteRoute(Long id) {
