@@ -8,13 +8,13 @@ GET     /                                       Application.index
 
 GET     /agency/?                               Api.getAgency
 GET     /agency/{id}                            Api.getAgency
-POST    /agency                                 Api.createAgency
+POST    /agency/                                Api.createAgency
 PUT     /agency/{id}                            Api.updateAgency
 DELETE  /agency/{id}                            Api.deleteAgency
 
 GET     /route/?                                Api.getRoute
 GET     /route/{id}                             Api.getRoute
-POST    /route                                  Api.createRoute
+POST    /route/                                 Api.createRoute
 PUT     /route/{id}                             Api.updateRoute
 DELETE  /route/{id}                             Api.deleteRoute
 
