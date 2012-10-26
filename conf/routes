@@ -4,19 +4,19 @@
 
 # Home page
 GET     /                                       Application.index
+GET     /scaffolding/                           Application.scaffolding
 
+GET     /api/agency/?                           Api.getAgency
+GET     /api/agency/{id}                        Api.getAgency
+POST    /api/agency/                            Api.createAgency
+PUT     /api/agency/{id}                        Api.updateAgency
+DELETE  /api/agency/{id}                        Api.deleteAgency
 
-GET     /agency/?                               Api.getAgency
-GET     /agency/{id}                            Api.getAgency
-POST    /agency/                                Api.createAgency
-PUT     /agency/{id}                            Api.updateAgency
-DELETE  /agency/{id}                            Api.deleteAgency
-
-GET     /route/?                                Api.getRoute
-GET     /route/{id}                             Api.getRoute
-POST    /route/                                 Api.createRoute
-PUT     /route/{id}                             Api.updateRoute
-DELETE  /route/{id}                             Api.deleteRoute
+GET     /api/route/?                            Api.getRoute
+GET     /api/route/{id}                         Api.getRoute
+POST    /api/route/                             Api.createRoute
+PUT     /api/route/{id}                         Api.updateRoute
+DELETE  /api/route/{id}                         Api.deleteRoute
 
 
 

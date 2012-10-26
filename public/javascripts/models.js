@@ -2,15 +2,49 @@ var GtfsEditor = GtfsEditor || {};
 
 (function(G, $) {
 
-  G.Agency = Backbone.Collection.extend({
-    url: 'agency/'
+  G.Agency = Backbone.Model.extend({
+    defaults: {
+      id: null,
+      gtfsAgencyId: null,
+      name: null,
+      url: null,
+      timezone: null,
+      lang: null,
+      phone: null
+    }
+  });
+
+  G.Agencies = Backbone.Collection.extend({
+    model: G.Agency,
+    url: '/api/agency/'
+  });
+
+  G.Route = Backbone.Model.extend({
+    defaults: {
+      id: null,
+      gtfsRouteId: null,
+      routeShortName: null,
+      routeLongName: null,
+      routeDesc: null,
+      routeType: null,
+      routeUrl: null,
+      routeColor: null,
+      routeTextColor: null,
+      weekday: null,
+      saturday: null,
+      sunday: null,
+      agency: null
+    }
   });
 
   G.Routes = Backbone.Collection.extend({
-    // short_name, long_name, type
-    url: 'route/'
+    model: G.Route,
+    url: '/api/route/'
   });
 
+  // Untested
+  //    |
+  //    V
   G.Stops = Backbone.Collection.extend({
     // name, lat, lng, url, code, desc
   });

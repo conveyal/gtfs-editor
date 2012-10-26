@@ -30,6 +30,11 @@ public class Agency extends Model {
     public static Agency factory(long id) {
       return Agency.findById(id);
     }
+
+    @JsonCreator
+    public static Agency factory(String id) {
+      return Agency.findById(Long.parseLong(id));
+    }
     
     public Agency(org.onebusaway.gtfs.model.Agency agency) {
         this.gtfsAgencyId = agency.getId();

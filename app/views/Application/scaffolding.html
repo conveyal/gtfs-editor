@@ -1,0 +1,52 @@
+#{extends 'main.html' /}
+#{set title:'Model Scaffolding' /}
+
+#{set 'styles'}
+  #{stylesheet 'main.css' /}
+  #{stylesheet 'scaffolding.css' /}
+#{/set}
+
+#{set 'scripts'}
+  #{script 'models.js' /}
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.min.js"></script>
+  #{script 'backbone-scaffolding.js' /}
+#{/set}
+
+    <script id="model-form-tpl" type="text/html">
+    <h5><a class="content-header-link" href="{{new_link}}">Add a new one</a></h5>
+    <form class="form-horizontal">
+
+      {{#data}}
+      <div class="control-group">
+        <label class="control-label" for="{{key}}">{{key}}</label>
+        <div class="controls">
+          <input type="text" id="{{key}}" value="{{val}}">
+        </div>
+      </div>
+      {{/data}}
+
+      <div class="control-group">
+        <div class="controls">
+          <button id="save-btn" class="btn btn-primary">Save</button>
+          {{#can_delete}}
+          <button id="delete-btn" class="btn btn-danger">Delete</button>
+          {{/can_delete}}
+        </div>
+      </div>
+    </form>
+    </script>
+
+    <script id="collection-table-tpl" type="text/html">
+    <h5><a class="content-header-link" href="{{new_link}}">Add a new one</a></h5>
+    <table id="collection-table" class="table table-bordered table-hover"></table>
+    </script>
+
+    <div class="row">
+      <div class="span2">
+        <ul id="nav-list" class="nav nav-tabs nav-stacked"></ul>
+      </div>
+      <div class="span10">
+        <h1 id="title"></h1>
+        <div id="content"></div>
+      </div>
+    </div>
