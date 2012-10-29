@@ -72,15 +72,16 @@ var GtfsEditor = GtfsEditor || {};
     render: function() {
       $title.html(this.collectionType);
 
+      this.$el.html(ich['collection-table-tpl'](
+        {new_link: '#'+this.collectionType+'/new'}
+      ));
+
       if (this.collection.first()) {
         var tableOptions = collectionToDatatables(this.collection, this.collectionType);
         tableOptions.bPaginate = false;
         tableOptions.bInfo = false;
 
-        this.$el.html(ich['collection-table-tpl'](
-          {new_link: '#'+this.collectionType+'/new'}
-        ));
-        this.$('#collection-table').dataTable(tableOptions);
+        this.$('#collection-table').show().dataTable(tableOptions);
       }
 
       return this;

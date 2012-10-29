@@ -1,3 +1,7 @@
+#collection-table {
+  display: none;
+}
+
 .content-header-link {
   float:right;
 }
