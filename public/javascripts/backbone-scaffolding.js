@@ -150,7 +150,10 @@ var GtfsEditor = GtfsEditor || {};
             alert('Created!');
             router.navigate(this.collectionType + '/' + this.model.id, {trigger: true});
           }, this),
-          error: function() { alert('Oh noes! That didn\'t work.'); }
+          error: _.bind(function() {
+            this.model = null;
+            alert('Oh noes! That didn\'t work.');
+          }, this)
         });
       }
     },
