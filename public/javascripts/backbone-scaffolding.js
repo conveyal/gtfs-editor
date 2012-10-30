@@ -27,7 +27,7 @@ var GtfsEditor = GtfsEditor || {};
         var val = obj[field];
 
         if (_.isObject(val)) {
-          val = val.id || val;
+          val = val.id || JSON.stringify(val);
         }
 
         if (field === 'id') {
@@ -109,7 +109,7 @@ var GtfsEditor = GtfsEditor || {};
       _.each(tempModel.toJSON(), function(val, key) {
         if (key !== 'id') {
           if (_.isObject(val)) {
-            val = val.id;
+            val = val.id || JSON.stringify(val);
           }
 
           data.push({key: key, val: val});
@@ -136,7 +136,11 @@ var GtfsEditor = GtfsEditor || {};
       });
 
       if (this.model) {
-        this.model.save(data, {
+        // This seems redundant, but we need to call set first so that the
+        // validator work as expected. Otherwise any attribute overrides in the
+        // validator will not be set.
+        this.model.set(data, { silent: true });
+        this.model.save(null, {
           wait: true,
           success: function() {
             alert('Saved!');
@@ -208,5 +212,6 @@ var GtfsEditor = GtfsEditor || {};
 // Add collections here
 GtfsEditor.Scaffolding.init([
   {name: 'Agencies', collection: new GtfsEditor.Agencies()},
-  {name: 'Routes', collection: new GtfsEditor.Routes()}
+  {name: 'Routes', collection: new GtfsEditor.Routes()},
+  {name: 'Stops', collection: new GtfsEditor.Stops()}
 ]);

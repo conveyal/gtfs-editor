@@ -18,7 +18,11 @@ POST    /api/route/                             Api.createRoute
 PUT     /api/route/{id}                         Api.updateRoute
 DELETE  /api/route/{id}                         Api.deleteRoute
 
-
+GET     /api/stop/?                             Api.getStop
+GET     /api/stop/{id}                          Api.getStop
+POST    /api/stop/                              Api.createStop
+PUT     /api/stop/{id}                          Api.updateStop
+DELETE  /api/stop/{id}                          Api.deleteStop
 
 # Ignore favicon requests
 GET     /favicon.ico                            404

@@ -42,13 +42,46 @@ var GtfsEditor = GtfsEditor || {};
     url: '/api/route/'
   });
 
+  G.Stop = Backbone.Model.extend({
+    defaults: {
+      id: null,
+      gtfsStopId: null,
+      stopCode: null,
+      stopName: null,
+      stopDesc: null,
+      zoneId: null,
+      stopUrl: null,
+      agency: null,
+      locationType: null,
+      parentStation: null,
+      location: null
+    },
+    // This function serves to allow stringified JSON as a valid input. A bit
+    // hacky, but it's a great place to do it.
+    validate: function(attrs) {
+      var loc;
+      if (_.isString(attrs.location)) {
+        try {
+          loc = JSON.parse(attrs.location);
+        } catch(e) {
+          // location was a string, but not JSON. This will break on the server.
+        }
+        if (loc) {
+          this.set('location', loc);
+        }
+      }
+    }
+  });
+
+  G.Stops = Backbone.Collection.extend({
+    // name, lat, lng, url, code, desc
+    model: G.Stop,
+    url: '/api/stop/'
+  });
+
   // Untested
   //    |
   //    V
-  G.Stops = Backbone.Collection.extend({
-    // name, lat, lng, url, code, desc
-  });
-
   G.TripPattern = Backbone.Model.extend({
     // name, headsign, alignment, stop_times[], shape, route_id (fk)
       // stop_id, travel_time, dwell_time

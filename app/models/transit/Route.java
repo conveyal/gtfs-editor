@@ -12,12 +12,14 @@ import javax.persistence.Query;
 import models.gis.GisRoute;
 import models.gis.GisUpload;
 
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.hibernate.annotations.Type;
 
 import com.vividsolutions.jts.geom.MultiLineString;
 
 import play.db.jpa.Model;
 
+@JsonIgnoreProperties({"entityId", "systemMap", "persistent"})
 @Entity
 public class Route extends Model {
 	

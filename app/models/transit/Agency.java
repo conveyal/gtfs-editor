@@ -7,11 +7,12 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 
 import org.codehaus.jackson.annotate.JsonCreator;
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.hibernate.annotations.Type;
 
 import play.db.jpa.Model;
 
-
+@JsonIgnoreProperties({"entityId", "systemMap", "persistent"})
 @Entity
 public class Agency extends Model {
 	
