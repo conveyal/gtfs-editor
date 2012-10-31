@@ -61,7 +61,7 @@ var GtfsEditor = GtfsEditor || {};
     _router = new GtfsEditor.Scaffolding.Routes();
   };
 
-  S.ListView = Backbone.View.extend({
+  S.TableView = Backbone.View.extend({
     initialize: function() {
       this.collection.on('reset', this.render, this);
     },
@@ -84,7 +84,7 @@ var GtfsEditor = GtfsEditor || {};
     }
   });
 
-  S.SingleView = Backbone.View.extend({
+  S.FormView = Backbone.View.extend({
     events: {
       'click #save-btn': 'save',
       'click #delete-btn': 'delete'
@@ -184,14 +184,14 @@ var GtfsEditor = GtfsEditor || {};
     },
 
     listCollection: function(type) {
-      var view = new S.ListView({
+      var view = new S.TableView({
             collection: getCollection(type)
           });
       this.renderView(view);
     },
 
     viewModel: function(type, modelId) {
-      var view = new S.SingleView({
+      var view = new S.FormView({
             collection: getCollection(type),
             modelId: modelId
           });
