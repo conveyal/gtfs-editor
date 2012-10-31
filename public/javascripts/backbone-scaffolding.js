@@ -170,9 +170,9 @@ var GtfsEditor = GtfsEditor || {};
 
   S.Routes = Backbone.Router.extend({
     routes: {
-      ':collectionName':     'listCollection',
-      ':collectionName/new': 'viewModel',
-      ':collectionName/:id': 'viewModel'
+      ':type':     'listCollection',
+      ':type/new': 'viewModel',
+      ':type/:id': 'viewModel'
     },
 
     initialize: function() {
@@ -190,7 +190,7 @@ var GtfsEditor = GtfsEditor || {};
       this.renderView(view);
     },
 
-    viewModel: function(collectionName, modelId) {
+    viewModel: function(type, modelId) {
       var view = new S.SingleView({
             collection: getCollection(type),
             modelId: modelId
