@@ -15,6 +15,7 @@ var GtfsEditor = GtfsEditor || {};
   });
 
   G.Agencies = Backbone.Collection.extend({
+    type: 'Agencies',
     model: G.Agency,
     url: '/api/agency/'
   });
@@ -38,6 +39,7 @@ var GtfsEditor = GtfsEditor || {};
   });
 
   G.Routes = Backbone.Collection.extend({
+    type: 'Routes',
     model: G.Route,
     url: '/api/route/'
   });
@@ -74,7 +76,7 @@ var GtfsEditor = GtfsEditor || {};
   });
 
   G.Stops = Backbone.Collection.extend({
-    // name, lat, lng, url, code, desc
+    type: 'Stops',
     model: G.Stop,
     url: '/api/stop/'
   });

@@ -2,19 +2,19 @@ var GtfsEditor = GtfsEditor || {};
 
 (function(G, $, ich) {
   var S = G.Scaffolding = {},
-      configs = [],
-      router,
+      _collections = [],
+      _router,
       $navList = $('#nav-list'),
       $title = $('#title'),
       $content = $('#content');
 
-  var getConfig = function(name) {
-    return _.find(configs, function(c) {
-      return c.name === name;
+  var getCollection = function(type) {
+    return _.find(_collections, function(c) {
+      return c.type === type;
     });
   };
 
-  var collectionToDatatables = function(collection, collectionType) {
+  var collectionToDatatables = function(collection) {
     var fields = _.keys(new collection.model().defaults),
         aaData = [],
         aoColumns = _.map(fields, function(key) {
@@ -31,7 +31,7 @@ var GtfsEditor = GtfsEditor || {};
         }
 
         if (field === 'id') {
-          val = '<a href="#'+collectionType+'/'+val+'">'+val+'</a>';
+          val = '<a href="#'+collection.type+'/'+val+'">'+val+'</a>';
         }
 
         rowData.push(val);
@@ -49,35 +49,31 @@ var GtfsEditor = GtfsEditor || {};
     ich.grabTemplates();
 
     // array of objects with key/val properties
-    configs = c;
+    _collections = c;
 
     // Build the collection list
     $navList.empty();
-    _.each(configs, function(config) {
-      $navList.append('<li><a href="#'+config.name+'">'+config.name+'</a></li>');
+    _.each(_collections, function(collection) {
+      $navList.append('<li><a href="#'+collection.type+'">'+collection.type+'</a></li>');
+      collection.fetch();
     });
 
-    _.each(configs, function(config) {
-      config.collection.fetch();
-    });
-
-    router = new GtfsEditor.Scaffolding.Routes();
+    _router = new GtfsEditor.Scaffolding.Routes();
   };
 
   S.ListView = Backbone.View.extend({
     initialize: function() {
-      this.collectionType = this.options.collectionType;
       this.collection.on('reset', this.render, this);
     },
     render: function() {
-      $title.html(this.collectionType);
+      $title.html(this.collection.type);
 
       this.$el.html(ich['collection-table-tpl'](
-        {new_link: '#'+this.collectionType+'/new'}
+        {new_link: '#'+this.collection.type+'/new'}
       ));
 
       if (this.collection.first()) {
-        var tableOptions = collectionToDatatables(this.collection, this.collectionType);
+        var tableOptions = collectionToDatatables(this.collection, this.collection.type);
         tableOptions.bPaginate = false;
         tableOptions.bInfo = false;
 
@@ -95,14 +91,13 @@ var GtfsEditor = GtfsEditor || {};
     },
 
     initialize: function() {
-      this.collectionType = this.options.collectionType;
       this.collection.on('reset', this.render, this);
     },
 
     render: function() {
       var data = [],
           tempModel;
-      $title.html(this.collectionType);
+      $title.html(this.collection.type);
       this.model = this.collection.get(this.options.modelId);
 
       tempModel = this.model || new this.collection.model();
@@ -117,7 +112,7 @@ var GtfsEditor = GtfsEditor || {};
       });
 
       var tplData = {
-        new_link: '#'+this.collectionType+'/new',
+        new_link: '#'+this.collection.type+'/new',
         can_delete: !!this.model,
         data: data
       };
@@ -152,7 +147,7 @@ var GtfsEditor = GtfsEditor || {};
           wait: true,
           success: _.bind(function() {
             alert('Created!');
-            router.navigate(this.collectionType + '/' + this.model.id, {trigger: true});
+            _router.navigate(this.collection.type + '/' + this.model.id, {trigger: true});
           }, this),
           error: _.bind(function() {
             this.model = null;
@@ -164,10 +159,10 @@ var GtfsEditor = GtfsEditor || {};
 
     'delete': function(evt){
       evt.preventDefault();
-      var ct = this.collectionType;
+      var ct = this.collection.type;
 
       this.model.destroy({
-        success: function() { router.navigate(ct, {trigger: true}); },
+        success: function() { _router.navigate(ct, {trigger: true}); },
         error: function() { alert('Oh noes! That didn\'t work.'); }
       });
     }
@@ -181,28 +176,24 @@ var GtfsEditor = GtfsEditor || {};
     },
 
     initialize: function() {
-      Backbone.history.start({root: '/models'});
+      Backbone.history.start();
     },
 
     renderView: function(view) {
       $content.html(view.render().el);
     },
 
-    listCollection: function(collectionName) {
-      var config = getConfig(collectionName),
-          view = new S.ListView({
-            collection: config.collection,
-            collectionType: config.name
+    listCollection: function(type) {
+      var view = new S.ListView({
+            collection: getCollection(type)
           });
       this.renderView(view);
     },
 
     viewModel: function(collectionName, modelId) {
-      var config = getConfig(collectionName),
-          view = new S.SingleView({
-            collection: config.collection,
-            modelId: modelId,
-            collectionType: config.name
+      var view = new S.SingleView({
+            collection: getCollection(type),
+            modelId: modelId
           });
       this.renderView(view);
     }
@@ -211,7 +202,7 @@ var GtfsEditor = GtfsEditor || {};
 
 // Add collections here
 GtfsEditor.Scaffolding.init([
-  {name: 'Agencies', collection: new GtfsEditor.Agencies()},
-  {name: 'Routes', collection: new GtfsEditor.Routes()},
-  {name: 'Stops', collection: new GtfsEditor.Stops()}
+  new GtfsEditor.Agencies(),
+  new GtfsEditor.Routes(),
+  new GtfsEditor.Stops()
 ]);
