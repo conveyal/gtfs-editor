@@ -1,0 +1,27 @@
+#{extends 'main.html' /}
+#{set title:'Map Demo' /}
+
+#{set 'styles'}
+  <link rel="stylesheet" href="/public/javascripts/leaflet-0.4.5/leaflet.css" />
+  <link rel="stylesheet" href="/public/javascripts/leaflet.draw-0.1.4/leaflet.draw.css" />
+
+  <!--[if lte IE 8]>
+    <link rel="stylesheet" href="/public/javascripts/leaflet-0.4.5/leaflet.ie.css" />
+    <link rel="stylesheet" href="/public/javascripts/leaflet.draw-0.1.4/leaflet.draw.ie.css" />
+  <![endif]-->
+  #{stylesheet 'main.css' /}
+  #{stylesheet 'map.css' /}
+#{/set}
+
+#{set 'scripts'}
+  #{script 'leaflet-0.4.5/leaflet.js' /}
+  #{script 'leaflet.draw-0.1.4/leaflet.draw.js' /}
+  #{script 'map.js' /}
+#{/set}
+
+    <div class="row">
+      <div class="offset9 span3 content">
+        OH HAI
+      </div>
+    </div>
+    <div id="map"></div>
