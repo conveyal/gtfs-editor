@@ -3,5 +3,6 @@
 }
 
 .content-header-link {
-  float:right;
+  display: block;
+  text-align: right;
 }
