@@ -161,10 +161,12 @@ var GtfsEditor = GtfsEditor || {};
       evt.preventDefault();
       var ct = this.collection.type;
 
-      this.model.destroy({
-        success: function() { _router.navigate(ct, {trigger: true}); },
-        error: function() { alert('Oh noes! That didn\'t work.'); }
-      });
+      if (window.confirm('Really delete?')) {
+        this.model.destroy({
+          success: function() { _router.navigate(ct, {trigger: true}); },
+          error: function() { alert('Oh noes! That didn\'t work.'); }
+        });
+      }
     }
   });
 
