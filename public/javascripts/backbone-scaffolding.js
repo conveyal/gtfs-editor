@@ -3,7 +3,6 @@ var GtfsEditor = GtfsEditor || {};
 (function(G, $, ich) {
   var S = G.Scaffolding = {},
       _collections = [],
-      _router,
       $navList = $('#nav-list'),
       $content = $('#content');
 
@@ -26,10 +25,10 @@ var GtfsEditor = GtfsEditor || {};
       collection.fetch();
     });
 
-    _router = new GtfsEditor.Scaffolding.Routes();
+    G.router = new GtfsEditor.Scaffolding.Router();
   };
 
-  S.Routes = Backbone.Router.extend({
+  S.Router = Backbone.Router.extend({
     routes: {
       ':type':     'listCollection',
       ':type/new': 'viewModel',
@@ -52,9 +51,11 @@ var GtfsEditor = GtfsEditor || {};
     },
 
     viewModel: function(type, modelId) {
-      var view = new G.FormView({
-            collection: getCollection(type),
-            modelId: modelId
+      var collection = getCollection(type),
+          model = collection.get(modelId),
+          view = new G.FormView({
+            collection: collection,
+            model: model
           });
       this.renderView(view);
     }

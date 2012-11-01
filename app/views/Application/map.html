@@ -16,12 +16,26 @@
 #{set 'scripts'}
   #{script 'leaflet-0.4.5/leaflet.js' /}
   #{script 'leaflet.draw-0.1.4/leaflet.draw.js' /}
+  #{script 'models.js' /}
+  #{script 'views.js' /}
   #{script 'map.js' /}
 #{/set}
 
-    <div class="row">
-      <div class="offset9 span3 content">
-        OH HAI
+    <script id="model-form-tpl" type="text/html">
+    <form>
+    {{#data}}
+      <label for="{{key}}">{{key}}</label>
+      <input type="text" id="{{key}}" value="{{val}}">
+    {{/data}}
+
+      <div>
+        <button id="save-btn" class="btn btn-primary">Save</button>
+        {{#can_delete}}
+        <button id="delete-btn" class="btn btn-danger">Delete</button>
+        {{/can_delete}}
       </div>
-    </div>
+    </form>
+    </script>
+
+    <div class="content"></div>
     <div id="map"></div>

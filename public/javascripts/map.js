@@ -1,31 +1,58 @@
-var map = new L.Map('map'),
-    mapboxUrl = 'http://{s}.tiles.mapbox.com/v3/atogle.map-vo4oycva/{z}/{x}/{y}.png',
-    mabboxAttribution = 'Map data &copy; OpenStreetMap contributors, CC-BY-SA <a href="http://mapbox.com/about/maps" target="_blank">Terms &amp; Feedback</a>',
-    mapboxLayer = new L.TileLayer(mapboxUrl, {maxZoom: 17, attribution: mabboxAttribution, subdomains: 'abcd'});
+var GtfsEditor = GtfsEditor || {};
 
-map.setView(new L.LatLng(39.952467541125955, -75.16360759735107), 14).addLayer(mapboxLayer);
+(function(G, $, ich) {
+  var $content = $('.content');
+  ich.grabTemplates();
 
-var drawControl = new L.Control.Draw({
-      polygon: {
-        allowIntersection: false,
-        shapeOptions: {
-          color: '#bada55'
+
+  G.Router = Backbone.Router.extend({
+    routes: {
+      ':type':     'listCollection',
+      ':type/new': 'viewModel',
+      ':type/:id': 'viewModel'
+    },
+
+    initialize: function() {
+      Backbone.history.start();
+    },
+
+    renderView: function(view) {
+      $content.html(view.render().el);
+    },
+
+    listCollection: function(type) {
+      var view = new G.TableView({
+            collection: _stopsCollection
+          });
+      this.renderView(view);
+    },
+
+    viewModel: function(type, modelId) {
+      var model = _stopsCollection.get(modelId),
+          view = new G.FormView({
+            collection: _stopsCollection,
+            model: model
+          });
+      this.renderView(view);
+    }
+  });
+
+  var _stopsCollection = new G.Stops(),
+      _mapView;
+
+  _stopsCollection.fetch({success: function(){
+    G.router = new G.Router();
+
+    _mapView = new G.MapView({
+      el: '#map',
+      collection: _stopsCollection,
+      map: {
+        options: {
+          center: [39.952467541125955, -75.16360759735107],
+          zoom: 12
         }
       }
-    });
-    map.addControl(drawControl);
+    }).render();
+  }});
 
-    var drawnItems = new L.LayerGroup();
-    map.on('draw:poly-created', function (e) {
-      drawnItems.addLayer(e.poly);
-    });
-    map.on('draw:rectangle-created', function (e) {
-      drawnItems.addLayer(e.rect);
-    });
-    map.on('draw:circle-created', function (e) {
-      drawnItems.addLayer(e.circ);
-    });
-    map.on('draw:marker-created', function (e) {
-      drawnItems.addLayer(e.marker);
-    });
-    map.addLayer(drawnItems);
+})(GtfsEditor, jQuery, ich);
