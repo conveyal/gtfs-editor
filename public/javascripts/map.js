@@ -1,10 +1,6 @@
 var GtfsEditor = GtfsEditor || {};
 
 (function(G, $, ich) {
-  var $content = $('.content');
-  ich.grabTemplates();
-
-
   G.Router = Backbone.Router.extend({
     routes: {
       ':type':     'listCollection',
@@ -34,14 +30,18 @@ var GtfsEditor = GtfsEditor || {};
             model: model
           });
       this.renderView(view);
+      model.trigger('focus');
     }
   });
 
-  var _stopsCollection = new G.Stops(),
+  var $content = $('.content'),
+      _stopsCollection = new G.Stops(),
       _mapView;
 
+  ich.grabTemplates();
+
+
   _stopsCollection.fetch({success: function(){
-    G.router = new G.Router();
 
     _mapView = new G.MapView({
       el: '#map',
@@ -53,6 +53,9 @@ var GtfsEditor = GtfsEditor || {};
         }
       }
     }).render();
+
+    G.router = new G.Router();
+
   }});
 
 })(GtfsEditor, jQuery, ich);

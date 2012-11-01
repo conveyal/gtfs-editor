@@ -228,8 +228,7 @@ var GtfsEditor = GtfsEditor || {};
 
       // Bind model events
       this.model.on('change', this.updateLayer, this);
-      // this.model.on('focus', this.focus, this);
-      // this.model.on('unfocus', this.unfocus, this);
+      this.model.on('focus', this.focus, this);
 
       this.initLayer();
     },
@@ -280,16 +279,14 @@ var GtfsEditor = GtfsEditor || {};
     simplifyFloat: function(num) {
       return parseFloat(num.toFixed(4));
     },
-    // focus: function() {
-    //   if (this.placeType) {
-    //     this.setIcon(this.placeType.focused);
-    //   }
-    // },
-    // unfocus: function() {
-    //   if (this.placeType) {
-    //     this.setIcon(this.placeType['default']);
-    //   }
-    // },
+    focus: function() {
+      var mapBounds = this.map.getBounds(),
+          latLng = L.latLng([this.model.get('location').lat, this.model.get('location').lng]);
+
+      if (latLng && !mapBounds.contains(latLng)) {
+        this.map.panTo(latLng);
+      }
+    },
     remove: function() {
       this.removeLayer();
     },
