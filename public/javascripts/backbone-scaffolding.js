@@ -22,7 +22,6 @@ var GtfsEditor = GtfsEditor || {};
     $navList.empty();
     _.each(_collections, function(collection) {
       $navList.append('<li><a href="#'+collection.type+'">'+collection.type+'</a></li>');
-      collection.fetch();
     });
 
     G.router = new GtfsEditor.Scaffolding.Router();
@@ -44,20 +43,27 @@ var GtfsEditor = GtfsEditor || {};
     },
 
     listCollection: function(type) {
-      var view = new G.TableView({
-            collection: getCollection(type)
-          });
-      this.renderView(view);
+      var collection = getCollection(type);
+
+      collection.fetch({success: _.bind(function(){
+        var view = new G.TableView({
+              collection: getCollection(type)
+            });
+        this.renderView(view);
+      }, this)});
     },
 
     viewModel: function(type, modelId) {
-      var collection = getCollection(type),
-          model = collection.get(modelId),
-          view = new G.FormView({
-            collection: collection,
-            model: model
-          });
-      this.renderView(view);
+      var collection = getCollection(type);
+
+      collection.fetch({success: _.bind(function(){
+        var model = collection.get(modelId),
+            view = new G.FormView({
+              collection: collection,
+              model: model
+            });
+        this.renderView(view);
+      }, this)});
     }
   });
 })(GtfsEditor, jQuery, ich);
