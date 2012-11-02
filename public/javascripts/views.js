@@ -114,9 +114,10 @@ var GtfsEditor = GtfsEditor || {};
         this.model.set(data, { silent: true });
         this.model.save(null, {
           wait: true,
-          success: function() {
+          success: _.bind(function() {
             alert('Saved!');
-          },
+            G.router.navigate(this.collection.type + '/' + this.model.id);
+          }, this),
           error: function() { alert('Oh noes! That didn\'t work.'); }
         });
       } else {
@@ -176,7 +177,9 @@ var GtfsEditor = GtfsEditor || {};
       });
       this.map.addControl(drawControl);
       this.map.on('draw:marker-created', function (evt) {
-        console.log(evt, this);
+        var latLng = evt.marker.getLatLng();
+        G.router.navigate('Stops/new/' + latLng.lat.toPrecision(6) + ',' +
+          latLng.lng.toPrecision(6), {trigger: true});
       }, this);
 
       // Init the layer view cache
@@ -208,7 +211,7 @@ var GtfsEditor = GtfsEditor || {};
       }, this);
     },
     addLayerView: function(model) {
-      this.layerViews[model.cid] = new G.LayerView({
+      this.layerViews[model.cid] = new G.StopLayerView({
         model: model,
         map: this.map,
         layerGroup: this.layerGroup
@@ -221,7 +224,7 @@ var GtfsEditor = GtfsEditor || {};
   });
 
 
-  G.LayerView = Backbone.View.extend({
+  G.StopLayerView = Backbone.View.extend({
      // A view responsible for the representation of a place on the map.
     initialize: function(){
       this.map = this.options.map;
@@ -233,22 +236,17 @@ var GtfsEditor = GtfsEditor || {};
       this.initLayer();
     },
     initLayer: function() {
-      var location;
+      var location = this.model.get('location');
+      this.latLng = L.latLng(location.lat, location.lng);
 
-      // Don't draw new places. They are shown by the centerpoint in the app view
-      if (!this.model.isNew()) {
-        location = this.model.get('location');
-        this.latLng = L.latLng(location.lat, location.lng);
+      this.layer = L.marker(this.latLng, {
+        draggable: true
+      });
 
-        this.layer = L.marker(this.latLng, {
-          draggable: true
-        });
+      this.layer.on('dragend', this.onMarkerDragEnd, this);
+      this.layer.on('click', this.onMarkerClick, this);
 
-        this.layer.on('dragend', this.onMarkerDragEnd, this);
-        this.layer.on('click', this.onMarkerClick, this);
-
-        this.render();
-      }
+      this.render();
     },
     updateLayer: function() {
       // Update the marker layer if the model changes and the layer exists
@@ -264,20 +262,20 @@ var GtfsEditor = GtfsEditor || {};
       this.show();
     },
     onMarkerClick: function() {
-      console.log(this.model.toJSON());
-      G.router.navigate('/Stops/' + this.model.id, {trigger: true});
+      if (!this.model.isNew()) {
+        G.router.navigate('/Stops/' + this.model.id, {trigger: true});
+      }
     },
     onMarkerDragEnd: function(evt) {
       var latLng = evt.target.getLatLng();
       this.model.set({'location': {
-        'lng': this.simplifyFloat(latLng.lng),
-        'lat': this.simplifyFloat(latLng.lat)
+        'lng': latLng.lng.toPrecision(6),
+        'lat': latLng.lat.toPrecision(6)
       }});
 
-      G.router.navigate('/Stops/' + this.model.id, {trigger: true});
-    },
-    simplifyFloat: function(num) {
-      return parseFloat(num.toFixed(4));
+      if (!this.model.isNew()) {
+        G.router.navigate('/Stops/' + this.model.id, {trigger: true});
+      }
     },
     focus: function() {
       var mapBounds = this.map.getBounds(),

@@ -3,9 +3,10 @@ var GtfsEditor = GtfsEditor || {};
 (function(G, $, ich) {
   G.Router = Backbone.Router.extend({
     routes: {
-      ':type':     'listCollection',
-      ':type/new': 'viewModel',
-      ':type/:id': 'viewModel'
+      ':type':               'listCollection',
+      ':type/new':           'newModel',
+      ':type/new/:lat,:lng': 'newModel',
+      ':type/:id':           'viewModel'
     },
 
     initialize: function() {
@@ -16,14 +17,40 @@ var GtfsEditor = GtfsEditor || {};
       $content.html(view.render().el);
     },
 
+    destroyNewModels: function(collection) {
+      collection.each(function(model) {
+        if (model.isNew()) {
+          model.destroy();
+        }
+      });
+    },
+
     listCollection: function(type) {
+      this.destroyNewModels(_stopsCollection);
+
       var view = new G.TableView({
             collection: _stopsCollection
           });
       this.renderView(view);
     },
 
+    newModel: function(type, lat, lng) {
+      this.destroyNewModels(_stopsCollection);
+
+      var model = new _stopsCollection.model({
+            location: {lat: lat, lng: lng}
+          });
+          view = new G.FormView({
+            collection: _stopsCollection,
+            model: model
+          });
+      this.renderView(view);
+      _stopsCollection.add(model);
+    },
+
     viewModel: function(type, modelId) {
+      this.destroyNewModels(_stopsCollection);
+
       var model = _stopsCollection.get(modelId),
           view = new G.FormView({
             collection: _stopsCollection,
