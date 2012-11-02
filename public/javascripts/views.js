@@ -70,6 +70,12 @@ var GtfsEditor = GtfsEditor || {};
     setModel: function(model) {
       this.model = model;
       this.model.on('change', this.render, this);
+      this.model.on('destroy', this.onModelDestroy, this);
+    },
+
+    onModelDestroy: function(){
+      this.model = null;
+      this.render();
     },
 
     render: function() {
@@ -169,18 +175,7 @@ var GtfsEditor = GtfsEditor || {};
 
       this.map.addLayer(this.layerGroup);
 
-      var drawControl = new L.Control.Draw({
-        polygon: false,
-        polyline: false,
-        rectangle: false,
-        circle: false
-      });
-      this.map.addControl(drawControl);
-      this.map.on('draw:marker-created', function (evt) {
-        var latLng = evt.marker.getLatLng();
-        G.router.navigate('Stops/new/' + latLng.lat.toPrecision(6) + ',' +
-          latLng.lng.toPrecision(6), {trigger: true});
-      }, this);
+      this.map.on('click', this.onMapClick, this);
 
       // Init the layer view cache
       this.layerViews = {};
@@ -196,6 +191,25 @@ var GtfsEditor = GtfsEditor || {};
       this.collection.on('reset', this.render, this);
       this.collection.on('add', this.addLayerView, this);
       this.collection.on('remove', this.removeLayerView, this);
+    },
+    onMapClick: function(evt) {
+      var model,
+          data = {
+          'agency': this.options.agencyId,
+          'location': {
+            'lng': evt.latlng.lng.toPrecision(6),
+            'lat': evt.latlng.lat.toPrecision(6)
+          }};
+
+      model = this.collection.create(data, {
+        wait: true,
+        success: _.bind(function() {
+          G.router.navigate(this.collection.type + '/' + model.id, {trigger: true});
+        }, this),
+        error: _.bind(function() {
+          alert('Oh noes! That didn\'t work.');
+        }, this)
+      });
     },
     render: function() {
       // Clear any existing stuff on the map, and free any views in

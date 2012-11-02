@@ -3,7 +3,7 @@ var GtfsEditor = GtfsEditor || {};
 (function(G, $, ich) {
   G.Router = Backbone.Router.extend({
     routes: {
-      ':type':               'listCollection',
+      ':type':               'hideContent',
       ':type/new':           'newModel',
       ':type/new/:lat,:lng': 'newModel',
       ':type/:id':           'viewModel'
@@ -14,7 +14,7 @@ var GtfsEditor = GtfsEditor || {};
     },
 
     renderView: function(view) {
-      $content.html(view.render().el);
+      $content.show().html(view.render().el);
     },
 
     destroyNewModels: function(collection) {
@@ -25,13 +25,8 @@ var GtfsEditor = GtfsEditor || {};
       });
     },
 
-    listCollection: function(type) {
-      this.destroyNewModels(_stopsCollection);
-
-      var view = new G.TableView({
-            collection: _stopsCollection
-          });
-      this.renderView(view);
+    hideContent: function() {
+      $content.hide();
     },
 
     newModel: function(type, lat, lng) {
@@ -63,7 +58,8 @@ var GtfsEditor = GtfsEditor || {};
 
   var $content = $('.content'),
       _stopsCollection = new G.Stops(),
-      _mapView;
+      _mapView,
+      agencyId = 21;
 
   ich.grabTemplates();
 
@@ -73,6 +69,7 @@ var GtfsEditor = GtfsEditor || {};
     _mapView = new G.MapView({
       el: '#map',
       collection: _stopsCollection,
+      agencyId: agencyId,
       map: {
         options: {
           center: [39.952467541125955, -75.16360759735107],
