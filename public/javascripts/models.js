@@ -114,20 +114,30 @@ var GtfsEditor = GtfsEditor || {};
 
     validate: function(attrs) {
       jsonifyValidator(attrs, 'patternStops', this);
+
+      // Override the sequence value to match the array order
+      this.sortPatternStops();
+      _.each(this.get('patternStops'), function(ps, i) {
+        ps.stopSequence = i+1;
+      });
     },
     // name, headsign, alignment, stop_times[], shape, route_id (fk)
       // stop_id, travel_time, dwell_time
 
     addStop: function(stopTime) {
-      this.get('patternStops').push(stopTime);
+      var patternStops = this.get('patternStops').push(stopTime);
+      this.set('patternStops', patternStops);
     },
 
     addStopAt: function(stopTime, i) {
-      this.get('patternStops').splice(i, 0, stopTime);
+      var patternStops = this.get('patternStops').splice(i, 0, stopTime);
+      this.set('patternStops', patternStops);
     },
 
     removeStopAt: function(i) {
-      return this.get('patternStops').splice(i, 1)[0];
+      var patternStops = this.get('patternStops').splice(i, 1)[0];
+      this.set('patternStops', patternStops);
+      return patternStops;
     },
 
     moveStopTo: function(fromIndex, toIndex) {
