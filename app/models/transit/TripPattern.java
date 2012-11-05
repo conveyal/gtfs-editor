@@ -4,7 +4,9 @@ package models.transit;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.EnumType;
@@ -13,9 +15,13 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.OrderColumn;
 import javax.persistence.Query;
 
+import org.codehaus.jackson.annotate.JsonCreator;
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
+import org.codehaus.jackson.annotate.JsonManagedReference;
 import org.hibernate.annotations.Type;
 
 import play.Logger;
@@ -23,6 +29,7 @@ import play.db.jpa.Model;
 
 import models.gtfs.GtfsSnapshot;
 
+@JsonIgnoreProperties({"entityId", "systemMap", "persistent"})
 @Entity
 public class TripPattern extends Model {
 	
@@ -34,6 +41,10 @@ public class TripPattern extends Model {
      
     @ManyToOne
     public Route route;
+    
+    @JsonManagedReference
+    @OneToMany(cascade = CascadeType.ALL)
+    public List<TripPatternStop> patternStops;
     
     public Boolean longest;
     
@@ -47,6 +58,16 @@ public class TripPattern extends Model {
     public Integer endTime;
     
     public Integer headway;
+
+    @JsonCreator
+    public static TripPattern factory(long id) {
+      return TripPattern.findById(id);
+    }
+
+    @JsonCreator
+    public static TripPattern factory(String id) {
+      return TripPattern.findById(Long.parseLong(id));
+    }
     
     public TripPattern()
     {

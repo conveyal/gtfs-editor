@@ -20,6 +20,7 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.PrecisionModel;
 
+import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.codehaus.jackson.annotate.JsonProperty;
@@ -46,6 +47,16 @@ public class Stop extends Model {
 
     public String parentStation;
 
+    @JsonCreator
+    public static Stop factory(long id) {
+      return Stop.findById(id);
+    }
+
+    @JsonCreator
+    public static Stop factory(String id) {
+      return Stop.findById(Long.parseLong(id));
+    }
+    
     @JsonIgnore
     @Type(type = "org.hibernatespatial.GeometryUserType")
     public Point location;

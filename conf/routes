@@ -25,6 +25,13 @@ POST    /api/stop/                              Api.createStop
 PUT     /api/stop/{id}                          Api.updateStop
 DELETE  /api/stop/{id}                          Api.deleteStop
 
+GET     /api/trippattern/?                      Api.getTripPattern
+GET     /api/trippattern/{id}                   Api.getTripPattern
+POST    /api/trippattern/                       Api.createTripPattern
+PUT     /api/trippattern/{id}                   Api.updateTripPattern
+DELETE  /api/trippattern/{id}                   Api.deleteTripPattern
+
+
 # Ignore favicon requests
 GET     /favicon.ico                            404
 

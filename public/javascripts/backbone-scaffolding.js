@@ -72,5 +72,6 @@ var GtfsEditor = GtfsEditor || {};
 GtfsEditor.Scaffolding.init([
   new GtfsEditor.Agencies(),
   new GtfsEditor.Routes(),
-  new GtfsEditor.Stops()
+  new GtfsEditor.Stops(),
+  new GtfsEditor.TripPatterns()
 ]);

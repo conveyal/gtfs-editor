@@ -19,6 +19,7 @@ import models.transit.Agency;
 import models.transit.Route;
 import models.transit.RouteType;
 import models.transit.Stop;
+import models.transit.TripPattern;
 
 public class Api extends Controller {
 
@@ -272,6 +273,74 @@ public class Api extends Controller {
             badRequest();
 
         stop.delete();
+
+        ok();
+    }
+
+    // **** trip pattern controllers ****
+    public static void getTripPattern(Long id) {
+
+        try {
+            if(id != null)
+            {
+                TripPattern tripPattern = TripPattern.findById(id);
+                if(tripPattern != null)
+                    renderJSON(Api.toJson(tripPattern, false));
+                else
+                    notFound();
+            }
+            else
+                renderJSON(Api.toJson(TripPattern.all().fetch(), false));
+        } catch (Exception e) {
+            e.printStackTrace();
+            badRequest();
+        }
+    }
+
+    public static void createTripPattern() {
+        TripPattern tripPattern;
+
+        try {
+            tripPattern = mapper.readValue(params.get("body"), TripPattern.class);
+
+            tripPattern.save();
+            renderJSON(Api.toJson(tripPattern, false));
+        } catch (Exception e) {
+            e.printStackTrace();
+            badRequest();
+        }
+    }
+
+
+    public static void updateTripPattern() {
+        TripPattern tripPattern;
+
+        try {
+            tripPattern = mapper.readValue(params.get("body"), TripPattern.class);
+
+            if(tripPattern.id == null || TripPattern.findById(tripPattern.id) == null)
+                badRequest();
+
+            TripPattern updatedTripPattern = TripPattern.em().merge(tripPattern);
+            updatedTripPattern.save();
+
+            renderJSON(Api.toJson(updatedTripPattern, false));
+        } catch (Exception e) {
+            e.printStackTrace();
+            badRequest();
+        }
+    }
+
+    public static void deleteTripPattern(Long id) {
+        if(id == null)
+            badRequest();
+
+        TripPattern tripPattern = TripPattern.findById(id);
+
+        if(tripPattern == null)
+            badRequest();
+
+        tripPattern.delete();
 
         ok();
     }

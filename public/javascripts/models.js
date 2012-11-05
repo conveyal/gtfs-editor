@@ -2,6 +2,20 @@ var GtfsEditor = GtfsEditor || {};
 
 (function(G, $) {
 
+  var jsonifyValidator = function(attrs, property, model) {
+    var obj;
+    if (_.isString(attrs[property])) {
+      try {
+        obj = JSON.parse(attrs[property]);
+      } catch(e) {
+        // location was a string, but not JSON. This will break on the server.
+      }
+      if (obj) {
+        model.set(property, obj);
+      }
+    }
+  };
+
   G.Agency = Backbone.Model.extend({
     defaults: {
       id: null,
@@ -61,17 +75,7 @@ var GtfsEditor = GtfsEditor || {};
     // This function serves to allow stringified JSON as a valid input. A bit
     // hacky, but it's a great place to do it.
     validate: function(attrs) {
-      var loc;
-      if (_.isString(attrs.location)) {
-        try {
-          loc = JSON.parse(attrs.location);
-        } catch(e) {
-          // location was a string, but not JSON. This will break on the server.
-        }
-        if (loc) {
-          this.set('location', loc);
-        }
-      }
+      jsonifyValidator(attrs, 'location', this);
     }
   });
 
@@ -85,23 +89,35 @@ var GtfsEditor = GtfsEditor || {};
   //    |
   //    V
   G.TripPattern = Backbone.Model.extend({
+    defaults: {
+      id: null,
+      name: null,
+      headsign: null,
+      patternStops: [],
+      shape: null,
+      route: null
+    },
+
+    validate: function(attrs) {
+      jsonifyValidator(attrs, 'patternStops', this);
+    },
     // name, headsign, alignment, stop_times[], shape, route_id (fk)
       // stop_id, travel_time, dwell_time
 
     addStop: function(stopTime) {
-      this.get('stop_times').push(stopTime);
+      this.get('patternStops').push(stopTime);
     },
 
     addStopAt: function(stopTime, i) {
-      this.get('stop_times').splice(i, 0, stopTime);
+      this.get('patternStops').splice(i, 0, stopTime);
     },
 
     removeStopAt: function(i) {
-      return this.get('stop_times').splice(i, 1)[0];
+      return this.get('patternStops').splice(i, 1)[0];
     },
 
     moveStopTo: function(fromIndex, toIndex) {
-      var stopTimes = this.get('stop_times'),
+      var stopTimes = this.get('patternStops'),
           stopTime;
 
       stopTime = this.removeStopAt(fromIndex);
@@ -110,7 +126,9 @@ var GtfsEditor = GtfsEditor || {};
   });
 
   G.TripPatterns = Backbone.Collection.extend({
-    model: G.TripPattern
+    type: 'TripPatterns',
+    model: G.TripPattern,
+    url: '/api/trippattern/'
   });
 
   G.Calendars = Backbone.Collection.extend({
