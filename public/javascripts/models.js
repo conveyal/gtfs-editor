@@ -85,9 +85,6 @@ var GtfsEditor = GtfsEditor || {};
     url: '/api/stop/'
   });
 
-  // Untested
-  //    |
-  //    V
   G.TripPattern = Backbone.Model.extend({
     defaults: {
       id: null,
@@ -124,6 +121,7 @@ var GtfsEditor = GtfsEditor || {};
     // name, headsign, alignment, stop_times[], shape, route_id (fk)
       // stop_id, travel_time, dwell_time
 
+    // TODO: These need to be tested
     addStop: function(stopTime) {
       var patternStops = this.get('patternStops').push(stopTime);
       this.set('patternStops', patternStops);
@@ -155,8 +153,30 @@ var GtfsEditor = GtfsEditor || {};
     url: '/api/trippattern/'
   });
 
-  G.Calendars = Backbone.Collection.extend({
+  G.Calendar = Backbone.Model.extend({
+    defaults: {
+      id: null,
+      agency: null,
+      description: null,
+      gtfsServiceId: null,
+      monday: null,
+      tuesday: null,
+      wednesday: null,
+      thursday: null,
+      friday: null,
+      saturday: null,
+      sunday: null,
+      startDate: null,
+      endDate: null
+    }
     // days, start_date, end_date, exceptions[]
+  });
+
+
+  G.Calendars = Backbone.Collection.extend({
+    type: 'Calendars',
+    model: G.Calendar,
+    url: '/api/calendar/'
   });
 
   G.Trips = Backbone.Collection.extend({

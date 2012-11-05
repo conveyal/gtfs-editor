@@ -12,12 +12,14 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Query;
 
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.hibernate.annotations.Type;
 
 import play.db.jpa.Model;
 
 import models.gtfs.GtfsSnapshot;
 
+@JsonIgnoreProperties({"entityId", "persistent"})
 @Entity
 public class ServiceCalendar extends Model {
 	

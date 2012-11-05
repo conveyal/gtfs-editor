@@ -20,7 +20,7 @@ import com.vividsolutions.jts.geom.MultiLineString;
 
 import play.db.jpa.Model;
 
-@JsonIgnoreProperties({"entityId", "systemMap", "persistent"})
+@JsonIgnoreProperties({"entityId", "persistent"})
 @Entity
 public class Route extends Model {
 	

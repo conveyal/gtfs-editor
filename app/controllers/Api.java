@@ -18,6 +18,7 @@ import models.*;
 import models.transit.Agency;
 import models.transit.Route;
 import models.transit.RouteType;
+import models.transit.ServiceCalendar;
 import models.transit.Stop;
 import models.transit.TripPattern;
 
@@ -87,6 +88,10 @@ public class Api extends Controller {
 
             if(agency.id == null || Agency.findById(agency.id) == null)
                 badRequest();
+            
+            // check if gtfsAgencyId is specified, if not create from DB id
+            if(agency.gtfsAgencyId == null)
+            	agency.gtfsAgencyId = "AGENCY_" + agency.id.toString();
 
             Agency updatedAgency = Agency.em().merge(agency);
             updatedAgency.save();
@@ -344,4 +349,91 @@ public class Api extends Controller {
 
         ok();
     }
+    
+    
+    // **** calendar controllers ****
+
+    public static void getCalendar(Long id) {
+        try {
+            if(id != null) {
+            	ServiceCalendar cal = ServiceCalendar.findById(id);
+                if(cal != null)
+                    renderJSON(Api.toJson(cal, false));
+                else
+                    notFound();
+            }
+            else {
+                renderJSON(Api.toJson(ServiceCalendar.all().fetch(), false));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            badRequest();
+        }
+
+    }
+
+    public static void createCalendar() {
+    	ServiceCalendar cal;
+
+        try {
+            cal = mapper.readValue(params.get("body"), ServiceCalendar.class);
+
+            if(Agency.findById(cal.agency.id) == null)
+                badRequest();
+
+            cal.save();
+
+            // check if gtfsServiceId is specified, if not create from DB id
+            if(cal.gtfsServiceId == null) {
+            	cal.gtfsServiceId = "CAL_" + cal.id.toString();
+                cal.save();
+            }
+            
+
+            renderJSON(Api.toJson(cal, false));
+        } catch (Exception e) {
+            e.printStackTrace();
+            badRequest();
+        }
+    }
+
+
+    public static void updateCalendar() {
+    	ServiceCalendar cal;
+
+        try {
+        	cal = mapper.readValue(params.get("body"), ServiceCalendar.class);
+
+            if(cal.id == null || ServiceCalendar.findById(cal.id) == null)
+                badRequest();
+
+            // check if gtfsAgencyId is specified, if not create from DB id
+            if(cal.gtfsServiceId == null)
+            	cal.gtfsServiceId = "CAL_" + cal.id.toString();
+            
+            ServiceCalendar updatedCal = ServiceCalendar.em().merge(cal);
+            updatedCal.save();
+
+            renderJSON(Api.toJson(updatedCal, false));
+        } catch (Exception e) {
+            e.printStackTrace();
+            badRequest();
+        }
+    }
+
+    public static void deleteCalendar(Long id) {
+        if(id == null)
+            badRequest();
+
+        ServiceCalendar cal = ServiceCalendar.findById(id);
+
+        if(cal == null)
+            badRequest();
+
+        cal.delete();
+
+        ok();
+    }
+
+
 }

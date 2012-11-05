@@ -26,37 +26,37 @@ import play.db.jpa.Model;
 
 import models.gtfs.GtfsSnapshot;
 
-@JsonIgnoreProperties({"entityId", "systemMap", "persistent"})
+@JsonIgnoreProperties({"entityId", "persistent"})
 @Entity
 public class TripPatternStop extends Model {
-	
+
 	@JsonBackReference
 	@ManyToOne
     public TripPattern pattern;
-	
+
 	@ManyToOne
     public Stop stop;
-	
+
 	public Integer stopSequence;
-	
+
 	public Double defaultDistance;
-    
+
 	public Integer defaultTravelTime;
 	public Integer defaultDwellTime;
-	
-	
+
+
 	public TripPatternStop()
 	{
-		
+
 	}
-	
+
 	public TripPatternStop(TripPattern pattern, Stop stop,  Integer stopSequence, Integer defaultTravelTime)
 	{
 		this.pattern = pattern;
 		this.stop = stop;
 		this.stopSequence = stopSequence;
 		this.defaultTravelTime = defaultTravelTime;
-		
+
 		this.defaultDistance = 0.0;
 	}
 }

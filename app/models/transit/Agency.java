@@ -12,7 +12,7 @@ import org.hibernate.annotations.Type;
 
 import play.db.jpa.Model;
 
-@JsonIgnoreProperties({"entityId", "systemMap", "persistent"})
+@JsonIgnoreProperties({"entityId", "persistent"})
 @Entity
 public class Agency extends Model {
 	

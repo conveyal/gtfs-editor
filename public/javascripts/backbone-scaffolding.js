@@ -73,5 +73,6 @@ GtfsEditor.Scaffolding.init([
   new GtfsEditor.Agencies(),
   new GtfsEditor.Routes(),
   new GtfsEditor.Stops(),
-  new GtfsEditor.TripPatterns()
+  new GtfsEditor.TripPatterns(),
+  new GtfsEditor.Calendars()
 ]);
