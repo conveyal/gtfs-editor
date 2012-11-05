@@ -12,6 +12,7 @@ import javax.persistence.Query;
 import models.gis.GisRoute;
 import models.gis.GisUpload;
 
+import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.hibernate.annotations.Type;
 
@@ -47,6 +48,16 @@ public class Route extends Model {
     
     @ManyToOne
     public GisUpload gisUpload;
+
+    @JsonCreator
+    public static Route factory(long id) {
+      return Route.findById(id);
+    }
+
+    @JsonCreator
+    public static Route factory(String id) {
+      return Route.findById(Long.parseLong(id));
+    }
     
     public Route(org.onebusaway.gtfs.model.Route route,  Agency agency) {
         this.gtfsRouteId = route.getId().toString();
