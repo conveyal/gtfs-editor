@@ -11,7 +11,7 @@ var GtfsEditor = GtfsEditor || {};
         // location was a string, but not JSON. This will break on the server.
       }
       if (obj) {
-        model.set(property, obj);
+        model.set(property, obj, {silent: true});
       }
     }
   };
@@ -96,6 +96,20 @@ var GtfsEditor = GtfsEditor || {};
       patternStops: [],
       shape: null,
       route: null
+    },
+
+    initialize: function() {
+      this.on('change', this.sortPatternStops, this);
+
+      this.sortPatternStops();
+    },
+
+    sortPatternStops: function() {
+      var patternStops = _.sortBy(this.get('patternStops'), function(ps){
+        return ps.stopSequence;
+      });
+
+      this.set('patternStops', patternStops, {silent: true});
     },
 
     validate: function(attrs) {
