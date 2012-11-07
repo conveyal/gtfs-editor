@@ -124,7 +124,6 @@ var GtfsEditor = GtfsEditor || {};
     // name, headsign, alignment, stop_times[], shape, route_id (fk)
       // stop_id, travel_time, dwell_time
 
-    // TODO: These need to be tested
     addStop: function(stopTime) {
       var patternStops = this.get('patternStops');
       patternStops.push(stopTime);
