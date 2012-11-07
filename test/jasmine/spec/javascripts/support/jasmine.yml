@@ -11,7 +11,11 @@
 #   - dist/**/*.js
 #
 src_files:
-  - javascripts/views.js
+  - /cdnjs.cloudflare.com/ajax/libs/jquery/1.8.2/jquery.min.js
+  - /cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.2/underscore-min.js
+  - /cdnjs.cloudflare.com/ajax/libs/backbone.js/0.9.2/backbone-min.js
+  - /cdnjs.cloudflare.com/ajax/libs/ICanHaz.js/0.10/ICanHaz.min.js
+  - javascripts/models.js
 
 # stylesheets
 #
