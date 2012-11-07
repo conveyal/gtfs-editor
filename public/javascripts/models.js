@@ -96,7 +96,7 @@ var GtfsEditor = GtfsEditor || {};
     },
 
     initialize: function() {
-      this.on('change', this.sortPatternStops, this);
+      this.on('change', this.normalizeSequence, this);
 
       this.sortPatternStops();
     },
@@ -109,33 +109,39 @@ var GtfsEditor = GtfsEditor || {};
       this.set('patternStops', patternStops, {silent: true});
     },
 
+    normalizeSequence: function () {
+      _.each(this.get('patternStops'), function(ps, i) {
+        ps.stopSequence = i+1;
+      });
+    },
+
     validate: function(attrs) {
       jsonifyValidator(attrs, 'patternStops', this);
 
       // Override the sequence value to match the array order
       this.sortPatternStops();
-      _.each(this.get('patternStops'), function(ps, i) {
-        ps.stopSequence = i+1;
-      });
     },
     // name, headsign, alignment, stop_times[], shape, route_id (fk)
       // stop_id, travel_time, dwell_time
 
     // TODO: These need to be tested
     addStop: function(stopTime) {
-      var patternStops = this.get('patternStops').push(stopTime);
+      var patternStops = this.get('patternStops');
+      patternStops.push(stopTime);
       this.set('patternStops', patternStops);
     },
 
-    addStopAt: function(stopTime, i) {
-      var patternStops = this.get('patternStops').splice(i, 0, stopTime);
+    insertStopAt: function(stopTime, i) {
+      var patternStops = this.get('patternStops');
+      patternStops.splice(i, 0, stopTime);
       this.set('patternStops', patternStops);
     },
 
     removeStopAt: function(i) {
-      var patternStops = this.get('patternStops').splice(i, 1)[0];
+      var patternStops = this.get('patternStops'),
+          removed = patternStops.splice(i, 1)[0];
       this.set('patternStops', patternStops);
-      return patternStops;
+      return removed;
     },
 
     moveStopTo: function(fromIndex, toIndex) {
@@ -143,7 +149,7 @@ var GtfsEditor = GtfsEditor || {};
           stopTime;
 
       stopTime = this.removeStopAt(fromIndex);
-      this.addStopAt(stopTime, toIndex);
+      this.insertStopAt(stopTime, toIndex);
     }
   });
 
