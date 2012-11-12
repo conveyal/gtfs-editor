@@ -6,6 +6,8 @@
 GET     /                                       Application.index
 GET     /scaffolding/                           Application.scaffolding
 GET     /map/                                   Application.map
+GET     /route/                                 Application.route
+
 
 GET     /api/agency/?                           Api.getAgency
 GET     /api/agency/{id}                        Api.getAgency
