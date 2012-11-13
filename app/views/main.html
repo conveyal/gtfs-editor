@@ -8,9 +8,9 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <link rel="stylesheet" media="screen" href="@{'/public/javascripts/bootstrap-2.1.1/css/bootstrap.min.css'}">
+    <link rel="stylesheet" media="screen" href="@{'/public/lib/bootstrap-2.1.1/css/bootstrap.min.css'}">
     #{get 'styles' /}
-    <link rel="stylesheet" media="screen" href="@{'/public/javascripts/bootstrap-2.1.1/css/bootstrap-responsive.min.css'}">
+    <link rel="stylesheet" media="screen" href="@{'/public/lib/bootstrap-2.1.1/css/bootstrap-responsive.min.css'}">
 
     <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
     <!--[if lt IE 9]>
@@ -79,8 +79,7 @@
     <script src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.2/underscore-min.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/backbone.js/0.9.2/backbone-min.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/ICanHaz.js/0.10/ICanHaz.min.js"></script>
-    #{script 'bootstrap-2.1.1/js/bootstrap.min.js' /}
-
+    <script src="@{'/public/lib/bootstrap-2.1.1/js/bootstrap.min.js'}"></script>
     #{get 'scripts' /}
   </body>
 </html>
