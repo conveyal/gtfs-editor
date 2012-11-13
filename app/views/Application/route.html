@@ -10,6 +10,7 @@
   <script src="http://cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.min.js"></script>
   #{script 'models.js' /}
   #{script 'views.js' /}
+  #{script 'route.js' /}
 #{/set}
 
 <div id="route-header">
@@ -17,24 +18,26 @@
 
   <ul id="route-nav" class="nav nav-pills">
     <li class="active">
-      <a href="#">1</a>
+      <a href="1">1</a>
       <label class="route-nav-label">Basic Info</label>
     </li>
     <li>
-      <a href="#">2</a>
+      <a href="2">2</a>
       <label class="route-nav-label">Stops</label>
     </li>
     <li>
-      <a href="#">3</a>
+      <a href="3">3</a>
       <label class="route-nav-label">Trip Patterns</label>
     </li>
     <li>
-      <a href="#">4</a>
+      <a href="4">4</a>
       <label class="route-nav-label">Trips</label>
     </li>
     <li>
-      <a href="#">5</a>
+      <a href="5">5</a>
       <label class="route-nav-label">Review</label>
     </li>
   </ul>
 </div>
+
+<div id="route-step-content"></div>
