@@ -3,6 +3,7 @@ var GtfsEditor = GtfsEditor || {};
 (function(G, $, ich) {
   G.Router = Backbone.Router.extend({
     routes: {
+      '': 'showStep',
       ':step': 'showStep'
     },
 
@@ -15,6 +16,11 @@ var GtfsEditor = GtfsEditor || {};
     },
 
     showStep: function (step) {
+      if (!step) {
+        step = '1';
+        this.navigate(step);
+      }
+
       $('#route-step-content').html('This is step ' + step);
     }
   });
