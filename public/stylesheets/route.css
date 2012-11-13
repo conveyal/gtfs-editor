@@ -1,0 +1,63 @@
+#route-header {
+  text-align: center;
+}
+
+#route-nav {
+  position: relative;
+}
+
+#route-nav:after {
+  z-index: -1;
+  background-color: #eee;
+  height: 2px;
+
+  position: absolute;
+  top: 8px;
+  left: 18%;
+  width: 64%;
+  margin: 0;
+}
+
+#route-nav li {
+  text-align: center;
+  min-width: 15%;
+  float: none;
+  display: inline-block;
+}
+
+#route-nav li a {
+  display: inline;
+  background-color: #eee;
+  color: #777;
+  text-decoration: none;
+  text-shadow: 0 1px 0 white;
+
+  -webkit-border-radius: 15px;
+  -moz-border-radius: 15px;
+  border-radius: 15px;
+
+}
+
+#route-nav li a:hover {
+  background-color: #ddd;
+}
+
+#route-nav li.active a {
+  background-color: #08C;
+  color: #fff;
+  text-shadow: none;
+}
+
+#route-header .route-nav-label {
+  padding: 1.0em 0.5em;
+}
+
+/* Landscape phones and down */
+@media (max-width: 480px) {
+  #route-nav:after {
+    left: 10%;
+    width: 80%;
+  }
+
+}
+
