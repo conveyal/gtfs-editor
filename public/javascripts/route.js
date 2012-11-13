@@ -21,6 +21,7 @@ var GtfsEditor = GtfsEditor || {};
         this.navigate(step);
       }
 
+      $('#route-nav li').removeClass('active').find('a[href="'+step+'"]').parent().addClass('active');
       $('#route-step-content').html('This is step ' + step);
     }
   });
