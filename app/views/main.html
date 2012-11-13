@@ -59,7 +59,17 @@
       <ul class="nav nav-pills">
         <li><a href="/"><i class="icon-list-alt"></i> News &amp; Updates</a></li>
         <li><a href="/map/"><i class="icon-map-marker"></i> Explore Routes</a></li>
-        <li><a href="/route/"><i class="icon-pencil"></i> New Route</a></li>
+        <li class="dropdown">
+          <a href="/route/" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-pencil"></i> New Route</a>
+
+          <ul class="dropdown-menu" role="menu">
+            <li><a class="route-link" href="1">Basic Info</a></li>
+            <li><a class="route-link" href="2">Stops</a></li>
+            <li><a class="route-link" href="3">Trip Patterns</a></li>
+            <li><a class="route-link" href="4">Trips</a></li>
+            <li><a class="route-link" href="5">Review</a></li>
+          </ul>
+        </li>
       </ul>
 
       #{doLayout /}

@@ -9,7 +9,7 @@ var GtfsEditor = GtfsEditor || {};
 
     initialize: function () {
       var router = this;
-      $('#route-nav').on('click', 'a', function (evt) {
+      $('.route-link').on('click', function (evt) {
         evt.preventDefault();
         router.navigate($(this).attr('href'), {trigger: true});
       });
@@ -21,7 +21,8 @@ var GtfsEditor = GtfsEditor || {};
         this.navigate(step);
       }
 
-      $('#route-nav li').removeClass('active').find('a[href="'+step+'"]').parent().addClass('active');
+      $('.route-link').parent('li').removeClass('active');
+      $('.route-link[href="'+step+'"]').parent().addClass('active');
       $('#route-step-content').html('This is step ' + step);
     }
   });
