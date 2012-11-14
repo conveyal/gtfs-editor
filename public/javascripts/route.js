@@ -5,7 +5,11 @@ var GtfsEditor = GtfsEditor || {};
       _routeCollection = new G.Routes();
       _steps = ['info', 'stops', 'patterns', 'trips', 'review'],
       _views = {
-        'info': G.RouteInfoView
+        'info': G.RouteInfoView,
+        'stops': Backbone.View,
+        'patterns': Backbone.View,
+        'trips': Backbone.View,
+        'review': Backbone.View
       };
 
   G.Router = Backbone.Router.extend({
