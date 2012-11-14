@@ -1,46 +1,75 @@
 var GtfsEditor = GtfsEditor || {};
 
 (function(G, $, ich) {
-  var router;
+  var _$content = $('#route-step-content'),
+      _routeCollection = new G.Routes();
+      _steps = ['info', 'stops', 'patterns', 'trips', 'review'],
+      _views = {
+        'info': G.RouteInfoView
+      };
 
   G.Router = Backbone.Router.extend({
     routes: {
-      '': 'setStep',
-      ':step': 'setStep'
+      '': 'root'
     },
 
     initialize: function () {
-      var router = this;
+      var stepRegex      = new RegExp('^('+_steps.join('|')+')\/?$');
+          modelStepRegex = new RegExp('^([^\/]+)?\/('+_steps.join('|')+')?\/?$');
+
+      this.route(stepRegex, 'setStep');
+      this.route(modelStepRegex, 'setModelStep');
+
       $('.route-link').on('click', function (evt) {
         evt.preventDefault();
-        router.navigate($(this).attr('data-route-step'), {trigger: true});
+        _router.navigate($(this).attr('data-route-step'), {trigger: true});
       });
     },
 
+    test: function () {
+      console.log(arguments);
+    },
+
+    root: function() {
+      this.navigate(_steps[0], {trigger: true});
+    },
+
     setStep: function (step) {
-      if (!step) {
-        step = '1';
-        this.navigate(step);
+      this.setModelStep(null, step);
+    },
+
+    setModelStep: function(id, step){
+      var view,
+          model = id ? _routeCollection.get(parseInt(id, 10)) :
+                  new _routeCollection.model();
+
+      if (model) {
+        view = new _views[step]({
+          model: model
+        });
+
+        // Update the active step classes
+        $('.route-link').parent('li').removeClass('active');
+        $('.route-link[data-route-step="'+step+'"]').parent().addClass('active');
+
+        this.showView(view);
+      } else {
+        this.root();
       }
-
-      $('.route-link').parent('li').removeClass('active');
-      $('.route-link[data-route-step="'+step+'"]').parent().addClass('active');
-
-      this.showView(step);
     },
 
     showView: function (view) {
-      $('#route-step-content').html('This is step ' + view);
+      _$content.html(view.render().el);
     }
   });
 
-
-
-
-
-  $(function(){
-    router = new G.Router();
-    Backbone.history.start({pushState: true, root: '/route/'});
+  _router = new G.Router();
+  // Populate the route collection
+  _routeCollection.fetch({
+    success: function(collection, response, options) {
+      $(function(){
+        Backbone.history.start({pushState: true, root: '/route/'});
+      });
+    }
   });
-
 })(GtfsEditor, jQuery, ich);

@@ -9,31 +9,111 @@
 #{set 'scripts'}
   <script src="http://cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.min.js"></script>
   #{script 'models.js' /}
+  #{script 'views/route-info-view.js' /}
   #{script 'route.js' /}
 #{/set}
+
+<script id="route-info-tpl" type="text/html">
+
+<form class="form-horizontal">
+  <div class="control-group">
+    <label class="control-label" for="routeShortName">Short Name</label>
+    <div class="controls">
+      <input type="text" id="routeShortName" class="input-xlarge">
+    </div>
+  </div>
+
+  <div class="control-group">
+    <label class="control-label" for="routeLongName">Long Name</label>
+    <div class="controls">
+      <input type="text" id="routeLongName" class="input-xlarge">
+    </div>
+  </div>
+
+  <div class="control-group">
+    <label class="control-label" for="routeType">Type</label>
+    <div class="controls">
+      <select id="routeType" class="input-xlarge" required>
+        <option value=""></option>
+        <option value="TRAM">Tram</option>
+        <option value="SUBWAY">Subway</option>
+        <option value="RAIL">Rail</option>
+        <option value="BUS">Bus</option>
+        <option value="FERRY">Ferry</option>
+        <option value="CABLECAR">Cable Car</option>
+        <option value="GONDOLA">Gondola</option>
+        <option value="FUNICULAR">Funicular</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="control-group">
+    <label class="control-label" for="routeDesc">Description</label>
+    <div class="controls">
+      <textarea id="routeDesc" class="input-xlarge"></textarea>
+    </div>
+  </div>
+
+  <div class="control-group">
+    <label class="control-label" for="routeUrl">URL</label>
+    <div class="controls">
+      <input type="text" id="routeUrl" class="input-small">
+    </div>
+  </div>
+
+  <div class="control-group">
+    <label class="control-label" for="routeColor">Color</label>
+    <div class="controls">
+      <input type="text" id="routeColor" class="input-small">
+    </div>
+  </div>
+
+  <div class="control-group">
+    <label class="control-label" for="routeTextColor">Text Color</label>
+    <div class="controls">
+      <input type="text" id="routeTextColor" class="input-small">
+    </div>
+  </div>
+
+  <div class="control-group">
+    <label class="control-label" for="routeHasAircon">Air Conditioned?</label>
+    <div class="controls">
+      <label class="checkbox" for="routeHasAircon">
+        <input id="routeHasAircon" type="checkbox"> With Aircon
+      </label>
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <button type="submit" class="btn btn-primary">Save changes</button>
+    <button type="button" class="btn">Cancel</button>
+  </div>
+</form>
+
+</script>
 
 <div id="route-header">
   <h3>Steps to Add a New Route</h3>
 
   <ul id="route-nav" class="nav nav-pills">
     <li>
-      <a class="route-link" data-route-step="1" href="/route/1">1</a>
+      <a class="route-link" data-route-step="info" href="/route/info">1</a>
       <label class="route-nav-label">Basic Info</label>
     </li>
     <li>
-      <a class="route-link" data-route-step="2" href="/route/2">2</a>
+      <a class="route-link" data-route-step="stops" href="/route/stops">2</a>
       <label class="route-nav-label">Stops</label>
     </li>
     <li>
-      <a class="route-link" data-route-step="3" href="/route/3">3</a>
+      <a class="route-link" data-route-step="patterns" href="/route/patterns">3</a>
       <label class="route-nav-label">Trip Patterns</label>
     </li>
     <li>
-      <a class="route-link" data-route-step="4" href="/route/4">4</a>
+      <a class="route-link" data-route-step="trips" href="/route/trips">4</a>
       <label class="route-nav-label">Trips</label>
     </li>
     <li>
-      <a class="route-link" data-route-step="5" href="/route/5">5</a>
+      <a class="route-link" data-route-step="review" href="/route/review">5</a>
       <label class="route-nav-label">Review</label>
     </li>
   </ul>

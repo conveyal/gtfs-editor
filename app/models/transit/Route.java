@@ -23,29 +23,29 @@ import play.db.jpa.Model;
 @JsonIgnoreProperties({"entityId", "persistent"})
 @Entity
 public class Route extends Model {
-	
+
 	public String gtfsRouteId;
     public String routeShortName;
     public String routeLongName;
     public String routeDesc;
-    
+
     @Enumerated(EnumType.STRING)
     public RouteType routeType;
-    
+
     public String routeUrl;
     public String routeColor;
     public String routeTextColor;
-   
+
     public Boolean weekday;
     public Boolean saturday;
     public Boolean sunday;
-    
+
     @ManyToOne
     public Agency agency;
-    
+
     @ManyToOne
     public GisRoute gisRoute;
-    
+
     @ManyToOne
     public GisUpload gisUpload;
 
@@ -58,7 +58,7 @@ public class Route extends Model {
     public static Route factory(String id) {
       return Route.findById(Long.parseLong(id));
     }
-    
+
     public Route(org.onebusaway.gtfs.model.Route route,  Agency agency) {
         this.gtfsRouteId = route.getId().toString();
         this.routeShortName = route.getShortName();
@@ -67,20 +67,20 @@ public class Route extends Model {
         this.routeType = mapGtfsRouteType(route.getType());
         this.routeUrl = route.getUrl();
         this.routeColor = route.getColor();
-        
+
         this.agency = agency;
-    } 
-    
-    
+    }
+
+
     public Route(String routeShortName, String routeLongName, RouteType routeType, String routeDescription,  Agency agency) {
         this.routeShortName = routeShortName;
         this.routeLongName = routeLongName;
         this.routeType = routeType;
         this.routeDesc = routeDescription;
-        
+
         this.agency = agency;
     }
-    
+
     public static RouteType mapGtfsRouteType(Integer routeType)
     {
     	switch(routeType)
@@ -103,10 +103,10 @@ public class Route extends Model {
     			return RouteType.FUNICULAR;
     		default:
     			return null;
-    			
+
     	}
     }
-    
+
     public static Integer mapGtfsRouteType(RouteType routeType)
     {
     	switch(routeType)
@@ -129,15 +129,15 @@ public class Route extends Model {
     			return 7;
     		default:
     			return null;
-    			
+
     	}
     }
-    
+
     public static BigInteger nativeInsert(EntityManager em, org.onebusaway.gtfs.model.Route gtfsRoute, BigInteger agencyId)
     {
     	Query idQuery = em().createNativeQuery("SELECT NEXTVAL('hibernate_sequence');");
     	BigInteger nextId = (BigInteger)idQuery.getSingleResult();
-    	
+
         em.createNativeQuery("INSERT INTO route (id, routecolor, routedesc, gtfsrouteid, routelongname, routeshortname, routetextcolor, routetype, routeurl, agency_id)" +
         	"  VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?);")
           .setParameter(1,  nextId)
@@ -151,7 +151,7 @@ public class Route extends Model {
           .setParameter(9,  gtfsRoute.getUrl())
           .setParameter(10, agencyId)
           .executeUpdate();
-        
+
         return nextId;
     }
 

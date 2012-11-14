@@ -45,9 +45,6 @@ var GtfsEditor = GtfsEditor || {};
       routeUrl: null,
       routeColor: null,
       routeTextColor: null,
-      weekday: null,
-      saturday: null,
-      sunday: null,
       agency: null
     }
   });
