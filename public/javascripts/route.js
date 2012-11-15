@@ -78,14 +78,16 @@ var GtfsEditor = GtfsEditor || {};
 
   _router = new G.Router();
 
-  G.init = function(agencyId) {
-    _agencyId = agencyId;
+  G.RoutePage = {
+    init: function(agencyId) {
+      _agencyId = agencyId;
 
-    // Populate the route collection
-    _routeCollection.fetch({
-      success: function(collection, response, options) {
-        Backbone.history.start({pushState: true, root: '/route/'});
-      }
-    });
+      // Populate the route collection
+      _routeCollection.fetch({
+        success: function(collection, response, options) {
+          Backbone.history.start({pushState: true, root: '/route/'});
+        }
+      });
+    }
   };
 })(GtfsEditor, jQuery, ich);
