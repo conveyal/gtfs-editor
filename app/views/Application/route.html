@@ -6,17 +6,11 @@
   #{stylesheet 'route.css' /}
 #{/set}
 
-#{set 'scripts'}
-  <script src="http://cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.min.js"></script>
-  <script src="@{'/public/lib/jquery.serializeObject.min.js'}"></script>
-  #{script 'models.js' /}
-  #{script 'views/route-info-view.js' /}
-  #{script 'route.js' /}
-#{/set}
-
 <script id="route-info-tpl" type="text/html">
 
 <form class="form-horizontal">
+  <input type="hidden" name="agency" id="agency" value="{{agency}}">
+
   <div class="control-group">
     <label class="control-label" for="routeShortName">Short Name</label>
     <div class="controls">
@@ -122,3 +116,19 @@
 </div>
 
 <div id="route-step-content"></div>
+
+
+#{set 'scripts'}
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.min.js"></script>
+  <script src="@{'/public/lib/jquery.serializeObject.min.js'}"></script>
+  #{script 'models.js' /}
+  #{script 'views/route-info-view.js' /}
+  #{script 'route.js' /}
+
+  <script type="text/javascript">
+    $(function(){
+      // This will be smarter, obviously.
+      GtfsEditor.init(21);
+    });
+  </script>
+#{/set}

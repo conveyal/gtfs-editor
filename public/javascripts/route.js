@@ -8,7 +8,9 @@ var GtfsEditor = GtfsEditor || {};
       _views = {
         'info': function(model) {
           return new G.RouteInfoView({
+            collection: _routeCollection,
             model: model,
+            agencyId: _agencyId,
             onSave: function(model) {
               _router.navigate(model.id + '/stops', {trigger: true});
             },
@@ -54,21 +56,19 @@ var GtfsEditor = GtfsEditor || {};
     },
 
     setStepWithModel: function(id, step){
-      var view,
-          model = id ? _routeCollection.get(parseInt(id, 10)) :
-                  new _routeCollection.model();
+      var view, model;
 
-      if (model) {
-        // Update the active step classes
-        $('.route-link').parent('li').removeClass('active');
-        $('.route-link[data-route-step="'+step+'"]').parent().addClass('active');
-
-        view = _views[step](model);
-
-        this.showView(view);
-      } else {
-        this.root();
+      if (id) {
+        model = _routeCollection.get(parseInt(id, 10));
       }
+
+      // Update the active step classes
+      $('.route-link').parent('li').removeClass('active');
+      $('.route-link[data-route-step="'+step+'"]').parent().addClass('active');
+
+      view = _views[step](model);
+
+      this.showView(view);
     },
 
     showView: function (view) {
@@ -77,12 +77,15 @@ var GtfsEditor = GtfsEditor || {};
   });
 
   _router = new G.Router();
-  // Populate the route collection
-  _routeCollection.fetch({
-    success: function(collection, response, options) {
-      $(function(){
+
+  G.init = function(agencyId) {
+    _agencyId = agencyId;
+
+    // Populate the route collection
+    _routeCollection.fetch({
+      success: function(collection, response, options) {
         Backbone.history.start({pushState: true, root: '/route/'});
-      });
-    }
-  });
+      }
+    });
+  };
 })(GtfsEditor, jQuery, ich);
