@@ -31,18 +31,17 @@ var GtfsEditor = GtfsEditor || {};
     },
 
     initialize: function () {
-      var stepRegex      = new RegExp('^(info)\/?$');
-          modelStepRegex = new RegExp('^([^\/]+)?\/('+_steps.join('|')+')?\/?$');
-
+      var stepRegex = new RegExp('^([^\/]+)?\/?('+_steps.join('|')+')?\/?$');
       this.route(stepRegex, 'setStep');
-      this.route(modelStepRegex, 'setStepWithModel');
 
       $('.route-link').on('click', function (evt) {
         evt.preventDefault();
+        var href;
 
         // Only trigger if not disabled. TODO: make this smarter
         if ($(this).parent('li').hasClass('disabled') === false) {
-          _router.navigate($(this).attr('data-route-step'), {trigger: true});
+          href = $(this).get(0).getAttribute('href').split(Backbone.history.options.root)[1];
+          _router.navigate(href, {trigger: true});
         }
       });
     },
@@ -55,25 +54,36 @@ var GtfsEditor = GtfsEditor || {};
       this.navigate(_steps[0], {trigger: true});
     },
 
-    setStep: function (step) {
-      this.setStepWithModel(null, step);
-    },
-
-    setStepWithModel: function(id, step){
+    setStep: function(id, step){
       var model;
+
+      if (!step) {
+        step = id;
+        id = null;
+      }
 
       if (id) {
         model = _routeCollection.get(parseInt(id, 10));
 
         if (model) {
+          $('.route-link').each(function(i, el) {
+            $(el).attr('href', '/route/' + id + '/' +$(el).attr('data-route-step'));
+          });
+
           this.enableDependentSteps();
           this.showStep(step, model);
         }
       } else {
         this.disableDependentSteps();
 
-        if (step === 'info') {
+        $('.route-link').each(function(i, el) {
+          $(el).attr('href', '/route/' + $(el).attr('data-route-step'));
+        });
+
+        if (step === _steps[0]) {
           this.showStep(step, model);
+        } else {
+          this.root();
         }
       }
     },
@@ -96,6 +106,7 @@ var GtfsEditor = GtfsEditor || {};
       $('.route-link:not([data-route-step="info"])').parent('li').addClass('disabled');
     }
   });
+
 
   _router = new G.Router();
 
