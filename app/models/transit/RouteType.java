@@ -6,6 +6,7 @@ public enum RouteType {
 	RAIL, 
 	BUS, 
 	FERRY,
+	JEEPNEY,
 	CABLECAR,
 	GONDOLA,
 	FUNICULAR;

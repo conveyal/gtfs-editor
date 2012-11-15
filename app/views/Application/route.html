@@ -8,6 +8,7 @@
 
 #{set 'scripts'}
   <script src="http://cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.min.js"></script>
+  <script src="@{'/public/lib/jquery.serializeObject.min.js'}"></script>
   #{script 'models.js' /}
   #{script 'views/route-info-view.js' /}
   #{script 'route.js' /}
@@ -19,27 +20,28 @@
   <div class="control-group">
     <label class="control-label" for="routeShortName">Short Name</label>
     <div class="controls">
-      <input type="text" id="routeShortName" class="input-xlarge">
+      <input type="text" name="routeShortName" id="routeShortName" class="input-xlarge" value="{{routeShortName}}">
     </div>
   </div>
 
   <div class="control-group">
     <label class="control-label" for="routeLongName">Long Name</label>
     <div class="controls">
-      <input type="text" id="routeLongName" class="input-xlarge">
+      <input type="text" name="routeLongName" id="routeLongName" class="input-xlarge" value="{{routeLongName}}">
     </div>
   </div>
 
   <div class="control-group">
     <label class="control-label" for="routeType">Type</label>
     <div class="controls">
-      <select id="routeType" class="input-xlarge" required>
+      <select name="routeType" id="routeType" class="input-xlarge" required>
         <option value=""></option>
         <option value="TRAM">Tram</option>
         <option value="SUBWAY">Subway</option>
         <option value="RAIL">Rail</option>
         <option value="BUS">Bus</option>
         <option value="FERRY">Ferry</option>
+        <option value="JEEPNEY">Jeepney</option>
         <option value="CABLECAR">Cable Car</option>
         <option value="GONDOLA">Gondola</option>
         <option value="FUNICULAR">Funicular</option>
@@ -50,43 +52,43 @@
   <div class="control-group">
     <label class="control-label" for="routeDesc">Description</label>
     <div class="controls">
-      <textarea id="routeDesc" class="input-xlarge"></textarea>
+      <textarea name="routeDesc" id="routeDesc" class="input-xlarge">{{routeDesc}}</textarea>
     </div>
   </div>
 
   <div class="control-group">
     <label class="control-label" for="routeUrl">URL</label>
     <div class="controls">
-      <input type="text" id="routeUrl" class="input-small">
+      <input type="text" name="routeUrl" id="routeUrl" class="input-xlarge" value="{{routeUrl}}">
     </div>
   </div>
 
   <div class="control-group">
     <label class="control-label" for="routeColor">Color</label>
     <div class="controls">
-      <input type="text" id="routeColor" class="input-small">
+      <input type="text" name="routeColor" id="routeColor" class="input-small" value="{{routeColor}}">
     </div>
   </div>
 
   <div class="control-group">
     <label class="control-label" for="routeTextColor">Text Color</label>
     <div class="controls">
-      <input type="text" id="routeTextColor" class="input-small">
+      <input type="text" name="routeTextColor" id="routeTextColor" class="input-small" value="{{routeTextColor}}">
     </div>
   </div>
 
   <div class="control-group">
-    <label class="control-label" for="routeHasAircon">Air Conditioned?</label>
+    <label class="control-label" for="airCon">Air Conditioned?</label>
     <div class="controls">
-      <label class="checkbox" for="routeHasAircon">
-        <input id="routeHasAircon" type="checkbox"> With Aircon
+      <label class="checkbox" for="airCon">
+        <input name="airCon" id="airCon" type="checkbox" value="true" {{#airCon}}checked{{/airCon}}> With Aircon
       </label>
     </div>
   </div>
 
   <div class="form-actions">
-    <button type="submit" class="btn btn-primary">Save changes</button>
-    <button type="button" class="btn">Cancel</button>
+    <button type="submit" class="btn btn-primary" id="route-save-btn">Save changes</button>
+    <button type="button" class="btn" id="route-cancel-btn">Cancel</button>
   </div>
 </form>
 

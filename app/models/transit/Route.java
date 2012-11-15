@@ -35,6 +35,9 @@ public class Route extends Model {
     public String routeUrl;
     public String routeColor;
     public String routeTextColor;
+    
+    // Custom Fields
+    public Boolean airCon;
 
     public Boolean weekday;
     public Boolean saturday;

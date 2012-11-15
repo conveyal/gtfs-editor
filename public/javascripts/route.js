@@ -2,14 +2,25 @@ var GtfsEditor = GtfsEditor || {};
 
 (function(G, $, ich) {
   var _$content = $('#route-step-content'),
-      _routeCollection = new G.Routes();
+      _routeCollection = new G.Routes(),
+      _router,
       _steps = ['info', 'stops', 'patterns', 'trips', 'review'],
       _views = {
-        'info': G.RouteInfoView,
-        'stops': Backbone.View,
-        'patterns': Backbone.View,
-        'trips': Backbone.View,
-        'review': Backbone.View
+        'info': function(model) {
+          return new G.RouteInfoView({
+            model: model,
+            onSave: function(model) {
+              _router.navigate(model.id + '/stops', {trigger: true});
+            },
+            onCancel: function() {
+              console.log('cancel');
+            }
+          });
+        },
+        'stops': function() { return new Backbone.View(); },
+        'patterns': function() { return new Backbone.View(); },
+        'trips': function() { return new Backbone.View(); },
+        'review': function() { return new Backbone.View(); }
       };
 
   G.Router = Backbone.Router.extend({
@@ -22,7 +33,7 @@ var GtfsEditor = GtfsEditor || {};
           modelStepRegex = new RegExp('^([^\/]+)?\/('+_steps.join('|')+')?\/?$');
 
       this.route(stepRegex, 'setStep');
-      this.route(modelStepRegex, 'setModelStep');
+      this.route(modelStepRegex, 'setStepWithModel');
 
       $('.route-link').on('click', function (evt) {
         evt.preventDefault();
@@ -39,22 +50,20 @@ var GtfsEditor = GtfsEditor || {};
     },
 
     setStep: function (step) {
-      this.setModelStep(null, step);
+      this.setStepWithModel(null, step);
     },
 
-    setModelStep: function(id, step){
+    setStepWithModel: function(id, step){
       var view,
           model = id ? _routeCollection.get(parseInt(id, 10)) :
                   new _routeCollection.model();
 
       if (model) {
-        view = new _views[step]({
-          model: model
-        });
-
         // Update the active step classes
         $('.route-link').parent('li').removeClass('active');
         $('.route-link[data-route-step="'+step+'"]').parent().addClass('active');
+
+        view = _views[step](model);
 
         this.showView(view);
       } else {
