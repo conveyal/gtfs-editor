@@ -31,7 +31,7 @@ var GtfsEditor = GtfsEditor || {};
     },
 
     initialize: function () {
-      var stepRegex      = new RegExp('^('+_steps.join('|')+')\/?$');
+      var stepRegex      = new RegExp('^(info)\/?$');
           modelStepRegex = new RegExp('^([^\/]+)?\/('+_steps.join('|')+')?\/?$');
 
       this.route(stepRegex, 'setStep');
@@ -60,23 +60,40 @@ var GtfsEditor = GtfsEditor || {};
     },
 
     setStepWithModel: function(id, step){
-      var view, model;
+      var model;
 
       if (id) {
         model = _routeCollection.get(parseInt(id, 10));
+
+        if (model) {
+          this.enableDependentSteps();
+          this.showStep(step, model);
+        }
+      } else {
+        this.disableDependentSteps();
+
+        if (step === 'info') {
+          this.showStep(step, model);
+        }
       }
-
-      // Update the active step classes
-      $('.route-link').parent('li').removeClass('active');
-      $('.route-link[data-route-step="'+step+'"]').parent().addClass('active');
-
-      view = _views[step](model);
-
-      this.showView(view);
     },
 
-    showView: function (view) {
+    showStep: function (step, model) {
+      var view = _views[step](model);
+
+      // Update the active step classes
+      $('#route-nav li').removeClass('active');
+      $('.route-link[data-route-step="'+step+'"]').parent('li').addClass('active');
+
       _$content.html(view.render().el);
+    },
+
+    enableDependentSteps: function() {
+      $('#route-nav li').removeClass('disabled');
+    },
+
+    disableDependentSteps: function() {
+      $('.route-link:not([data-route-step="info"])').parent('li').addClass('disabled');
     }
   });
 
