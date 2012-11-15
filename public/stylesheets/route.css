@@ -27,7 +27,7 @@
 
 #route-nav li a {
   display: inline;
-  background-color: #eee;
+  background-color: #ddd;
   color: #777;
   text-decoration: none;
   text-shadow: 0 1px 0 white;
@@ -35,11 +35,6 @@
   -webkit-border-radius: 15px;
   -moz-border-radius: 15px;
   border-radius: 15px;
-
-}
-
-#route-nav li a:hover {
-  background-color: #ddd;
 }
 
 #route-nav li.active a {
@@ -48,9 +43,33 @@
   text-shadow: none;
 }
 
+#route-nav li a:hover {
+  background-color: #ccc;
+}
+
 #route-header .route-nav-label {
   padding: 1.0em 0.5em;
 }
+
+
+#route-nav li.disabled a {
+
+  background-color: #efefef;
+  color: #ccc;
+  text-shadow: none;
+}
+
+#route-nav li.disabled a:hover {
+  cursor: default;
+  background-color: #efefef;
+}
+
+#route-header li.disabled .route-nav-label {
+  color: #ccc;
+}
+
+
+
 
 /* Landscape phones and down */
 @media (max-width: 480px) {

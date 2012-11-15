@@ -39,7 +39,11 @@ var GtfsEditor = GtfsEditor || {};
 
       $('.route-link').on('click', function (evt) {
         evt.preventDefault();
-        _router.navigate($(this).attr('data-route-step'), {trigger: true});
+
+        // Only trigger if not disabled. TODO: make this smarter
+        if ($(this).parent('li').hasClass('disabled') === false) {
+          _router.navigate($(this).attr('data-route-step'), {trigger: true});
+        }
       });
     },
 
