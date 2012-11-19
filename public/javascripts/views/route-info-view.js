@@ -3,7 +3,7 @@ var GtfsEditor = GtfsEditor || {};
 (function(G, $, ich) {
   G.RouteInfoView = Backbone.View.extend({
     events: {
-      'click #route-save-btn': 'save',
+      'submit form': 'save',
       'click #route-cancel-btn': 'cancel'
     },
 

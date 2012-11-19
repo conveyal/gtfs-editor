@@ -14,21 +14,21 @@
   <div class="control-group">
     <label class="control-label" for="routeShortName"><strong>Short Name</strong><br>(required)</label>
     <div class="controls">
-      <input type="text" name="routeShortName" id="routeShortName" class="input-xxlarge" value="{{routeShortName}}" title="Short Name" data-content="The route_short_name contains the short name of a route. This will often be a short, abstract identifier like &quot;32&quot;, &quot;100X&quot;, or &quot;Green&quot; that riders use to identify a route, but which doesn't give any indication of what places the route serves.">
+      <input required type="text" name="routeShortName" id="routeShortName" class="input-xxlarge" value="{{routeShortName}}" title="Short Name" data-content="The route_short_name contains the short name of a route. This will often be a short, abstract identifier like &quot;32&quot;, &quot;100X&quot;, or &quot;Green&quot; that riders use to identify a route, but which doesn't give any indication of what places the route serves.">
     </div>
   </div>
 
   <div class="control-group">
     <label class="control-label" for="routeLongName"><strong>Long Name</strong><br>(required)</label>
     <div class="controls">
-      <input type="text" name="routeLongName" id="routeLongName" class="input-xxlarge" value="{{routeLongName}}" title="Long Name" data-content="The route_long_name contains the full name of a route. This name is generally more descriptive than the route_short_name and will often include the route's destination or stop. If the route does not have a long name, please specify a route_short_name and use an empty string as the value for this field.">
+      <input required type="text" name="routeLongName" id="routeLongName" class="input-xxlarge" value="{{routeLongName}}" title="Long Name" data-content="The route_long_name contains the full name of a route. This name is generally more descriptive than the route_short_name and will often include the route's destination or stop. If the route does not have a long name, please specify a route_short_name and use an empty string as the value for this field.">
     </div>
   </div>
 
   <div class="control-group">
     <label class="control-label" for="routeType"><strong>Type</strong><br>(required)</label>
     <div class="controls">
-      <select name="routeType" id="routeType" class="input-xlarge" required title="Type" data-content="The route_type field describes the type of transportation used on a route.">
+      <select required name="routeType" id="routeType" class="input-xlarge" title="Type" data-content="The route_type field describes the type of transportation used on a route.">
         <option value=""></option>
         <option value="TRAM">Tram</option>
         <option value="SUBWAY">Subway</option>
