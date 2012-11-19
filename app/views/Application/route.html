@@ -12,23 +12,23 @@
   <input type="hidden" name="agency" id="agency" value="{{agency}}">
 
   <div class="control-group">
-    <label class="control-label" for="routeShortName">Short Name</label>
+    <label class="control-label" for="routeShortName"><strong>Short Name</strong><br>(required)</label>
     <div class="controls">
-      <input type="text" name="routeShortName" id="routeShortName" class="input-xlarge" value="{{routeShortName}}">
+      <input type="text" name="routeShortName" id="routeShortName" class="input-xxlarge" value="{{routeShortName}}" title="Short Name" data-content="The route_short_name contains the short name of a route. This will often be a short, abstract identifier like &quot;32&quot;, &quot;100X&quot;, or &quot;Green&quot; that riders use to identify a route, but which doesn't give any indication of what places the route serves.">
     </div>
   </div>
 
   <div class="control-group">
-    <label class="control-label" for="routeLongName">Long Name</label>
+    <label class="control-label" for="routeLongName"><strong>Long Name</strong><br>(required)</label>
     <div class="controls">
-      <input type="text" name="routeLongName" id="routeLongName" class="input-xlarge" value="{{routeLongName}}">
+      <input type="text" name="routeLongName" id="routeLongName" class="input-xxlarge" value="{{routeLongName}}" title="Long Name" data-content="The route_long_name contains the full name of a route. This name is generally more descriptive than the route_short_name and will often include the route's destination or stop. If the route does not have a long name, please specify a route_short_name and use an empty string as the value for this field.">
     </div>
   </div>
 
   <div class="control-group">
-    <label class="control-label" for="routeType">Type</label>
+    <label class="control-label" for="routeType"><strong>Type</strong><br>(required)</label>
     <div class="controls">
-      <select name="routeType" id="routeType" class="input-xlarge" required>
+      <select name="routeType" id="routeType" class="input-xlarge" required title="Type" data-content="The route_type field describes the type of transportation used on a route.">
         <option value=""></option>
         <option value="TRAM">Tram</option>
         <option value="SUBWAY">Subway</option>
@@ -46,28 +46,28 @@
   <div class="control-group">
     <label class="control-label" for="routeDesc">Description</label>
     <div class="controls">
-      <textarea name="routeDesc" id="routeDesc" class="input-xlarge">{{routeDesc}}</textarea>
+      <textarea name="routeDesc" id="routeDesc" class="input-xlarge" title="Description" data-content="The route_desc field contains a description of a route. Please provide useful, quality information. Do not simply duplicate the name of the route.">{{routeDesc}}</textarea>
     </div>
   </div>
 
   <div class="control-group">
     <label class="control-label" for="routeUrl">URL</label>
     <div class="controls">
-      <input type="text" name="routeUrl" id="routeUrl" class="input-xlarge" value="{{routeUrl}}">
+      <input type="text" name="routeUrl" id="routeUrl" class="input-xlarge" value="{{routeUrl}}" title="URL" data-content="The route_url field contains the URL of a web page about that particular route. This should be different from the agency_url. The value must be a fully qualified URL that includes http:// or https://, and any special characters in the URL must be correctly escaped.">
     </div>
   </div>
 
   <div class="control-group">
     <label class="control-label" for="routeColor">Color</label>
     <div class="controls">
-      <input type="text" name="routeColor" id="routeColor" class="input-small" value="{{routeColor}}">
+      <input type="text" name="routeColor" id="routeColor" class="input-small" value="{{routeColor}}" title="Color" data-content="In systems that have colors assigned to routes, the route_color field defines a color that corresponds to a route. The color must be provided as a six-character hexadecimal number, for example, 00FFFF. If no color is specified, the default route color is white (FFFFFF).">
     </div>
   </div>
 
   <div class="control-group">
     <label class="control-label" for="routeTextColor">Text Color</label>
     <div class="controls">
-      <input type="text" name="routeTextColor" id="routeTextColor" class="input-small" value="{{routeTextColor}}">
+      <input type="text" name="routeTextColor" id="routeTextColor" class="input-small" value="{{routeTextColor}}" title="Text Color" data-content="The route_text_color field can be used to specify a legible color to use for text drawn against a background of route_color. The color must be provided as a six-character hexadecimal number, for example, FFD700. If no color is specified, the default text color is black (000000).">
     </div>
   </div>
 

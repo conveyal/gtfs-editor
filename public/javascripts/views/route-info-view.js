@@ -41,6 +41,12 @@ var GtfsEditor = GtfsEditor || {};
         .attr('selected', true);
 
       this.$el.html($tpl);
+
+      this.$('input, select, textarea').popover({
+        placement: 'right',
+        trigger: 'focus'
+      });
+
       return this;
     },
 
