@@ -72,7 +72,9 @@
   color: #ccc;
 }
 
-
+#map {
+  height:400px;
+}
 
 
 /* Landscape phones and down */

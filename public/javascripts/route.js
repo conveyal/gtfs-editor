@@ -1,13 +1,13 @@
 var GtfsEditor = GtfsEditor || {};
 
 (function(G, $, ich) {
-  var _$content = $('#route-step-content'),
-      _routeCollection = new G.Routes(),
+  var _routeCollection = new G.Routes(),
       _router,
       _steps = ['info', 'stops', 'patterns', 'trips', 'review'],
       _views = {
         'info': function(model) {
           return new G.RouteInfoView({
+            el: '#route-step-content',
             collection: _routeCollection,
             model: model,
             agencyId: _agencyId,
@@ -19,7 +19,14 @@ var GtfsEditor = GtfsEditor || {};
             }
           });
         },
-        'stops': function() { return new Backbone.View(); },
+        'stops': function(model) {
+          return new G.RouteStopsView({
+            el: '#route-step-content',
+            collection: _routeCollection,
+            model: model,
+            agencyId: _agencyId
+          });
+        },
         'patterns': function() { return new Backbone.View(); },
         'trips': function() { return new Backbone.View(); },
         'review': function() { return new Backbone.View(); }
@@ -88,6 +95,8 @@ var GtfsEditor = GtfsEditor || {};
       }
     },
 
+    // Since $content is always the target, why not just pass it in and let
+    // the view worry about rendering? Would make the map part easier.
     showStep: function (step, model) {
       var view = _views[step](model);
 
@@ -95,7 +104,7 @@ var GtfsEditor = GtfsEditor || {};
       $('#route-nav li').removeClass('active');
       $('.route-link[data-route-step="'+step+'"]').parent('li').addClass('active');
 
-      _$content.html(view.render().el);
+      view.render();
     },
 
     enableDependentSteps: function() {

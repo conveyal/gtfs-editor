@@ -2,13 +2,18 @@
 #{set title:'Routes' /}
 
 #{set 'styles'}
+  <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.4.5/leaflet.css" />
+  <!--[if lte IE 8]>
+      <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.4.5/leaflet.ie.css" />
+  <![endif]-->
+
   #{stylesheet 'main.css' /}
   #{stylesheet 'route.css' /}
 #{/set}
 
 <script id="route-info-tpl" type="text/html">
 
-<form class="form-horizontal">
+<form class="form-horizontal span12">
   <input type="hidden" name="agency" id="agency" value="{{agency}}">
 
   <div class="control-group">
@@ -92,44 +97,57 @@
     <button type="button" class="btn" id="route-cancel-btn">Cancel</button>
   </div>
 </form>
-
 </script>
 
-<div id="route-header">
-  <h3>Steps to Add a New Route</h3>
+<script id="map-tpl" type="text/html">
+  <div class="row-fluid">
+    <div class="span12">Grand row of context</div>
+  </div>
+  <div class="row-fluid">
+    <div id="map" class="span9"></div>
+    <div class="span3">INFOOOOOO</div>
+  </div>
+</script>
 
-  <ul id="route-nav" class="nav nav-pills">
-    <li class="active">
-      <a class="route-link" data-route-step="info" href="/route/info">1</a>
-      <label class="route-nav-label">Basic Info</label>
-    </li>
-    <li class="disabled">
-      <a class="route-link" data-route-step="stops" href="/route/stops">2</a>
-      <label class="route-nav-label">Stops</label>
-    </li>
-    <li class="disabled">
-      <a class="route-link" data-route-step="patterns" href="/route/patterns">3</a>
-      <label class="route-nav-label">Trip Patterns</label>
-    </li>
-    <li class="disabled">
-      <a class="route-link" data-route-step="trips" href="/route/trips">4</a>
-      <label class="route-nav-label">Trips</label>
-    </li>
-    <li class="disabled">
-      <a class="route-link" data-route-step="review" href="/route/review">5</a>
-      <label class="route-nav-label">Review</label>
-    </li>
-  </ul>
+<div class="row-fluid" id="route-header">
+  <div class="span12">
+    <h3>Steps to Add a New Route</h3>
+
+    <ul id="route-nav" class="nav nav-pills">
+      <li class="active">
+        <a class="route-link" data-route-step="info" href="/route/info">1</a>
+        <label class="route-nav-label">Basic Info</label>
+      </li>
+      <li class="disabled">
+        <a class="route-link" data-route-step="stops" href="/route/stops">2</a>
+        <label class="route-nav-label">Stops</label>
+      </li>
+      <li class="disabled">
+        <a class="route-link" data-route-step="patterns" href="/route/patterns">3</a>
+        <label class="route-nav-label">Trip Patterns</label>
+      </li>
+      <li class="disabled">
+        <a class="route-link" data-route-step="trips" href="/route/trips">4</a>
+        <label class="route-nav-label">Trips</label>
+      </li>
+      <li class="disabled">
+        <a class="route-link" data-route-step="review" href="/route/review">5</a>
+        <label class="route-nav-label">Review</label>
+      </li>
+    </ul>
+  </div>
 </div>
 
-<div id="route-step-content"></div>
+<div class="row-fluid" id="route-step-content"></div>
 
 
 #{set 'scripts'}
   <script src="http://cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.min.js"></script>
+  <script src="http://cdn.leafletjs.com/leaflet-0.4.5/leaflet.js"></script>
   <script src="@{'/public/lib/jquery.serializeObject.min.js'}"></script>
   #{script 'models.js' /}
   #{script 'views/route-info-view.js' /}
+  #{script 'views/route-stops-view.js' /}
   #{script 'route.js' /}
 
   <script type="text/javascript">
