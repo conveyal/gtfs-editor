@@ -2,6 +2,7 @@ var GtfsEditor = GtfsEditor || {};
 
 (function(G, $, ich) {
   var _routeCollection = new G.Routes(),
+      _stopCollection = new G.Stops(),
       _router,
       _steps = ['info', 'stops', 'patterns', 'trips', 'review'],
       _views = {
@@ -22,7 +23,7 @@ var GtfsEditor = GtfsEditor || {};
         'stops': function(model) {
           return new G.RouteStopsView({
             el: '#route-step-content',
-            collection: _routeCollection,
+            collection: _stopCollection,
             model: model,
             agencyId: _agencyId
           });
