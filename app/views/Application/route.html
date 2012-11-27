@@ -93,7 +93,7 @@
   </div>
 
   <div class="form-actions">
-    <button type="submit" class="btn btn-primary" id="route-save-btn">Save changes</button>
+    <button type="submit" class="btn btn-primary" id="route-save-btn">Save and Continue</button>
     <button type="button" class="btn" id="route-cancel-btn">Cancel</button>
   </div>
 </form>
@@ -114,6 +114,18 @@
     </div>
   </div>
 </script>
+
+<script id="stop-form-tpl" type="text/html">
+  <form class="stop-details-form">
+    <legend>Stop Details</legend>
+    <input type="hidden" name="id" value="{{id}}">
+    <input name="stopName" class="input-xlarge" type="text" placeholder="Name" value="{{stopName}}">
+    <textarea name="stopDesc" class="input-xlarge" placeholder="Description">{{stopDesc}}</textarea>
+    <button type="submit" class="btn btn-primary stop-save-btn">Save</button>
+    <button type="button" class="btn btn-danger stop-delete-btn">Delete</button>
+  </form>
+</script>
+
 
 <div class="row-fluid" id="route-header">
   <div class="span12">

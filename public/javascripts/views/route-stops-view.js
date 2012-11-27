@@ -3,6 +3,8 @@ var GtfsEditor = GtfsEditor || {};
 (function(G, $, ich) {
   G.RouteStopsView = Backbone.View.extend({
     events: {
+      'submit .stop-details-form': 'save',
+      'click .stop-delete-btn': 'destroy'
     },
 
     initialize: function () {
@@ -46,7 +48,9 @@ var GtfsEditor = GtfsEditor || {};
     },
 
     onStopMarkerDrag: function(evt) {
-
+      var latLng = evt.target.getLatLng();
+      this.collection.get(evt.target.options.id)
+        .save({location: {lat: latLng.lat, lng: latLng.lng} });
     },
 
     onCollectionReset: function() {
@@ -60,13 +64,18 @@ var GtfsEditor = GtfsEditor || {};
     onModelAdd: function(model) {
       this.stopLayers[model.id] = L.marker([model.get('location').lat,
         model.get('location').lng], {
-          draggable: true
+          draggable: true,
+          id: model.id
         });
 
-      this.stopLayers[model.id].on('dragend', function(evt) {
-        var latLng = evt.target.getLatLng();
-        model.save({location: {lat: latLng.lat, lng: latLng.lng} });
+      this.stopLayers[model.id].on('click', function(evt) {
+        this
+          .unbindPopup()
+          .bindPopup($('<div>').append(ich['stop-form-tpl'](model.toJSON())).html())
+          .openPopup();
       });
+
+      this.stopLayers[model.id].on('dragend', this.onStopMarkerDrag, this);
 
       this.map.addLayer(this.stopLayers[model.id]);
     },
@@ -84,6 +93,23 @@ var GtfsEditor = GtfsEditor || {};
         }, this),
         error: function() { console.log('Oh noes! That didn\'t work.'); }
       });
+    },
+
+    save: function(evt) {
+      evt.preventDefault();
+      var data = $(evt.target).serializeObject();
+      this.collection.get(data.id).save(data);
+    },
+
+    destroy: function(evt) {
+      console.log('hi');
+
+      evt.preventDefault();
+      var data = $(evt.target).serializeObject();
+
+      if (confirm('Are you sure you want to delete this stop?')) {
+        this.collection.get(data.id).destroy();
+      }
     }
   });
 })(GtfsEditor, jQuery, ich);
