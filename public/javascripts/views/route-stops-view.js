@@ -8,7 +8,8 @@ var GtfsEditor = GtfsEditor || {};
     initialize: function () {
       this.stopLayers = {};
 
-      this.collection.on('add', this.addStopLayer, this);
+      this.collection.on('add', this.onModelAdd, this);
+      this.collection.on('reset', this.onCollectionReset, this);
     },
 
     render: function () {
@@ -31,14 +32,43 @@ var GtfsEditor = GtfsEditor || {};
       // Remove default prefix
       this.map.attributionControl.setPrefix('');
 
+      this.stopGroup = L.layerGroup().addTo(this.map);
+
       this.map.on('click', this.onMapClick, this);
 
+      this.collection.fetch();
 
       return this;
     },
 
     onMapClick: function(evt) {
       this.addStop(evt.latlng.lat, evt.latlng.lng);
+    },
+
+    onStopMarkerDrag: function(evt) {
+
+    },
+
+    onCollectionReset: function() {
+      this.stopGroup.clearLayers();
+
+      this.collection.each(function(model, i) {
+        this.onModelAdd(model);
+      }, this);
+    },
+
+    onModelAdd: function(model) {
+      this.stopLayers[model.id] = L.marker([model.get('location').lat,
+        model.get('location').lng], {
+          draggable: true
+        });
+
+      this.stopLayers[model.id].on('dragend', function(evt) {
+        var latLng = evt.target.getLatLng();
+        model.save({location: {lat: latLng.lat, lng: latLng.lng} });
+      });
+
+      this.map.addLayer(this.stopLayers[model.id]);
     },
 
     addStop: function(lat, lng) {
@@ -54,13 +84,6 @@ var GtfsEditor = GtfsEditor || {};
         }, this),
         error: function() { console.log('Oh noes! That didn\'t work.'); }
       });
-    },
-
-    addStopLayer: function(model) {
-      this.stopLayers[model.id] = L.marker([model.get('location').lat,
-        model.get('location').lng]);
-
-      this.map.addLayer(this.stopLayers[model.id]);
     }
   });
 })(GtfsEditor, jQuery, ich);
