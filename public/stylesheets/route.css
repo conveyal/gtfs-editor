@@ -77,6 +77,46 @@
   margin-bottom: 20px;
 }
 
+.route-context {
+  position: relative;
+}
+
+.route-context .row-fluid {
+  background-color: #ddd;
+}
+
+.route-summary-details strong {
+  padding-right: 0.5em;
+}
+
+.route-summary-color {
+  display: inline-block;
+  height: 14px;
+  width: 14px;
+  border: 1px solid #444;
+}
+
+/* Portrait tablet to landscape anda above */
+@media (min-width: 768px) {
+  .route-context {
+    padding-right: 20px;
+  }
+
+  .route-context:after {
+    position: absolute;
+    right:-10px;
+    top: 0;
+    display:block;
+    content: " ";
+    width: 0;
+    height: 0;
+    border-top: 30px solid transparent;
+    border-bottom: 30px solid transparent;
+
+    border-left: 30px solid #ddd;
+  }
+
+}
 
 /* Landscape phones and down */
 @media (max-width: 480px) {

@@ -101,7 +101,8 @@
 
 <script id="map-tpl" type="text/html">
   <div class="row-fluid">
-    <div class="span12">Grand row of context</div>
+    <div class="span6 route-context"></div>
+    <div class="span6 step-instuctions">Step instructions</div>
   </div>
   <div class="row-fluid">
     <div id="map" class="span9"></div>
@@ -111,6 +112,28 @@
         Click the map to add a new stop, or click a marker to edit details.
       </div>
 
+    </div>
+  </div>
+</script>
+
+<script id="route-summary-container-tpl" type="text/html">
+  <div class="row-fluid">
+    <div class="offset1 span11">Name: <strong>{{ routeLongName }}</strong></div>
+  </div>
+  <div class="row-fluid">
+    <div class="offset1 span5">Type: <strong>{{ routeType }}</strong></div>
+    <div class="span6"><a class="route-summary-link" href="javascript:void(0);"
+        title="{{ routeLongName }} ({{ routeShortName }})">Details
+      </a>
+    </div>
+  </div>
+</script>
+
+<script id="route-summary-tpl" type="text/html">
+  <div class="route-summary-details">
+    <div class="row-fluid"><strong>Description:</strong> {{ routeDesc }}</div>
+    <div class="row-fluid"><strong>Color:</strong>
+      <div class="route-summary-color"></div>
     </div>
   </div>
 </script>
@@ -164,6 +187,7 @@
   <script src="http://cdn.leafletjs.com/leaflet-0.4.5/leaflet.js"></script>
   <script src="@{'/public/lib/jquery.serializeObject.min.js'}"></script>
   #{script 'models.js' /}
+  #{script 'views/route-summary-view.js' /}
   #{script 'views/route-info-view.js' /}
   #{script 'views/route-stops-view.js' /}
   #{script 'route.js' /}

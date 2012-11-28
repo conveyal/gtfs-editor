@@ -12,11 +12,15 @@ var GtfsEditor = GtfsEditor || {};
       this.collection.on('add', this.onModelAdd, this);
       this.collection.on('reset', this.onCollectionReset, this);
       this.collection.on('remove', this.onModelRemove, this);
-
     },
 
     render: function () {
       this.$el.html(ich['map-tpl']());
+
+      new G.RouteSummaryView({
+        el: this.$('.route-context'),
+        model: this.model
+      }).render();
 
       // Base layer config is optional, default to Mapbox Streets
       var url = 'http://{s}.tiles.mapbox.com/v3/mapbox.mapbox-streets/{z}/{x}/{y}.png',

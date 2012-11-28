@@ -43,8 +43,8 @@ var GtfsEditor = GtfsEditor || {};
       routeDesc: null,
       routeType: null,
       routeUrl: null,
-      routeColor: null,
-      routeTextColor: null,
+      routeColor: '004080',
+      routeTextColor: 'FFFFFF',
       agency: null
     }
   });
