@@ -3,8 +3,7 @@ var GtfsEditor = GtfsEditor || {};
 (function(G, $, ich) {
   G.RouteStopsView = Backbone.View.extend({
     events: {
-      'submit .stop-details-form': 'save',
-      'click .stop-delete-btn': 'destroy'
+      'submit .stop-details-form': 'save'
     },
 
     initialize: function () {
@@ -12,6 +11,8 @@ var GtfsEditor = GtfsEditor || {};
 
       this.collection.on('add', this.onModelAdd, this);
       this.collection.on('reset', this.onCollectionReset, this);
+      this.collection.on('remove', this.onModelRemove, this);
+
     },
 
     render: function () {
@@ -37,6 +38,7 @@ var GtfsEditor = GtfsEditor || {};
       this.stopGroup = L.layerGroup().addTo(this.map);
 
       this.map.on('click', this.onMapClick, this);
+      this.map.on('popupopen', this.onPopupOpen, this);
 
       this.collection.fetch();
 
@@ -45,6 +47,16 @@ var GtfsEditor = GtfsEditor || {};
 
     onMapClick: function(evt) {
       this.addStop(evt.latlng.lat, evt.latlng.lng);
+    },
+
+    onPopupOpen: function(evt) {
+      var self = this;
+      $(this.map.getPanes().popupPane)
+      .find('.stop-delete-btn')
+      .on('click', function() {
+        var id = $(this).siblings('[name=id]').val();
+        self.destroy(id);
+      });
     },
 
     onStopMarkerDrag: function(evt) {
@@ -61,6 +73,11 @@ var GtfsEditor = GtfsEditor || {};
       }, this);
     },
 
+    onModelRemove: function(model) {
+      this.map.closePopup();
+      this.stopGroup.removeLayer(this.stopLayers[model.id]);
+    },
+
     onModelAdd: function(model) {
       this.stopLayers[model.id] = L.marker([model.get('location').lat,
         model.get('location').lng], {
@@ -69,11 +86,11 @@ var GtfsEditor = GtfsEditor || {};
         });
 
       this.stopLayers[model.id].on('click', function(evt) {
-        this
+        evt.target
           .unbindPopup()
           .bindPopup($('<div>').append(ich['stop-form-tpl'](model.toJSON())).html())
           .openPopup();
-      });
+      }, this);
 
       this.stopLayers[model.id].on('dragend', this.onStopMarkerDrag, this);
 
@@ -101,14 +118,9 @@ var GtfsEditor = GtfsEditor || {};
       this.collection.get(data.id).save(data);
     },
 
-    destroy: function(evt) {
-      console.log('hi');
-
-      evt.preventDefault();
-      var data = $(evt.target).serializeObject();
-
+    destroy: function(modelId) {
       if (confirm('Are you sure you want to delete this stop?')) {
-        this.collection.get(data.id).destroy();
+        this.collection.get(modelId).destroy({ wait: true });
       }
     }
   });
