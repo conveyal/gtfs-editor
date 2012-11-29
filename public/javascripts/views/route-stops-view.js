@@ -118,7 +118,7 @@ var GtfsEditor = GtfsEditor || {};
 
     save: function(evt) {
       evt.preventDefault();
-      var data = $(evt.target).serializeObject();
+      var data = G.Utils.serializeForm($(evt.target));
       this.collection.get(data.id).save(data);
     },
 

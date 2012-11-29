@@ -13,7 +13,7 @@
 
 <script id="route-info-tpl" type="text/html">
 
-<form class="form-horizontal span12">
+<form class="route-info-form form-horizontal span12">
   <input type="hidden" name="agency" id="agency" value="{{agency}}">
 
   <div class="control-group">
@@ -144,6 +144,9 @@
     <input type="hidden" name="id" value="{{id}}">
     <input name="stopName" class="input-xlarge" type="text" placeholder="Name" value="{{stopName}}">
     <textarea name="stopDesc" class="input-xlarge" placeholder="Description">{{stopDesc}}</textarea>
+    <label class="checkbox">
+      <input type="checkbox" name="majorStop"{{#majorStop}} checked="checked"{{/majorStop}}> Major Stop?
+    </label>
     <button type="submit" class="btn btn-primary stop-save-btn">Save</button>
     <button type="button" class="btn btn-danger stop-delete-btn">Delete</button>
   </form>
@@ -195,7 +198,7 @@
   <script type="text/javascript">
     $(function(){
       // This will be smarter, obviously.
-      GtfsEditor.RoutePage.init(21);
+      GtfsEditor.RoutePage.init(GtfsEditor.config.agencyId);
     });
   </script>
 #{/set}

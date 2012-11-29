@@ -3,7 +3,7 @@ var GtfsEditor = GtfsEditor || {};
 (function(G, $, ich) {
   G.RouteInfoView = Backbone.View.extend({
     events: {
-      'submit form': 'save',
+      'submit .route-info-form': 'save',
       'click #route-cancel-btn': 'cancel'
     },
 
@@ -60,14 +60,7 @@ var GtfsEditor = GtfsEditor || {};
     save: function(evt){
       evt.preventDefault();
 
-      var data = this.$('form').serializeObject(),
-          $uncheckedCheckboxes = this.$('[type="checkbox"]:not(:checked)');
-
-      $uncheckedCheckboxes.each(function(i, el) {
-        if (el.name) {
-          data[el.name] = false;
-        }
-      });
+      var data = G.Utils.serializeForm(this.$('form'));
 
       if (this.model) {
         // This seems redundant, but we need to call set first so that the
