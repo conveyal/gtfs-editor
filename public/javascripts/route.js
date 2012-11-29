@@ -16,7 +16,6 @@ var GtfsEditor = GtfsEditor || {};
               _router.navigate(model.id + '/stops', {trigger: true});
             },
             onCancel: function() {
-              console.log('cancel');
             }
           });
         },
@@ -52,10 +51,6 @@ var GtfsEditor = GtfsEditor || {};
           _router.navigate(href, {trigger: true});
         }
       });
-    },
-
-    test: function () {
-      console.log(arguments);
     },
 
     root: function() {

@@ -112,7 +112,7 @@ var GtfsEditor = GtfsEditor || {};
         success: function() {
           G.Utils.success('Stop successfully created');
         },
-        error: function() { 
+        error: function() {
           G.Utils.error('Failed to create stop');
         }
       });
@@ -133,7 +133,7 @@ var GtfsEditor = GtfsEditor || {};
 
     destroy: function(modelId) {
       if (G.Utils.confirm('Are you sure you want to delete this stop?')) {
-        this.collection.get(modelId).destroy({ 
+        this.collection.get(modelId).destroy({
           wait: true,
           success: function() {
             G.Utils.success('Stop successfully deleted');

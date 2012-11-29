@@ -52,8 +52,6 @@ var GtfsEditor = GtfsEditor || {};
 
     cancel: function(evt) {
       evt.preventDefault();
-      console.log('cancel', arguments);
-
       this.onCancel(this.model);
     },
 
@@ -73,9 +71,8 @@ var GtfsEditor = GtfsEditor || {};
             this.onSave(this.model);
             G.Utils.success('Route successfully saved');
           }, this),
-          error: function() { 
+          error: function() {
             G.Utils.error('Route save failed');
-            console.log('Oh noes! That save didn\'t work.'); 
           }
         });
       } else {
@@ -88,7 +85,6 @@ var GtfsEditor = GtfsEditor || {};
           error: _.bind(function() {
             this.model = null;
             G.Utils.error('Route save failed');
-            console.log('Oh noes! That create didn\'t work.');
           }, this)
         });
 
