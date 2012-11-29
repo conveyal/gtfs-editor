@@ -71,17 +71,23 @@ var GtfsEditor = GtfsEditor || {};
           wait: true,
           success: _.bind(function() {
             this.onSave(this.model);
+            G.Utils.success('Route successfully saved');
           }, this),
-          error: function() { console.log('Oh noes! That save didn\'t work.'); }
+          error: function() { 
+            G.Utils.error('Route save failed');
+            console.log('Oh noes! That save didn\'t work.'); 
+          }
         });
       } else {
         this.model = this.collection.create(data, {
           wait: true,
           success: _.bind(function() {
             this.onSave(this.model);
+            G.Utils.success('Route successfully created');
           }, this),
           error: _.bind(function() {
             this.model = null;
+            G.Utils.error('Route save failed');
             console.log('Oh noes! That create didn\'t work.');
           }, this)
         });

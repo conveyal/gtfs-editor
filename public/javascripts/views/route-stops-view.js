@@ -109,22 +109,39 @@ var GtfsEditor = GtfsEditor || {};
 
       this.collection.create(data, {
         wait: true,
-        success: _.bind(function() {
-          console.log('success');
-        }, this),
-        error: function() { console.log('Oh noes! That didn\'t work.'); }
+        success: function() {
+          G.Utils.success('Stop successfully created');
+        },
+        error: function() { 
+          G.Utils.error('Failed to create stop');
+        }
       });
     },
 
     save: function(evt) {
       evt.preventDefault();
       var data = G.Utils.serializeForm($(evt.target));
-      this.collection.get(data.id).save(data);
+      this.collection.get(data.id).save(data, {
+        success: function() {
+          G.Utils.success('Stop successfully saved');
+        },
+        error: function() {
+          G.Utils.error('Failed to save stop');
+        }
+      });
     },
 
     destroy: function(modelId) {
-      if (confirm('Are you sure you want to delete this stop?')) {
-        this.collection.get(modelId).destroy({ wait: true });
+      if (G.Utils.confirm('Are you sure you want to delete this stop?')) {
+        this.collection.get(modelId).destroy({ 
+          wait: true,
+          success: function() {
+            G.Utils.success('Stop successfully deleted');
+          },
+          error: function() {
+            G.Utils.error('Failed to delete stop');
+          }
+        });
       }
     }
   });

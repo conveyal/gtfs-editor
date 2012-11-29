@@ -22,7 +22,32 @@ var GtfsEditor = GtfsEditor || {};
       });
       
       return data;
-    }
+    },
+
+    // Messages
+    message: function(type, text, delay) {
+      var $message = $(
+        '<div class="alert alert-' + type + ' fade in message">' +
+          '<a class="close" data-dismiss="alert" href="#">&times;</a>' + 
+          text + 
+        '</div>');
+      
+      if (delay === undefined) {
+        delay = 2000;
+      }
+      
+      $message.prependTo('body')
+        .alert();
+      
+      _.delay(function() { $message.alert('close'); }, delay);
+    },
+    
+    confirm: function(text) {
+      return confirm(text);
+    },
+    
+    success: function(text, delay) { return G.Utils.message('success', text, delay); },
+    error: function(text, delay) { return G.Utils.message('error', text, delay); }
   };
 
 })(GtfsEditor, jQuery);
