@@ -2,3 +2,4 @@ conf/application.conf
 tmp
 eclipse
 .classpath
+*~
