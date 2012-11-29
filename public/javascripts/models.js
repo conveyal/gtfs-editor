@@ -67,6 +67,7 @@ var GtfsEditor = GtfsEditor || {};
       agency: null,
       locationType: null,
       parentStation: null,
+      majorStop: false,
       location: null
     },
     // This function serves to allow stringified JSON as a valid input. A bit

@@ -46,6 +46,9 @@ public class Stop extends Model {
     public LocationType locationType;
 
     public String parentStation;
+    
+    // Major stop is a custom field; it has no corralary in the GTFS.
+    public Boolean majorStop;
 
     @JsonCreator
     public static Stop factory(long id) {

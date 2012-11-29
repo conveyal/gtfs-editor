@@ -1,4 +1,4 @@
---- !Ups
+# --- !Ups
 
 -- ----------------------------
 --  Table structure for "gtfssnapshotmerge"
@@ -476,12 +476,11 @@ ALTER TABLE "stoptime" ADD CONSTRAINT "stoptime_pkey" PRIMARY KEY ("id") NOT DEF
 ALTER TABLE "gisexport" ADD CONSTRAINT "gisexport_pkey" PRIMARY KEY ("id") NOT DEFERRABLE INITIALLY IMMEDIATE;
 
 
---- !Downs
+# --- !Downs
 
 DROP TABLE "gtfssnapshotmerge";
 DROP TABLE "gisroutesegment";
 DROP TABLE "gisroutealignment";
-DROP TABLE "play_evolutions";
 DROP TABLE "trippattern_trippatternstop";
 DROP TABLE "servicecalendardate";
 DROP TABLE "tripshape";
