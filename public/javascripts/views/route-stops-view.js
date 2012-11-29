@@ -3,15 +3,36 @@ var GtfsEditor = GtfsEditor || {};
 (function(G, $, ich) {
   G.RouteStopsView = Backbone.View.extend({
     events: {
-      'submit .stop-details-form': 'save'
+      'submit .stop-details-form': 'save',
+      'change .stops-toggle': 'onStopVisibilityChange'
     },
 
     initialize: function () {
-      this.stopLayers = {};
+      this.standardStopLayers = {};
+      this.majorStopLayers = {};
 
       this.collection.on('add', this.onModelAdd, this);
       this.collection.on('reset', this.onCollectionReset, this);
       this.collection.on('remove', this.onModelRemove, this);
+      this.collection.on('change:majorStop', this.onModelMajorStopChange, this);
+
+      this.majorStopIcon = L.icon({
+        iconUrl: '/public/images/markers/marker-e1264d.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowUrl: '/public/images/markers/marker-shadow.png',
+        shadowSize: [41, 41]
+      });
+
+      this.standardStopIcon = L.icon({
+        iconUrl: '/public/images/markers/marker-2654d2.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowUrl: '/public/images/markers/marker-shadow.png',
+        shadowSize: [41, 41]
+      });
     },
 
     render: function () {
@@ -21,6 +42,8 @@ var GtfsEditor = GtfsEditor || {};
         el: this.$('.route-context'),
         model: this.model
       }).render();
+
+      this.$('.route-sidebar').html(ich['route-sidebar-tpl']());
 
       // Base layer config is optional, default to Mapbox Streets
       var url = 'http://{s}.tiles.mapbox.com/v3/mapbox.mapbox-streets/{z}/{x}/{y}.png',
@@ -39,7 +62,7 @@ var GtfsEditor = GtfsEditor || {};
       // Remove default prefix
       this.map.attributionControl.setPrefix('');
 
-      this.stopGroup = L.layerGroup().addTo(this.map);
+      this.stopLayerGroup = L.layerGroup().addTo(this.map);
 
       this.map.on('click', this.onMapClick, this);
       this.map.on('popupopen', this.onPopupOpen, this);
@@ -70,35 +93,73 @@ var GtfsEditor = GtfsEditor || {};
     },
 
     onCollectionReset: function() {
-      this.stopGroup.clearLayers();
+      this.stopLayerGroup.clearLayers();
 
       this.collection.each(function(model, i) {
         this.onModelAdd(model);
       }, this);
     },
 
+    onModelMajorStopChange: function(model) {
+      if (model.get('majorStop')) {
+        this.majorStopLayers[model.id] = this.standardStopLayers[model.id];
+        this.majorStopLayers[model.id].setIcon(this.majorStopIcon);
+        delete this.standardStopLayers[model.id];
+
+        if ($('#major-stops-toggle').is(':not(:checked)')) {
+          this.stopLayerGroup.removeLayer(this.majorStopLayers[model.id]);
+        }
+      } else {
+        this.standardStopLayers[model.id] = this.majorStopLayers[model.id];
+        this.standardStopLayers[model.id].setIcon(this.standardStopIcon);
+        delete this.majorStopLayers[model.id];
+
+        if ($('#standard-stops-toggle').is(':not(:checked)')) {
+          this.stopLayerGroup.removeLayer(this.standardStopLayers[model.id]);
+        }
+      }
+    },
+
     onModelRemove: function(model) {
       this.map.closePopup();
-      this.stopGroup.removeLayer(this.stopLayers[model.id]);
+
+      if (model.get('majorStop')) {
+        this.stopLayerGroup.removeLayer(this.majorStopLayers[model.id]);
+        delete this.majorStopLayers[model.id];
+      } else {
+        this.stopLayerGroup.removeLayer(this.standardStopLayers[model.id]);
+        delete this.standardStopLayers[model.id];
+      }
     },
 
     onModelAdd: function(model) {
-      this.stopLayers[model.id] = L.marker([model.get('location').lat,
-        model.get('location').lng], {
-          draggable: true,
-          id: model.id
-        });
+      var markerLayer;
+      if (model.get('majorStop')) {
+        this.majorStopLayers[model.id] = markerLayer = L.marker([model.get('location').lat,
+          model.get('location').lng], {
+            draggable: true,
+            id: model.id,
+            icon: this.majorStopIcon
+          });
+      } else {
+        this.standardStopLayers[model.id] = markerLayer = L.marker([model.get('location').lat,
+          model.get('location').lng], {
+            draggable: true,
+            id: model.id,
+            icon: this.standardStopIcon
+          });
+      }
 
-      this.stopLayers[model.id].on('click', function(evt) {
+      markerLayer.on('click', function(evt) {
         evt.target
           .unbindPopup()
           .bindPopup($('<div>').append(ich['stop-form-tpl'](model.toJSON())).html())
           .openPopup();
       }, this);
 
-      this.stopLayers[model.id].on('dragend', this.onStopMarkerDrag, this);
+      markerLayer.on('dragend', this.onStopMarkerDrag, this);
 
-      this.map.addLayer(this.stopLayers[model.id]);
+      this.stopLayerGroup.addLayer(markerLayer);
     },
 
     addStop: function(lat, lng) {
@@ -116,6 +177,45 @@ var GtfsEditor = GtfsEditor || {};
           G.Utils.error('Failed to create stop');
         }
       });
+    },
+
+    onStopVisibilityChange: function(evt) {
+      var $checkbox = $(evt.target);
+
+      if ($checkbox.attr('id') === 'major-stops-toggle') {
+        if ($checkbox.is(':checked')) {
+          this.showMajorStops();
+        } else {
+          this.hideMajorStops();
+        }
+      } else {
+        if ($checkbox.is(':checked')) {
+          this.showStandardStops();
+        } else {
+          this.hideStandardStops();
+        }
+      }
+    },
+
+    hideStandardStops: function() {
+      _.each(this.standardStopLayers, function(marker) {
+        this.stopLayerGroup.removeLayer(marker);
+      }, this);
+    },
+    showStandardStops: function() {
+      _.each(this.standardStopLayers, function(marker) {
+        this.stopLayerGroup.addLayer(marker);
+      }, this);
+    },
+    hideMajorStops: function() {
+      _.each(this.majorStopLayers, function(marker) {
+        this.stopLayerGroup.removeLayer(marker);
+      }, this);
+    },
+    showMajorStops: function() {
+      _.each(this.majorStopLayers, function(marker) {
+        this.stopLayerGroup.addLayer(marker);
+      }, this);
     },
 
     save: function(evt) {
