@@ -44,6 +44,7 @@ var GtfsEditor = GtfsEditor || {};
       }).render();
 
       this.$('.route-sidebar').html(ich['route-sidebar-tpl']());
+      this.$('.step-instructions').html(ich['stop-instructions-tpl']());
 
       // Base layer config is optional, default to Mapbox Streets
       var url = 'http://{s}.tiles.mapbox.com/v3/mapbox.mapbox-streets/{z}/{x}/{y}.png',
@@ -64,7 +65,7 @@ var GtfsEditor = GtfsEditor || {};
 
       this.stopLayerGroup = L.layerGroup().addTo(this.map);
 
-      this.map.on('click', this.onMapClick, this);
+      this.map.on('contextmenu', this.onMapRightClick, this);
       this.map.on('popupopen', this.onPopupOpen, this);
 
       this.collection.fetch();
@@ -72,7 +73,7 @@ var GtfsEditor = GtfsEditor || {};
       return this;
     },
 
-    onMapClick: function(evt) {
+    onMapRightClick: function(evt) {
       this.addStop(evt.latlng.lat, evt.latlng.lng);
     },
 
