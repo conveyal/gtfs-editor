@@ -51,14 +51,34 @@ var GtfsEditor = GtfsEditor || {};
       this.$el.html(ich['model-form-tpl'](tplData));
       return this;
     },
+    
+    parseInput: function(val) {
+      var obj;
+      
+      if (_.isString(val)) {
+        try {
+          obj = JSON.parse(val);
+        } catch(e) {
+          // val was a string, but not JSON. This will break on the server.
+        }
+        if (obj) {
+          val = obj;
+        }
+      }
+      
+      return (_.isUndefined(val) || val === '' ? null : val);
+    },
 
     save: function(evt){
       evt.preventDefault();
 
-      var data = {};
+      var data = {},
+          self = this;
       this.$('input').each(function(i, el) {
-        var $input = $(el);
-        data[$input.attr('id')] = $input.val() || null;
+        var $input = $(el),
+            val = self.parseInput($input.val());
+        
+        data[$input.attr('id')] = val;
       });
 
       if (this.model) {

@@ -2,20 +2,6 @@ var GtfsEditor = GtfsEditor || {};
 
 (function(G, $) {
 
-  var jsonifyValidator = function(attrs, property, model) {
-    var obj;
-    if (_.isString(attrs[property])) {
-      try {
-        obj = JSON.parse(attrs[property]);
-      } catch(e) {
-        // location was a string, but not JSON. This will break on the server.
-      }
-      if (obj) {
-        model.set(property, obj, {silent: true});
-      }
-    }
-  };
-
   G.Agency = Backbone.Model.extend({
     defaults: {
       id: null,
@@ -69,11 +55,6 @@ var GtfsEditor = GtfsEditor || {};
       parentStation: null,
       majorStop: false,
       location: null
-    },
-    // This function serves to allow stringified JSON as a valid input. A bit
-    // hacky, but it's a great place to do it.
-    validate: function(attrs) {
-      jsonifyValidator(attrs, 'location', this);
     }
   });
 
@@ -94,7 +75,7 @@ var GtfsEditor = GtfsEditor || {};
     },
 
     initialize: function() {
-      this.on('change', this.normalizeSequence, this);
+      this.on('change:patternStops', this.normalizeSequence, this);
 
       this.sortPatternStops();
     },
@@ -114,8 +95,6 @@ var GtfsEditor = GtfsEditor || {};
     },
 
     validate: function(attrs) {
-      jsonifyValidator(attrs, 'patternStops', this);
-
       // Override the sequence value to match the array order
       this.sortPatternStops();
     },
