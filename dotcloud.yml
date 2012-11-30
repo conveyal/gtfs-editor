@@ -1,0 +1,5 @@
+www:
+  type: java
+  approot: dotcloud
+db:
+  type: postgis
