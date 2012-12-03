@@ -4,7 +4,7 @@ var GtfsEditor = GtfsEditor || {};
   G.FormView = Backbone.View.extend({
     events: {
       'click #save-btn': 'save',
-      'click #delete-btn': 'delete'
+      'click #delete-btn': 'destroy'
     },
 
     initialize: function() {
@@ -51,10 +51,11 @@ var GtfsEditor = GtfsEditor || {};
       this.$el.html(ich['model-form-tpl'](tplData));
       return this;
     },
-    
+
+    // This parses JSON strings into objects or arrays
     parseInput: function(val) {
       var obj;
-      
+
       if (_.isString(val)) {
         try {
           obj = JSON.parse(val);
@@ -65,7 +66,7 @@ var GtfsEditor = GtfsEditor || {};
           val = obj;
         }
       }
-      
+
       return (_.isUndefined(val) || val === '' ? null : val);
     },
 
@@ -77,22 +78,18 @@ var GtfsEditor = GtfsEditor || {};
       this.$('input').each(function(i, el) {
         var $input = $(el),
             val = self.parseInput($input.val());
-        
+
         data[$input.attr('id')] = val;
       });
 
       if (this.model) {
-        // This seems redundant, but we need to call set first so that the
-        // validator work as expected. Otherwise any attribute overrides in the
-        // validator will not be set.
-        this.model.set(data, { silent: true });
-        this.model.save(null, {
+        this.model.save(data, {
           wait: true,
           success: _.bind(function() {
             alert('Saved!');
             G.router.navigate(this.collection.type + '/' + this.model.id);
           }, this),
-          error: function() { alert('Oh noes! That didn\'t work.'); }
+          error: function() { alert('Oh no! That didn\'t work.'); }
         });
       } else {
         this.model = this.collection.create(data, {
@@ -103,7 +100,7 @@ var GtfsEditor = GtfsEditor || {};
           }, this),
           error: _.bind(function() {
             this.model = null;
-            alert('Oh noes! That didn\'t work.');
+            alert('Oh no! That didn\'t work.');
           }, this)
         });
 
@@ -111,14 +108,14 @@ var GtfsEditor = GtfsEditor || {};
       }
     },
 
-    'delete': function(evt){
+    destroy: function(evt){
       evt.preventDefault();
       var ct = this.collection.type;
 
       if (window.confirm('Really delete?')) {
         this.model.destroy({
           success: function() { G.router.navigate(ct, {trigger: true}); },
-          error: function() { alert('Oh noes! That didn\'t work.'); }
+          error: function() { alert('Oh no! That didn\'t work.'); }
         });
       }
     }
