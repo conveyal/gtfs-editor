@@ -1,0 +1,16 @@
+#{extends 'main.html' /}
+#{set title:'Map Demo' /}
+
+#{set 'styles'}
+  <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.4.5/leaflet.css" />
+  <!--[if lte IE 8]>
+      <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.4.5/leaflet.ie.css" />
+  <![endif]-->
+  #{stylesheet 'main.css' /}
+#{/set}
+
+#{set 'scripts'}
+  <script src="http://cdn.leafletjs.com/leaflet-0.4.5/leaflet.js"></script>
+#{/set}
+
+<div>Search for some routes!</div>

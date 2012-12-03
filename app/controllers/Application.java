@@ -17,7 +17,7 @@ public class Application extends Controller {
         render();
     }
 
-    public static void map() {
+    public static void search() {
         render();
     }
 
