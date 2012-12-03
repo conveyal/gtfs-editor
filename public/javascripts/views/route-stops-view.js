@@ -60,7 +60,7 @@ var GtfsEditor = GtfsEditor || {};
 
       // Init the map
       this.map = L.map(this.$('#map').get(0), {
-        center: [14.5907, 120.9794],
+        center: [14.5907, 120.9794], //TODO: add to the config file for now
         zoom: 15,
         maxZoom: 17
       });
