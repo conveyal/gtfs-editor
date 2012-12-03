@@ -43,7 +43,7 @@ var GtfsEditor = GtfsEditor || {};
         model: this.model
       }).render();
 
-      this.$('.route-sidebar').html(ich['route-sidebar-tpl']());
+      this.$('.route-sidebar').html(ich['stops-sidebar-tpl']());
       this.$('.step-instructions').html(ich['stop-instructions-tpl']());
 
       // Base layer config is optional, default to Mapbox Streets

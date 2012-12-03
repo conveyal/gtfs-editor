@@ -3,8 +3,9 @@ var GtfsEditor = GtfsEditor || {};
 (function(G, $, ich) {
   var _routeCollection = new G.Routes(),
       _stopCollection = new G.Stops(),
+      _tripPatternCollection = new G.TripPatterns(),
       _router,
-      _steps = ['info', 'stops', 'patterns', 'trips', 'review'],
+      _steps = ['info', 'stops', 'trippatterns', 'trips', 'review'],
       _views = {
         'info': function(model) {
           return new G.RouteInfoView({
@@ -23,11 +24,18 @@ var GtfsEditor = GtfsEditor || {};
           return new G.RouteStopsView({
             el: '#route-step-content',
             collection: _stopCollection,
-            model: model,
+            model: model, //Route info model
             agencyId: _agencyId
           });
         },
-        'patterns': function() { return new Backbone.View(); },
+        'trippatterns': function(model) {
+          return new G.RouteTripPatternsView({
+            el: '#route-step-content',
+            model: model, //Route info model
+            stops: _stopCollection,
+            agencyId: _agencyId
+          });
+        },
         'trips': function() { return new Backbone.View(); },
         'review': function() { return new Backbone.View(); }
       };

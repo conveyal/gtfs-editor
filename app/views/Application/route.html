@@ -11,6 +11,9 @@
   #{stylesheet 'route.css' /}
 #{/set}
 
+<!-- Mustache templates used in the js views. These should be i18n sometime. -->
+
+<!-- The basic route info form -->
 <script id="route-info-tpl" type="text/html">
 
 <form class="route-info-form form-horizontal span12">
@@ -99,6 +102,7 @@
 </form>
 </script>
 
+<!-- The map template, used in the Stops and Trip Patterns steps -->
 <script id="map-tpl" type="text/html">
   <div class="row-fluid">
     <div class="span6 route-context"></div>
@@ -111,11 +115,13 @@
   </div>
 </script>
 
+<!-- The Stop instructions, not styled -->
 <script id="stop-instructions-tpl" type="text/html">
   <div>Right click the map to add a new stop, or click a marker to edit details.</div>
 </script>
 
-<script id="route-sidebar-tpl" type="text/html">
+<!-- The Stop sidebar contents ie. stop marker toggles -->
+<script id="stops-sidebar-tpl" type="text/html">
   <div>
     <h5>Stops</h5>
     <label class="checkbox">
@@ -128,7 +134,7 @@
   </div>
 </script>
 
-
+<!-- The route summary -->
 <script id="route-summary-container-tpl" type="text/html">
   <div class="row-fluid">
     <div class="offset1 span11">Name: <strong>{{ routeLongName }}</strong></div>
@@ -142,6 +148,8 @@
   </div>
 </script>
 
+<!-- The route summary details ie. the popup that appears when you hover over
+  the details link. -->
 <script id="route-summary-tpl" type="text/html">
   <div class="route-summary-details">
     <div class="row-fluid"><strong>Description:</strong> {{ routeDesc }}</div>
@@ -151,6 +159,7 @@
   </div>
 </script>
 
+<!-- The stop details form that appears in the map popup. -->
 <script id="stop-form-tpl" type="text/html">
   <form class="stop-details-form">
     <legend>Stop Details</legend>
@@ -165,7 +174,31 @@
   </form>
 </script>
 
+<!-- The sidebar contents for the Trip Patterns step (in progress) -->
+<script id="trippatterns-sidebar-tpl" type="text/html">
+  <div>
+    <div class="trippatterns-controls well">
+      Controls to select a trip pattern, add a new one, and maybe clone or reverse?
+    </div>
 
+    <ul class="nav nav-tabs" id="trippatterns-sidebar-tabs">
+      <li class="active"><a href="#trippattern-sequence" data-toggle="tab">Sequence</a></li>
+      <li><a href="#trippattern-line" data-toggle="tab">Line</a></li>
+    </ul>
+
+    <div class="tab-content">
+      <div class="tab-pane active" id="trippattern-sequence">Sequence</div>
+      <div class="tab-pane" id="trippattern-line">Line</div>
+    </div>
+  </div>
+</script>
+
+<!-- Step instructions for Trip Patterns step -->
+<script id="trippatterns-instructions-tpl" type="text/html">
+  <div>Click on stops on the map to make an ordered trip pattern. Re-order rows at right if necessary.</div>
+</script>
+
+<!-- Route page markup -->
 <div class="row-fluid" id="route-header">
   <div class="span12">
     <h3>Steps to Add a New Route</h3>
@@ -180,7 +213,7 @@
         <label class="route-nav-label">Stops</label>
       </li>
       <li class="disabled">
-        <a class="route-link" data-route-step="patterns" href="/route/patterns">3</a>
+        <a class="route-link" data-route-step="trippatterns" href="/route/trippatterns">3</a>
         <label class="route-nav-label">Trip Patterns</label>
       </li>
       <li class="disabled">
@@ -206,11 +239,13 @@
   #{script 'views/route-summary-view.js' /}
   #{script 'views/route-info-view.js' /}
   #{script 'views/route-stops-view.js' /}
+  #{script 'views/route-trippatterns-view.js' /}
   #{script 'pages/route.js' /}
 
   <script type="text/javascript">
     $(function(){
-      // This will be smarter, obviously.
+      // TODO: the config be need to be dynamic based on the user details.
+      // ie. agency, etc
       GtfsEditor.RoutePage.init(GtfsEditor.config.agencyId);
     });
   </script>

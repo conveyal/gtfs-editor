@@ -32,6 +32,10 @@ var GtfsEditor = GtfsEditor || {};
       routeColor: '004080',
       routeTextColor: 'FFFFFF',
       agency: null
+    },
+
+    initialize: function() {
+      this.tripPatterns = new G.TripPatterns();
     }
   });
 
