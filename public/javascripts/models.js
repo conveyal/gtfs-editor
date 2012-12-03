@@ -29,8 +29,8 @@ var GtfsEditor = GtfsEditor || {};
       routeDesc: null,
       routeType: null,
       routeUrl: null,
-      routeColor: '004080',
-      routeTextColor: 'FFFFFF',
+      routeColor: 'FFFFFF',
+      routeTextColor: '000000',
       agency: null
     },
 

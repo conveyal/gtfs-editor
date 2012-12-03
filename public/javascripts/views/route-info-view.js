@@ -3,16 +3,15 @@ var GtfsEditor = GtfsEditor || {};
 (function(G, $, ich) {
   G.RouteInfoView = Backbone.View.extend({
     events: {
-      'submit .route-info-form': 'save',
-      'click #route-cancel-btn': 'cancel'
+      'submit .route-info-form': 'save'
     },
 
     initialize: function () {
       this.onSave = this.options.onSave || function() {};
-      this.onCancel = this.options.onCancel || function() {};
 
       this.collection.on('reset', this.render, this);
 
+      // Model is undefined if this is a new route. It is set when it is created.
       if (this.model) {
         this.setModel(this.model);
       }
@@ -34,14 +33,18 @@ var GtfsEditor = GtfsEditor || {};
 
       data.agency = data.agency ? data.agency.id : this.options.agencyId;
 
+      // Get the markup from icanhaz
       var $tpl = ich['route-info-tpl'](data);
 
+      // Easily select the option
       $tpl
         .find('#routeType option[value="'+data.routeType+'"]')
         .attr('selected', true);
 
+      // Render to the dom
       this.$el.html($tpl);
 
+      // Bind help popovers
       this.$('input, select, textarea').popover({
         placement: 'right',
         trigger: 'focus'
@@ -50,22 +53,14 @@ var GtfsEditor = GtfsEditor || {};
       return this;
     },
 
-    cancel: function(evt) {
-      evt.preventDefault();
-      this.onCancel(this.model);
-    },
-
     save: function(evt){
       evt.preventDefault();
 
       var data = G.Utils.serializeForm(this.$('form'));
 
+      // Currently existing route, save it
       if (this.model) {
-        // This seems redundant, but we need to call set first so that the
-        // validator work as expected. Otherwise any attribute overrides in the
-        // validator will not be set.
-        this.model.set(data, { silent: true });
-        this.model.save(null, {
+        this.model.save(data, {
           wait: true,
           success: _.bind(function() {
             this.onSave(this.model);
@@ -76,19 +71,20 @@ var GtfsEditor = GtfsEditor || {};
           }
         });
       } else {
-        this.model = this.collection.create(data, {
+        // New route, create it
+        var model = this.collection.create(data, {
           wait: true,
           success: _.bind(function() {
             this.onSave(this.model);
             G.Utils.success('Route successfully created');
           }, this),
           error: _.bind(function() {
-            this.model = null;
             G.Utils.error('Route save failed');
           }, this)
         });
 
-        this.setModel(this.model);
+        // Set and bind events
+        this.setModel(model);
       }
     }
   });
