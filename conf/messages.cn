@@ -1,0 +1,21 @@
+# You can specialize this file for each language.
+# For example, for French create a messages.fr file
+
+# nav-bar
+
+nav-bar.agency=机构数据
+nav-bar.home=家
+nav-bar.contact=联系
+
+
+# /index
+
+
+
+# /route
+
+route-info-tpl.optional=可选
+route-info-tpl.required=需要
+
+route-info-tpl.short-name=短名称
+route-info-tpl.short-name-content=route_short_name包含路由的短名称。这往往是很短的，抽象的标识符，如 &quot;32&quot;， &quot;100X&quot;或 &quot;绿色&quot;，乘客用它来识别路由，但不给任何指示什么地方的路线服务。

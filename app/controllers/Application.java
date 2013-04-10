@@ -1,6 +1,7 @@
 package controllers;
 
 import play.*;
+import play.i18n.Lang;
 import play.mvc.*;
 
 import java.util.*;
@@ -23,5 +24,10 @@ public class Application extends Controller {
 
     public static void route() {
         render();
+    }
+    
+    public static void setLang(String lang) {
+    	Lang.change(lang);
+    	ok();
     }
 }

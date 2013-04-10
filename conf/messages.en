@@ -1,0 +1,20 @@
+# You can specialize this file for each language.
+# For example, for French create a messages.fr file
+
+# nav-bar
+
+nav-bar.agency=Agency Information
+nav-bar.home=Home
+nav-bar.contact=Contact
+
+
+# /index
+
+
+
+# /route
+route-info-tpl.optional=Optional
+route-info-tpl.required=Required
+
+route-info-tpl.short-name=Short Name
+route-info-tpl.short-name-content=The route_short_name contains the short name of a route. This will often be a short, abstract identifier like &quot;32&quot;, &quot;100X&quot;, or &quot;Green&quot; that riders use to identify a route, but which doesn't give any indication of what places the route serves.

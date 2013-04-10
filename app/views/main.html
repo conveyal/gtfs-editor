@@ -30,22 +30,35 @@
             <span class="icon-bar"></span>
           </a>
 
-          <a class="brand" href="#">GTFS Editor</a>
+          <a class="brand" href="/">Philippines Transit Database</a>
           <div class="nav-collapse collapse">
 
             <ul class="nav">
-              <li class="active"><a href="#">Home</a></li>
-              <li><a href="#agency">Agency Information</a></li>
-              <li><a href="#contact">Contact</a></li>
+              <li class="active"><a href="/">&{'nav-bar.home'}</a></li>
+              <li><a href="#agency">&{'nav-bar.agency'}</a></li>
+              <li><a href="#contact">&{'nav-bar.contact'}</a></li>
+            </ul>
+
+			 <ul class="nav pull-right">
+              <li class="dropdown">
+                <a href="#" role="button" class="dropdown-toggle" data-toggle="dropdown">
+                  <i class="icon-globe"></i><b class="caret"></b>
+                </a>
+                <ul class="dropdown-menu" role="menu">
+                  <li><a href="#" class="lang-select" data-lang="cn">中国的</a></li>  
+                  <li><a href="#" class="lang-select" data-lang="en">English</a></li>
+                  <li><a href="#" class="lang-select" data-lang="es">Español</a></li>                 
+                </ul>
+              </li>
             </ul>
 
             <ul class="nav pull-right">
               <li class="dropdown">
                 <a href="#" role="button" class="dropdown-toggle" data-toggle="dropdown">
-                  <i class="icon-user"></i> Welcome Username!<b class="caret"></b>
+                  <i class="icon-user"></i> Welcome Kevin!<b class="caret"></b>
                 </a>
                 <ul class="dropdown-menu" role="menu">
-                  <li><a href="#">Logout</a></li>
+                  <li><a href="#">Logout</a></li> 
                 </ul>
               </li>
             </ul>
@@ -57,7 +70,7 @@
 
     <div class="container-fluid">
       <ul class="nav nav-pills" id="tools-nav">
-        <li><a href="/"><i class="icon-list-alt"></i> News &amp; Updates</a></li>
+        <!--<li><a href="/"><i class="icon-list-alt"></i> News &amp; Updates</a></li>-->
         <li><a href="/search/"><i class="icon-map-marker"></i> Search Routes</a></li>
         <li><a href="/route/"><i class="icon-pencil"></i> New Route</a></li>
       </ul>
@@ -67,9 +80,10 @@
 
     <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.2/underscore-min.js"></script>
-    <script src="http://cdnjs.cloudflare.com/ajax/libs/backbone.js/0.9.2/backbone-min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.0.0/backbone-min.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/ICanHaz.js/0.10/ICanHaz.min.js"></script>
     <script src="@{'/public/lib/bootstrap-2.1.1/js/bootstrap.min.js'}"></script>
+  
     #{script 'config.js' /}
     #{script 'utils.js' /}
     #{get 'scripts' /}

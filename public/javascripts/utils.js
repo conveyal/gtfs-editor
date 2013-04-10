@@ -51,3 +51,16 @@ var GtfsEditor = GtfsEditor || {};
   };
 
 })(GtfsEditor, jQuery);
+
+
+$(document).ready(function() {
+   // page init scripts
+   
+   // add language select handler
+   $(".lang-select").click(function(e){
+		$.get('/application/setLang', {lang: $(e.target).data('lang')}, function(){
+			location.reload();
+		});
+		e.preventDefault();
+	});
+ });
