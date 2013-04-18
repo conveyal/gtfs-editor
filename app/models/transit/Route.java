@@ -11,6 +11,7 @@ import javax.persistence.Query;
 
 import models.gis.GisRoute;
 import models.gis.GisUpload;
+import models.transit.RouteType;
 
 import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
@@ -29,7 +30,7 @@ public class Route extends Model {
     public String routeLongName;
     public String routeDesc;
 
-    @Enumerated(EnumType.STRING)
+    @ManyToOne
     public RouteType routeType;
 
     public String routeUrl;
@@ -68,7 +69,10 @@ public class Route extends Model {
         this.routeShortName = route.getShortName();
         this.routeLongName = route.getLongName();
         this.routeDesc = route.getDesc();
+        
         this.routeType = mapGtfsRouteType(route.getType());
+        
+        
         this.routeUrl = route.getUrl();
         this.routeColor = route.getColor();
 
@@ -85,35 +89,55 @@ public class Route extends Model {
         this.agency = agency;
     }
 
-    public static RouteType mapGtfsRouteType(Integer routeType)
+    // slightly tricky as we can't match 1:1 against GTFS and TDM route types -- we'll pick or create a type.
+    public static RouteType mapGtfsRouteType(Integer gtfsRouteType)
     {
-    	switch(routeType)
+    	GtfsRouteType type;
+    	
+    	switch(gtfsRouteType)
     	{
     		case 0:
-    			return RouteType.TRAM;
+    			type = GtfsRouteType.TRAM;
     		case 1:
-    			return RouteType.SUBWAY;
+    			type = GtfsRouteType.SUBWAY;
     		case 2:
-    			return RouteType.RAIL;
+    			type = GtfsRouteType.RAIL;
     		case 3:
-    			return RouteType.BUS;
+    			type = GtfsRouteType.BUS;
     		case 4:
-    			return RouteType.FERRY;
+    			type = GtfsRouteType.FERRY;
     		case 5:
-    			return RouteType.CABLECAR;
+    			type = GtfsRouteType.CABLECAR;
     		case 6:
-    			return RouteType.GONDOLA;
+    			type = GtfsRouteType.GONDOLA;
     		case 7:
-    			return RouteType.FUNICULAR;
+    			type = GtfsRouteType.FUNICULAR;
     		default:
-    			return null;
-
+    			type = null;
+    		
     	}
+    	
+    	if(type == null)
+			return null;
+		
+    	RouteType routeType = RouteType.find("gtfsRouteType = ?", type).first();
+    	
+    	if(routeType != null)
+    		return routeType;
+    	
+    	else {
+    		
+    		routeType = new RouteType();
+    		routeType.gtfsRouteType = type;
+    		routeType.description = type.name();
+    		
+    		return routeType;
+    	}    
     }
 
     public static Integer mapGtfsRouteType(RouteType routeType)
     {
-    	switch(routeType)
+    	switch(routeType.gtfsRouteType)
     	{
     		case TRAM:
     			return 0;
@@ -151,7 +175,7 @@ public class Route extends Model {
           .setParameter(5,  gtfsRoute.getLongName())
           .setParameter(6,  gtfsRoute.getShortName())
           .setParameter(7,  gtfsRoute.getTextColor())
-          .setParameter(8,  mapGtfsRouteType(gtfsRoute.getType()).name())
+          .setParameter(8,  mapGtfsRouteType(gtfsRoute.getType()).id)
           .setParameter(9,  gtfsRoute.getUrl())
           .setParameter(10, agencyId)
           .executeUpdate();

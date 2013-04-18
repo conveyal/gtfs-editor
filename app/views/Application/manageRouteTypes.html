@@ -1,0 +1,113 @@
+#{extends 'main.html' /}
+
+#{set 'title'}
+   &{'application.name'} | &{'manage.routeTypes.title'}
+#{/set}
+
+
+<h3>Manage Route Types</h3>
+
+	<form id="new-route-type-form" class="route-type-form form-horizontal">
+		<div id="route-type-modal" class="modal hide" tabindex="-1" role="dialog" data-backdrop="static" aria-labelledby="route-type-modal-label" aria-hidden="true">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+				<h3 id="route-type-modal-label">&{'manage.route-types.dialog-title'}</h3>	
+				</div>
+				<div id="route-type-modal-body" class="modal-body">
+					
+				<div class="control-group">
+					<label class="control-label" for="localizedVehicleType"><strong>&{'manage.route-types.localized-vehicle-type'}</strong><br>(&{'shared.required'})</label>
+					<div class="controls">
+					  <input required type="text" name="localizedVehicleType" id="localizedVehicleType" class="input-xlarge" value="" title="&{'manage.route-types.localized-vehicle-type'}" data-content="&{'manage.route-types.localized-vehicle-type-content'}">
+					</div>
+				</div>
+
+				<div class="control-group">
+					<label class="control-label" for="description"><strong>&{'manage.route-types.description'}</strong><br>(&{'shared.required'})</label>
+					<div class="controls">
+					  <input required type="text" name="description" id="description" class="input-xlarge" value="" title="&{'manage.route-types.description'}" data-content="&{'manage.route-types.description-content'}">
+					</div>
+				</div>
+
+				<div class="control-group">
+					<label class="control-label" for="gtfsRouteType"><strong>&{'manage.route-types.gtfs-route-type'}</strong><br>(&{'shared.required'})</label>
+				<div class="controls">
+					<select required name="gtfsRouteType" id="gtfsRouteType" class="input-large" class="input-xlarge" title="&{'manage.route-types.gtfs-route-type'}" data-content="&{'manage.route-types.gtfs-route-type-content'}">
+				      <option value=""></option>
+				      <option value="TRAM">&{'shared.route-type.tram'} (TRAM)</option>
+				      <option value="SUBWAY">&{'shared.route-type.subway'} (SUBWAY)</option>
+				      <option value="RAIL">&{'shared.route-type.rail'} (RAIL)</option>
+				      <option value="BUS">&{'shared.route-type.bus'} (BUS)</option>
+				      <option value="FERRY">&{'shared.route-type.ferry'} (FERRY)</option>
+				      <option value="JEEPNEY">&{'shared.route-type.jeepney'} (JEEPNEY)</option>
+				      <option value="CABLECAR">&{'shared.route-type.cable-car'} (CABLECAR)</option>
+				      <option value="GONDOLA">&{'shared.route-type.gondola'} (GONDOLA)</option>
+				      <option value="FUNICULAR">&{'shared.route-type.funicular'} (FUNICULAR)</option>
+				    </select>
+					</div>
+				</div>
+
+				<div class="control-group">
+					<label class="control-label" for="gtfsRouteType"><strong>&{'manage.route-types.hsv-route-type'}</strong><br>(&{'shared.required'})</label>
+					<div class="controls">
+						<select required name="hvtRouteType" id="gtfsRouteType" class="input-large" class="input-xlarge" title="&{'manage.route-types.hsv-route-type'}" data-content="&{'manage.route-types.hsv-route-type-content'}">
+					       	<option value=""></option>
+							<option value="RAIL">&{'shared.route-type.hvt.rail'} (RAIL)</option>
+							<option value="RAIL_HS">&{'shared.route-type.hvt.rail_hs'} (RAIL_HS)</option>
+							<option value="RAIL_LD">&{'shared.route-type.hvt.rail_ld'} (RAIL_LD)</option>
+							<option value="RAIL_SHUTTLE">&{'shared.route-type.hvt.rail_shuttle'} (RAIL_SHUTTLE)</option>
+							<option value="RAIL_SUBURBAN">&{'shared.route-type.hvt.rail_suburban'} (RAIL_SUBURBAN)</option>
+							<option value="COACH">&{'shared.route-type.hvt.coach'} (COACH)</option>
+							<option value="COACH_INTERNATIONAL">&{'shared.route-type.hvt.coach_international'} (COACH_INTERNATIONAL)</option>
+							<option value="COACH_NATIONAL">&{'shared.route-type.hvt.coach_national'} (COACH_NATIONAL)</option>
+							<option value="COACH_REGIONAL">&{'shared.route-type.hvt.coach_regional'} (COACH_REGIONAL)</option>
+							<option value="COACH_COMMUTER">&{'shared.route-type.hvt.coach_commuter'} (COACH_COMMUTER)</option>
+							<option value="URBANRAIL">&{'shared.route-type.hvt.urbanrail'} (URBANRAIL)</option>
+							<option value="URBANRAIL_METRO">&{'shared.route-type.hvt.urbanrail_metro'} (URBANRAIL_METRO)</option>
+							<option value="URBANRAIL_UNDERGROUND">&{'shared.route-type.hvt.urbanrail_underground'} (URBANRAIL_UNDERGROUND)</option>
+							<option value="URBANRAIL_MONORAIL">&{'shared.route-type.hvt.urbanrail_monorail'} (URBANRAIL_MONORAIL)</option>
+							<option value="BUS">&{'shared.route-type.hvt.bus'} (BUS)</option>
+							<option value="BUS_REGIONAL">&{'shared.route-type.hvt.bus_regional'} (BUS_REGIONAL)</option>
+							<option value="BUS_EXPRESS">&{'shared.route-type.hvt.bus_express'} (BUS_EXPRESS)</option>
+							<option value="BUS_LOCAL">&{'shared.route-type.hvt.bus_local'} (BUS_LOCAL)</option>
+							<option value="BUS_UNSCHEDULED">&{'shared.route-type.hvt.bus_unscheduled'} (BUS_UNSCHEDULED)</option>
+							<option value="TROLLEYBUS">&{'shared.route-type.hvt.trolleybus'} (TROLLEYBUS)</option>
+							<option value="TRAM">&{'shared.route-type.hvt.tram'} (TRAM)</option>
+							<option value="WATER">&{'shared.route-type.hvt.water'} (WATER)</option>
+							<option value="AIR">&{'shared.route-type.hvt.air'} (AIR)</option>
+							<option value="TELECABIN">&{'shared.route-type.hvt.telecabin'} (TELECABIN)</option>
+							<option value="FUNICULAR">&{'shared.route-type.hvt.funicular'} (FUNICULAR)</option>
+							<option value="MISCELLANEOUS">&{'shared.route-type.hvt.miscellaneous'} (MISCELLANEOUS)</option>
+							<option value="MISCELLANEOUS_CABLE_CAR">&{'shared.route-type.hvt.miscellaneous_cable_car'} (MISCELLANEOUS_CABLE_CAR)</option>
+							<option value="MISCELLANEOUS_HORSE_CARRIAGE">&{'shared.route-type.hvt.miscellaneous_horse_carriage'} (MISCELLANEOUS_HORSE_CARRIAGE)</option>
+					    </select>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button class="btn" data-dismiss="modal" aria-hidden="true">&{'shared.button.cancel'}</button>
+				<button type="submit" class="btn btn-primary" aria-hidden="true">&{'shared.button.save'}</button>
+			</div>
+		</div>
+	</form>
+
+	<table class="table table">
+		<tr><th>Localized Vehicle Type</th><th>GTFS Type</th><th>HVT Type</th><th>Description</th><th></th></tr>
+
+		#{list items:routeTypes, as:'routeType'}
+		    <tr><td>${routeType.localizedVehicleType}</td><td>${routeType.gtfsRouteType}</td><td>${routeType.hvtRouteType}</td><td>${routeType.description}</td><td><i class="icon-pencil"></i></td></tr>
+		#{/list}
+
+	</table>
+
+  	<button type="button" id="show-new-route-type-dialog-button" class="btn btn-primary" aria-hidden="true" data-toggle="modal" data-target="#route-type-modal">Create New Type</button>
+
+#{set 'scripts'}
+
+	<script src="@{'/public/lib/jquery.serializeObject.min.js'}"></script>
+
+	#{script 'models.js' /}
+
+	#{script 'pages/manage-route-types.js' /}
+
+#{/set}

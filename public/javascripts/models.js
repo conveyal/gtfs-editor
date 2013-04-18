@@ -3,6 +3,8 @@ var GtfsEditor = GtfsEditor || {};
 (function(G, $) {
 
   G.Agency = Backbone.Model.extend({
+    url: '/api/agency/',
+    
     defaults: {
       id: null,
       gtfsAgencyId: null,
@@ -10,7 +12,10 @@ var GtfsEditor = GtfsEditor || {};
       url: null,
       timezone: null,
       lang: null,
-      phone: null
+      phone: null,
+      defaultLat: null,
+      defaultLon: null,
+      defaultRouteType: null
     }
   });
 
@@ -19,6 +24,25 @@ var GtfsEditor = GtfsEditor || {};
     model: G.Agency,
     url: '/api/agency/'
   });
+
+G.RouteType = Backbone.Model.extend({
+    url: '/api/routetype/',
+
+    defaults: {
+      id: null,
+      gtfsRouteType: null,
+      hvtRouteType: null,
+      localizedVehicleType: null,
+      description: null
+    }
+  });
+
+G.RouteTypes = Backbone.Collection.extend({
+    type: 'RouteTypes',
+    model: G.RouteType,
+    url: '/api/routetype/'
+  });
+
 
   G.Route = Backbone.Model.extend({
     defaults: {
@@ -59,7 +83,12 @@ var GtfsEditor = GtfsEditor || {};
       parentStation: null,
       majorStop: false,
       location: null
-    }
+    },
+
+    blacklist: ['justAdded',],
+    toJSON: function(options) {
+        return _.omit(this.attributes, this.blacklist);
+    },
   });
 
   G.Stops = Backbone.Collection.extend({
@@ -109,6 +138,7 @@ var GtfsEditor = GtfsEditor || {};
       var patternStops = this.get('patternStops');
       patternStops.push(stopTime);
       this.set('patternStops', patternStops);
+      this.save();
     },
 
     insertStopAt: function(stopTime, i) {

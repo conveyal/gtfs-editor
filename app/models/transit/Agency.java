@@ -5,6 +5,7 @@ import java.util.Set;
 import javax.persistence.Entity;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 
 import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
@@ -26,7 +27,13 @@ public class Agency extends Model {
     public String color;
     
     public Boolean systemMap;
+
+    public Double defaultLat;
+    public Double defaultLon;
     
+    @ManyToOne
+    public RouteType defaultRouteType;
+
     @JsonCreator
     public static Agency factory(long id) {
       return Agency.findById(id);

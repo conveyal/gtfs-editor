@@ -116,8 +116,8 @@
     content: " ";
     width: 0;
     height: 0;
-    border-top: 30px solid transparent;
-    border-bottom: 30px solid transparent;
+    border-top: 45px solid transparent;
+    border-bottom: 45px solid transparent;
 
     border-left: 30px solid #ddd;
   }

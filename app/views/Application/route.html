@@ -1,5 +1,9 @@
 #{extends 'main.html' /}
-#{set title:'GTFS Editor | Edit Route' /}
+
+#{set 'title'}
+    &{'application.name'} | &{'route.editRoute.title'}
+#{/set}
+
 
 #{set 'styles'}
   <!--[if lte IE 8]>
@@ -12,94 +16,125 @@
   
 #{/set}
 
+
+
 <!-- Mustache templates used in the js views. These should be i18n sometime. -->
 
 <!-- The basic route info form -->
 <script id="route-info-tpl" type="text/html">
 
+<div id="route-type-modal" class="modal modal-wide hide" tabindex="-1" role="dialog" data-backdrop="static" aria-labelledby="route-type-modal-label" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="route-type-modal-label">&{'route.trip-info-tpl.route-types.title'}</h3>	
+  </div>
+  <div id="route-type-modal-body" class="modal-body">
+     <table class="table table">
+      <tr><th>Localized Vehicle Type</th><th>GTFS Type</th><th>HVT Type</th><th>Description</th></tr>      
+     
+      #{list items:routeTypes, as:'routeType'}
+          <tr><td>${routeType.localizedVehicleType}</td><td>${routeType.gtfsRouteType}</td><td>${routeType.hvtRouteType}</td><td>${routeType.description}</td></tr>
+      #{/list}
+
+    </table>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">&{'shared.button.close'}</button>
+  </div>
+</div>
+
+
 <form class="route-info-form form-horizontal span12">
   <input type="hidden" name="agency" id="agency" value="{{agency}}">
 
   <div class="control-group">
-    <label class="control-label" for="routeShortName"><strong>&{'route-info-tpl.short-name'}</strong><br>(&{'route-info-tpl.required'})</label>
+    <label class="control-label" for="routeShortName"><strong>&{'route.route-info-tpl.short-name'}</strong><br>(&{'shared.required'})</label>
     <div class="controls">
-      <input required type="text" name="routeShortName" id="routeShortName" class="input-xxlarge" value="{{routeShortName}}" title="&{'route-info-tpl.short-name'}" data-content="&{'route-info-tpl.short-name-content'}">
+      <input required type="text" name="routeShortName" id="routeShortName" class="input-xxlarge" value="{{routeShortName}}" title="&{'route.route-info-tpl.short-name'}" data-content="&{'route.route-info-tpl.short-name-content'}">
     </div>
   </div>
 
   <div class="control-group">
-    <label class="control-label" for="routeLongName"><strong>Long Name</strong><br>(required)</label>
+    <label class="control-label" for="routeLongName"><strong>&{'route.route-info-tpl.long-name'}</strong><br>(&{'shared.required'})</label>
     <div class="controls">
-      <input required type="text" name="routeLongName" id="routeLongName" class="input-xxlarge" value="{{routeLongName}}" title="Long Name" data-content="The route_long_name contains the full name of a route. This name is generally more descriptive than the route_short_name and will often include the route's destination or stop. If the route does not have a long name, please specify a route_short_name and use an empty string as the value for this field.">
+      <input required type="text" name="routeLongName" id="routeLongName" class="input-xxlarge" value="{{routeLongName}}" title="&{'route.route-info-tpl.long-name'}" data-content="&{'route.route-info-tpl.long-name-content'}">
     </div>
   </div>
 
   <div class="control-group">
-    <label class="control-label" for="routeType"><strong>Type</strong><br>(required)</label>
+    <label class="control-label" for="routeType"><strong>&{'route.route-info-tpl.route-type'}</strong><br>(&{'shared.required'})</label>
     <div class="controls">
-      <select required name="routeType" id="routeType" class="input-xlarge" title="Type" data-content="The route_type field describes the type of transportation used on a route.">
-        <option value=""></option>
-        <option value="TRAM">Tram</option>
-        <option value="SUBWAY">Subway</option>
-        <option value="RAIL">Rail</option>
-        <option value="BUS">Bus</option>
-        <option value="FERRY">Ferry</option>
-        <option value="JEEPNEY">Jeepney</option>
-        <option value="CABLECAR">Cable Car</option>
-        <option value="GONDOLA">Gondola</option>
-        <option value="FUNICULAR">Funicular</option>
+      <select required name="routeType" id="routeType" class="input-xlarge" title="&{'route.route-info-tpl.route-type'}" data-content="&{'route.route-info-tpl.route-type-content'}">
+        
+        #{list items:routeTypes, as:'routeType'}
+            <option value="${routeType.id}">${routeType.localizedVehicleType} (${routeType.hvtRouteType})</option>
+        #{/list}
+
       </select>
+		<a href="#route-type-modal" role="button small" class="btn" data-toggle="modal">&{'route.trip-info-tpl.route-types.title'}</a>
     </div>
   </div>
 
   <div class="control-group">
-    <label class="control-label" for="routeDesc">Description</label>
+    <label class="control-label" for="routeDesc">&{'route.route-info-tpl.description'}</label>
     <div class="controls">
-      <textarea name="routeDesc" id="routeDesc" class="input-xlarge" title="Description" data-content="The route_desc field contains a description of a route. Please provide useful, quality information. Do not simply duplicate the name of the route.">{{routeDesc}}</textarea>
+      <textarea name="routeDesc" id="routeDesc" class="input-xlarge" title="&{'route.route-info-tpl.description-content'}" data-content="&{'route.route-info-tpl.description-content'}">{{routeDesc}}</textarea>
     </div>
   </div>
 
   <div class="control-group">
-    <label class="control-label" for="routeUrl">URL</label>
+    <label class="control-label" for="routeUrl">&{'route.route-info-tpl.url'}</label>
     <div class="controls">
-      <input type="text" name="routeUrl" id="routeUrl" class="input-xlarge" value="{{routeUrl}}" title="URL" data-content="The route_url field contains the URL of a web page about that particular route. This should be different from the agency_url. The value must be a fully qualified URL that includes http:// or https://, and any special characters in the URL must be correctly escaped.">
+      <input type="text" name="routeUrl" id="routeUrl" class="input-xlarge" value="{{routeUrl}}" title="&{'route.route-info-tpl.url'}" data-content="&{'route.route-info-tpl.url-content'}">
     </div>
   </div>
 
   <div class="control-group">
-    <label class="control-label" for="routeColor">Color</label>
+    <label class="control-label" for="routeColor">&{'route.route-info-tpl.route-color'}</label>
     <div class="controls">
-      <input type="text" name="routeColor" id="routeColor" class="input-small" value="{{routeColor}}" title="Color" data-content="In systems that have colors assigned to routes, the route_color field defines a color that corresponds to a route. The color must be provided as a six-character hexadecimal number, for example, 00FFFF. If no color is specified, the default route color is white (FFFFFF).">
+      <input type="text" name="routeColor" id="routeColor" class="input-small" value="{{routeColor}}" title="&{'route.route-info-tpl.route-color'}" data-content="&{'route.route-info-tpl.route-color-content'}">
     </div>
   </div>
 
   <div class="control-group">
-    <label class="control-label" for="routeTextColor">Text Color</label>
+    <label class="control-label" for="routeTextColor">&{'route.route-info-tpl.route-text-color'}</label>
     <div class="controls">
-      <input type="text" name="routeTextColor" id="routeTextColor" class="input-small" value="{{routeTextColor}}" title="Text Color" data-content="The route_text_color field can be used to specify a legible color to use for text drawn against a background of route_color. The color must be provided as a six-character hexadecimal number, for example, FFD700. If no color is specified, the default text color is black (000000).">
+      <input type="text" name="routeTextColor" id="routeTextColor" class="input-small" value="{{routeTextColor}}" title="&{'route.route-info-tpl.route-text-color'}" data-content="&{'route.route-info-tpl.route-text-color-content'}">
     </div>
   </div>
 
-  <div class="control-group">
-    <label class="control-label" for="airCon">Air Conditioned?</label>
+<!--  <div class="control-group">
+    <label class="control-label" for="airCon">&{'route.route-info-tpl.air-con-label'}</label>
     <div class="controls">
       <label class="checkbox" for="airCon">
-        <input name="airCon" id="airCon" type="checkbox" value="true" {{#airCon}}checked{{/airCon}}> With Aircon
+        <input name="airCon" id="airCon" type="checkbox" value="true" {{#airCon}}checked{{/airCon}}> &{'route.route-info-tpl.air-con-checkbox'}
       </label>
     </div>
-  </div>
+  </div> -->
 
   <div class="control-group">
-    <label class="control-label" for="comments">Comments</label>
+    <label class="control-label" for="comments">&{'route.route-info-tpl.comments'}</label>
     <div class="controls">
-      <textarea name="comments" id="comments" class="input-xlarge" title="Comments" data-content="Add any helpful internal information about this route. This is an unofficial field that will not show up in the GTFS file.">{{comments}}</textarea>
+      <textarea name="comments" id="comments" class="input-xlarge" title="&{'route.route-info-tpl.comments'}" data-content="&{'route.route-info-tpl.comments-content'}">{{comments}}</textarea>
     </div>
   </div>
 
   <div class="form-actions">
-    <button type="submit" class="btn btn-primary" id="route-save-btn">Save and Continue</button>
+    <button type="submit" class="btn btn-primary" id="route-save-btn">&{'shared.button.save-continue'}</button>
   </div>
 </form>
+</script>
+
+
+
+<script id="route-info-tpl-route-type-options-tpl" type="text/html">
+  
+  <option value=""></option>
+
+  {{#option}}
+    <option value="{{id}}">{{localizedVehicleType}} ({{gtfsRouteType}})</option>
+  {{/option}}    
+
 </script>
 
 
@@ -110,56 +145,56 @@
   <input type="hidden" name="agency" id="agency" value="{{agency}}">
 
   <div class="control-group">
-    <label class="control-label" for="routeShortName"><strong>Start Time</strong><br>(required)</label>
+    <label class="control-label" for="startTime"><strong>&{'route.trip-info-tpl.start-time'}</strong><br>(required)</label>
     <div class="controls">
-      <input required type="text" name="routeShortName" id="routeShortName" class="input" value="{{startTime}}" placeholder="hh:mm" title="Star Time" data-content="The time of day when the this pattern begins operation.">
+      <input required type="text" name="startTime" id="startTime" class="input" value="{{startTime}}" placeholder="hh:mm" title="&{'route.trip-info-tpl.start-time'}" data-content="&{'route.trip-info-tpl.start-time-content'}">
     </div>
   </div>
 
   <div class="control-group">
-    <label class="control-label" for="routeLongName"><strong>End Time</strong><br>(required)</label>
+    <label class="control-label" for="endTime"><strong>&{'route.trip-info-tpl.end-time'}</strong><br>(required)</label>
     <div class="controls">
-      <input required type="text" name="routeLongName" id="routeLongName" class="input" value="{{endTime}}" placeholder="hh:mm" title="End Time" data-content="The time of day when the this pattern ends operation.">
+      <input required type="text" name="endTime" id="endTime" class="input" value="{{endTime}}" placeholder="hh:mm" title="&{'route.trip-info-tpl.end-time'}" data-content="&{'route.trip-info-tpl.end-time-content'}">
     </div>
   </div>
 
   <div class="control-group">
-    <label class="control-label" for="routeLongName"><strong>Service Frequency</strong><br>(required)</label>
+    <label class="control-label" for="serviceFrequency"><strong>&{'route.trip-info-tpl.service-frequency'}</strong><br>(required)</label>
     <div class="controls">
-      <input required type="text" name="routeLongName" id="routeLongName" class="input" value="{{endTime}}" placeholder="hh:mm:ss" title="Service Frequency" data-content="Number of minutes and second between average arrival times..">
+      <input required type="text" name="serviceFrequency" id="serviceFrequency" class="input" value="{{endTime}}" placeholder="hh:mm:ss" title="&{'route.trip-info-tpl.service-frequency'}" data-content="&{'route.trip-info-tpl.service-frequency-content'}">
     </div>
   </div>
 
   <div class="control-group">
-    <label class="control-label" for="days"><strong>Days in service</strong>:</label>
+    <label class="control-label" for="days"><strong>&{'route.trip-info-tpl.days-in-service'}</strong>:</label>
     <div class="controls">
       <label class="checkbox" for="Monday">
-        <input name="Monday" id="Monday" type="checkbox" value="true" {{#airCon}}checked{{/airCon}}> Monday
+        <input name="Monday" id="Monday" type="checkbox" value="true" {{#monday}}checked{{/monday}}> &{'shared.monday'}
       </label>
       <label class="checkbox" for="Tuesday">
-        <input name="Tuesday" id="Tuesday" type="checkbox" value="true" {{#airCon}}checked{{/airCon}}> Tuesday 
+        <input name="Tuesday" id="Tuesday" type="checkbox" value="true" {{#tuesday}}checked{{/tuesday}}> &{'shared.tuesday'} 
       </label>
       <label class="checkbox" for="Wednesday">
-        <input name="Wednesday" id="Wednesday" type="checkbox" value="true" {{#airCon}}checked{{/airCon}}> Wednesday 
+        <input name="Wednesday" id="Wednesday" type="checkbox" value="true" {{#wednesday}}checked{{/wednesday}}> &{'shared.wednesday'} 
       </label>
       <label class="checkbox" for="Thursday">
-        <input name="Thursday" id="Thursday" type="checkbox" value="true" {{#airCon}}checked{{/airCon}}> Thursday 
+        <input name="Thursday" id="Thursday" type="checkbox" value="true" {{#thursday}}checked{{/thursday}}> &{'shared.thursday'} 
       </label>
       <label class="checkbox" for="Friday">
-        <input name="Friday" id="Friday" type="checkbox" value="true" {{#airCon}}checked{{/airCon}}> Friday 
+        <input name="Friday" id="Friday" type="checkbox" value="true" {{#friday}}checked{{/friday}}> &{'shared.friday'} 
       </label>
       <label class="checkbox" for="Saturday">
-        <input name="Saturday" id="Saturday" type="checkbox" value="true" {{#airCon}}checked{{/airCon}}> Saturday 
+        <input name="Saturday" id="Saturday" type="checkbox" value="true" {{#saturday}}checked{{/saturday}}> &{'shared.saturday'} 
       </label>
       <label class="checkbox" for="Sunday">
-        <input name="Sunday" id="Sunday" type="checkbox" value="true" {{#airCon}}checked{{/airCon}}> Sunday 
+        <input name="Sunday" id="Sunday" type="checkbox" value="true" {{#sunday}}checked{{/sunday}}> &{'shared.sunday'} 
       </label>
     </div>
   </div>
 
 
   <div class="form-actions">
-    <button type="submit" class="btn btn-primary" id="route-save-btn">Save and Continue</button>
+    <button type="submit" class="btn btn-primary" id="route-save-btn">&{'shared.button.save-continue'}</button>
   </div>
 </form>
 </script>
@@ -180,32 +215,44 @@
 
 <!-- The Stop instructions, not styled -->
 <script id="stop-instructions-tpl" type="text/html">
-  <div>Right click the map to add a new stop, or click a marker to edit details.</div>
+  <div>&{'route.stop-instructions-tpl'}</div>
 </script>
 
 <!-- The Stop sidebar contents ie. stop marker toggles -->
 <script id="stops-sidebar-tpl" type="text/html">
-  <div class="stopfilter-details well">
-    <h5>Filter Stops</h5>
-    <label class="checkbox">
-      <input class="stops-toggle" type="checkbox" checked="checked" id="standard-stops-toggle"> Standard Stops
-    </label>
 
-    <label class="checkbox">
-      <input class="stops-toggle" type="checkbox" checked="checked" id="major-stops-toggle"> Major Stops
-    </label>
-  </div>
-</script>
+    <div class="stop-filter-details well">
+      <legend>Filter Stops</legend>
+      <label class="radio">
+        <input type="radio" name="stopFilterRadio" id="optionsRadios1" value="filtered" checked>Show only stops for {{route.agency.name}}
+      </label>
+      <label class="radio">
+        <input type="radio" name="stopFilterRadio" id="optionsRadios2" value="all">Show all stops
+      </label>
+      <p class="text-warning" id="stops-hidden-message">Some stops may be hidden at current zoom level.</p>
+    </div>
+
+    <div class="stop-import-details well">
+      <legend>Import Stops</legend>
+       
+        <button type="button" class="btn disabled stop-delete-btn">Upload Stop Data</button>
+    </div>
+
+  </script>
 
 <!-- The route summary -->
 <script id="route-summary-container-tpl" type="text/html">
   <div class="row-fluid">
-    <div class="offset1 span11">Name: <strong>{{ routeLongName }}</strong></div>
+    <div class="offset1 span11">&{'route.route-info-tpl.agency'}: <strong>{{ agency.name }}</strong></div>
   </div>
   <div class="row-fluid">
-    <div class="offset1 span5">Type: <strong>{{ routeType }}</strong></div>
+    <div class="offset1 span5">&{'route.route-info-tpl.short-name'}: <strong>{{ routeShortName }}</strong></div>
+    <div class="span6">&{'route.route-info-tpl.long-name'}: <strong>{{ routeLongName }}</strong></div>
+  </div>
+  <div class="row-fluid">
+    <div class="offset1 span5">Type: <strong>{{ routeType.localizedVehicleType }}</strong></div>
     <div class="span6"><a class="route-summary-link" href="javascript:void(0);"
-        title="{{ routeLongName }} ({{ routeShortName }})">Details
+        title="{{ routeLongName }} ({{ routeShortName }})">&{'shared.details'}
       </a>
     </div>
   </div>
@@ -215,8 +262,8 @@
   the details link. -->
 <script id="route-summary-tpl" type="text/html">
   <div class="route-summary-details">
-    <div class="row-fluid"><strong>Description:</strong> {{ routeDesc }}</div>
-    <div class="row-fluid"><strong>Color:</strong>
+    <div class="row-fluid"><strong>&{'route.route-info-tpl.description'}:</strong> {{ routeDesc }}</div>
+    <div class="row-fluid"><strong>&{'route.route-info-tpl.route-color'}:</strong>
       <div class="route-summary-color"></div>
     </div>
   </div>
@@ -226,14 +273,15 @@
 <script id="stop-form-tpl" type="text/html">
   <form class="stop-details-form">
     <legend>Stop Details</legend>
+    <label><strong>Agency</strong>: {{agency.name}}</<label>
     <input type="hidden" name="id" value="{{id}}">
     <input name="stopName" class="input-xlarge" type="text" placeholder="Name" value="{{stopName}}">
     <textarea name="stopDesc" class="input-xlarge" placeholder="Description">{{stopDesc}}</textarea>
     <label class="checkbox">
       <input type="checkbox" name="majorStop"{{#majorStop}} checked="checked"{{/majorStop}}> Major Stop?
     </label>
-    <button type="submit" class="btn btn-primary stop-save-btn">Save</button>
-    <button type="button" class="btn btn-danger stop-delete-btn">Delete</button>
+    <button type="submit" class="btn btn-primary stop-save-btn">&{'shared.button.save'}</button>
+    <button type="button" class="btn btn-danger stop-delete-btn">&{'shared.button.delete'}</button>
   </form>
 </script>
 
@@ -242,12 +290,18 @@
   <form class="trippattern-stop-details-form">
     <legend>Add Stop to Trip Pattern</legend>
     <input type="hidden" name="id" value="{{id}}">
-    <label>{{stopName}}</label>
-    <input name="travelTime" class="input" type="text" placeholder="Travel Time (mm:ss)" value="{{travelTime}}">
-    <input name="dwellTime" class="input" type="text" placeholder="Dwell Time (mm:ss)" value="{{dwellTime}}">
-    <br/>
-    <button type="submit" class="btn btn-primary trippattern-stop-add-btn">Add</button>
-    <button type="button" class="btn stop-cancel-btn">Cancel</button>
+    <p>
+      <label><strong>Agency</strong>: {{agency.name}}</label>
+      <label><strong>Stop Name</strong>: {{stopName}}</label>
+    </p>
+    <p>
+      <input name="travelTime" class="input" type="text" placeholder="Travel Time (mm:ss)" value="{{travelTime}}">
+      <input name="dwellTime" class="input" type="text" placeholder="Dwell Time (mm:ss)" value="{{dwellTime}}">
+    </p>
+    <p>
+      <button type="submit" class="btn btn-primary trippattern-stop-add-btn">Add</button>
+      <button type="button" class="btn stop-cancel-btn">Cancel</button>
+    </p>
   </form>
 </script>
 
@@ -277,11 +331,33 @@
 <script id="trippatterns-sidebar-tpl" type="text/html">
   <div>
 
+    <div class="stop-filter-details well">
+      <legend>Filter Stops</legend>
+      <label class="radio">
+        <input type="radio" name="stopFilterRadio" id="optionsRadios1" value="filtered" checked>Show only stops for {{route.agency.name}}
+      </label>
+      <label class="radio">
+        <input type="radio" name="stopFilterRadio" id="optionsRadios2" value="all">Show all stops
+      </label>
+      <p class="text-warning" id="stops-hidden-message">Some stops may be hidden at current zoom level.</p>
+    </div>
+
     <div class="trippattern-details well">
     <legend>Trip Patterns</legend>
-      <select id="selectedTripPattern">{{#items}}<option value="{{attributes.id}}">{{attributes.name}}</option>{{/items}}</select>
-      <div class="clearfix"></div>
-      <button type="submit" class="btn btn-primary trippattern-create-btn">Create New Pattern</button>
+      <p>
+        <select id="selectedTripPattern">
+
+          <option value="">-- select pattern --</option>
+          
+            {{#items}}<option value="{{id}}">{{name}}</option>{{/items}}
+        </select>
+      </p>
+      <p>
+        <button type="submit" class="btn btn-primary trippattern-create-btn">Create New Pattern</button>
+      </p>
+      <p>
+        <button type="button" class="btn btn-primary transitwand-impot-btn">Create from TransitWand</button>
+      </p>
       <div id="trippattern-create"></div>      
     </div>
 
@@ -310,40 +386,42 @@
 
 <!-- Step instructions for Trip Patterns step -->
 <script id="trippatterns-instructions-tpl" type="text/html">
-  <div>Click on stops on the map to make an ordered trip pattern. Re-order rows at right if necessary.</div>
+  <div>&{'route.trip-pattern-instructions'}</div>
 </script>
 
 <!-- Route page markup -->
 <div class="row-fluid" id="route-header">
   <div class="span12">
-    <h3>Steps to Add a New Route</h3>
+    <!-- <h3>&{'route.steps-header'}</h3> -->
 
     <ul id="route-nav" class="nav nav-pills">
       <li>
         <a class="route-link" data-route-step="info" href="/route/info">1</a>
-        <label class="route-nav-label">Basic Info</label>
+        <label class="route-nav-label">&{'route.step1'}</label>
       </li>
       <li class="disabled">
         <a class="route-link" data-route-step="stops" href="/route/stops">2</a>
-        <label class="route-nav-label">Stops</label>
+        <label class="route-nav-label">&{'route.step2'}</label>
       </li>
       <li class="disabled">
         <a class="route-link" data-route-step="trippatterns" href="/route/trippatterns">3</a>
-        <label class="route-nav-label">Trip Patterns</label>
+        <label class="route-nav-label">&{'route.step3'}</label>
       </li>
       <li class="disabled">
         <a class="route-link" data-route-step="trips" href="/route/trips">4</a>
-        <label class="route-nav-label">Trips</label>
+        <label class="route-nav-label">&{'route.step4'}</label>
       </li>
       <li class="disabled">
         <a class="route-link" data-route-step="review" href="/route/review">5</a>
-        <label class="route-nav-label">Review</label>
+        <label class="route-nav-label">&{'route.step5'}</label>
       </li>
     </ul>
   </div>
 </div>
 
 <div class="row-fluid" id="route-step-content"></div>
+
+
 
 
 #{set 'scripts'}
@@ -365,7 +443,7 @@
     $(function(){
       // TODO: the config be need to be dynamic based on the user details.
       // ie. agency, etc
-      GtfsEditor.RoutePage.init(GtfsEditor.config.agencyId);
+      GtfsEditor.RoutePage.init(${session.agencyId});
     });
   </script>
 #{/set}

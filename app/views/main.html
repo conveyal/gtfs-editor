@@ -8,9 +8,23 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <link rel="stylesheet" media="screen" href="@{'/public/lib/bootstrap-2.1.1/css/bootstrap.min.css'}">
+	<style>
+	
+		body .modal-wide {
+		    /* new custom width */
+		    max-width:1000px;
+		   	width: 90%; /* desired relative width */
+  			left: 5%; /* (100%-width)/2 */
+  			margin: auto auto auto auto;
+		}
+	</style>
+
+    <link rel="stylesheet" media="screen" href="@{'/public/lib/bootstrap-2.3.1/css/bootstrap.css'}">
+    <link rel="stylesheet" media="screen" href="@{'/public/lib/pnotify-1.2.0/jquery.pnotify.default.css'}">
+
+
     #{get 'styles' /}
-    <link rel="stylesheet" media="screen" href="@{'/public/lib/bootstrap-2.1.1/css/bootstrap-responsive.min.css'}">
+    <!--   <link rel="stylesheet" media="screen" href="@{'/public/lib/bootstrap-2.1.1/css/bootstrap-responsive.min.css'}">--> 
 
     <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
     <!--[if lt IE 9]>
@@ -30,16 +44,45 @@
             <span class="icon-bar"></span>
           </a>
 
-          <a class="brand" href="/">Philippines Transit Database</a>
+          <a class="brand" href="@{Application.index}">&{'application.name'}</a>
           <div class="nav-collapse collapse">
 
             <ul class="nav">
-              <li class="active"><a href="/">&{'nav-bar.home'}</a></li>
-              <li><a href="#agency">&{'nav-bar.agency'}</a></li>
-              <li><a href="#contact">&{'nav-bar.contact'}</a></li>
+              <li class="active"><a href="@{Application.index}">&{'nav-bar.home'}</a></li>
+<!--              <li><a href="#agency">&{'nav-bar.agency'}</a></li>
+              <li><a href="#contact">&{'nav-bar.contact'}</a></li> -->
+
+              <li class="dropdown">
+                <a href="#" role="button" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-wrench"></i> ${session.agencyName} <b class="caret"></b></a>
+                <ul class="dropdown-menu" role="menu">
+                  #{list items:agencies, as:'agency' }
+                    <li><a href="#" class="agency-select" data-agency="${agency.id}"> ${agency.name}</a></li>  
+                  #{/list}
+                </ul>
+              </li>
+
+              <li class="dropdown">
+                <a href="#" role="button" class="dropdown-toggle" data-toggle="dropdown">Export<b class="caret"></b></a>
+                <ul class="dropdown-menu" role="menu">
+                  <li><a href="#export" class="manage-route-types">&{'export.gtfs.title'}</a></li>  
+                  <!-- <li><a href="@{Application.manageStopTypes}" class="manage-stop-types">&{'manage.stop-types.title'}</a></li>  -->
+                  <!-- <li><a href="@{Application.manageRouteTypes}" class="manage-users" data-lang="en">Manage Users</a></li> -->
+                  <li><a href="#export" class="manage-agenices">&{'export.shapefile.title'}</a></li>                 
+                </ul>
+              </li>
+
+              <li class="dropdown">
+                <a href="#" role="button" class="dropdown-toggle" data-toggle="dropdown">Admin <b class="caret"></b></a>
+                <ul class="dropdown-menu" role="menu">
+                  <li><a href="@{Application.manageRouteTypes}" class="manage-route-types">&{'manage.route-types.title'}</a></li>  
+                  <!-- <li><a href="@{Application.manageStopTypes}" class="manage-stop-types">&{'manage.stop-types.title'}</a></li>  -->
+                  <!-- <li><a href="@{Application.manageRouteTypes}" class="manage-users" data-lang="en">Manage Users</a></li> -->
+                  <li><a href="@{Application.manageAgencies}" class="manage-agenices">&{'manage.agencies.title'}</a></li>                 
+                </ul>
+              </li>
             </ul>
 
-			 <ul class="nav pull-right">
+			     <ul class="nav pull-right">
               <li class="dropdown">
                 <a href="#" role="button" class="dropdown-toggle" data-toggle="dropdown">
                   <i class="icon-globe"></i><b class="caret"></b>
@@ -55,7 +98,7 @@
             <ul class="nav pull-right">
               <li class="dropdown">
                 <a href="#" role="button" class="dropdown-toggle" data-toggle="dropdown">
-                  <i class="icon-user"></i> Welcome Kevin!<b class="caret"></b>
+                  <i class="icon-user"></i>&{'nav-bar.user-greeting', 'Kevin'}<b class="caret"></b>
                 </a>
                 <ul class="dropdown-menu" role="menu">
                   <li><a href="#">Logout</a></li> 
@@ -82,10 +125,31 @@
     <script src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.2/underscore-min.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.0.0/backbone-min.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/ICanHaz.js/0.10/ICanHaz.min.js"></script>
-    <script src="@{'/public/lib/bootstrap-2.1.1/js/bootstrap.min.js'}"></script>
+    <script src="@{'/public/lib/bootstrap-2.3.1/js/bootstrap.min.js'}"></script>
+    <script src="@{'/public/lib/pnotify-1.2.0/jquery.pnotify.min.js'}"></script>
   
     #{script 'config.js' /}
     #{script 'utils.js' /}
     #{get 'scripts' /}
+
+    <script type="text/javascript" language="javascript" >
+
+        var GtfsEditor = GtfsEditor || {};
+
+        (function(G, $) {
+
+          G.session = {
+  
+            agencyId: ${session.agencyId},
+            mapCenter: [${session.lat}, ${session.lon}],
+            mapZoom: ${session.zoom},         
+          };
+
+        })(GtfsEditor, jQuery);
+
+
+
+    </script>
+
   </body>
 </html>

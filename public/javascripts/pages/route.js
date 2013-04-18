@@ -5,35 +5,61 @@ var GtfsEditor = GtfsEditor || {};
       _stopCollection = new G.Stops(),
       _router,
       _steps = ['info', 'stops', 'trippatterns', 'trips', 'review'],
+      _instantiatedViews = {}
       _views = {
         'info': function(model) {
-          return new G.RouteInfoView({
-            el: '#route-step-content',
-            collection: _routeCollection,
-            model: model,
-            agencyId: _agencyId,
-            onSave: function(model) {
-              _router.navigate(model.id + '/stops', {trigger: true});
-            }
-          });
+          if(_instantiatedViews['info'] == null) {
+
+            _instantiatedViews['info'] = new G.RouteInfoView({
+              el: '#route-step-content',
+              collection: _routeCollection,
+              model: model,
+              agencyId: _agencyId,
+              onSave: function(model) {
+                _router.navigate(model.id + '/stops', {trigger: true});
+              }
+            });
+
+          }
+
+          return _instantiatedViews['info'];
         },
         'stops': function(model) {
-          return new G.RouteStopsView({
-            el: '#route-step-content',
-            collection: _stopCollection,
-            model: model, //Route info model
-            agencyId: _agencyId
-          });
+          if(_instantiatedViews['stops'] == null) {
+
+            _instantiatedViews['stops'] = new G.RouteStopsView({
+              el: '#route-step-content',
+              collection: _stopCollection,
+              model: model, //Route info model
+              agencyId: _agencyId
+            }); 
+          }
+
+          return _instantiatedViews['stops'];
         },
         'trippatterns': function(model) {
-          return new G.RouteTripPatternsView({
-            el: '#route-step-content',
-            model: model, //Route info model
-            stops: _stopCollection,
-            agencyId: _agencyId
-          });
+          if(_instantiatedViews['trippatterns'] == null) {
+            _instantiatedViews['trippatterns'] = new G.RouteTripPatternsView({
+              el: '#route-step-content',
+              model: model, //Route info model
+              stops: _stopCollection,
+              agencyId: _agencyId
+            });
+          }
+
+          return _instantiatedViews['trippatterns'];
         },
-        'trips': function() { return new Backbone.View(); },
+        'trips': function(model) {  if(_instantiatedViews['trips'] == null) {
+            _instantiatedViews['trips'] = new G.TripInfoView({
+              el: '#route-step-content',
+              model: model, //Route info model
+              stops: _stopCollection,
+              agencyId: _agencyId
+            });
+          }
+
+          return _instantiatedViews['trips']; 
+        },
         'review': function() { return new Backbone.View(); }
       };
 
@@ -103,6 +129,7 @@ var GtfsEditor = GtfsEditor || {};
     // Since $content is always the target, why not just pass it in and let
     // the view worry about rendering? Would make the map part easier.
     showStep: function (step, model) {
+
       var view = _views[step](model);
 
       // Update the active step classes

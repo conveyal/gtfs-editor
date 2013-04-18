@@ -14,6 +14,11 @@ import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import  org.codehaus.jackson.map.ObjectMapper;
 
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.PrecisionModel;
+
 import models.*;
 import models.transit.Agency;
 import models.transit.Route;
@@ -117,6 +122,79 @@ public class Api extends Controller {
         ok();
     }
 
+ // **** route controllers ****
+
+    public static void getRouteType(Long id) {
+        try {
+            if(id != null)
+            {
+            	RouteType routeType = RouteType.findById(id);
+                if(routeType != null)
+                    renderJSON(Api.toJson(routeType, false));
+                else
+                    notFound();
+            }
+            else
+                renderJSON(Api.toJson(Route.all().fetch(), false));
+        } catch (Exception e) {
+            e.printStackTrace();
+            badRequest();
+        }
+
+    }
+
+    public static void createRouteType() {
+    	RouteType routeType;
+
+        try {
+            routeType = mapper.readValue(params.get("body"), RouteType.class);
+
+            routeType.save();
+            renderJSON(Api.toJson(routeType, false));
+        } catch (Exception e) {
+            e.printStackTrace();
+            badRequest();
+        }
+    }
+
+
+    public static void updateRouteType() {
+    	RouteType routeType;
+
+        try {
+        	routeType = mapper.readValue(params.get("body"), RouteType.class);
+
+            if(routeType.id == null ||RouteType.findById(routeType.id) == null)
+                badRequest();
+
+        
+            RouteType updatedRouteType = RouteType.em().merge(routeType);
+            updatedRouteType.save();
+
+            renderJSON(Api.toJson(updatedRouteType, false));
+        } catch (Exception e) {
+            e.printStackTrace();
+            badRequest();
+        }
+    }
+
+    public static void deleteRouteType(Long id) {
+        if(id == null)
+            badRequest();
+
+        RouteType routeType = RouteType.findById(id);
+
+        if(routeType == null)
+            badRequest();
+
+        routeType.delete();
+
+        ok();
+    }
+
+    
+    
+    
     // **** route controllers ****
 
     public static void getRoute(Long id) {
@@ -201,19 +279,46 @@ public class Api extends Controller {
     }
 
     // **** stop controllers ****
-    public static void getStop(Long id) {
+    public static void getStop(Long id, Double lat, Double lon, Boolean majorStops, Long agencyId) {
 
+    	Agency agency = null;
+    	if(agencyId != null)
+    		agency = Agency.findById(agencyId);
+    	
         try {
-            if(id != null)
-            {
+            if(id != null) {
                 Stop stop = Stop.findById(id);
                 if(stop != null)
                     renderJSON(Api.toJson(stop, false));
                 else
                     notFound();
             }
-            else
-                renderJSON(Api.toJson(Stop.all().fetch(), false));
+            else if (majorStops != null && majorStops) {
+
+                if(agency != null)
+                    renderJSON(Api.toJson(Stop.find("agency = ? and majorStop = true", agency).fetch(), false));
+                else
+            	   renderJSON(Api.toJson(Stop.find("majorStop = true").fetch(), false));
+            }
+            else if (lat != null && lon != null) {
+            	//GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(),4326);
+            	//Geometry point  =  geometryFactory.createPoint(new Coordinate(lon,lat));
+
+            	String point = "POINT(" + lon + " " + lat + ")";
+            	
+                if(agency != null)
+            	    renderJSON(Api.toJson(Stop.find("agency = ? and distance(location, geomfromtext(?, 4326)) < 0.025", agency, point).fetch(), false));
+                else
+                    renderJSON(Api.toJson(Stop.find("distance(location, geomfromtext(?, 4326)) < 0.025", point).fetch(), false));
+            }
+            else {
+                
+                if(agency != null)
+                    renderJSON(Api.toJson(Stop.find("agency = ?", agency).fetch(), false));
+                else
+                    renderJSON(Api.toJson(Stop.all().fetch(), false));
+            }
+            
         } catch (Exception e) {
             e.printStackTrace();
             badRequest();
@@ -283,7 +388,7 @@ public class Api extends Controller {
     }
 
     // **** trip pattern controllers ****
-    public static void getTripPattern(Long id) {
+    public static void getTripPattern(Long id, Long routeId) {
 
         try {
             if(id != null)
@@ -294,8 +399,18 @@ public class Api extends Controller {
                 else
                     notFound();
             }
+            else if(routeId != null) {
+            	
+            	Route r = Route.findById(routeId);
+            	
+            	if(r == null)
+            		badRequest();
+            	
+            	renderJSON(Api.toJson(TripPattern.find("route = ?", r).fetch(), false));
+            }
             else
                 renderJSON(Api.toJson(TripPattern.all().fetch(), false));
+            
         } catch (Exception e) {
             e.printStackTrace();
             badRequest();

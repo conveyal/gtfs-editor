@@ -1,20 +1,196 @@
 # You can specialize this file for each language.
 # For example, for French create a messages.fr file
 
+application.name=Transit Database
+
 # nav-bar
 
 nav-bar.agency=Agency Information
 nav-bar.home=Home
 nav-bar.contact=Contact
+nav-bar.user-greeting=Welcome %s!
 
+# shared
+
+shared.optional=Optional
+shared.required=Required
+
+
+shared.monday=Monday
+shared.tuesday=Tuesday
+shared.wednesday=Wednesday
+shared.thursday=Thursday
+shared.friday=Friday
+shared.saturday=Saturday 
+shared.sunday=Sunday
+
+shared.route-type.tram=Tram
+shared.route-type.subway=Subway
+shared.route-type.rail=Rail
+shared.route-type.bus=Bus
+shared.route-type.ferry=Ferry
+shared.route-type.jeepney=Jeepney
+shared.route-type.cable-car=Cable Car
+shared.route-type.gondola=Gondola
+shared.route-type.funicular=Funicular
+
+shared.route-type.hvt.rail=Railway Service
+shared.route-type.hvt.rail_hs=High Speed Rail Service
+shared.route-type.hvt.rail_ld=Long Distance Trains
+shared.route-type.hvt.rail_shuttle=Rail Shuttle (within complex)
+shared.route-type.hvt.rail_suburban=Suburban Railway 
+shared.route-type.hvt.coach=Coach Service
+shared.route-type.hvt.coach_international=International Coach Service
+shared.route-type.hvt.coach_national=National Coach Service
+shared.route-type.hvt.coach_regional=Regional Coach Service
+shared.route-type.hvt.coach_commuter=Commuter Coach Service
+shared.route-type.hvt.urbanrail=Urban Railway Service
+shared.route-type.hvt.urbanrail_metro=Metro Service
+shared.route-type.hvt.urbanrail_underground=Underground Service
+shared.route-type.hvt.urbanrail_monorail=Monorail
+shared.route-type.hvt.bus=Bus Service
+shared.route-type.hvt.bus_regional=Regional Bus Service
+shared.route-type.hvt.bus_express=Express Bus Service
+shared.route-type.hvt.bus_local=Local Bus Service
+shared.route-type.hvt.bus_unscheduled=Unscheduled Bus Service
+shared.route-type.hvt.trolleybus=Trolleybus Service
+shared.route-type.hvt.tram=Tram Service
+shared.route-type.hvt.water=Water Transport Service
+shared.route-type.hvt.air=Air Service
+shared.route-type.hvt.telecabin=Telecabin Service
+shared.route-type.hvt.funicular=Funicular Service
+shared.route-type.hvt.miscellaneous=Miscellaneous Service
+shared.route-type.hvt.miscellaneous_cable_car=Cable Car
+shared.route-type.hvt.miscellaneous_horse_carriage=Horse-Drawn Carriage
+
+
+
+shared.details=Details
+
+shared.button.save=Save
+shared.button.delete=Delete
+shared.button.save-continue=Save & Continue
+shared.button.edit=Edit
+shared.button.close=Close
+shared.button.cancel=Cancel
 
 # /index
 
 
-
 # /route
-route-info-tpl.optional=Optional
-route-info-tpl.required=Required
 
-route-info-tpl.short-name=Short Name
-route-info-tpl.short-name-content=The route_short_name contains the short name of a route. This will often be a short, abstract identifier like &quot;32&quot;, &quot;100X&quot;, or &quot;Green&quot; that riders use to identify a route, but which doesn't give any indication of what places the route serves.
+route.editRoute.title=Edit Route
+
+route.steps-header=Steps to Add a New Route
+
+route.step1=Basic Info
+route.step2=Stops
+route.step3=Trip Patterns
+route.step4=Trips
+route.step5=Review
+
+route.route-info-tpl.agency=Agency
+
+route.route-info-tpl.short-name=Short Name
+route.route-info-tpl.short-name-content=The route_short_name contains the short name of a route. This will often be a short, abstract identifier like &quot;32&quot;, &quot;100X&quot;, or &quot;Green&quot; that riders use to identify a route, but which doesn't give any indication of what places the route serves.
+
+route.route-info-tpl.long-name=Long Name
+route.route-info-tpl.long-name-content=The route_long_name contains the full name of a route. This name is generally more descriptive than the route_short_name and will often include the route's destination or stop. If the route does not have a long name, please specify a route_short_name and use an empty string as the value for this field.
+
+route.route-info-tpl.route-type=Type
+route.route-info-tpl.route-type-content=The route_type field describes the type of transportation used on a route.
+
+route.route-info-tpl.description=Description
+route.route-info-tpl.description-content=The route_desc field contains a description of a route. Please provide useful, quality information. Do not simply duplicate the name of the route.
+
+route.route-info-tpl.url=URL
+route.route-info-tpl.url-content=The route_url field contains the URL of a web page about that particular route. This should be different from the agency_url. The value must be a fully qualified URL that includes http:// or https://, and any special characters in the URL must be correctly escaped.
+
+route.route-info-tpl.route-color=Color
+route.route-info-tpl.route-color-content=In systems that have colors assigned to routes, the route_color field defines a color that corresponds to a route. The color must be provided as a six-character hexadecimal number, for example, 00FFFF. If no color is specified, the default route color is white (FFFFFF).
+
+route.route-info-tpl.route-text-color=Text Color
+route.route-info-tpl.route-text-color-content=The route_text_color field can be used to specify a legible color to use for text drawn against a background of route_color. The color must be provided as a six-character hexadecimal number, for example, FFD700. If no color is specified, the default text color is black (000000).
+
+route.route-info-tpl.air-con-label=AirCon?
+route.route-info-tpl.air-con-checkbox=With AirCon
+
+route.route-info-tpl.comments=Comments
+route.route-info-tpl.comments-content=Add any helpful internal information about this route. This is an unofficial field that will not show up in the GTFS file.
+
+route.trip-pattern-instructions=Click on stops on the map to make an ordered trip pattern. Re-order rows at right if necessary.
+
+route.stop-instructions-tpl=Right click the map to add a new stop, or click a marker to edit details. 
+
+route.trip-info-tpl.start-time=Start Time 
+route.trip-info-tpl.start-time-content=The time of day when the this pattern begins operation.
+
+route.trip-info-tpl.end-time=End Time
+route.trip-info-tpl.end-time-content=The time of day when the this pattern ends operation.
+
+route.trip-info-tpl.service-frequency=Service Frequency
+route.trip-info-tpl.service-frequency-content=Number of minutes and second between average arrival times.
+
+route.trip-info-tpl.days-in-service=Days in service
+
+route.trip-info-tpl.route-types.title=Route Types
+
+
+# /manage/routeTypes
+
+manage.route-types.title=Manage Route Types
+manage.route-types.dialog-title=New Route Type
+
+manage.route-types.localized-vehicle-type=Localized Vehicle Type
+manage.route-types.localized-vehicle-type-content=Localized Vehicle types are an extension to the GTFS specification that define names of transport services as understood by the public for a specific city or region (e.g. subway in Washington DC is known &quot;Metro&quot;, BRT in Mexico City is &quot;Metrobús&quot;). They should reflect the language and character set for a given location. Vehicle type referrers to the service provided not the operator or agency, although in some locations the vehicle type names and operator names may overlap.
+
+manage.route-types.description=Description
+manage.route-types.description-content=Description of route type
+
+manage.route-types.gtfs-route-type=GTFS Type
+manage.route-types.gtfs-route-type-content=The route_type field describes the type of transportation used on a route.
+
+manage.route-types.hsv-route-type=HVT Type
+manage.route-types.hsv-route-type-content=The route_type field describes the type of transportation used on a route, using the alternative HVT naming system.
+
+# manage/stopTypes
+
+manage.stop-types.title=Manage Stop Types
+
+
+# /manage/agencies
+
+manage.agencies.title=Manage Agencies
+manage.agencies.dialog-title=New Agency
+
+manage.agencies.gtfs-agency-id=GTFS ID
+manage.agencies.gtfs-agency-id-content=Optional GTFS agency id. Should be a short alphanumeric identifer, unique to the agency (e.g. the abreviated agency name). If not specified will be automatically set with unique number. 
+
+manage.agencies.name=Name
+manage.agencies.name-content=Public name of agency
+
+manage.agencies.url=URL
+manage.agencies.url-content=Public agency website URL.
+
+manage.agencies.default-lat=Default Latitude
+manage.agencies.default-lat-content=Latitude for default map center point.
+
+manage.agencies.default-lon=Default Longitude
+manage.agencies.default-lon-content=Longitude for default map center point.
+
+manage.agencies.default-route-type=Default Route Type
+manage.agencies.default-route-type-content=Default Route Type
+
+manage.agencies.timezone=Timezone
+manage.agencies.timezone-content=Feed timezone.
+
+manage.agencies.lang=Lanuage
+manage.agencies.lang-content=Feed language.
+
+# /export/gtfs
+
+export.gtfs.title=Export as GIS
+
+# /export/shapefile
+
+export.shapefile.title=Export as Shapefile

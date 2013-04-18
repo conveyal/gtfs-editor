@@ -36,6 +36,7 @@ public class TripPattern extends Model {
     public String name;
     public String headsign;
 
+    
     @ManyToOne
     public TripShape shape;
 

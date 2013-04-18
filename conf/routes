@@ -8,6 +8,8 @@ GET     /scaffolding/                           Application.scaffolding
 GET     /search/                                Application.search
 GET     /route/.*                               Application.route
 
+GET     /manage/routetypes                      Application.manageRouteTypes
+GET     /manage/agencies                      	Application.manageAgencies
 
 GET     /api/agency/?                           Api.getAgency
 GET     /api/agency/{id}                        Api.getAgency
@@ -20,6 +22,12 @@ GET     /api/route/{id}                         Api.getRoute
 POST    /api/route/                             Api.createRoute
 PUT     /api/route/{id}                         Api.updateRoute
 DELETE  /api/route/{id}                         Api.deleteRoute
+
+GET     /api/routetype/?                        Api.getRouteType
+GET     /api/routetype/{id}                     Api.getRouteType
+POST    /api/routetype/                         Api.createRouteType
+PUT     /api/routetype/{id}                     Api.updateRouteType
+DELETE  /api/routetype/{id}                     Api.deleteRouteType
 
 GET     /api/stop/?                             Api.getStop
 GET     /api/stop/{id}                          Api.getStop
