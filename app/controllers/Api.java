@@ -2,6 +2,7 @@ package controllers;
 
 import play.*;
 import play.mvc.*;
+import utils.GeoUtils;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -13,11 +14,18 @@ import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import  org.codehaus.jackson.map.ObjectMapper;
+import org.geotools.geometry.jts.JTS;
+import org.opengis.referencing.operation.MathTransform;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LineString;
+import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.PrecisionModel;
+import com.vividsolutions.jts.linearref.LengthLocationMap;
+import com.vividsolutions.jts.linearref.LinearLocation;
+import com.vividsolutions.jts.linearref.LocationIndexedLine;
 
 import models.*;
 import models.transit.Agency;
@@ -25,7 +33,11 @@ import models.transit.Route;
 import models.transit.RouteType;
 import models.transit.ServiceCalendar;
 import models.transit.Stop;
+import models.transit.StopTime;
+import models.transit.Trip;
 import models.transit.TripPattern;
+import models.transit.TripPatternStop;
+import models.transit.TripShape;
 
 public class Api extends Controller {
 
@@ -422,8 +434,14 @@ public class Api extends Controller {
 
         try {
             tripPattern = mapper.readValue(params.get("body"), TripPattern.class);
-
+            
+            if(tripPattern.encodedShape != null) {
+            	TripShape ts = TripShape.createFromEncoded(tripPattern.encodedShape);
+            	tripPattern.shape = ts;	
+            }
+            
             tripPattern.save();
+
             renderJSON(Api.toJson(tripPattern, false));
         } catch (Exception e) {
             e.printStackTrace();
@@ -438,11 +456,80 @@ public class Api extends Controller {
         try {
             tripPattern = mapper.readValue(params.get("body"), TripPattern.class);
 
-            if(tripPattern.id == null || TripPattern.findById(tripPattern.id) == null)
+            if(tripPattern.id == null)
                 badRequest();
+            
+            TripPattern originalTripPattern = TripPattern.findById(tripPattern.id);
+            
+            if(originalTripPattern == null)
+            	badRequest();
+            
+            if(tripPattern.encodedShape != null) {
+	            if(originalTripPattern.shape != null) {
+	            	originalTripPattern.shape.updateShapeFromEncoded(tripPattern.encodedShape);
+	            	tripPattern.shape = originalTripPattern.shape; 
+	            }
+	            else {
+	                TripShape ts = TripShape.createFromEncoded(tripPattern.encodedShape);
+	                
+	                tripPattern.shape = ts;
+	            }
+	            
+            }
+            else {
+                tripPattern.shape = null;
+
+                // need to remove old shapes...
+            }
 
             TripPattern updatedTripPattern = TripPattern.em().merge(tripPattern);
             updatedTripPattern.save();
+            
+            Set<Long> patternStopIds = new HashSet<Long>();
+            for(TripPatternStop patternStop : updatedTripPattern.patternStops) {
+                patternStopIds.add(patternStop.id);
+            }
+            
+            List<TripPatternStop> patternStops = TripPatternStop.find("pattern = ?", tripPattern).fetch();
+            
+            for(TripPatternStop patternStop : patternStops) {
+                if(!patternStopIds.contains(patternStop.id))
+                    patternStop.delete();
+            }
+            
+            if(tripPattern.shape != null) {
+	            
+	            MathTransform mt = GeoUtils.getTransform(new Coordinate(tripPattern.shape.shape.getCoordinateN(0).y, tripPattern.shape.shape.getCoordinateN(0).x));
+	            GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
+	            
+	            Coordinate[] mCoords =  tripPattern.shape.shape.getCoordinates();
+	            ArrayList<Coordinate> coords = new ArrayList<Coordinate>(); 
+	            
+	            for(Coordinate mCoord : mCoords) {
+	            	coords.add(new Coordinate(mCoord.x, mCoord.y));
+	            }
+            	
+	            Coordinate[] coordArray = coords.toArray(new Coordinate[coords.size()]);
+	            
+	            LineString ls = (LineString) JTS.transform(geometryFactory.createLineString(coordArray), mt);
+	            LocationIndexedLine indexLine = new LocationIndexedLine(ls);
+	            
+	            Logger.info("length: " + ls.getLength());
+	            
+	            patternStops = TripPatternStop.find("pattern = ?", tripPattern).fetch();
+	            
+	            for(TripPatternStop patternStop : patternStops) {
+	            	
+	            	
+	            	Point p = (Point) JTS.transform(patternStop.stop.locationPoint(), mt);
+	            	
+	            	LinearLocation l = indexLine.project(p.getCoordinate());
+	            	patternStop.defaultDistance = LengthLocationMap.getLength(ls, l);
+	            	patternStop.save();
+	            }
+            }
+            
+            
 
             renderJSON(Api.toJson(updatedTripPattern, false));
         } catch (Exception e) {
@@ -457,14 +544,61 @@ public class Api extends Controller {
 
         TripPattern tripPattern = TripPattern.findById(id);
 
+        
+        
         if(tripPattern == null)
             badRequest();
 
+       	
+    	tripPattern.patternStops = new ArrayList<TripPatternStop>();
+    	tripPattern.save();
+        
+        List<TripPatternStop> patternStops = TripPatternStop.find("pattern = ?", tripPattern).fetch();
+        for(TripPatternStop patternStop : patternStops)
+        {
+            patternStop.delete();
+        }
+        
+        
+        
+        List<StopTime> stopTimes = StopTime.find("trip.pattern = ?", tripPattern).fetch();
+        for(StopTime stopTime : stopTimes)
+        {
+            stopTime.delete();
+        }
+
+        List<Trip> trips = Trip.find("pattern = ?", tripPattern).fetch();
+        
+        for(Trip trip : trips)
+        {
+            trip.delete();
+        }
+        
         tripPattern.delete();
 
         ok();
     }
     
+    public static void calcTripPatternTimes(Long id, Double velocity) {
+    	
+    	TripPattern tripPattern = TripPattern.findById(id);
+    	
+    	List<TripPatternStop> patternStops = TripPatternStop.find("pattern = ? ORDER BY stopSequence", tripPattern).fetch();
+    	
+    	Double distanceAlongLine = 0.0;
+    	
+        for(TripPatternStop patternStop : patternStops)
+        {
+        	patternStop.defaultTravelTime = (int) Math.round((patternStop.defaultDistance - distanceAlongLine) / velocity);
+        	
+        	distanceAlongLine = patternStop.defaultDistance;
+        	
+        	patternStop.save();
+        }
+    
+        ok();
+    }
+   
     
     // **** calendar controllers ****
 
@@ -546,6 +680,101 @@ public class Api extends Controller {
             badRequest();
 
         cal.delete();
+
+        ok();
+    }
+
+    // trip controllers
+
+    // **** route controllers ****
+
+    public static void getTrip(Long id, Long patternId) {
+        try {
+            if(id != null)
+            {
+                Trip trip = Trip.findById(id);
+                if(trip != null)
+                    renderJSON(Api.toJson(trip, false));
+                else
+                    notFound();
+            }
+            else {
+
+                if(patternId == null)
+                    renderJSON(Api.toJson(Trip.all().fetch(), false));
+                else {
+                    TripPattern pattern = TripPattern.findById(patternId);
+                    renderJSON(Api.toJson(Trip.find("pattern = ?", pattern).fetch(), false));
+                }
+            }
+                
+        } catch (Exception e) {
+            e.printStackTrace();
+            badRequest();
+        }
+
+    }
+
+    public static void createTrip() {
+        Trip trip;
+
+        try {
+            trip = mapper.readValue(params.get("body"), Trip.class);
+
+            if(Route.findById(trip.pattern.route.id) == null)
+                badRequest();
+
+            trip.save();
+
+            // check if gtfsRouteId is specified, if not create from DB id
+            if(trip.gtfsTripId == null) {
+                trip.gtfsTripId = "TRIP_" + trip.id.toString();
+                trip.save();
+            }
+
+            renderJSON(Api.toJson(trip, false));
+        } catch (Exception e) {
+            e.printStackTrace();
+            badRequest();
+        }
+    }
+
+
+    public static void updateTrip() {
+        Trip trip;
+
+        try {
+            trip = mapper.readValue(params.get("body"), Trip.class);
+
+            if(trip.id == null || Trip.findById(trip.id) == null)
+                badRequest();
+
+            // check if gtfsRouteId is specified, if not create from DB id
+             if(trip.gtfsTripId == null) {
+                trip.gtfsTripId = "TRIP_" + trip.id.toString();
+            }
+
+
+            Trip updatedTrip = Trip.em().merge(trip);
+            updatedTrip.save();
+
+            renderJSON(Api.toJson(updatedTrip, false));
+        } catch (Exception e) {
+            e.printStackTrace();
+            badRequest();
+        }
+    }
+
+    public static void deleteTrip(Long id) {
+        if(id == null)
+            badRequest();
+
+        Trip trip = Trip.findById(id);
+
+        if(trip == null)
+            badRequest();
+
+        trip.delete();
 
         ok();
     }

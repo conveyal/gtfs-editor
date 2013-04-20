@@ -47,6 +47,12 @@ POST    /api/calendar/                          Api.createCalendar
 PUT     /api/calendar/{id}                      Api.updateCalendar
 DELETE  /api/calendar/{id}                      Api.deleteCalendar
 
+GET     /api/trip/?                         	Api.getTrip
+GET     /api/trip/{id}                      	Api.getTrip
+POST    /api/trip/                          	Api.createTrip
+PUT     /api/trip/{id}                     		Api.updateTrip
+DELETE  /api/trip/{id}                      	Api.deleteTrip
+
 
 # Ignore favicon requests
 GET     /favicon.ico                            404

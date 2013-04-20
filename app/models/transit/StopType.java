@@ -31,8 +31,7 @@ public class StopType extends Model {
 
 	public Boolean interpolated;
 	public Boolean majorStop;
-	
-    
+
     @JsonCreator
     public static StopType factory(long id) {
       return StopType.findById(id);

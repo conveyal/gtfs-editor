@@ -4,7 +4,8 @@ var GtfsEditor = GtfsEditor || {};
   G.RouteStopsView = Backbone.View.extend({
     events: {
       'submit .stop-details-form': 'save',
-      'change .stops-toggle': 'onStopVisibilityChange'
+      'change .stops-toggle': 'onStopVisibilityChange',
+      'change input[name="stopFilterRadio"]': 'onStopFilterChange'
     },
 
     initialize: function () {
@@ -32,7 +33,7 @@ var GtfsEditor = GtfsEditor || {};
 
       // Custom icons
       this.agencyMinorStopIcon = L.icon({
-        iconUrl: '/public/images/markers/marker-31b2c4.png',
+        iconUrl: '/public/images/markers/marker-blue-gray.png',
         iconSize: [25, 41],
         iconAnchor: [12, 41],
         popupAnchor: [1, -34],
@@ -58,7 +59,7 @@ var GtfsEditor = GtfsEditor || {};
         shadowSize: [41, 41]
       });
 
-        _.bindAll(this, 'sizeContent');
+        _.bindAll(this, 'sizeContent', 'onStopFilterChange');
         $(window).resize(this.sizeContent);
     },
 
@@ -128,11 +129,6 @@ var GtfsEditor = GtfsEditor || {};
 
       var mapCenter = this.map.getCenter();
 
-      $('input[name="stopFilterRadio"]').change( function() {
-          view.clearStops();
-          view.updateStops();
-      });
-
       this.clearStops();
 
       this.updateStops(mapCenter);
@@ -178,6 +174,12 @@ var GtfsEditor = GtfsEditor || {};
       this.collection.reset();
     },
 
+    onStopFilterChange: function(evt) {
+
+        this.clearStops();
+        this.updateStops();
+    },
+
     onMapRightClick: function(evt) {
       this.addStop(evt.latlng.lat, evt.latlng.lng);
     },
@@ -200,10 +202,7 @@ var GtfsEditor = GtfsEditor || {};
       evt.target.dragging.disable();
 
       
-      if(this.collection.get(evt.target.options.id).get('majorStop'))
-        evt.target.setIcon(this.stopIcons[model.id]);
-      else
-        evt.target.setIcon(this.stopIcons[model.id]);
+      evt.target.setIcon(this.stopIcons[evt.target.options.id]);
 
       this.collection.get(evt.target.options.id)
         .save({location: {lat: latLng.lat, lng: latLng.lng} });
@@ -249,8 +248,11 @@ var GtfsEditor = GtfsEditor || {};
     onModelAdd: function(model) {
       var markerLayer;
 
+      var popupContent
 
       if (model.get('agency').id == this.model.get('agency').id) {
+
+        popupContent = ich['stop-form-tpl'](model.toJSON());
 
         if(model.get('majorStop'))
           this.stopIcons[model.id] = this.agencyMajorStopIcon;  
@@ -259,6 +261,7 @@ var GtfsEditor = GtfsEditor || {};
 
       } 
       else {
+        popupContent = ich['stop-view-tpl'](model.toJSON());
         this.stopIcons[model.id] = this.otherStopIcon;
       }
 
@@ -273,28 +276,31 @@ var GtfsEditor = GtfsEditor || {};
       markerLayer.on('click', function(evt) {
         evt.target
           .unbindPopup()
-          .bindPopup($('<div>').append(ich['stop-form-tpl'](model.toJSON())).html())
+          .bindPopup($('<div>').append(popupContent).html())
           .openPopup();
       }, this);
 
 
 
+      if(model.get('agency').id == this.model.get('agency').id) {
 
-       markerLayer.on('dblclick', function(evt) {
-        evt.target.setIcon(this.selectedStopIcon);
-        evt.target.dragging.enable();
-        
-      }, this);
+        markerLayer.on('dblclick', function(evt) {
+          evt.target.setIcon(this.selectedStopIcon);
+          evt.target.dragging.enable();
+          
+        }, this);
 
-      // Save the location after you drag it around
-      markerLayer.on('dragend', this.onStopMarkerDrag, this);
+        // Save the location after you drag it around
+
+        markerLayer.on('dragend', this.onStopMarkerDrag, this);
+      }
 
       if((model.get('majorStop') && G.config.showMajorStops) || (!model.get('majorStop') && G.config.showStandardStops))
         this.stopLayerGroup.addLayer(markerLayer);
 
        if(model.get('justAdded')) {
         markerLayer
-          .bindPopup($('<div>').append(ich['stop-form-tpl'](model.toJSON())).html())
+          .bindPopup($('<div>').append(popupContent).html())
           .openPopup();
       }
     },

@@ -5,10 +5,16 @@ var GtfsEditor = GtfsEditor || {};
     events: {
       'click .trippattern-create-btn': 'createNewTripPattern',
       'click .trippattern-create-cancel-btn': 'cancelCreateNewTripPattern',
-      'click .trippattern-create-line-btn': 'createLine',
+      'click #create-pattern-from-alignment-btn': 'createTripPatternLine',
+      'click #zoom-pattern-extent-btn': 'zoomToPatternExtent',
+      'click #calc-times-from-velocity-btn': 'calcTimesFromVelocity',
+      'click #clear-pattern-btn': 'clearPatternButton',
+      'click #delete-pattern-btn': 'deletePatternButton',
       'submit .trippattern-create-form': 'addNewTripPattern',
-      'submit .trippattern-stop-details-form': 'addStopToPattern',
-      'change #selectedTripPattern': 'onTripPatternStopChange'
+      'submit .trippattern-stop-add-form': 'addStopToPattern',
+      'change #trip-pattern-select': 'onTripPatternChange',
+      'change #trip-pattern-stop-select': 'onTripPatternStopSelectChange',      
+      'change input[name="stopFilterRadio"]': 'onStopFilterChange'
 
     },
 
@@ -22,8 +28,9 @@ var GtfsEditor = GtfsEditor || {};
       this.options.stops.on('reset', this.onStopsReset, this);
 
       this.model.tripPatterns.on('add', this.onTripPatternsReset, this);
+      this.model.tripPatterns.on('remove', this.onTripPatternsReset, this);
       this.model.tripPatterns.on('reset', this.onTripPatternsReset, this);
-      this.model.tripPatterns.on('change:patternStops', this.onTripPatternStopChange, this);
+      this.model.tripPatterns.on('change:patternStops', this.onTripPatternChange, this);
 
       this.sizeContent();
 
@@ -36,17 +43,19 @@ var GtfsEditor = GtfsEditor || {};
         iconAnchor: [12, 41],
         popupAnchor: [1, -34],
         shadowUrl: '/public/images/markers/marker-shadow.png',
-        shadowSize: [41, 41]
+        shadowSize: [41, 41],
+        labelAnchor: [10, -16]
       });
 
       // Custom icons
       this.agencyMinorStopIcon = L.icon({
-        iconUrl: '/public/images/markers/marker-31b2c4.png',
+        iconUrl: '/public/images/markers/marker-blue-gray.png',
         iconSize: [25, 41],
         iconAnchor: [12, 41],
         popupAnchor: [1, -34],
         shadowUrl: '/public/images/markers/marker-shadow.png',
-        shadowSize: [41, 41]
+        shadowSize: [41, 41],
+        labelAnchor: [10, -16]
       });
 
       this.otherStopIcon = L.icon({
@@ -55,7 +64,18 @@ var GtfsEditor = GtfsEditor || {};
         iconAnchor: [12, 41],
         popupAnchor: [1, -34],
         shadowUrl: '/public/images/markers/marker-shadow.png',
-        shadowSize: [41, 41]
+        shadowSize: [41, 41],
+        labelAnchor: [10, -16]
+      });
+
+      this.patternStopIcon = L.icon({
+        iconUrl: '/public/images/markers/marker-4ab767.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowUrl: '/public/images/markers/marker-shadow.png',
+        shadowSize: [41, 41],
+        labelAnchor: [10, -16]
       });
 
       this.selectedStopIcon = L.icon({
@@ -64,12 +84,11 @@ var GtfsEditor = GtfsEditor || {};
         iconAnchor: [12, 41],
         popupAnchor: [1, -34],
         shadowUrl: '/public/images/markers/marker-shadow.png',
-        shadowSize: [41, 41]
+        shadowSize: [41, 41],
+        labelAnchor: [10, -16]
       });
 
-      _.bind(this.onTripPatternStopChange, this.updateStops);
-
-      _.bindAll(this, 'sizeContent');
+      _.bindAll(this, 'sizeContent', 'onStopFilterChange', 'calcTimesFromVelocity', 'saveTripPatternLine', 'onTripPatternChange', 'onTripPatternStopSelectChange', 'updateStops', 'zoomToPatternExtent', 'clearPatternButton', 'deletePatternButton', 'stopUpdateButton', 'stopRemoveButton');
         $(window).resize(this.sizeContent);
     },
 
@@ -83,14 +102,14 @@ var GtfsEditor = GtfsEditor || {};
 
       var sidebarData = {
         route: this.model.attributes,
-        tripPatterns: {
-              items : this.model.attributes.tripPatterns
-      }}
+      }
 
       this.$('.route-sidebar').html(ich['trippatterns-sidebar-tpl'](sidebarData));
       this.$('.step-instructions').html(ich['trippatterns-instructions-tpl']());
 
       this.$(".collapse").collapse() 
+
+      this.onTripPatternsReset();
 
       // Base layer config is optional, default to Mapbox Streets
       var url = 'http://{s}.tiles.mapbox.com/v3/' + G.config.mapboxKey + '/{z}/{x}/{y}.png',
@@ -115,6 +134,8 @@ var GtfsEditor = GtfsEditor || {};
       this.drawnItems = new L.FeatureGroup();
       this.map.addLayer(this.drawnItems);
 
+      var view = this;
+
       var drawControl = new L.Control.Draw({
         draw: {
           position: 'topleft',
@@ -122,32 +143,25 @@ var GtfsEditor = GtfsEditor || {};
           rectangle: false,
           circle: false,
           marker: false,
-          polyline: {
-            title: 'Draw a route alignment.'
-          }
+          polyline:false
         },
         edit: {
-          featureGroup: this.drawnItems
+          featureGroup: this.drawnItems,
+          remove: false
         }
+
       });
       this.map.addControl(drawControl);
 
-      this.map.on('draw:created', function (e) {
-        var type = e.layerType,
-          layer = e.layer;
+      this.map.on('draw:edited', this.saveTripPatternLine);
 
-        if (type === 'marker') {
-              layer.bindPopup('A popup!');
-            }
-
-            drawnItems.addLayer(layer);
-      });
-
-      var view = this;
+      
       this.map.on('moveend', function(evt) {
         view.updateStops();
         G.session.mapCenter = view.map.getCenter();
       });
+
+      this.map.on('popupopen', this.onPopupOpen, this);
 
       this.map.on('zoomend', function(evt) {
         view.clearStops();
@@ -165,10 +179,6 @@ var GtfsEditor = GtfsEditor || {};
       else
         $('#stops-hidden-message').hide();
 
-      $('input[name="stopFilterRadio"]').change( function() {
-          view.clearStops();
-          view.updateStops();
-      });
 
       var mapCenter = this.map.getCenter();
 
@@ -181,6 +191,19 @@ var GtfsEditor = GtfsEditor || {};
       return this;
     },
 
+    onPopupOpen: function(evt) {
+      var self = this;
+
+      // Bind the delete button inside the popup when it opens
+      $(this.map.getPanes().popupPane)
+        .find('#trippattern-stop-update-btn')
+        .on('click', this.stopUpdateButton);
+
+      $(this.map.getPanes().popupPane)
+        .find('#trippattern-stop-remove-btn')
+        .on('click', this.stopRemoveButton);
+    },
+
     sizeContent: function() {
         var newHeight = $(window).height() - (175) + "px";
         $("#map").css("height", newHeight);
@@ -190,6 +213,10 @@ var GtfsEditor = GtfsEditor || {};
     },
 
     updateStops: function (mapCenter) {
+
+      if(this.map == undefined)
+        return;
+
       // don't keep more than 500 markers on map at anytime. 
        if(this.options.stops.length > 500)
           this.options.stops.remove(this.options.stops.slice(0, 200));
@@ -205,22 +232,22 @@ var GtfsEditor = GtfsEditor || {};
           this.options.stops.fetch({remove: false, data: {agencyId: agencyId, lat: mapCenter.lat, lon: mapCenter.lng}});
       }
         
+      this.updatePatternList();
 
       if(G.config.showMajorStops)
         this.options.stops.fetch({remove: false, data: {agencyId: agencyId, majorStops: true}});
-
-       this.onTripPatternStopChange();
     },
 
 
     clearStops: function() {
       this.options.stops.reset();
-
-      this.onTripPatternStopChange();
+      //this.updatePatternList();
     },
 
     onStopsReset: function() {
-      this.stopLayerGroup.clearLayers();
+
+      if(this.stopLayerGroup != undefined)
+        this.stopLayerGroup.clearLayers();
 
       this.options.stops.each(function(model, i) {
         this.onStopModelAdd(model);
@@ -236,8 +263,49 @@ var GtfsEditor = GtfsEditor || {};
     onStopModelAdd: function(model) {
       var markerLayer;
 
+      var $popupContent;
 
-      if (model.get('agency').id == this.model.get('agency').id) {
+      var selectedPatternId  = this.$('#trip-pattern-select').val();
+
+      var patternStopLabel = false;
+
+      if(this.model.tripPatterns.get(selectedPatternId) != undefined && this.model.tripPatterns.get(selectedPatternId).isPatternStop(model.id)) {
+
+        var ps = this.model.tripPatterns.get(selectedPatternId).getPatternStop(model.id)
+
+        var travelTimeStr = this.convertTime(ps.defaultTravelTime);
+        var dwellTimeStr = this.convertTime(ps.defaultDwellTime);
+
+        var sequenceList = []
+
+        for(var i = 1; i <= this.model.tripPatterns.get(selectedPatternId).get('patternStops').length; i++)
+          sequenceList.push({sequence: i});
+
+
+        var data = {
+          travelTime: travelTimeStr,
+          dwellTime: dwellTimeStr,
+          patternStop: ps,
+          sequenceList: sequenceList
+        };
+
+        $popupContent = ich['trippattern-stop-edit-form-tpl'](data);
+
+        $popupContent
+          .find('#sequence-position-list option[value="'+ps.stopSequence+'"]')
+          .attr('selected', true);
+
+        $popupContent.find('#trippattern-stop-update-btn').on('click', this.stopUpdateButton);
+
+        patternStopLabel = this.model.tripPatterns.get(selectedPatternId).getPatternStopLabel(model.id);
+
+        patternStopLabel = patternStopLabel + ' (+' + travelTimeStr + '|+' + dwellTimeStr + ')';
+
+        this.stopIcons[model.id] = this.patternStopIcon;
+      }
+      else if (model.get('agency').id == this.model.get('agency').id) {
+
+        $popupContent = ich['trippattern-stop-add-form-tpl'](model.toJSON());
 
         if(model.get('majorStop'))
           this.stopIcons[model.id] = this.agencyMajorStopIcon;  
@@ -246,27 +314,39 @@ var GtfsEditor = GtfsEditor || {};
 
       } 
       else {
+
+        $popupContent = ich['stop-view-tpl'](model.toJSON());
+      
         this.stopIcons[model.id] = this.otherStopIcon;
       }
 
-      this.stopLayers[model.id] = markerLayer = L.marker([model.get('location').lat,
+      markerLayer = L.marker([model.get('location').lat,
           model.get('location').lng], {
           draggable: false,
           id: model.id,
           icon: this.stopIcons[model.id]
         });
 
+      if(patternStopLabel) {
+        markerLayer.bindLabel(patternStopLabel, { noHide: true });
+      }
+
+      this.stopLayers[model.id] = markerLayer;
+
       markerLayer.on('click', function(evt) {
         //console.log('add to the cart');
 
         evt.target
           .unbindPopup()
-          .bindPopup($('<div>').append(ich['trippattern-stop-form-tpl'](model.toJSON())).html())
+          .bindPopup($('<div>').append($popupContent).html())
           .openPopup();
 
       }, this);
 
       this.stopLayerGroup.addLayer(markerLayer);
+
+      if(patternStopLabel)
+        markerLayer.showLabel();
     },
 
     createNewTripPattern: function() {
@@ -293,34 +373,44 @@ var GtfsEditor = GtfsEditor || {};
       this.model.tripPatterns.create(data, {
         wait: true,
         success: function() {
-          //G.Utils.success('Trip pattern successfully created');
+          G.Utils.success('Trip pattern successfully created');
         },
         error: function() {
-          //G.Utils.error('Failed to create trip pattern');
+          G.Utils.error('Failed to create trip pattern');
         }
       });
 
     },
 
+    onStopFilterChange: function(evt) {
+
+        this.clearStops();
+        this.updateStops();
+    },
+
     onTripPatternsReset: function() {
       
       var tripPatterns = {
-            items : this.model.tripPatterns.models
+        items : this.model.tripPatterns.models
       }
 
-      this.$('.route-sidebar').html(ich['trippatterns-sidebar-tpl'](tripPatterns));
+      this.$('.trippattern-details').html(ich['trippatterns-details-tpl'](tripPatterns));
+
+      this.onTripPatternChange();            
 
     },
 
-    createLine: function () {
+    createTripPatternLine: function () {
 
-       var selectedPatternId  = this.$('#selectedTripPattern').val();
+       var selectedPatternId  = this.$('#trip-pattern-select').val();
 
       var data = {
-            stops : this.model.tripPatterns.get(selectedPatternId).collection.models[0].attributes.patternStops
+            stops : this.model.tripPatterns.get(selectedPatternId).attributes.patternStops
       }
 
-      var polyline = L.polyline([], {color: 'red'}).addTo(this.drawnItems );
+      this.drawnItems.clearLayers();
+
+      var polyline = L.polyline([], {color: 'red'}).addTo(this.drawnItems);
 
       for(var s in data.stops) {
         var id = data.stops[s].stop.id
@@ -330,39 +420,93 @@ var GtfsEditor = GtfsEditor || {};
         }
       }
 
+      this.saveTripPatternLine();
+
+    },
+
+    clearTripPatternLine: function () {
+
+       var selectedPatternId  = this.$('#trip-pattern-select').val();
+
+      var data = {
+            stops : this.model.tripPatterns.get(selectedPatternId).attributes.patternStops
+      }
+
+      this.drawnItems.clearLayers();
+
+      var polyline = L.polyline([], {color: 'red'}).addTo(this.drawnItems);
+
+      this.saveTripPatternLine();
+
+    },
+
+    saveTripPatternLine: function (e) {
+
+      var view = this;
+      this.drawnItems.eachLayer(function (layer) {
+          var encodedPolyline = createEncodedPolyline(layer);
+          var selectedPatternId  = this.$('#trip-pattern-select').val();
+
+          view.model.tripPatterns.get(selectedPatternId).set('encodedShape', encodedPolyline);
+          view.model.tripPatterns.get(selectedPatternId).save();
+
+      });
+
     },
 
 
-    onTripPatternStopChange: function() {
+    onTripPatternChange: function() {
 
-      var selectedPatternId  = this.$('#selectedTripPattern').val();
+      this.clearStops();
+      this.updateStops();
 
-      if( this.model.tripPatterns.get(selectedPatternId) == undefined)
-        return;
+      this.updatePatternList();
+      this.updatePatternLine();
 
-      var data = {
-            stops : this.model.tripPatterns.get(selectedPatternId).collection.models[0].attributes.patternStops
-      }
+    },
 
-      for(var s in data.stops) {
-        var id = data.stops[s].stop.id
+    updatePatternLine: function() {
+
+      var selectedPatternId  = this.$('#trip-pattern-select').val();
+
+      if(this.drawnItems == undefined || this.model.tripPatterns.get(selectedPatternId) == undefined) {
         
-        if(this.stopLayers[id] != undefined) {
-           this.stopLayers[id].setIcon(this.patternStopIcon);  
-        }
+        if(this.drawnItems != undefined)
+          this.drawnItems.clearLayers();
+
+        return;
       }
 
-      if(this.model.tripPatterns.get(selectedPatternId).collection.length) {
+      var encodedShape = this.model.tripPatterns.get(selectedPatternId).get('encodedShape');
 
-        this.$('#trippattern-sequence-message').hide();
-        this.$('#trippattern-sequence-list').show();
-        this.$('#trippattern-sequence-list').html(ich['trippattern-stop-list-tpl'](data));
+      this.drawnItems.clearLayers();
+
+      if(encodedShape != '' && encodedShape != null) {
+
+        var polyline =  new L.EncodedPolyline(encodedShape, {color: 'red'});
+
+        polyline.addTo(this.drawnItems);
       }
-      else {
 
-        this.$('#trippattern-sequence-message').show();
+    },
 
-      }      
+    updatePatternList: function() {
+       var selectedPatternId  = this.$('#trip-pattern-select').val();
+
+      if( this.model.tripPatterns.get(selectedPatternId) == undefined) {
+
+        this.$('#delete-pattern-btn').addClass("disabled");
+        this.$('#trippattern-stop-list').html("");
+        return;      
+      }
+
+      this.$('#delete-pattern-btn').removeClass("disabled");
+      
+      var data = {
+        stops : this.model.tripPatterns.get(selectedPatternId).attributes.patternStops
+      }
+
+      this.$('#trippattern-stop-list').html(ich['trippattern-stop-list-tpl'](data));
 
     },
 
@@ -370,16 +514,165 @@ var GtfsEditor = GtfsEditor || {};
       evt.preventDefault();
       var data = G.Utils.serializeForm($(evt.target));
     
-      var selectedPatternId  = this.$('#selectedTripPattern').val();
+      var selectedPatternId  = this.$('#trip-pattern-select').val();
 
-      this.stopLayers[data.id].setIcon(this.patternStopIcon);
+      if(this.model.tripPatterns.get(selectedPatternId) == undefined) {
+        G.Utils.error("Select/create pattern before adding stops.")
+        return;
+      }
 
-      this.model.tripPatterns.get(selectedPatternId).addStop({stop: data.id})
+      var travelTimeString  = this.$('#travel-time').val();
+      var dwellTimeString  = this.$('#dwell-time').val();
+
+      var travelTime = 0;
+
+      this.model.tripPatterns.get(selectedPatternId).addStop({stop: data.id, defaultTravelTime: this.calcTime(travelTimeString), defaultDwellTime: this.calcTime(dwellTimeString)});
+      this.model.tripPatterns.get(selectedPatternId).save();
+
+      this.clearStops();
+      this.updateStops();
     },
+
+    zoomToPatternExtent: function(evt) {
+
+      var selectedPatternId  = this.$('#trip-pattern-select').val();
+
+      var latlngs = [];
+      for(var stop in this.model.tripPatterns.get(selectedPatternId).attributes.patternStops) {
+
+        var latlng = new L.LatLng(this.model.tripPatterns.get(selectedPatternId).attributes.patternStops[stop].stop.location.lat, this.model.tripPatterns.get(selectedPatternId).attributes.patternStops[stop].stop.location.lng);
+        latlngs.push(latlng);
+      }
+
+      var bounds = new L.LatLngBounds(latlngs);
+
+      this.map.fitBounds(bounds);
+
+
+    },
+
+    stopRemoveButton: function(evt) {
+
+      var selectedPatternId  = this.$('#trip-pattern-select').val();
+
+      var form = $(evt.target).closest('form')
+      var ps = this.model.tripPatterns.get(selectedPatternId).getPatternStop(form.find('input[name="id"]').val());   
+
+      this.model.tripPatterns.get(selectedPatternId).removeStopAt(ps.stopSequence  -1);
+      this.model.tripPatterns.get(selectedPatternId).save();
+
+      this.onTripPatternChange();
+    },
+
+
+
+    stopUpdateButton: function(evt) {
+
+      var selectedPatternId  = this.$('#trip-pattern-select').val();
+
+      var form = $(evt.target).closest('form')
+      var ps = this.model.tripPatterns.get(selectedPatternId).getPatternStop(form.find('input[name="id"]').val());
+
+      var newSequence = form.find('#sequence-position-list').val();
+
+      ps.defaultDwellTime = this.calcTime(form.find('input[name="dwellTime"]').val());
+      ps.defaultTravelTime = this.calcTime(form.find('input[name="travelTime"]').val());
+
+      this.model.tripPatterns.get(selectedPatternId).moveStopTo(ps.stopSequence -1,newSequence -1);
+      this.onTripPatternChange();
+      //.updatePatternStop(ps);
+      this.model.tripPatterns.get(selectedPatternId).save();
+
+      //.addStop({stop: data.id, defaultTravelTime: this.calcTime(travelTimeString), defaultDwellTime: this.calcTime(dwellTimeString)});
+
+      //$(evt.target).closest('form').find('#oringal').val();
+    },
+
+    clearPatternButton: function(evt) {
+
+      if (G.Utils.confirm('Are you sure you want to clear stops from this pattern?')) {
+        var selectedPatternId  = this.$('#trip-pattern-select').val();
+        this.model.tripPatterns.get(selectedPatternId).removeAllStops();
+        this.clearTripPatternLine();
+      }
+    },
+
+    onTripPatternStopSelectChange: function(evt) {
+
+      var selectedPatternId  = this.$('#trip-pattern-select').val();
+      var selectedStopId  = this.$('#trip-pattern-stop-select').val();   
+      
+      var selectedPatternStop = this.model.tripPatterns.get(selectedPatternId).getPatternStop(selectedStopId);
+
+      if(selectedPatternStop == undefined) 
+        return;
+
+      this.map.setView(new L.LatLng(selectedPatternStop.stop.location.lat, selectedPatternStop.stop.location.lng), 15);
+    },
+
+    deletePatternButton: function(evt) {
+
+      var selectedPatternId  = this.$('#trip-pattern-select').val();
+
+      if (this.model.tripPatterns.get(selectedPatternId) != undefined && G.Utils.confirm('Are you sure you want to delete this pattern?')) {
+        var selectedPatternId  = this.$('#trip-pattern-select').val();
+        this.model.tripPatterns.get(selectedPatternId).destroy();
+      }
+    },
+
+    calcTimesFromVelocity: function(evt) {
+
+      var selectedPatternId  = this.$('#trip-pattern-select').val();
+      var velocity  = this.$('#velocity-input').val();
+
+      if(velocity != undefined && velocity != '') {
+
+        // convert to m/s 
+        velocity = parseFloat(velocity) * 0.277778;
+
+        var view = this;
+        $.get('/api/calctrippatterntimes', {id: selectedPatternId, velocity: velocity}, function(){
+
+          view.model.tripPatterns.fetch({data: {routeId: view.model.id}});
+        });
+      }
+
+    },
+   
 
     save: function(evt) {
       evt.preventDefault();
+    },
+
+    // converts mm:ss into seconds or returns 0
+    calcTime: function(timeString) {
+
+      var time = 0;
+
+      timeStringParts = timeString.split(":");
+      if(timeStringParts.length == 2)
+        time = (parseInt(timeStringParts[0]) * 60) + parseInt(timeStringParts[1]);
+
+      return time;
+    },
+
+    // converts mm:ss into seconds or returns 0
+    convertTime: function(time) {
+
+      var seconds = time % 60;
+      var minutes = (time - seconds) / 60;
+
+      var timeStr = this._pad(minutes, 2) + ':' + this._pad(seconds, 2);
+
+      return timeStr;
+    },
+
+    _pad: function (num, size) {
+      var s = num+"";
+      while (s.length < size) s = "0" + s;
+      return s;
     }
+
   });
 })(GtfsEditor, jQuery, ich);
 

@@ -20,6 +20,7 @@ import javax.persistence.OrderColumn;
 import javax.persistence.Query;
 
 import org.codehaus.jackson.annotate.JsonCreator;
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.codehaus.jackson.annotate.JsonManagedReference;
 import org.hibernate.annotations.Type;
@@ -36,7 +37,9 @@ public class TripPattern extends Model {
     public String name;
     public String headsign;
 
+    public String encodedShape;
     
+    @JsonIgnore
     @ManyToOne
     public TripShape shape;
 

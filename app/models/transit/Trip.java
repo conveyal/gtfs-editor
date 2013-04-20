@@ -11,6 +11,8 @@ import javax.persistence.Enumerated;
 import javax.persistence.ManyToOne;
 import javax.persistence.Query;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.hibernate.annotations.Type;
 
 import play.Logger;
@@ -18,12 +20,15 @@ import play.db.jpa.Model;
 
 import models.gtfs.GtfsSnapshot;
 
+@JsonIgnoreProperties({"entityId", "persistent"})
 @Entity
 public class Trip extends Model {
 	
     public String gtfsTripId;
     public String tripHeadsign;
     public String tripShortName;
+
+    public String tripDescription;
     
     @Enumerated(EnumType.STRING)
     public TripDirection tripDirection;
@@ -33,6 +38,7 @@ public class Trip extends Model {
     @ManyToOne
     public Route route;
     
+    @JsonIgnore
     @ManyToOne
     public TripShape shape;
     
@@ -44,6 +50,13 @@ public class Trip extends Model {
     
     @ManyToOne
     public ServiceCalendarDate serviceCalendarDate;
+    
+    public Boolean useFrequency;
+    
+    public Integer startTime;
+    public Integer endTime;
+    
+    public Integer headway;
   
     
     public static BigInteger nativeInsert(EntityManager em, org.onebusaway.gtfs.model.Trip gtfsTrip, BigInteger routeId, BigInteger shapeId, BigInteger serviceCalendarId, BigInteger serviceCalendarDateId)

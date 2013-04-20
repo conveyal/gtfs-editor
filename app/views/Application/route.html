@@ -12,8 +12,9 @@
 
   #{stylesheet 'leaflet/leaflet.css' /}
   #{stylesheet 'leaflet.draw/leaflet.draw.css' /}
+  #{stylesheet 'leaflet.label/leaflet.label.css' /}
   #{stylesheet 'route.css' /}
-  
+
 #{/set}
 
 
@@ -142,61 +143,119 @@
 <script id="trip-info-tpl" type="text/html">
 
 <form class="trip-info-form form-horizontal span12">
-  <input type="hidden" name="agency" id="agency" value="{{agency}}">
-
+  
   <div class="control-group">
-    <label class="control-label" for="startTime"><strong>&{'route.trip-info-tpl.start-time'}</strong><br>(required)</label>
+    <label class="control-label" for="tripPattern"><strong>Trip Pattern</strong><br>(required)</label>
     <div class="controls">
-      <input required type="text" name="startTime" id="startTime" class="input" value="{{startTime}}" placeholder="hh:mm" title="&{'route.trip-info-tpl.start-time'}" data-content="&{'route.trip-info-tpl.start-time-content'}">
+      <p>
+        <select required name="pattern" id="tripPattern" class="input" title="&{'route.trip-info-tpl.service-frequency'}" data-content="&{'route.trip-info-tpl.service-frequency-content'}">
+          <option>-- select pattern --</option>
+
+          {{#items}}<option value="{{attributes.id}}">{{attributes.name}}</option>{{/items}}
+        </select>
+      </p>
+
     </div>
   </div>
 
-  <div class="control-group">
-    <label class="control-label" for="endTime"><strong>&{'route.trip-info-tpl.end-time'}</strong><br>(required)</label>
-    <div class="controls">
-      <input required type="text" name="endTime" id="endTime" class="input" value="{{endTime}}" placeholder="hh:mm" title="&{'route.trip-info-tpl.end-time'}" data-content="&{'route.trip-info-tpl.end-time-content'}">
-    </div>
+  <div id="trip-details">
+
   </div>
-
-  <div class="control-group">
-    <label class="control-label" for="serviceFrequency"><strong>&{'route.trip-info-tpl.service-frequency'}</strong><br>(required)</label>
-    <div class="controls">
-      <input required type="text" name="serviceFrequency" id="serviceFrequency" class="input" value="{{endTime}}" placeholder="hh:mm:ss" title="&{'route.trip-info-tpl.service-frequency'}" data-content="&{'route.trip-info-tpl.service-frequency-content'}">
-    </div>
-  </div>
-
-  <div class="control-group">
-    <label class="control-label" for="days"><strong>&{'route.trip-info-tpl.days-in-service'}</strong>:</label>
-    <div class="controls">
-      <label class="checkbox" for="Monday">
-        <input name="Monday" id="Monday" type="checkbox" value="true" {{#monday}}checked{{/monday}}> &{'shared.monday'}
-      </label>
-      <label class="checkbox" for="Tuesday">
-        <input name="Tuesday" id="Tuesday" type="checkbox" value="true" {{#tuesday}}checked{{/tuesday}}> &{'shared.tuesday'} 
-      </label>
-      <label class="checkbox" for="Wednesday">
-        <input name="Wednesday" id="Wednesday" type="checkbox" value="true" {{#wednesday}}checked{{/wednesday}}> &{'shared.wednesday'} 
-      </label>
-      <label class="checkbox" for="Thursday">
-        <input name="Thursday" id="Thursday" type="checkbox" value="true" {{#thursday}}checked{{/thursday}}> &{'shared.thursday'} 
-      </label>
-      <label class="checkbox" for="Friday">
-        <input name="Friday" id="Friday" type="checkbox" value="true" {{#friday}}checked{{/friday}}> &{'shared.friday'} 
-      </label>
-      <label class="checkbox" for="Saturday">
-        <input name="Saturday" id="Saturday" type="checkbox" value="true" {{#saturday}}checked{{/saturday}}> &{'shared.saturday'} 
-      </label>
-      <label class="checkbox" for="Sunday">
-        <input name="Sunday" id="Sunday" type="checkbox" value="true" {{#sunday}}checked{{/sunday}}> &{'shared.sunday'} 
-      </label>
-    </div>
-  </div>
-
-
+  
   <div class="form-actions">
     <button type="submit" class="btn btn-primary" id="route-save-btn">&{'shared.button.save-continue'}</button>
   </div>
 </form>
+</script>
+
+
+<script id="trip-details-tpl" type="text/html">
+  <div>
+    <div class="control-group">
+      <label class="control-label" for="tripDescription"><strong>Trip Description</strong><br>(required)</label>
+      <div class="controls">
+        <input required type="text" name="tripDescription" id="tripDescription" class="input-xlarge" value="{{startTime}}" placeholder="" title="&{'route.trip-info-tpl.start-time'}" data-content="&{'route.trip-info-tpl.start-time-content'}">
+      </div>
+    </div>
+
+
+    <div class="control-group">
+      <label class="control-label" for="startTimeString"><strong>&{'route.trip-info-tpl.start-time'}</strong><br>(required)</label>
+      <div class="controls">
+        <input required type="text" name="startTimeString" id="startTimeString" class="input" value="{{startTime}}" placeholder="hh:mm" title="&{'route.trip-info-tpl.start-time'}" data-content="&{'route.trip-info-tpl.start-time-content'}">
+      </div>
+    </div>
+
+    <div class="control-group">
+      <label class="control-label" for="endTimeString"><strong>&{'route.trip-info-tpl.end-time'}</strong><br>(required)</label>
+      <div class="controls">
+        <input required type="text" name="endTimeString" id="endTimeString" class="input" value="{{endTime}}" placeholder="hh:mm" title="&{'route.trip-info-tpl.end-time'}" data-content="&{'route.trip-info-tpl.end-time-content'}">
+      </div>
+    </div>
+
+    <div class="control-group">
+      <label class="control-label" for="serviceFrequencyString"><strong>&{'route.trip-info-tpl.service-frequency'}</strong><br>(required)</label>
+      <div class="controls">
+        <input required type="text" name="serviceFrequencyString" id="serviceFrequencyString" class="input" value="{{endTime}}" placeholder="hh:mm:ss" title="&{'route.trip-info-tpl.service-frequency'}" data-content="&{'route.trip-info-tpl.service-frequency-content'}">
+      </div>
+    </div>
+
+
+    <div class="control-group">
+      <label class="control-label" for="calendar"><strong>Service Calendar</strong><br>(required)</label>
+      <div class="controls">
+        <p>
+          <select required name="calendar" id="calendar" class="input" title="&{'route.trip-info-tpl.service-frequency'}" data-content="&{'route.trip-info-tpl.service-frequency-content'}">
+            <option>-- select calendar --</option>
+          </select>
+        </p>
+        <p>
+          <button type="submit" class="btn btn-primary btn-mini" id="route-save-btn">Create Calendar</button> 
+        </p>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script id="trip-info-create-calendar-modal-tpl" type="text/html">
+  <div class="hidden">
+    <div class="control-group">
+      <label class="control-label" for="description"><strong>&{'route.trip-info-tpl.service-frequency'}</strong><br>(required)</label>
+      <div class="controls">
+        <input required type="text" name="description" id="description" class="input-xlarge" value="" placeholder="" title="&{'route.trip-info-tpl.service-frequency'}" data-content="&{'route.trip-info-tpl.service-frequency-content'}">
+      </div>
+    </div>
+
+    <div class="control-group">
+      <label class="control-label" for="days"><strong>&{'route.trip-info-tpl.days-in-service'}</strong>:</label>
+      <div class="controls">
+        <label class="checkbox" for="Monday">
+          <input name="Monday" id="Monday" type="checkbox" value="true" {{#monday}}checked{{/monday}}> &{'shared.monday'}
+        </label>
+        <label class="checkbox" for="Tuesday">
+          <input name="Tuesday" id="Tuesday" type="checkbox" value="true" {{#tuesday}}checked{{/tuesday}}> &{'shared.tuesday'} 
+        </label>
+        <label class="checkbox" for="Wednesday">
+          <input name="Wednesday" id="Wednesday" type="checkbox" value="true" {{#wednesday}}checked{{/wednesday}}> &{'shared.wednesday'} 
+        </label>
+        <label class="checkbox" for="Thursday">
+          <input name="Thursday" id="Thursday" type="checkbox" value="true" {{#thursday}}checked{{/thursday}}> &{'shared.thursday'} 
+        </label>
+        <label class="checkbox" for="Friday">
+          <input name="Friday" id="Friday" type="checkbox" value="true" {{#friday}}checked{{/friday}}> &{'shared.friday'} 
+        </label>
+        <label class="checkbox" for="Saturday">
+          <input name="Saturday" id="Saturday" type="checkbox" value="true" {{#saturday}}checked{{/saturday}}> &{'shared.saturday'} 
+        </label>
+        <label class="checkbox" for="Sunday">
+          <input name="Sunday" id="Sunday" type="checkbox" value="true" {{#sunday}}checked{{/sunday}}> &{'shared.sunday'} 
+        </label>
+      </div>
+    </div>
+  </div>
+
 </script>
 
 
@@ -285,9 +344,17 @@
   </form>
 </script>
 
+
+<!-- The stop details view appears in the map popup. -->
+<script id="stop-view-tpl" type="text/html">
+    <label><strong>Agency</strong>: {{agency.name}}</<label>
+    <label><strong>Name</strong>: {{stopName}}</<label>
+    <label><strong>Description</strong>: {{stopDesc}}</<label>  
+</script>
+
 <!-- The trippattern stop patterns details form that appears in the map popup. -->
-<script id="trippattern-stop-form-tpl" type="text/html">
-  <form class="trippattern-stop-details-form">
+<script id="trippattern-stop-add-form-tpl" type="text/html">
+  <form class="trippattern-stop-add-form">
     <legend>Add Stop to Trip Pattern</legend>
     <input type="hidden" name="id" value="{{id}}">
     <p>
@@ -295,8 +362,8 @@
       <label><strong>Stop Name</strong>: {{stopName}}</label>
     </p>
     <p>
-      <input name="travelTime" class="input" type="text" placeholder="Travel Time (mm:ss)" value="{{travelTime}}">
-      <input name="dwellTime" class="input" type="text" placeholder="Dwell Time (mm:ss)" value="{{dwellTime}}">
+      <input id="travel-time" name="travelTime" class="input" type="text" placeholder="Travel Time (mm:ss)" value="{{travelTime}}">
+      <input id="dwell-time" name="dwellTime" class="input" type="text" placeholder="Dwell Time (mm:ss)" value="{{dwellTime}}">
     </p>
     <p>
       <button type="submit" class="btn btn-primary trippattern-stop-add-btn">Add</button>
@@ -305,6 +372,36 @@
   </form>
 </script>
 
+<!-- The trippattern stop patterns details form that appears in the map popup. -->
+<script id="trippattern-stop-edit-form-tpl" type="text/html">
+  <form class="trippattern-stop-edit-form">
+    <legend>
+      #<select id="sequence-position-list" class="input-mini">
+          {{#sequenceList}}
+              <option value="{{sequence}}">{{sequence}}</option>
+          {{/sequenceList}}
+      </select> Pattern Stop
+    </legend>
+
+    <input type="hidden" name="id" value="{{patternStop.stop.id}}">
+    <input type="hidden" name="stopSequence" value="{{patternStop.stopSequence}}">
+
+    <p>
+      <label><strong>Agency</strong>: {{patternStop.stop.agency.name}}</label>
+      <label><strong>Stop Name</strong>: {{patternStop.stop.stopName}}</label>
+    </p>
+    <p>
+      <input id="travel-time" name="travelTime" class="input" type="text" placeholder="Travel Time (mm:ss)" value="{{travelTime}}">
+      <input id="dwell-time" name="dwellTime" class="input" type="text" placeholder="Dwell Time (mm:ss)" value="{{dwellTime}}">
+    </p>
+    <p>
+      <button type="button" id="trippattern-stop-update-btn" class="btn btn-primary">Update</button>
+      <button type="button" id="trippattern-stop-remove-btn" class="btn btn-danger">Remove</button>
+    </p>
+  </form>
+</script>
+
+
 
 <!-- The trippattern stop patterns details form that appears in the map popup. -->
 <script id="trippattern-create-tpl" type="text/html">
@@ -312,20 +409,55 @@
     <input type="hidden" name="id" value="{{id}}">
     <input name="name" class="input" type="text" placeholder="Trip Pattern Name" value="{{name}}">
     <br/>
-    <button type="submit" class="btn btn-primary trippattern-create-confirm-btn">Add</button>
-    <button type="button" class="btn trippattern-create-cancel-btn">Cancel</button>
+    <button type="submit" class="btn btn-mini btn-primary trippattern-create-confirm-btn">Add</button>
   </form>
 </script>
 
 <script id="trippattern-stop-list-tpl" type="text/html">
-  <ol>
+  <hr/>
+  <p><strong>Stop Sequence</strong></p>
+  <select id="trip-pattern-stop-select">
+    <option value="">-- pattern stops --</option>
     {{#stops}}  
-      <li>{{#stop.stopName}}{{stop.stopName}}{{/stop.stopName}}{{^stop.stopName}}Unnamed Stop{{/stop.stopName}}</li>
+      <option value="{{stop.id}}">{{stopSequence}}. {{#stop.stopName}}{{stop.stopName}}{{/stop.stopName}}{{^stop.stopName}}Unnamed Stop{{/stop.stopName}}</option>
       <hr/>
     {{/stops}}
-  </ol>
+  </select>
+  <p>
+    <button type="button" id="zoom-pattern-extent-btn" class="btn btn-mini">Zoom to Pattern Extent</button>
+    <button type="button" id="clear-pattern-btn" class="btn btn-mini btn-danger">Clear Pattern</button>
+  </p>
+  <div class="form-horizontal">
+    <input id="velocity-input" class="input input-mini" type="text" placeholder="km/h" value="{{name}}"> <button type="button" id="calc-times-from-velocity-btn" class="btn btn-mini">Calculate Times</button>
+  </div>
+  <hr/>
+  <p><strong>Alignment</strong></p>
+  <p>
+    <button type="button" id="create-pattern-from-alignment-btn" class="btn-primary btn-mini">Create Alignment from Pattern</button>
+  </o>
 </script>
 
+
+
+<script id="trippatterns-details-tpl" type="text/html">
+  <div>
+      <legend>Trip Patterns</legend>
+        <p>
+          <select id="trip-pattern-select">
+
+            <option value="">-- select pattern --</option>
+            
+              {{#items}}<option value="{{attributes.id}}">{{attributes.name}}</option>{{/items}}
+          </select>
+        </p>
+        <p>
+          <button type="submit" class="btn btn-mini btn-primary trippattern-create-btn">Create New Pattern</button>
+          <button type="button" id="delete-pattern-btn" class="btn disabled btn-mini btn-danger">Delete Pattern</button>
+        </p>
+        <div id="trippattern-create"></div>      
+        <div id="trippattern-stop-list"></div>     
+  </div>    
+</script>
 
 <!-- The sidebar contents for the Trip Patterns step (in progress) -->
 <script id="trippatterns-sidebar-tpl" type="text/html">
@@ -343,44 +475,9 @@
     </div>
 
     <div class="trippattern-details well">
-    <legend>Trip Patterns</legend>
-      <p>
-        <select id="selectedTripPattern">
 
-          <option value="">-- select pattern --</option>
-          
-            {{#items}}<option value="{{id}}">{{name}}</option>{{/items}}
-        </select>
-      </p>
-      <p>
-        <button type="submit" class="btn btn-primary trippattern-create-btn">Create New Pattern</button>
-      </p>
-      <p>
-        <button type="button" class="btn btn-primary transitwand-impot-btn">Create from TransitWand</button>
-      </p>
-      <div id="trippattern-create"></div>      
     </div>
 
-    <!-- <div class="trippattern-details well" data-toggle="collapse">
-     <form class="trippattern-details-form" class="collapse">
-        <legend>Details</legend>
-        <input type="hidden" name="id" value="{{id}}">
-        <input name="stopName" class="input-xlarge" type="text" placeholder="Name" value="{{stopName}}">
-        <textarea name="stopDesc" class="input-xlarge" placeholder="Description">{{stopDesc}}</textarea>
-        <div class="clearfix"></div>
-        <button type="submit" class="btn btn-primary trippattern-save-btn">Save</button>
-        <button type="button" class="btn btn-danger trippattern-delete-btn">Delete</button>
-      </form>
-    </div> -->
-    <ul class="nav nav-tabs" id="trippatterns-sidebar-tabs">
-      <li class="active"><a href="#trippattern-sequence" data-toggle="tab">Sequence</a></li>
-      <li><a href="#trippattern-line" data-toggle="tab">Line</a></li>
-    </ul>
-
-    <div class="tab-content">
-      <div class="tab-pane active" id="trippattern-sequence"><div id="trippattern-sequence-message" class="well">Add stops to pattern sequence.</div><div id="trippattern-sequence-list" class="well"></div></div>
-      <div class="tab-pane" id="trippattern-line"><div id="trippattern-sequence-message" class="well"><button type="button" class="btn btn-primary trippattern-create-line-btn">Create Line</button></div></div>
-    </div>
   </div>
 </script>
 
@@ -425,11 +522,14 @@
 
 
 #{set 'scripts'}
-  <script src="http://cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.min.js"></script>
+  <script src="@{'/public/javascripts/lib/jquery.dataTables.min.js'}"></script> <!-- http://cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.min.js -->
   <script src="@{'/public/lib/jquery.serializeObject.min.js'}"></script>
   
   #{script 'lib/leaflet.js' /}
   #{script 'lib/leaflet.draw.js' /}
+  #{script 'lib/leaflet.label-src.js' /}
+  #{script 'lib/leaflet.encoded-polyline.js' /}
+  
 
   #{script 'models.js' /}
   #{script 'views/route-summary-view.js' /}

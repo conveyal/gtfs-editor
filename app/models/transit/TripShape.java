@@ -3,6 +3,8 @@ package models.transit;
 
 
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
@@ -18,6 +20,8 @@ import org.apache.commons.lang.StringUtils;
 import org.hibernate.annotations.Type;
 
 import play.db.jpa.Model;
+import utils.EncodedPolylineBean;
+import utils.PolylineEncoder;
 
 @Entity
 public class TripShape extends Model {
@@ -36,7 +40,42 @@ public class TripShape extends Model {
     @Type(type = "org.hibernatespatial.GeometryUserType") 
     public LineString simpleShape;
     
-    
+
+    public void updateShapeFromEncoded(String encoded) {
+        
+        String linestring = generateLinestring(encoded);
+
+        TripShape.em().createNativeQuery("UPDATE tripshape SET shape = ST_GeomFromText( ?, 4326) WHERE id = ?;")
+            .setParameter(1,  linestring)
+            .setParameter(2,  this.id)
+            .executeUpdate();
+        
+        this.refresh();
+    }
+
+    public static TripShape createFromEncoded(String encoded) {
+    	
+        
+    	BigInteger tripShapeId = TripShape.nativeInsert(TripShape.em(), "", generateLinestring(encoded), 0.0);
+
+        return TripShape.findById(tripShapeId.longValue());
+    }
+
+    public static String generateLinestring(String encoded) {
+        
+        EncodedPolylineBean ecb = new EncodedPolylineBean(encoded, null, 0);
+        List<Coordinate> coords = PolylineEncoder.decode(ecb);
+        
+        List<String> points = new ArrayList<String>();
+        for(Coordinate coord : coords) {
+            points.add(new Double(coord.x).toString() + " " + new Double(coord.y).toString());
+        }
+        
+        String linestring = "LINESTRING(" + StringUtils.join(points, ", ") + ")";
+
+        return linestring;
+    }
+
     public static BigInteger nativeInsert(EntityManager em, String shapeId, String shape, Double distance)
     {
     	Query idQuery = em.createNativeQuery("SELECT NEXTVAL('hibernate_sequence');");

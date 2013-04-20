@@ -102,9 +102,34 @@ G.RouteTypes = Backbone.Collection.extend({
       id: null,
       name: null,
       headsign: null,
+      encodedShape: null,
       patternStops: [],
       shape: null,
       route: null
+    },
+
+    getPatternStop: function(stopId) {
+      return this.isPatternStop(stopId);
+    },
+
+    isPatternStop: function(stopId) {
+      var isPatternStop = false;
+      _.each(this.get('patternStops'), function(ps, i) {
+        if(ps.stop.id == stopId) {
+          isPatternStop = ps;
+        }
+      });
+      return isPatternStop;
+    },
+
+    getPatternStopLabel: function(stopId) {
+      var stopsSequences = [];
+      _.each(this.get('patternStops'), function(ps, i) {
+        if(ps.stop.id == stopId) {
+          stopsSequences.push(ps.stopSequence);
+        }
+      });
+      return stopsSequences.join(" & ");
     },
 
     initialize: function() {
@@ -125,6 +150,8 @@ G.RouteTypes = Backbone.Collection.extend({
       _.each(this.get('patternStops'), function(ps, i) {
         ps.stopSequence = i+1;
       });
+      this.sortPatternStops();
+      //this.save();
     },
 
     validate: function(attrs) {
@@ -138,20 +165,26 @@ G.RouteTypes = Backbone.Collection.extend({
       var patternStops = this.get('patternStops');
       patternStops.push(stopTime);
       this.set('patternStops', patternStops);
-      this.save();
+      this.normalizeSequence();
     },
 
     insertStopAt: function(stopTime, i) {
       var patternStops = this.get('patternStops');
       patternStops.splice(i, 0, stopTime);
       this.set('patternStops', patternStops);
+      this.normalizeSequence();
     },
 
     removeStopAt: function(i) {
       var patternStops = this.get('patternStops'),
           removed = patternStops.splice(i, 1)[0];
       this.set('patternStops', patternStops);
+      this.normalizeSequence();
       return removed;
+    },
+
+    removeAllStops: function() {
+      this.set('patternStops', []);
     },
 
     moveStopTo: function(fromIndex, toIndex) {
@@ -160,6 +193,16 @@ G.RouteTypes = Backbone.Collection.extend({
 
       stopTime = this.removeStopAt(fromIndex);
       this.insertStopAt(stopTime, toIndex);
+      this.normalizeSequence();
+    },
+    updatePatternStop: function(data) {
+      var patternStops = this.get('patternStops');
+      this.removeAllStops();
+      this.save();
+      
+      patternStops[data.stopSequence] = data;
+      this.set('patternStops', patternStops);
+      this.save();
     }
   });
 
@@ -195,11 +238,23 @@ G.RouteTypes = Backbone.Collection.extend({
     url: '/api/calendar/'
   });
 
+G.Trip = Backbone.Model.extend({
+    defaults: {
+      tripDescription: null,
+      pattern: null,
+      serviceCalendar: null,
+      useFrequency: null,
+      startTime: null,
+      endTime: null,
+      headway: null
+    }
+   });
+
   G.Trips = Backbone.Collection.extend({
-    // trip_pattern_id (fk), cal_id (fk),
-      // start_time (for static trips)
-      // start_time, end_time, headway (for frequencies)
-      // is_frequency
+     type: 'Trips',
+    model: G.Trip,
+    url: '/api/trip/'
   });
 
 })(GtfsEditor, jQuery);
+                                                                
