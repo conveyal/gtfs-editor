@@ -142,30 +142,80 @@
 <!-- The basic route info form -->
 <script id="trip-info-tpl" type="text/html">
 
-<form class="trip-info-form form-horizontal span12">
-  
-  <div class="control-group">
-    <label class="control-label" for="tripPattern"><strong>Trip Pattern</strong><br>(required)</label>
-    <div class="controls">
-      <p>
-        <select required name="pattern" id="tripPattern" class="input" title="&{'route.trip-info-tpl.service-frequency'}" data-content="&{'route.trip-info-tpl.service-frequency-content'}">
-          <option>-- select pattern --</option>
+  <form class="create-calendar-form form-horizontal span12">
+    <div id="calendar-create-modal" class="modal hide" tabindex="-1" role="dialog" data-backdrop="static" aria-labelledby="route-type-modal-label" aria-hidden="true">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="calendar-create-modal-label">Create Calendar</h3> 
+      </div>
+      <div id="calendar-create-modal-body" class="modal-body">
+        <div class="control-group">
+          <label class="control-label" for="description"><strong>Calendar Name</strong><br>(required)</label>
+          <div class="controls">
+            <input required type="text" name="description" id="description" class="input-xlarge" value="" placeholder="" title="&{'route.trip-info-tpl.service-frequency'}" data-content="&{'route.trip-info-tpl.service-frequency-content'}">
+          </div>
+        </div>
 
-          {{#items}}<option value="{{attributes.id}}">{{attributes.name}}</option>{{/items}}
-        </select>
-      </p>
+        <div class="control-group">
+          <label class="control-label" for="days"><strong>&{'route.trip-info-tpl.days-in-service'}</strong>:</label>
+          <div class="controls">
+            <label class="checkbox" for="Monday">
+              <input name="Monday" id="Monday" type="checkbox" value="true" {{#monday}}checked{{/monday}}> &{'shared.monday'}
+            </label>
+            <label class="checkbox" for="Tuesday">
+              <input name="Tuesday" id="Tuesday" type="checkbox" value="true" {{#tuesday}}checked{{/tuesday}}> &{'shared.tuesday'} 
+            </label>
+            <label class="checkbox" for="Wednesday">
+              <input name="Wednesday" id="Wednesday" type="checkbox" value="true" {{#wednesday}}checked{{/wednesday}}> &{'shared.wednesday'} 
+            </label>
+            <label class="checkbox" for="Thursday">
+              <input name="Thursday" id="Thursday" type="checkbox" value="true" {{#thursday}}checked{{/thursday}}> &{'shared.thursday'} 
+            </label>
+            <label class="checkbox" for="Friday">
+              <input name="Friday" id="Friday" type="checkbox" value="true" {{#friday}}checked{{/friday}}> &{'shared.friday'} 
+            </label>
+            <label class="checkbox" for="Saturday">
+              <input name="Saturday" id="Saturday" type="checkbox" value="true" {{#saturday}}checked{{/saturday}}> &{'shared.saturday'} 
+            </label>
+            <label class="checkbox" for="Sunday">
+              <input name="Sunday" id="Sunday" type="checkbox" value="true" {{#sunday}}checked{{/sunday}}> &{'shared.sunday'} 
+            </label>
+          </div>
+        </div>
+        
+      </div>
+      <div class="modal-footer">
+            <button class="btn" data-dismiss="modal" aria-hidden="true">&{'shared.button.close'}</button>
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#calendar-create-modal">Create Calendar</button> 
+      </div>
+    </div>
+  </form>
+
+  <form class="trip-info-form form-horizontal span12">
+    
+    <div class="control-group">
+      <label class="control-label" for="tripPattern"><strong>Trip Pattern</strong><br>(required)</label>
+      <div class="controls">
+        <p>
+          <select required name="pattern" id="tripPattern" class="input" title="&{'route.trip-info-tpl.service-frequency'}" data-content="&{'route.trip-info-tpl.service-frequency-content'}">
+            <option value="">-- select pattern --</option>
+
+            {{#items}}<option value="{{attributes.id}}">{{attributes.name}}</option>{{/items}}
+          </select>
+        </p>
+
+      </div>
+    </div>
+
+    <div id="trip-details">
 
     </div>
-  </div>
+    
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary" id="route-save-btn">&{'shared.button.save-continue'}</button>
+    </div>
 
-  <div id="trip-details">
-
-  </div>
-  
-  <div class="form-actions">
-    <button type="submit" class="btn btn-primary" id="route-save-btn">&{'shared.button.save-continue'}</button>
-  </div>
-</form>
+  </form>
 </script>
 
 
@@ -178,28 +228,26 @@
       </div>
     </div>
 
-
     <div class="control-group">
       <label class="control-label" for="startTimeString"><strong>&{'route.trip-info-tpl.start-time'}</strong><br>(required)</label>
       <div class="controls">
-        <input required type="text" name="startTimeString" id="startTimeString" class="input" value="{{startTime}}" placeholder="hh:mm" title="&{'route.trip-info-tpl.start-time'}" data-content="&{'route.trip-info-tpl.start-time-content'}">
+        <input required type="text" name="startTimeString" id="startTimeString" class="input" value="{{startTime}}" placeholder="hh:mm[:ss]" title="&{'route.trip-info-tpl.start-time'}" data-content="&{'route.trip-info-tpl.start-time-content'}">
       </div>
     </div>
 
     <div class="control-group">
       <label class="control-label" for="endTimeString"><strong>&{'route.trip-info-tpl.end-time'}</strong><br>(required)</label>
       <div class="controls">
-        <input required type="text" name="endTimeString" id="endTimeString" class="input" value="{{endTime}}" placeholder="hh:mm" title="&{'route.trip-info-tpl.end-time'}" data-content="&{'route.trip-info-tpl.end-time-content'}">
+        <input required type="text" name="endTimeString" id="endTimeString" class="input" value="{{endTime}}" placeholder="hh:mm[:ss]" title="&{'route.trip-info-tpl.end-time'}" data-content="&{'route.trip-info-tpl.end-time-content'}">
       </div>
     </div>
 
     <div class="control-group">
       <label class="control-label" for="serviceFrequencyString"><strong>&{'route.trip-info-tpl.service-frequency'}</strong><br>(required)</label>
       <div class="controls">
-        <input required type="text" name="serviceFrequencyString" id="serviceFrequencyString" class="input" value="{{endTime}}" placeholder="hh:mm:ss" title="&{'route.trip-info-tpl.service-frequency'}" data-content="&{'route.trip-info-tpl.service-frequency-content'}">
+        <input required type="text" name="serviceFrequencyString" id="serviceFrequencyString" class="input" value="{{endTime}}" placeholder="hh:mm[:ss]" title="&{'route.trip-info-tpl.service-frequency'}" data-content="&{'route.trip-info-tpl.service-frequency-content'}">
       </div>
     </div>
-
 
     <div class="control-group">
       <label class="control-label" for="calendar"><strong>Service Calendar</strong><br>(required)</label>
@@ -210,51 +258,13 @@
           </select>
         </p>
         <p>
-          <button type="submit" class="btn btn-primary btn-mini" id="route-save-btn">Create Calendar</button> 
+          <button type="button" class="btn btn-primary btn-mini" data-toggle="modal" data-target="#calendar-create-modal">Create Calendar</button> 
         </p>
 
       </div>
     </div>
   </div>
 </div>
-
-
-<script id="trip-info-create-calendar-modal-tpl" type="text/html">
-  <div class="hidden">
-    <div class="control-group">
-      <label class="control-label" for="description"><strong>&{'route.trip-info-tpl.service-frequency'}</strong><br>(required)</label>
-      <div class="controls">
-        <input required type="text" name="description" id="description" class="input-xlarge" value="" placeholder="" title="&{'route.trip-info-tpl.service-frequency'}" data-content="&{'route.trip-info-tpl.service-frequency-content'}">
-      </div>
-    </div>
-
-    <div class="control-group">
-      <label class="control-label" for="days"><strong>&{'route.trip-info-tpl.days-in-service'}</strong>:</label>
-      <div class="controls">
-        <label class="checkbox" for="Monday">
-          <input name="Monday" id="Monday" type="checkbox" value="true" {{#monday}}checked{{/monday}}> &{'shared.monday'}
-        </label>
-        <label class="checkbox" for="Tuesday">
-          <input name="Tuesday" id="Tuesday" type="checkbox" value="true" {{#tuesday}}checked{{/tuesday}}> &{'shared.tuesday'} 
-        </label>
-        <label class="checkbox" for="Wednesday">
-          <input name="Wednesday" id="Wednesday" type="checkbox" value="true" {{#wednesday}}checked{{/wednesday}}> &{'shared.wednesday'} 
-        </label>
-        <label class="checkbox" for="Thursday">
-          <input name="Thursday" id="Thursday" type="checkbox" value="true" {{#thursday}}checked{{/thursday}}> &{'shared.thursday'} 
-        </label>
-        <label class="checkbox" for="Friday">
-          <input name="Friday" id="Friday" type="checkbox" value="true" {{#friday}}checked{{/friday}}> &{'shared.friday'} 
-        </label>
-        <label class="checkbox" for="Saturday">
-          <input name="Saturday" id="Saturday" type="checkbox" value="true" {{#saturday}}checked{{/saturday}}> &{'shared.saturday'} 
-        </label>
-        <label class="checkbox" for="Sunday">
-          <input name="Sunday" id="Sunday" type="checkbox" value="true" {{#sunday}}checked{{/sunday}}> &{'shared.sunday'} 
-        </label>
-      </div>
-    </div>
-  </div>
 
 </script>
 
@@ -405,12 +415,22 @@
 
 <!-- The trippattern stop patterns details form that appears in the map popup. -->
 <script id="trippattern-create-tpl" type="text/html">
-  <form class="trippattern-create-form">
-    <input type="hidden" name="id" value="{{id}}">
-    <input name="name" class="input" type="text" placeholder="Trip Pattern Name" value="{{name}}">
-    <br/>
-    <button type="submit" class="btn btn-mini btn-primary trippattern-create-confirm-btn">Add</button>
-  </form>
+  <ul>
+    <form class="trippattern-create-form">
+      <input type="hidden" name="id" value="{{id}}">
+      <p>
+      <input name="name" required class="input" type="text" placeholder="New Trip Pattern Name" value="{{name}}">
+      <input name="transitWandId" class="input" type="text" placeholder="Six-digit TransitWand Id" value="{{name}}">
+      </p>
+      <p>
+        <button type="submit" class="btn btn-mini btn-primary trippattern-create-confirm-btn">Add</button> <button type="button" class="btn btn-mini trippattern-create-cancel-btn">Cancel</button>
+      </p>
+      <p>
+        <button type="button" class="btn btn-mini trippattern-load-transitwand-btn">Load from TransitWand</button>
+      </p>
+      
+    </form>
+  </ul>
 </script>
 
 <script id="trippattern-stop-list-tpl" type="text/html">

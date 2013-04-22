@@ -7,14 +7,25 @@ import play.mvc.*;
 import java.util.*;
 
 import models.*;
+import models.transit.Route;
 import models.transit.RouteType;
 import models.transit.StopType;
 import models.transit.Agency;
 
+//@With(Secure.class)
 public class Application extends Controller {
 
     @Before
-    static void initSession() {
+    static void initSession() throws Throwable {
+
+       /* if(Security.isConnected()) {
+            renderArgs.put("user", Security.connected());
+        }
+        else {
+        	Secure.login();
+        }*/
+        	
+
         if(session.get("agencyId") == null) {
             
             List<Agency> agencies = Agency.findAll();
@@ -43,7 +54,11 @@ public class Application extends Controller {
 
     public static void search() {
         List<Agency> agencies = Agency.findAll();
-        render(agencies);
+        
+        Long agencyId = Long.parseLong(session.get("agencyId"));
+        Agency selectedAgency = Agency.findById(agencyId);
+        List<Route> routes = Route.find("agency = ? order by routeShortName", selectedAgency).fetch();
+        render(agencies, routes);
     }
 
     public static void route() {

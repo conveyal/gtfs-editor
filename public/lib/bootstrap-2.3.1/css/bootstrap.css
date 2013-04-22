@@ -4706,6 +4706,23 @@ a.thumbnail:focus {
   border-left-color: #ffffff;
   bottom: -10px;
 }
+
+  .modal-open .modal .dropdown-menu {
+  z-index: 2050;
+}
+
+.modal-open .modal .dropdown.open {
+  *z-index: 2050;
+}
+
+.modal-open .modal .popover {
+  z-index: 2060;
+}
+
+.modal-open .modal .tooltip {
+  z-index: 2080;
+}
+
 .modal-backdrop {
   position: fixed;
   top: 0;

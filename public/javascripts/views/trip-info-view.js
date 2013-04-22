@@ -19,9 +19,9 @@ var GtfsEditor = GtfsEditor || {};
       this.model.tripPatterns.on('reset', this.onTripPatternsReset, this);
 
       this.trips.on('add', this.onTripsChange, this);
-      this.trips.on('reset', this.onTripsChange, this);
+      this.trips.on('sync', this.onTripsChange, this);
 
-      _.bindAll(this, 'onTripPatternChange', 'onTripsChange');
+      _.bindAll(this, 'onTripPatternChange', 'onTripsChange', 'createCalendar');
 
     },
 
@@ -54,6 +54,8 @@ var GtfsEditor = GtfsEditor || {};
       // Render to the dom
       this.$el.html($tpl);
 
+      this.$('.create-calendar-form').on('submit', this.createCalendar);
+
       // Bind help popovers
       this.$('input, select, textarea').popover({
         placement: 'right',
@@ -71,7 +73,17 @@ var GtfsEditor = GtfsEditor || {};
     updateTrips: function() {
         var selectedPatternId  = this.$('#tripPattern').val();
 
+        if(selectedPatternId == "" || selectedPatternId == undefined) {
+          this.$('#trip-details').html("");
+          return;
+        }
+
         this.trips.fetch({data: {patternId: selectedPatternId}});
+    },
+
+    createCalendar: function(evt) {
+      evt.preventDefault();
+      alert('create calendar');
     },
 
     onTripPatternsReset: function() {
@@ -80,16 +92,20 @@ var GtfsEditor = GtfsEditor || {};
     },
 
     onTripPatternChange: function(evt) {
+
       this.updateTrips();
     },
 
     onTripsChange: function(evt) {
       
+      var selectedPatternId  = this.$('#tripPattern').val();
+
       var data = {
         items: this.trips.models
       }
 
       this.$('#trip-details').html(ich['trip-details-tpl']());
+
 
     }
 

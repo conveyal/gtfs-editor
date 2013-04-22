@@ -189,7 +189,11 @@ manage.agencies.lang-content=Feed language.
 
 # /export/gtfs
 
-export.gtfs.title=Export as GIS
+export.gtfs.title=Export as GTFS
+
+# /export/kml
+
+export.kml.title=Export as KML
 
 # /export/shapefile
 

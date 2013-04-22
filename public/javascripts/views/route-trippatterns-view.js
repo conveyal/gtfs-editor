@@ -10,6 +10,7 @@ var GtfsEditor = GtfsEditor || {};
       'click #calc-times-from-velocity-btn': 'calcTimesFromVelocity',
       'click #clear-pattern-btn': 'clearPatternButton',
       'click #delete-pattern-btn': 'deletePatternButton',
+      'click trippattern-load-transitwand-btn': 'showLoadTransitWand',
       'submit .trippattern-create-form': 'addNewTripPattern',
       'submit .trippattern-stop-add-form': 'addStopToPattern',
       'change #trip-pattern-select': 'onTripPatternChange',
@@ -88,7 +89,7 @@ var GtfsEditor = GtfsEditor || {};
         labelAnchor: [10, -16]
       });
 
-      _.bindAll(this, 'sizeContent', 'onStopFilterChange', 'calcTimesFromVelocity', 'saveTripPatternLine', 'onTripPatternChange', 'onTripPatternStopSelectChange', 'updateStops', 'zoomToPatternExtent', 'clearPatternButton', 'deletePatternButton', 'stopUpdateButton', 'stopRemoveButton');
+      _.bindAll(this, 'sizeContent', 'onStopFilterChange', 'showLoadTransitWand', 'calcTimesFromVelocity', 'saveTripPatternLine', 'onTripPatternChange', 'onTripPatternStopSelectChange', 'updateStops', 'zoomToPatternExtent', 'clearPatternButton', 'deletePatternButton', 'stopUpdateButton', 'stopRemoveButton');
         $(window).resize(this.sizeContent);
     },
 
@@ -189,6 +190,10 @@ var GtfsEditor = GtfsEditor || {};
       this.sizeContent();
 
       return this;
+    },
+
+    showLoadTransitWand: function(evt) {
+
     },
 
     onPopupOpen: function(evt) {
@@ -350,6 +355,7 @@ var GtfsEditor = GtfsEditor || {};
     },
 
     createNewTripPattern: function() {
+      this.$('#delete-pattern-btn').hide();
       this.$('.trippattern-create-btn').hide();
 
       this.$('#trippattern-create').html(ich['trippattern-create-tpl']());
@@ -357,6 +363,7 @@ var GtfsEditor = GtfsEditor || {};
 
 
     cancelCreateNewTripPattern: function() {
+      this.$('#delete-pattern-btn').show();
       this.$('.trippattern-create-btn').show();
 
       this.$('#trippattern-create').html("");
@@ -364,6 +371,12 @@ var GtfsEditor = GtfsEditor || {};
 
     addNewTripPattern: function(evt) {
       evt.preventDefault();
+
+      if(this.$('[name=name]').val() == "") {
+        G.Utils.error('Failed to create trip pattern, please enter a name.');
+        return;
+      }
+
 
        var data = {
         route: this.model,

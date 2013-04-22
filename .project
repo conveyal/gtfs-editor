@@ -15,5 +15,11 @@
 		<nature>org.eclipse.jdt.core.javanature</nature>
 		<nature>org.playframework.playclipse.playNature</nature>
 	</natures>
-	
+	<linkedResources>
+		<link>
+			<name>secure</name>
+			<type>2</type>
+			<location>/opt/play-1.2.5/modules/secure/app</location>
+		</link>
+	</linkedResources>
 </projectDescription>

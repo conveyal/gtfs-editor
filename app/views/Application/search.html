@@ -13,4 +13,12 @@
   <script src="http://cdn.leafletjs.com/leaflet-0.4.5/leaflet.js"></script>
 #{/set}
 
-<div>Search for some routes!</div>
+<h3>Routes for ${session.agencyName} </h3>
+<table class="table table">
+	<tr><th>GTFS Id</th><th>Short Name</th><th>Long Name</th><th>Route Type</th><th>Description</th><th></th></tr>
+
+	#{list items:routes, as:'route'}
+	    <tr><td><a href="/route/${route.id}/info">${route.gtfsRouteId}</a></td><td>${route.routeShortName}</td><td>${route.routeLongName}</td><td>${route.routeType.localizedVehicleType}</td><td>${route.routeDesc}</td><td><a href="/route/${route.id}/info"><i class="icon-pencil"></i></a></td></tr>
+	#{/list}
+
+</table>
