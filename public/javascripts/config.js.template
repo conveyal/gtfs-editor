@@ -3,7 +3,12 @@ var GtfsEditor = GtfsEditor || {};
 (function(G, $) {
 
   G.config = {
-    agencyId: 1
+  	mapboxKey: 'transitivity.map-iwzt89y7',
+    agencyId: 1,
+    mapCenter: [14.666217, 120.978355],
+    mapZoom: 15, 
+    showMajorStops: true,
+    showStandardStops: true
   };
 
 })(GtfsEditor, jQuery);
