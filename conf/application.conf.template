@@ -9,6 +9,8 @@ application.name=gtfs-editor
 application.mode=dev
 %prod.application.mode=prod
 
+module.secure=${play.path}/modules/secure
+
 # Secret key
 # ~~~~~
 # The secret key is used to secure cryptographics functions
@@ -19,7 +21,7 @@ application.secret=2iZv7pgDAWeYrdKSI0OuyORzReMLLMLO58YzbK2lXoPHEUwdTGfJSZhiKqsZ2
 # ~~~~~
 # Define locales used by your application.
 # You can then place localized messages in conf/messages.{locale} files
-# application.langs=fr,en,ja
+application.langs=en,es,cn
 
 # Date format
 # ~~~~~
