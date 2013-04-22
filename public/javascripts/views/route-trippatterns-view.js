@@ -334,6 +334,9 @@ var GtfsEditor = GtfsEditor || {};
 
       if(patternStopLabel) {
         markerLayer.bindLabel(patternStopLabel, { noHide: true });
+      } 
+      else {
+        markerLayer.bindLabel(model.get('stopName'));
       }
 
       this.stopLayers[model.id] = markerLayer;
