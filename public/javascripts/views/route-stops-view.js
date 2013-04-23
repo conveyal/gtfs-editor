@@ -295,6 +295,8 @@ var GtfsEditor = GtfsEditor || {};
         markerLayer.on('dragend', this.onStopMarkerDrag, this);
       }
 
+      markerLayer.bindLabel(model.get('stopName'));
+
       if((model.get('majorStop') && G.config.showMajorStops) || (!model.get('majorStop') && G.config.showStandardStops))
         this.stopLayerGroup.addLayer(markerLayer);
 

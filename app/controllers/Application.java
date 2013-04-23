@@ -12,24 +12,36 @@ import models.transit.RouteType;
 import models.transit.StopType;
 import models.transit.Agency;
 
-//@With(Secure.class)
+@With(Secure.class)
 public class Application extends Controller {
 
     @Before
     static void initSession() throws Throwable {
 
-       /* if(Security.isConnected()) {
+    	List<Agency> agencies = new ArrayList<Agency>();
+    	
+       if(Security.isConnected()) {
             renderArgs.put("user", Security.connected());
+            
+            Account account = Account.find("username = ?", Security.connected()).first();
+            
+            
+            
+            if(account.admin != null && account.admin)
+            	agencies = Agency.findAll();
+            else {
+            	agencies.add(((Agency)Agency.findById(account.agency.id)));            	
+            }
+            
+            renderArgs.put("agencies", agencies);
         }
         else {
         	Secure.login();
-        }*/
-        	
+        }
 
         if(session.get("agencyId") == null) {
             
-            List<Agency> agencies = Agency.findAll();
-            Agency agency = agencies.get(1);
+            Agency agency = agencies.get(0);
 
             session.put("agencyId", agency.id);
             session.put("agencyName", agency.name);
@@ -43,46 +55,40 @@ public class Application extends Controller {
     }
 
     public static void index() {
-        List<Agency> agencies = Agency.findAll();
-        render(agencies);
+        
+        render();
     }
 
     public static void scaffolding() {
-        List<Agency> agencies = Agency.findAll();
-        render(agencies);
+        render();
     }
 
     public static void search() {
-        List<Agency> agencies = Agency.findAll();
-        
+       
         Long agencyId = Long.parseLong(session.get("agencyId"));
         Agency selectedAgency = Agency.findById(agencyId);
         List<Route> routes = Route.find("agency = ? order by routeShortName", selectedAgency).fetch();
-        render(agencies, routes);
+        render(routes);
     }
 
     public static void route() {
-        List<Agency> agencies = Agency.findAll();
     	List<RouteType> routeTypes = RouteType.findAll();
-        render(agencies, routeTypes);
+        render(routeTypes);
     }
     
     public static void manageRouteTypes() {
-        List<Agency> agencies = Agency.findAll();
     	List<RouteType> routeTypes = RouteType.findAll();
-        render(agencies, routeTypes);
+        render(routeTypes);
     }
 
     public static void manageStopTypes() {
-        List<Agency> agencies = Agency.findAll();
         List<StopType> routeTypes = StopType.findAll();
-        render(agencies, routeTypes);
+        render(routeTypes);
     }
 
     public static void manageAgencies() {
-        List<Agency> agencies = Agency.findAll();
         List<RouteType> routeTypes = RouteType.findAll();
-        render(agencies, routeTypes);
+        render(routeTypes);
     }
 
     public static void setLang(String lang) {
@@ -90,6 +96,14 @@ public class Application extends Controller {
     	ok();
     }
 
+    public static void createAccount(String username, String password, String email, Boolean admin, Long agencyId)
+	{
+		if(!username.isEmpty() && !password.isEmpty() && !email.isEmpty() && Account.find("username = ?", username).first() == null )
+			new Account(username, password, email, admin, agencyId);
+		
+		Application.index();
+	}
+    
     public static void setAgency(Long agencyId) {
         Agency agency = Agency.findById(agencyId);
 
