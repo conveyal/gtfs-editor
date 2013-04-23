@@ -413,21 +413,32 @@
 
 
 
+<script id="transit-wand-select-tpl" type="text/html">
+
+  {{#patterns}}  
+    <option value="{{id}}">{{headsign}}</option>
+  {{/patterns}}
+
+</script>
+
+
 <!-- The trippattern stop patterns details form that appears in the map popup. -->
 <script id="trippattern-create-tpl" type="text/html">
   <ul>
     <form class="trippattern-create-form">
       <input type="hidden" name="id" value="{{id}}">
       <p>
-      <input name="name" required class="input" type="text" placeholder="New Trip Pattern Name" value="{{name}}">
-      <input name="transitWandId" class="input" type="text" placeholder="Six-digit TransitWand Id" value="{{name}}">
+        <input name="name" required class="input" type="text" placeholder="New Trip Pattern Name" value="{{name}}">
+        <input id="transit-wand-id" name="transit-wand-id" class="input" type="text" placeholder="Six-digit TransitWand Id" value="{{name}}">
+        <select id="transit-wand-select" class="hide">
+          
+        </select>
+        <button type="button" class="btn btn-mini trippattern-load-transitwand-btn">Load from TransitWand</button>
       </p>
       <p>
         <button type="submit" class="btn btn-mini btn-primary trippattern-create-confirm-btn">Add</button> <button type="button" class="btn btn-mini trippattern-create-cancel-btn">Cancel</button>
       </p>
-      <p>
-        <button type="button" class="btn btn-mini trippattern-load-transitwand-btn">Load from TransitWand</button>
-      </p>
+      
       
     </form>
   </ul>

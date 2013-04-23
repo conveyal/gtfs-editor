@@ -10,7 +10,7 @@ var GtfsEditor = GtfsEditor || {};
       'click #calc-times-from-velocity-btn': 'calcTimesFromVelocity',
       'click #clear-pattern-btn': 'clearPatternButton',
       'click #delete-pattern-btn': 'deletePatternButton',
-      'click trippattern-load-transitwand-btn': 'showLoadTransitWand',
+      'click .trippattern-load-transitwand-btn': 'loadTransitWand',
       'submit .trippattern-create-form': 'addNewTripPattern',
       'submit .trippattern-stop-add-form': 'addStopToPattern',
       'change #trip-pattern-select': 'onTripPatternChange',
@@ -23,6 +23,8 @@ var GtfsEditor = GtfsEditor || {};
 
       this.stopIcons = {};
       this.stopLayers = {};
+
+      this.impportedPattern = null;
 
       this.options.stops.on('add', this.onStopModelAdd, this);
       this.options.stops.on('remove', this.onModelRemove, this);
@@ -89,7 +91,7 @@ var GtfsEditor = GtfsEditor || {};
         labelAnchor: [10, -16]
       });
 
-      _.bindAll(this, 'sizeContent', 'onStopFilterChange', 'showLoadTransitWand', 'calcTimesFromVelocity', 'saveTripPatternLine', 'onTripPatternChange', 'onTripPatternStopSelectChange', 'updateStops', 'zoomToPatternExtent', 'clearPatternButton', 'deletePatternButton', 'stopUpdateButton', 'stopRemoveButton');
+      _.bindAll(this, 'sizeContent', 'onStopFilterChange', 'loadTransitWand', 'calcTimesFromVelocity', 'saveTripPatternLine', 'onTripPatternChange', 'onTripPatternStopSelectChange', 'updateStops', 'zoomToPatternExtent', 'clearPatternButton', 'deletePatternButton', 'stopUpdateButton', 'stopRemoveButton');
         $(window).resize(this.sizeContent);
     },
 
@@ -130,6 +132,8 @@ var GtfsEditor = GtfsEditor || {};
       this.map.attributionControl.setPrefix('');
 
       this.stopLayerGroup = L.layerGroup().addTo(this.map);
+
+      this.transitWandOverlayGroup = L.layerGroup().addTo(this.map);
 
 
       this.drawnItems = new L.FeatureGroup();
@@ -192,9 +196,70 @@ var GtfsEditor = GtfsEditor || {};
       return this;
     },
 
-    showLoadTransitWand: function(evt) {
+    loadTransitWand: function(evt) {
+
+        var view = this;
+
+        var jqxhr = $.getJSON('http://transitwand.com/list', {unitId: $("#transit-wand-id").val()}, function(data) {
+          
+            if(data.length == 0) {
+              G.Utils.error('No data available for TransitWand Id"');
+              return;
+            }
+
+            var patternData = {
+              patterns: data
+            }
+
+            $('#transit-wand-select').append(ich['transit-wand-select-tpl'](patternData));
+            $('#transit-wand-select').show();
+            $('#transit-wand-id').hide();
+            $('.trippattern-load-transitwand-btn').hide();
+
+            view.updateTransitWandOverlay();
+            
+
+          }).fail(function() { G.Utils.error('Unknown TransitWand Id"'); });
+ 
+    },
+
+    updateTransitWandOverlay: function() {
+
+      var view = this;
+
+
+      var jqxhr = $.getJSON('http://transitwand.com/pattern', {patternId: $("#transit-wand-select").val()}, function(data) {
+
+        view.drawnItems.clearLayers();
+        view.clearStops();
+
+        view.impportedPattern = data;
+
+        if(data.shape != '' && data.shape != null) {
+
+          var polyline =  new L.EncodedPolyline(data.shape, {color: 'blue'});
+
+          polyline.addTo(view.transitWandOverlayGroup);
+        }
+
+        for(var i in data.stops) {
+
+            var stop = data.stops[i];
+
+            var markerLayer = L.marker([stop.lat, stop.lon], {
+              draggable: false,
+              icon: view.agencyMinorStopIcon
+            });
+
+            view.transitWandOverlayGroup.addLayer(markerLayer);
+        }
+
+        view.map.fitBounds(polyline.getBounds());
+
+      }).fail(function() { G.Utils.error('Unable to load TransitWand data."'); });
 
     },
+
 
     onPopupOpen: function(evt) {
       var self = this;
@@ -370,6 +435,10 @@ var GtfsEditor = GtfsEditor || {};
       this.$('.trippattern-create-btn').show();
 
       this.$('#trippattern-create').html("");
+      
+      this.impportedPattern = null;
+      this.transitWandOverlayGroup.clearLayers();
+
     },
 
     addNewTripPattern: function(evt) {
@@ -381,20 +450,72 @@ var GtfsEditor = GtfsEditor || {};
       }
 
 
-       var data = {
+       var tripPatternData = {
         route: this.model,
         name: this.$('[name=name]').val()
       };
 
-      this.model.tripPatterns.create(data, {
+      var newStops = [];
+      var view = this;
+      if(this.impportedPattern != null) {
+
+        for(var i in this.impportedPattern.stops) {
+
+            var stop = this.impportedPattern.stops[i];
+
+            var stopData = {
+              majorStop: true,
+              justAdded: false,
+              location: {lat: stop.lat, lng: stop.lon},
+              agency: this.model.get('agency').id
+            };
+
+            this.options.stops.create(stopData, {
+              wait: true,
+              success: function(data) {
+                newStops.push(data);
+                // no op
+              },
+              error: function() {
+                G.Utils.error('Failed to create stop');
+              }
+            });
+        }
+
+        tripPatternData.encodedShape = this.impportedPattern.shape;
+
+      }
+
+      this.model.tripPatterns.create(tripPatternData, {
         wait: true,
-        success: function() {
-          G.Utils.success('Trip pattern successfully created');
+        success: function(data) {
+          
+            if(view.impportedPattern) {
+
+              for(var i in newStops) {
+
+                  view.model.tripPatterns.get(data.id).addStop({stop: newStops[i].id, defaultTravelTime: view.impportedPattern.stops[i].travelTime, defaultDwellTime: 0});
+      
+              }
+
+              view.model.tripPatterns.get(data.id).save();
+
+            }
+
+            view.impportedPattern = null;
+            view.transitWandOverlayGroup.clearLayers();
+
+            view.onTripPatternsReset();
+           
+
         },
         error: function() {
           G.Utils.error('Failed to create trip pattern');
         }
       });
+
+      
+
 
     },
 

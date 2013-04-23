@@ -42,6 +42,7 @@ public class Account extends Model {
     	this.email = email;
     	
     	this.active = true;
+    	this.admin = admin;
     	
     	this.password = Account.hash(password);
     	
@@ -61,6 +62,7 @@ public class Account extends Model {
     	account.email = email;
     	
     	account.active = active;
+    	account.admin = admin;
     	
     
     	if(agencyId != null)
