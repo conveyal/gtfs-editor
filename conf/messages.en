@@ -1,5 +1,17 @@
 # You can specialize this file for each language.
 # For example, for French create a messages.fr file
+#
+secure.title=
+secure.username=Username:
+secure.password=Password:
+secure.remember=Remember me
+secure.signin=Sign in
+secure.error=Unknown username or password.
+secure.logout=You have been logged out.
+
+
+# You can specialize this file for each language.
+# For example, for French create a messages.fr file
 
 application.name=Transit Database
 
@@ -9,6 +21,11 @@ nav-bar.agency=Agency Information
 nav-bar.home=Home
 nav-bar.contact=Contact
 nav-bar.user-greeting=Welcome %s!
+
+nav-bar.export=Export
+nav-bar.admin=Admin
+
+nav-bar.logout=Logout
 
 # shared
 
@@ -73,13 +90,20 @@ shared.button.save-continue=Save & Continue
 shared.button.edit=Edit
 shared.button.close=Close
 shared.button.cancel=Cancel
+shared.button.add=Add
+shared.button.update=Update
+shared.button.remove=Remove
+
+shared.explore-search-routes=Explore/Search Routes
+shared.new-route=New Route
+
 
 # /index
 
 
 # /route
 
-route.editRoute.title=Edit Route
+route.edit-route.title=Edit Route
 
 route.steps-header=Steps to Add a New Route
 
@@ -89,7 +113,16 @@ route.step3=Trip Patterns
 route.step4=Trips
 route.step5=Review
 
+route.filter-stops=Filter Stops
+route.filter-stops-by-agency=Show only stops for %
+route.filter-all-stops=Show all stops
+route.filter-hidden-stops=Some stops may be hidden at current zoom level.
+
+
+
 route.route-info-tpl.agency=Agency
+
+route.route-info-tpl.gtfs-id=GTFS Id
 
 route.route-info-tpl.short-name=Short Name
 route.route-info-tpl.short-name-content=The route_short_name contains the short name of a route. This will often be a short, abstract identifier like &quot;32&quot;, &quot;100X&quot;, or &quot;Green&quot; that riders use to identify a route, but which doesn't give any indication of what places the route serves.
@@ -97,7 +130,7 @@ route.route-info-tpl.short-name-content=The route_short_name contains the short 
 route.route-info-tpl.long-name=Long Name
 route.route-info-tpl.long-name-content=The route_long_name contains the full name of a route. This name is generally more descriptive than the route_short_name and will often include the route's destination or stop. If the route does not have a long name, please specify a route_short_name and use an empty string as the value for this field.
 
-route.route-info-tpl.route-type=Type
+route.route-info-tpl.route-type=Route Type
 route.route-info-tpl.route-type-content=The route_type field describes the type of transportation used on a route.
 
 route.route-info-tpl.description=Description
@@ -118,9 +151,54 @@ route.route-info-tpl.air-con-checkbox=With AirCon
 route.route-info-tpl.comments=Comments
 route.route-info-tpl.comments-content=Add any helpful internal information about this route. This is an unofficial field that will not show up in the GTFS file.
 
-route.trip-pattern-instructions=Click on stops on the map to make an ordered trip pattern. Re-order rows at right if necessary.
 
 route.stop-instructions-tpl=Right click the map to add a new stop, or click a marker to edit details. 
+
+route.stops-import=Import Stops
+route.stops-upload-data=Upload Stop Data
+
+route.stops-stop-details=Stop Details
+
+route.stops-stop-name=Stop Name
+route.stops-stop-description=Description
+route.stops-major-stop=Major Stop
+
+
+route.trip-pattern-instructions=Click on stops on the map to make an ordered trip pattern. Re-order rows at right if necessary.
+
+route.trip-pattern-trip-patterns=Trip Patterns
+route.trip-pattern-select-pattern=select pattern
+
+route.trip-pattern-create-new-pattern=Create New Pattern
+route.trip-pattern-delete-pattern=Delete Pattern
+
+route.trip-pattern-stop-sequence=Stop Sequence
+route.trip-pattern-pattern-stops=pattern stops
+
+route.trip-pattern-zoom-pattern=Zoom to Pattern Extent
+route.trip-pattern-clear-pattern=Clear Pattern
+
+route.trip-pattern-kmh=km/h
+route.trip-pattern-calculate-times=Calculate Times
+
+
+route.trip-pattern-alignment=Alignment
+route.trip-pattern-create-alignment-from-pattern=Create Alignment from Pattern
+
+route.trip-pattern-new-pattern-name=New Trip Pattern Name
+route.trip-pattern-transit-wand-id=Six-digit TransitWand Id
+route.trip-pattern-load-transitwand=Load from TransitWand
+
+route.trip-pattern-popup-add-stop-pattern=Add Stop to Trip Pattern
+route.trip-pattern-popup-pattern-stop=Pattern Stop
+route.trip-pattern-travel-time=Travel Time (mm:ss)
+route.trip-pattern-dwell-time=Dwell Time (mm:ss)
+
+
+
+route.trip-info-tpl.trip-pattern=Trip Pattern
+
+route.trip-info-tpl.trip-description=Trip Description
 
 route.trip-info-tpl.start-time=Start Time 
 route.trip-info-tpl.start-time-content=The time of day when the this pattern begins operation.
@@ -135,11 +213,25 @@ route.trip-info-tpl.days-in-service=Days in service
 
 route.trip-info-tpl.route-types.title=Route Types
 
+route.trip-info-tpl.select-calendar=select calendar
+
+route.trip-info-tpl.hhmmss=hh:mm[:ss]
+
+route.trip-info-tpl.calendar-create-modal.title=Create Calendar
+route.trip-info-tpl.calendar-create-modal.calendar-name=Calendar Name
+
+
+# /search
+
+search.title=Routes for %
+
 
 # /manage/routeTypes
 
 manage.route-types.title=Manage Route Types
 manage.route-types.dialog-title=New Route Type
+manage.route-types.create-new-type-button=Create New Type
+
 
 manage.route-types.localized-vehicle-type=Localized Vehicle Type
 manage.route-types.localized-vehicle-type-content=Localized Vehicle types are an extension to the GTFS specification that define names of transport services as understood by the public for a specific city or region (e.g. subway in Washington DC is known &quot;Metro&quot;, BRT in Mexico City is &quot;Metrobús&quot;). They should reflect the language and character set for a given location. Vehicle type referrers to the service provided not the operator or agency, although in some locations the vehicle type names and operator names may overlap.
@@ -162,6 +254,7 @@ manage.stop-types.title=Manage Stop Types
 
 manage.agencies.title=Manage Agencies
 manage.agencies.dialog-title=New Agency
+manage.agencies.create-new-agency-button=Create New Agency
 
 manage.agencies.gtfs-agency-id=GTFS ID
 manage.agencies.gtfs-agency-id-content=Optional GTFS agency id. Should be a short alphanumeric identifer, unique to the agency (e.g. the abreviated agency name). If not specified will be automatically set with unique number. 
