@@ -5,7 +5,7 @@
 #{/set}
 
 
-<h3>Manage Agencies</h3>
+<h3>&{'manage.agencies.title'}</h3>
 
 	<form id="new-agency-form" class="agency-form form-horizontal">
 		<div id="new-agency-modal" class="modal hide" tabindex="-1" role="dialog" data-backdrop="static" aria-labelledby="route-type-modal-label" aria-hidden="true">
@@ -698,7 +698,7 @@
 	</form>
 
 	<table class="table table">
-		<tr><th>GTFS ID</th><th>Name</th><th>URL</th><th></th></tr>
+		<tr><th>&{'manage.agencies.gtfs-agency-id'}</th><th>&{'manage.agencies.name'}</th><th>&{'manage.agencies.url'}</th><th></th></tr>
 
 		#{list items:agencies, as:'agency'}
 		    <tr><td>${agency.gtfsAgencyId}</td><td>${agency.name}</td><td>${agency.url}</td><td><i class="icon-pencil"></i></td></tr>
@@ -706,7 +706,7 @@
 
 	</table>
 
-  	<button type="button" id="show-new-route-type-dialog-button" class="btn btn-primary" aria-hidden="true" data-toggle="modal" data-target="#new-agency-modal">Create New Agency</button>
+  	<button type="button" id="show-new-route-type-dialog-button" class="btn btn-primary" aria-hidden="true" data-toggle="modal" data-target="#new-agency-modal">&{'manage.agencies.create-new-agency-button'}</button>
 
 #{set 'scripts'}
 

@@ -63,7 +63,7 @@
               </li>
 
               <li class="dropdown">
-                <a href="#" role="button" class="dropdown-toggle" data-toggle="dropdown">Export<b class="caret"></b></a>
+                <a href="#" role="button" class="dropdown-toggle" data-toggle="dropdown">&{'nav-bar.export'}<b class="caret"></b></a>
                 <ul class="dropdown-menu" role="menu">
                   <li><a href="#export" class="manage-route-types">&{'export.gtfs.title'}</a></li>  
                   <li><a href="#export" class="manage-route-types">&{'export.kml.title'}</a></li>  
@@ -75,7 +75,7 @@
 
               #{secure.check 'admin'}
                 <li class="dropdown">
-                  <a href="#" role="button" class="dropdown-toggle" data-toggle="dropdown">Admin <b class="caret"></b></a>
+                  <a href="#" role="button" class="dropdown-toggle" data-toggle="dropdown">&{'nav-bar.admin'}<b class="caret"></b></a>
                   <ul class="dropdown-menu" role="menu">
                     <li><a href="@{Application.manageRouteTypes}" class="manage-route-types">&{'manage.route-types.title'}</a></li>  
                     <!-- <li><a href="@{Application.manageStopTypes}" class="manage-stop-types">&{'manage.stop-types.title'}</a></li>  -->
@@ -106,7 +106,7 @@
                   <i class="icon-user"></i>&{'nav-bar.user-greeting', user}<b class="caret"></b>
                 </a>
                 <ul class="dropdown-menu" role="menu">
-                  <li><a href="@{Secure.logout}">Logout</a></li> 
+                  <li><a href="@{Secure.logout}">&{'nav-bar.logout'}</a></li> 
                 </ul>
               </li>
             </ul>
@@ -119,8 +119,8 @@
     <div class="container-fluid">
       <ul class="nav nav-pills" id="tools-nav">
         <!--<li><a href="/"><i class="icon-list-alt"></i> News &amp; Updates</a></li>-->
-        <li><a href="/search/"><i class="icon-map-marker"></i> Explore/Search Routes</a></li>
-        <li><a href="/route/"><i class="icon-pencil"></i> New Route</a></li>
+        <li><a href="/search/"><i class="icon-map-marker"></i>&{'shared.explore-search-routes'}</a></li>
+        <li><a href="/route/"><i class="icon-pencil"></i>&{'shared.new-route'}</a></li>
       </ul>
 
       #{doLayout /}
@@ -147,7 +147,9 @@
   
             agencyId: ${session.agencyId},
             mapCenter: [${session.lat}, ${session.lon}],
-            mapZoom: ${session.zoom},         
+            mapZoom: ${session.zoom},
+            tripPattern: null,
+            trip: null
           };
 
         })(GtfsEditor, jQuery);

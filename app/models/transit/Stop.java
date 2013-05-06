@@ -39,11 +39,19 @@ public class Stop extends Model {
     public String zoneId;
     public String stopUrl;
 
+    public String stopIconUrl;
+
     @ManyToOne
     public Agency agency;
 
     @Enumerated(EnumType.STRING)
     public LocationType locationType;
+
+    @Enumerated(EnumType.STRING)
+    public AttributeAvailabilityType bikeParking;
+
+    @Enumerated(EnumType.STRING)
+    public AttributeAvailabilityType wheelchairBoarding;
 
     public String parentStation;
     

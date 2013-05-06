@@ -38,8 +38,12 @@ public class Route extends Model {
     public String routeTextColor;
 
     // Custom Fields
-    public Boolean airCon;
     public String comments;
+
+    @Enumerated(EnumType.STRING)
+    public StatusType status;
+    
+    public Boolean publiclyVisible;
 
     public Boolean weekday;
     public Boolean saturday;

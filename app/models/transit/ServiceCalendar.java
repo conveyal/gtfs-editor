@@ -12,6 +12,7 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Query;
 
+import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.hibernate.annotations.Type;
 
@@ -39,6 +40,16 @@ public class ServiceCalendar extends Model {
     public Date startDate;
     public Date endDate;
     
+	@JsonCreator
+    public static ServiceCalendar factory(long id) {
+      return ServiceCalendar.findById(id);
+    }
+
+    @JsonCreator
+    public static ServiceCalendar factory(String id) {
+      return ServiceCalendar.findById(Long.parseLong(id));
+    }
+
     public static BigInteger nativeInsert(EntityManager em, org.onebusaway.gtfs.model.ServiceCalendar gtfsServiceCalendar)
     {
     	Query idQuery = em.createNativeQuery("SELECT NEXTVAL('hibernate_sequence');");

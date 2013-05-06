@@ -23,7 +23,7 @@ import models.gtfs.GtfsSnapshot;
 @JsonIgnoreProperties({"entityId", "persistent"})
 @Entity
 public class Trip extends Model {
-	
+
     public String gtfsTripId;
     public String tripHeadsign;
     public String tripShortName;

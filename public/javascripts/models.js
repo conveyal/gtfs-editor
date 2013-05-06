@@ -47,6 +47,8 @@ G.RouteTypes = Backbone.Collection.extend({
   G.Route = Backbone.Model.extend({
     defaults: {
       id: null,
+      status: null,
+      publiclyVisible: null,
       gtfsRouteId: null,
       routeShortName: null,
       routeLongName: null,
@@ -81,6 +83,8 @@ G.RouteTypes = Backbone.Collection.extend({
       agency: null,
       locationType: null,
       parentStation: null,
+      bikeParking: null,
+      wheelchairBoarding: null,
       majorStop: false,
       location: null
     },
@@ -108,6 +112,14 @@ G.RouteTypes = Backbone.Collection.extend({
       route: null
     },
 
+    initialize: function() {
+      this.on('change:patternStops', this.normalizeSequence, this);
+
+      this.trips = new G.Trips({patternId: this.id});
+
+      this.sortPatternStops();
+    },
+
     getPatternStop: function(stopId) {
       return this.isPatternStop(stopId);
     },
@@ -132,11 +144,7 @@ G.RouteTypes = Backbone.Collection.extend({
       return stopsSequences.join(" & ");
     },
 
-    initialize: function() {
-      this.on('change:patternStops', this.normalizeSequence, this);
-
-      this.sortPatternStops();
-    },
+    
 
     sortPatternStops: function() {
       var patternStops = _.sortBy(this.get('patternStops'), function(ps){
@@ -246,14 +254,24 @@ G.Trip = Backbone.Model.extend({
       useFrequency: null,
       startTime: null,
       endTime: null,
-      headway: null
+      headway: null,
+      serviceCalendar: null
     }
    });
 
   G.Trips = Backbone.Collection.extend({
      type: 'Trips',
     model: G.Trip,
-    url: '/api/trip/'
+    url: '/api/trip/',
+    
+    initialize: function(opts) {
+      this.patternId  = opts.patternId;
+    },
+
+    fetchTrips: function() {
+      this.fetch({data: {patternId: this.patternId}});
+    }
+
   });
 
 })(GtfsEditor, jQuery);

@@ -44,7 +44,7 @@ var GtfsEditor = GtfsEditor || {};
       
       // Easily select the option
       $tpl
-        .find('#routeType option[value="'+data.routeType+'"]')
+        .find('#routeType option[value="'+data.routeType.id+'"]')
         .attr('selected', true);
 
       // Render to the dom

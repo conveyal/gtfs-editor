@@ -19,7 +19,7 @@ var GtfsEditor = GtfsEditor || {};
       this.collection.on('add', this.onModelAdd, this);
       this.collection.on('reset', this.onCollectionReset, this);
       this.collection.on('remove', this.onModelRemove, this);
-      this.collection.on('change:majorStop', this.onModelMajorStopChange, this);
+      this.collection.on('change', this.onModelStopChange, this);
 
       // Custom icons
       this.agencyMajorStopIcon = L.icon({
@@ -59,7 +59,7 @@ var GtfsEditor = GtfsEditor || {};
         shadowSize: [41, 41]
       });
 
-        _.bindAll(this, 'sizeContent', 'onStopFilterChange');
+        _.bindAll(this, 'sizeContent', 'onStopFilterChange', 'destroy', 'save');
         $(window).resize(this.sizeContent);
     },
 
@@ -191,7 +191,7 @@ var GtfsEditor = GtfsEditor || {};
       $(this.map.getPanes().popupPane)
         .find('.stop-delete-btn')
         .on('click', function() {
-          var id = $(this).siblings('[name=id]').val();
+          var id = $(this).parent().find('[name=id]').val();
           self.destroy(id);
         });
     },
@@ -221,7 +221,7 @@ var GtfsEditor = GtfsEditor || {};
     //  - Swap caches
     //  - Change icons
     //  - Handle visiblity
-    onModelMajorStopChange: function(model) {
+    onModelStopChange: function(model) {
       if (model.get('majorStop')) {
   
         this.stopLayers[model.id].setIcon(this.agencyMajorStopIcon);
@@ -234,6 +234,40 @@ var GtfsEditor = GtfsEditor || {};
         
         this.stopLayers[model.id].setIcon(this.agencyMinorStopIcon);
       }
+
+      var $popupContent;
+      
+      if (model.get('agency').id == this.model.get('agency').id) {
+
+        $popupContent = ich['stop-form-tpl'](model.toJSON());
+
+        if(model.get('majorStop'))
+          this.stopIcons[model.id] = this.agencyMajorStopIcon;  
+        else
+          this.stopIcons[model.id] = this.agencyMinorStopIcon;  
+
+      } 
+      else {
+        $popupContent = ich['stop-view-tpl'](model.toJSON());
+        this.stopIcons[model.id] = this.otherStopIcon;
+      }
+
+      $popupContent
+        .find('#bikeParking option[value="' + model.get('bikeParking') + '"]')
+        .attr('selected', true);
+
+      $popupContent
+        .find('#wheelchairBoarding option[value="' + model.get('wheelchairBoarding') + '"]')
+        .attr('selected', true);
+
+
+      this.stopLayers[model.id].on('click', function(evt) {
+        evt.target
+          .unbindPopup()
+          .bindPopup($('<div>').append($popupContent).html())
+          .openPopup();
+      }, this);
+
     },
 
     // Clean up when a stop model is removed from the collection (ie deleted)
@@ -248,11 +282,11 @@ var GtfsEditor = GtfsEditor || {};
     onModelAdd: function(model) {
       var markerLayer;
 
-      var popupContent
+      var $popupContent;
 
       if (model.get('agency').id == this.model.get('agency').id) {
 
-        popupContent = ich['stop-form-tpl'](model.toJSON());
+        $popupContent = ich['stop-form-tpl'](model.toJSON());
 
         if(model.get('majorStop'))
           this.stopIcons[model.id] = this.agencyMajorStopIcon;  
@@ -261,9 +295,17 @@ var GtfsEditor = GtfsEditor || {};
 
       } 
       else {
-        popupContent = ich['stop-view-tpl'](model.toJSON());
+        $popupContent = ich['stop-view-tpl'](model.toJSON());
         this.stopIcons[model.id] = this.otherStopIcon;
       }
+
+      $popupContent
+        .find('#bikeParking option[value="' + model.get('bikeParking') + '"]')
+        .attr('selected', true);
+
+      $popupContent
+        .find('#wheelchairBoarding option[value="' + model.get('wheelchairBoarding') + '"]')
+        .attr('selected', true);
 
       this.stopLayers[model.id] = markerLayer = L.marker([model.get('location').lat,
           model.get('location').lng], {
@@ -276,7 +318,7 @@ var GtfsEditor = GtfsEditor || {};
       markerLayer.on('click', function(evt) {
         evt.target
           .unbindPopup()
-          .bindPopup($('<div>').append(popupContent).html())
+          .bindPopup($('<div>').append($popupContent).html())
           .openPopup();
       }, this);
 
@@ -302,7 +344,7 @@ var GtfsEditor = GtfsEditor || {};
 
        if(model.get('justAdded')) {
         markerLayer
-          .bindPopup($('<div>').append(popupContent).html())
+          .bindPopup($('<div>').append($popupContent).html())
           .openPopup();
       }
     },
@@ -389,8 +431,12 @@ var GtfsEditor = GtfsEditor || {};
       evt.preventDefault();
       var data = G.Utils.serializeForm($(evt.target));
 
+      var view = this;
+
       this.collection.get(data.id).save(data, {
         success: function() {
+          view.map.closePopup();
+
           G.Utils.success('Stop successfully saved');
         },
         error: function() {

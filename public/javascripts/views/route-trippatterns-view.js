@@ -427,6 +427,8 @@ var GtfsEditor = GtfsEditor || {};
       this.$('.trippattern-create-btn').hide();
 
       this.$('#trippattern-create').html(ich['trippattern-create-tpl']());
+
+      this.$('#trippattern-create-form').bind('submit', this.addNewTripPattern);
     },
 
 
@@ -505,6 +507,8 @@ var GtfsEditor = GtfsEditor || {};
             view.impportedPattern = null;
             view.transitWandOverlayGroup.clearLayers();
 
+            G.session.tripPattern = data.id;
+
             view.onTripPatternsReset();
            
 
@@ -533,7 +537,10 @@ var GtfsEditor = GtfsEditor || {};
 
       this.$('.trippattern-details').html(ich['trippatterns-details-tpl'](tripPatterns));
 
-      this.onTripPatternChange();            
+      this.$('#trip-pattern-select option[value="' + G.session.tripPattern + '"]')
+        .attr('selected', true); 
+
+      this.onTripPatternChange();
 
     },
 
@@ -594,6 +601,8 @@ var GtfsEditor = GtfsEditor || {};
 
     onTripPatternChange: function() {
 
+      G.session.tripPattern = this.$('#trip-pattern-select').val();
+
       this.clearStops();
       this.updateStops();
 
@@ -644,6 +653,9 @@ var GtfsEditor = GtfsEditor || {};
       }
 
       this.$('#trippattern-stop-list').html(ich['trippattern-stop-list-tpl'](data));
+
+      this.$('#tripPattern option[value="' + G.session.tripPattern + '"]')
+        .attr('selected', true);
 
     },
 
@@ -720,6 +732,9 @@ var GtfsEditor = GtfsEditor || {};
       //.updatePatternStop(ps);
       this.model.tripPatterns.get(selectedPatternId).save();
 
+
+      view.map.closePopup();
+
       //.addStop({stop: data.id, defaultTravelTime: this.calcTime(travelTimeString), defaultDwellTime: this.calcTime(dwellTimeString)});
 
       //$(evt.target).closest('form').find('#oringal').val();
@@ -762,13 +777,15 @@ var GtfsEditor = GtfsEditor || {};
       var selectedPatternId  = this.$('#trip-pattern-select').val();
       var velocity  = this.$('#velocity-input').val();
 
+      var defaultDwell  = this.calcTime(this.$('#default-dwell-input').val());
+      
       if(velocity != undefined && velocity != '') {
 
         // convert to m/s 
         velocity = parseFloat(velocity) * 0.277778;
 
         var view = this;
-        $.get('/api/calctrippatterntimes', {id: selectedPatternId, velocity: velocity}, function(){
+        $.get('/api/calctrippatterntimes', {id: selectedPatternId, velocity: velocity, defaultDwell: defaultDwell}, function(){
 
           view.model.tripPatterns.fetch({data: {routeId: view.model.id}});
         });

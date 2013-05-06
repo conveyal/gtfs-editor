@@ -1,10 +1,52 @@
-# You can specialize this file for each language.
-# For example, for French create a messages.fr file
-#
-secure.title=
-secure.username=Username:
-secure.password=Password:
-secure.remember=Remember me
-secure.signin=Sign in
-secure.error=Unknown username or password.
-secure.logout=You have been logged out.
+
+
+route.trip-pattern-timing=Timing
+
+
+
+route.trip-pattern-default-dwell=Default Dwell (mm:ss)
+
+
+route.trip-info-instructions=Create a service schedule by adding trips to patterns.
+
+route.trip-info-tpl.trip-pattern-content=Select an existing trip pattern to create trips.
+
+route.route-info-tpl.pattern-count=Trip Pattern Count
+route.route-info-tpl.trip-count=Trip Count
+
+
+route.trip-info-tpl.trip=Trip
+route.trip-info-tpl.trip-content=Select or create a trip.
+
+route.trip-info-tpl.trip-description-content=Description of trip (e..g Weekday afternoon peak)
+
+route.trip-pattern-select-trip=select trip
+
+route.trip-tpl.create-trip-btn=Create New Trip
+route.trip-tpl.delete-trip-btn=Delete Trip
+
+route.trip-new-trip-name=New Trip Description
+
+route.trip-info-tpl.calendar-create-modal.calendar-name-content=Name of calendar (e.g. Weekday Service).
+
+route.trip-info-tpl.calendar-modify=Modify Calendar
+
+route.stops-bike-parking=Bike Parking 
+route.stops-wheelchair-boarding=Wheelchair Boarding
+
+
+route.route-review-instructions=Review route and approve for publication.
+
+route.review-status=Status
+route.review-publicly-visible=Publicly Visible
+
+route.review.status.in-progress=In-Progress
+route.review.status.pending-approval=Pending Approval
+route.review.status.approved=Approved
+
+
+shared.attribute.unknown=Unknown
+shared.attribute.available=Available
+shared.attribute.unavailable=Unavailable
+
+

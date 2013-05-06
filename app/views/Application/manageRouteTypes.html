@@ -5,7 +5,7 @@
 #{/set}
 
 
-<h3>Manage Route Types</h3>
+<h3>&{'manage.route-types.title'}</h3>
 
 	<form id="new-route-type-form" class="route-type-form form-horizontal">
 		<div id="route-type-modal" class="modal hide" tabindex="-1" role="dialog" data-backdrop="static" aria-labelledby="route-type-modal-label" aria-hidden="true">
@@ -92,15 +92,15 @@
 	</form>
 
 	<table class="table table">
-		<tr><th>Localized Vehicle Type</th><th>GTFS Type</th><th>HVT Type</th><th>Description</th><th></th></tr>
+		<tr><th>&{'manage.route-types.localized-vehicle-type'}</th><th>&{'manage.route-types.gtfs-route-type'}</th><th>&{'manage.route-types.hsv-route-type'}</th><th>&{'manage.route-types.description'}</th><th></th></tr>
 
 		#{list items:routeTypes, as:'routeType'}
-		    <tr><td>${routeType.localizedVehicleType}</td><td>${routeType.gtfsRouteType}</td><td>${routeType.hvtRouteType}</td><td>${routeType.description}</td><td><i class="icon-pencil"></i></td></tr>
+		    <tr><td>${routeType.localizedVehicleType}</td><td>${routeType.gtfsRouteType}</td><td>${routeType.hvtRouteType}</td><td>${'routeType.description'}</td><td><i class="icon-pencil"></i></td></tr>
 		#{/list}
 
 	</table>
 
-  	<button type="button" id="show-new-route-type-dialog-button" class="btn btn-primary" aria-hidden="true" data-toggle="modal" data-target="#route-type-modal">Create New Type</button>
+  	<button type="button" id="show-new-route-type-dialog-button" class="btn btn-primary" aria-hidden="true" data-toggle="modal" data-target="#route-type-modal">&{'manage.route-types.create-new-type-button'}</button>
 
 #{set 'scripts'}
 

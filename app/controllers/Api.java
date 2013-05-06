@@ -579,7 +579,7 @@ public class Api extends Controller {
         ok();
     }
     
-    public static void calcTripPatternTimes(Long id, Double velocity) {
+    public static void calcTripPatternTimes(Long id, Double velocity, int defaultDwell) {
     	
     	TripPattern tripPattern = TripPattern.findById(id);
     	
@@ -590,6 +590,7 @@ public class Api extends Controller {
         for(TripPatternStop patternStop : patternStops)
         {
         	patternStop.defaultTravelTime = (int) Math.round((patternStop.defaultDistance - distanceAlongLine) / velocity);
+            patternStop.defaultDwellTime = defaultDwell;
         	
         	distanceAlongLine = patternStop.defaultDistance;
         	

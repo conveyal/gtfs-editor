@@ -49,7 +49,8 @@ var GtfsEditor = GtfsEditor || {};
 
           return _instantiatedViews['trippatterns'];
         },
-        'trips': function(model) {  if(_instantiatedViews['trips'] == null) {
+        'trips': function(model) {  
+          if(_instantiatedViews['trips'] == null) {
             _instantiatedViews['trips'] = new G.TripInfoView({
               el: '#route-step-content',
               model: model, //Route info model
@@ -60,7 +61,18 @@ var GtfsEditor = GtfsEditor || {};
 
           return _instantiatedViews['trips']; 
         },
-        'review': function() { return new Backbone.View(); }
+        'review': function(model) { 
+          if(_instantiatedViews['review'] == null) {
+            _instantiatedViews['review'] = new G.RouteReviewView({
+              el: '#route-step-content',
+              model: model, //Route info model
+              stops: _stopCollection,
+              agencyId: _agencyId
+            });
+          }
+
+          return _instantiatedViews['review']; 
+         }
       };
 
   G.Router = Backbone.Router.extend({
