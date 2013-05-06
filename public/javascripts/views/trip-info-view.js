@@ -272,7 +272,7 @@ var GtfsEditor = GtfsEditor || {};
 
       evt.preventDefault();
 
-      var data = G.Utls.serializeForm($(evt.target));
+      var data = G.Utils.serializeForm($(evt.target));
 
       data.agency = this.options.agencyId;
 
