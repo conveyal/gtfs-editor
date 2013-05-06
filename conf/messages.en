@@ -114,7 +114,9 @@ route.step4=Trips
 route.step5=Review
 
 route.filter-stops=Filter Stops
+
 route.filter-stops-by-agency=Show only stops for 
+
 route.filter-all-stops=Show all stops
 route.filter-hidden-stops=Some stops may be hidden at current zoom level.
 
@@ -225,6 +227,7 @@ route.trip-info-tpl.calendar-create-modal.calendar-name=Calendar Name
 # /search
 
 search.title=Routes for 
+
 
 # /manage/routeTypes
 
