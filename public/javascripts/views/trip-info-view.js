@@ -155,6 +155,7 @@ var GtfsEditor = GtfsEditor || {};
       var selectedPatternId  = this.$('#tripPattern').val();
 
       var tripData = {
+        useFrequency: true,
         pattern: selectedPatternId,
         tripDescription: this.$('[name=name]').val()
       };
@@ -280,7 +281,7 @@ var GtfsEditor = GtfsEditor || {};
       if (data.id != undefined && data.id != "") {
         this.calendars.get(data.id).save(data, {
           wait: true,
-          success: _.bind(function() {
+          success: _.bind(function(data) {
             this.onCalendarsReset();
             this.$('#calendar-create-modal').modal('hide');
             G.Utils.success('Calendar successfully saved');
@@ -290,7 +291,7 @@ var GtfsEditor = GtfsEditor || {};
           }
         });
       } else {
-        // New route, create it
+        // New calendar, create it
         var model = this.calendars.create(data, {
           wait: true,
           success: _.bind(function(data) {

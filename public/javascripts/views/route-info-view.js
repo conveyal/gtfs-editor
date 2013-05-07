@@ -23,7 +23,7 @@ var GtfsEditor = GtfsEditor || {};
 
     setModel: function(model) {
       this.model = model;
-      this.model.on('change', this.render, this);
+      //this.model.on('change', this.render, this);
       this.model.on('destroy', this.onModelDestroy, this);
     },
 
@@ -42,13 +42,17 @@ var GtfsEditor = GtfsEditor || {};
 
       var routeTypeData = {routeTypes: this.routeTypes.models};
       
-      // Easily select the option
-      $tpl
-        .find('#routeType option[value="'+data.routeType.id+'"]')
-        .attr('selected', true);
+      // select route type the option
+      if(data.routeType != undefined) {
+        $tpl
+          .find('#routeType option[value="' + data.routeType.id + '"]')
+          .attr('selected', true);
+      }
 
       // Render to the dom
       this.$el.html($tpl);
+
+      $('.colorpicker').colorpicker();
 
       // Bind help popovers
       this.$('input, select, textarea').popover({
