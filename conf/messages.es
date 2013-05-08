@@ -114,7 +114,7 @@ route.step4=Viajes
 route.step5=Revisar
 
 route.filter-stops=Filtrar Paradas/Estaciones
-route.filter-stops-by-agency=Mostrar solo las paradas/estaciones de  %
+route.filter-stops-by-agency=Mostrar solo las paradas/estaciones de
 route.filter-all-stops=Mostrar todas las paradas/estaciones
 route.filter-hidden-stops= Algunas paradas/estaciones pueden estar ocultas con el nivel de zoom actual
 
@@ -223,7 +223,7 @@ route.trip-info-tpl.calendar-create-modal.calendar-name=Nombre del calendario
 
 # /search
 
-search.title=Rutas de %
+search.title=Rutas de
 
 
 # /manage/routeTypes
