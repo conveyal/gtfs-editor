@@ -4,6 +4,7 @@ import java.io.File;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.HashSet;
@@ -116,8 +117,8 @@ public class ProcessGtfsSnapshotExport extends Job {
 				
 					c.setServiceId(calendarId);
 					
-					c.setStartDate(new ServiceDate(calendar.startDate));
-					c.setEndDate(new ServiceDate(calendar.endDate));
+					c.setStartDate(new ServiceDate(new Date())); // calendar.startDate
+					c.setEndDate(new ServiceDate(new Date())); // calendar.endDate
 					
 					c.setMonday(calendar.monday? 1 : 0);
 					c.setTuesday(calendar.tuesday? 1 : 0);
@@ -194,8 +195,8 @@ public class ProcessGtfsSnapshotExport extends Job {
 								
 								coord.setShapeId(shapeId);
 								
-								coord.setLon(coordinate.x);
-								coord.setLat(coordinate.y);
+								coord.setLon(coordinate.y);
+								coord.setLat(coordinate.x);
 								coord.setSequence(sequence);
 								
 								sequence++;
@@ -230,15 +231,15 @@ public class ProcessGtfsSnapshotExport extends Job {
 						store.saveEntity(t);
 						
 						
-						if(trip.pattern.useFrequency != null && trip.pattern.useFrequency)
+						if(trip.useFrequency != null && trip.useFrequency)
 						{
 							org.onebusaway.gtfs.model.Frequency f = new org.onebusaway.gtfs.model.Frequency();
 							
 							f.setTrip(t);
 							
-							f.setStartTime(trip.pattern.startTime);
-							f.setEndTime(trip.pattern.endTime);
-							f.setHeadwaySecs(trip.pattern.headway);
+							f.setStartTime(trip.startTime);
+							f.setEndTime(trip.endTime);
+							f.setHeadwaySecs(trip.headway);
 							
 							store.saveEntity(f);
 							
@@ -270,8 +271,8 @@ public class ProcessGtfsSnapshotExport extends Job {
 									s.setDesc(stop.stopDesc);
 									s.setUrl(stop.stopUrl);
 									
-									s.setLon(stop.location.getX());
-									s.setLat(stop.location.getY());
+									s.setLat(stop.locationPoint().getX());
+									s.setLon(stop.locationPoint().getY());
 									
 									store.saveEntity(s);
 																	

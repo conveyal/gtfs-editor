@@ -6,13 +6,17 @@ import play.mvc.*;
 
 import java.util.*;
 
+import jobs.ProcessGtfsSnapshotExport;
+
 import models.*;
+import models.gtfs.GtfsSnapshotExport;
+import models.gtfs.GtfsSnapshotExportCalendars;
 import models.transit.Route;
 import models.transit.RouteType;
 import models.transit.StopType;
 import models.transit.Agency;
 
-@With(Secure.class)
+//@With(Secure.class)
 public class Application extends Controller {
 
     @Before
@@ -75,6 +79,21 @@ public class Application extends Controller {
     	List<RouteType> routeTypes = RouteType.findAll();
         render(routeTypes);
     }
+    
+    public static void exportGtfs() {
+    
+    	List<Agency> agencyObjects = Agency.findAll();
+    
+    	GtfsSnapshotExportCalendars calendarEnum;
+    	calendarEnum = GtfsSnapshotExportCalendars.CURRENT_AND_FUTURE;
+    	
+    	GtfsSnapshotExport snapshotExport = new GtfsSnapshotExport(agencyObjects, calendarEnum, "test");
+    	
+    	ProcessGtfsSnapshotExport exportJob = new ProcessGtfsSnapshotExport(snapshotExport.id);
+    	
+    	exportJob.now();
+    }
+    
     
     public static void manageRouteTypes() {
     	List<RouteType> routeTypes = RouteType.findAll();

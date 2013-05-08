@@ -6,7 +6,8 @@ var GtfsEditor = GtfsEditor || {};
       'submit .route-info-form': 'save',
     },
 
-    initialize: function () {
+    initialize: function (opts) {
+      this.options = opts;
       this.onSave = this.options.onSave || function() {};
 
       this.routeTypes = new G.RouteTypes();

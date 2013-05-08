@@ -220,7 +220,7 @@ public class Api extends Controller {
                     notFound();
             }
             else
-                renderJSON(Api.toJson(Route.all().fetch(), false));
+                renderJSON(Api.toJson(Route.find("order by routeShortName").fetch(), false));
         } catch (Exception e) {
             e.printStackTrace();
             badRequest();
@@ -451,6 +451,7 @@ public class Api extends Controller {
 
 
     public static void updateTripPattern() {
+
         TripPattern tripPattern;
 
         try {

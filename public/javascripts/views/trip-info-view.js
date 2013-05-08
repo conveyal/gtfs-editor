@@ -295,6 +295,8 @@ var GtfsEditor = GtfsEditor || {};
         var model = this.calendars.create(data, {
           wait: true,
           success: _.bind(function(data) {
+
+            G.session.calendar = data.id;
             this.onCalendarsReset();
             this.$('#calendar-select option[value=' + data.id + ']').prop('selected', true);
             this.$('#calendar-create-modal').modal('hide');
@@ -320,8 +322,13 @@ var GtfsEditor = GtfsEditor || {};
 
       this.$('#calendar-select').html(ich['calendar-select-tpl'](data));
 
-      if(this.model.tripPatterns.get(selectedPatternId) != undefined)
-        this.$('#calendar').val(this.model.tripPatterns.get(selectedPatternId).trips.get(selectedTripId).attributes.serviceCalendar.id);
+      if(this.model.tripPatterns.get(selectedPatternId) != undefined) {
+        if(this.model.tripPatterns.get(selectedPatternId).trips.get(selectedTripId).attributes.serviceCalendar != undefined)
+          this.$('#calendar').val(this.model.tripPatterns.get(selectedPatternId).trips.get(selectedTripId).attributes.serviceCalendar.id);
+        else  
+          this.$('#calendar').val(G.session.calendar);
+
+      }
 
       this.onCalendarSelectChange();
 
@@ -335,6 +342,8 @@ var GtfsEditor = GtfsEditor || {};
 
       }
       else {
+
+        G.session.calendar = this.$('#calendar').val();
 
         this.$('#calendar-modify-btn').removeClass("disabled");
 

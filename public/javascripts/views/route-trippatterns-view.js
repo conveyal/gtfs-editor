@@ -19,10 +19,13 @@ var GtfsEditor = GtfsEditor || {};
 
     },
 
-    initialize: function () {
+
+    initialize: function (opts) {
 
       this.stopIcons = {};
       this.stopLayers = {};
+
+      this.options = opts;
 
       this.impportedPattern = null;
 

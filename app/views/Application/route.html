@@ -13,8 +13,8 @@
   #{stylesheet 'leaflet/leaflet.css' /}
   #{stylesheet 'leaflet.draw/leaflet.draw.css' /}
   #{stylesheet 'leaflet.label/leaflet.label.css' /}
+  #{stylesheet 'colorpicker/bootstrap-colorpicker.css' /}
   #{stylesheet 'route.css' /}
-
 #{/set}
 
 
@@ -93,14 +93,14 @@
   <div class="control-group">
     <label class="control-label" for="routeColor">&{'route.route-info-tpl.route-color'}</label>
     <div class="controls">
-      <input type="text" name="routeColor" id="routeColor" class="input-small" value="{{routeColor}}" title="&{'route.route-info-tpl.route-color'}" data-content="&{'route.route-info-tpl.route-color-content'}">
+      <input type="text" name="routeColor" id="routeColor" class="input-small colorpicker" value="{{routeColor}}" title="&{'route.route-info-tpl.route-color'}" data-content="&{'route.route-info-tpl.route-color-content'}">
     </div>
   </div>
 
   <div class="control-group">
     <label class="control-label" for="routeTextColor">&{'route.route-info-tpl.route-text-color'}</label>
     <div class="controls">
-      <input type="text" name="routeTextColor" id="routeTextColor" class="input-small" value="{{routeTextColor}}" title="&{'route.route-info-tpl.route-text-color'}" data-content="&{'route.route-info-tpl.route-text-color-content'}">
+      <input type="text" name="routeTextColor" id="routeTextColor" class="input-small colorpicker" value="{{routeTextColor}}" title="&{'route.route-info-tpl.route-text-color'}" data-content="&{'route.route-info-tpl.route-text-color-content'}">
     </div>
   </div>
 
@@ -467,7 +467,7 @@
   <div class="route-summary-details">
     <div class="row-fluid"><strong>&{'route.route-info-tpl.description'}:</strong> {{ routeDesc }}</div>
     <div class="row-fluid"><strong>&{'route.route-info-tpl.route-color'}:</strong>
-      <div class="route-summary-color"></div>
+      <div class="route-summary-color" style="background-color: {{ routeColor }}"></div>
     </div>
   </div>
 </script>
@@ -744,7 +744,7 @@
   #{script 'lib/leaflet.draw.js' /}
   #{script 'lib/leaflet.label-src.js' /}
   #{script 'lib/leaflet.encoded-polyline.js' /}
-  
+  #{script 'lib/bootstrap-colorpicker.js' /}
 
   #{script 'models.js' /}
   #{script 'views/route-summary-view.js' /}
