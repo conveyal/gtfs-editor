@@ -140,7 +140,7 @@ var GtfsEditor = GtfsEditor || {};
       var selectedPatternId  = this.$('#tripPattern').val();
       var selectedTripId  = this.$('#trip').val();
 
-      if (this.model.tripPatterns.get(selectedPatternId) != undefined && this.model.tripPatterns.get(selectedPatternId).trips.get(selectedTripId) != undefined && G.Utils.confirm('Are you sure you want to delete this trip?')) {
+      if (this.model.tripPatterns.get(selectedPatternId) != undefined && this.model.tripPatterns.get(selectedPatternId).trips.get(selectedTripId) != undefined && G.Utils.confirm(G.strings.tripInfoDeleteTripconfirm)) {
         
         this.model.tripPatterns.get(selectedPatternId).trips.get(selectedTripId).destroy();
 

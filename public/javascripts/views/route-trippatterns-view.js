@@ -206,7 +206,7 @@ var GtfsEditor = GtfsEditor || {};
         var jqxhr = $.getJSON('http://transitwand.com/list', {unitId: $("#transit-wand-id").val()}, function(data) {
           
             if(data.length == 0) {
-              G.Utils.error('No data available for TransitWand Id"');
+              G.Utils.error(G.strings.tripPatternNoTWData);
               return;
             }
 
@@ -222,7 +222,7 @@ var GtfsEditor = GtfsEditor || {};
             view.updateTransitWandOverlay();
             
 
-          }).fail(function() { G.Utils.error('Unknown TransitWand Id"'); });
+          }).fail(function() { G.Utils.error(G.strings.tripPatternTWUnknownId); });
  
     },
 
@@ -259,7 +259,7 @@ var GtfsEditor = GtfsEditor || {};
 
         view.map.fitBounds(polyline.getBounds());
 
-      }).fail(function() { G.Utils.error('Unable to load TransitWand data."'); });
+      }).fail(function() { G.Utils.error(G.strings.tripPatternTWUnableLoad); });
 
     },
 
@@ -450,7 +450,7 @@ var GtfsEditor = GtfsEditor || {};
       evt.preventDefault();
 
       if(this.$('[name=name]').val() == "") {
-        G.Utils.error('Failed to create trip pattern, please enter a name.');
+        G.Utils.error(G.strings.tripPatternPatternCreateFailedNoName);
         return;
       }
 
@@ -482,7 +482,7 @@ var GtfsEditor = GtfsEditor || {};
                 // no op
               },
               error: function() {
-                G.Utils.error('Failed to create stop');
+                G.Utils.error(G.strings.tripPatternAddStopFailed);
               }
             });
         }
@@ -517,7 +517,7 @@ var GtfsEditor = GtfsEditor || {};
 
         },
         error: function() {
-          G.Utils.error('Failed to create trip pattern');
+          G.Utils.error(G.strings.tripPatternPatternCreateFailed);
         }
       });
 
@@ -669,7 +669,7 @@ var GtfsEditor = GtfsEditor || {};
       var selectedPatternId  = this.$('#trip-pattern-select').val();
 
       if(this.model.tripPatterns.get(selectedPatternId) == undefined) {
-        G.Utils.error("Select/create pattern before adding stops.")
+        G.Utils.error(G.strings.tripPatternAddStopFailedNoName);
         return;
       }
 
@@ -745,7 +745,7 @@ var GtfsEditor = GtfsEditor || {};
 
     clearPatternButton: function(evt) {
 
-      if (G.Utils.confirm('Are you sure you want to clear stops from this pattern?')) {
+      if (G.Utils.confirm(G.strings.tripPatternClearPatternConfirm)) {
         var selectedPatternId  = this.$('#trip-pattern-select').val();
         this.model.tripPatterns.get(selectedPatternId).removeAllStops();
         this.clearTripPatternLine();
@@ -769,7 +769,7 @@ var GtfsEditor = GtfsEditor || {};
 
       var selectedPatternId  = this.$('#trip-pattern-select').val();
 
-      if (this.model.tripPatterns.get(selectedPatternId) != undefined && G.Utils.confirm('Are you sure you want to delete this pattern?')) {
+      if (this.model.tripPatterns.get(selectedPatternId) != undefined && G.Utils.confirm(G.strings.tripPatternDeletePatternConfirm)) {
         var selectedPatternId  = this.$('#trip-pattern-select').val();
         this.model.tripPatterns.get(selectedPatternId).destroy();
       }

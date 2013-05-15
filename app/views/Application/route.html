@@ -259,8 +259,8 @@
           </select>
         </p>
         <p>
-          <button type="button" class="create-trip btn btn-primary btn-mini">&{'route.trip-tpl.create-trip-btn'}</button> 
-          <button type="button" id="delete-trip-btn" class="btn disabled btn-mini btn-danger">&{'route.trip-tpl.delete-trip-btn'}</button>
+          <button type="button" class="create-trip btn btn-primary btn-mini">&{'route.trip-info-tpl.create-trip-btn'}</button> 
+          <button type="button" id="delete-trip-btn" class="btn disabled btn-mini btn-danger">&{'route.trip-info-tpl.delete-trip-btn'}</button>
         </p>
         
         <div id="trip-create"></div>   
@@ -319,7 +319,7 @@
       <label class="control-label" for="calendar"><strong>Service Calendar</strong><br>(&{'shared.required'})</label>
       <div class="controls">
         <p>
-          <select required name="serviceCalendar" id="calendar" class="input" title="&{'route.trip-info-tpl.service-frequency'}" data-content="&{'route.trip-info-tpl.service-frequency-content'}">
+          <select required name="serviceCalendar" id="calendar" class="input" title="&{'route.trip-info-tpl.service-calendar'}" data-content="&{'route.trip-info-tpl.service-calendar-content'}">
             <option value="">-- &{'route.trip-info-tpl.select-calendar'} --</option>
 
             {{#items}}<option value="{{attributes.id}}">{{attributes.description}}</option>{{/items}}
@@ -343,7 +343,7 @@
     <form id="trip-create-form">
       <input type="hidden" name="id" value="{{id}}">
       <p>
-        <input name="name" required class="input" type="text" placeholder="&{'route.trip-new-trip-name'}" value="{{name}}">
+        <input name="name" required class="input" type="text" placeholder="&{'route.trip-info-new-trip-name'}" value="{{name}}">
       </p>
       <p>
         <button type="submit" class="btn btn-mini btn-primary trip-create-confirm-btn">&{'shared.button.add'}</button> <button type="button" class="btn btn-mini trip-create-cancel-btn">&{'shared.button.cancel'}</button>
@@ -645,7 +645,7 @@
     </div>
     
     <div>
-      <input id="default-dwell-input" class="input input-medium" type="text" placeholder="&{'route.trip-pattern-default-dwell'}">
+      <input id="default-dwell-input" class="input input-medium" type="text" placeholder="&{'route.trip-pattern-dwell'}">
     </div>
 
   </div>

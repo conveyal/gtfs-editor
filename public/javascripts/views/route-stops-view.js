@@ -447,7 +447,7 @@ var GtfsEditor = GtfsEditor || {};
 
     // Delete and existing stop model
     destroy: function(modelId) {
-      if (G.Utils.confirm('Are you sure you want to delete this stop?')) {
+      if (G.Utils.confirm(G.strings.stopsDeleteStopConfirm)) {
         this.collection.get(modelId).destroy({
           wait: true,
           success: function() {
