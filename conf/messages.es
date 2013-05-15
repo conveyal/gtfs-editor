@@ -108,7 +108,7 @@ route.edit-route.title=Editar Ruta
 route.steps-header= Pasos para agregar una nueva ruta
 
 route.step1=Información básica
-route.step2=Paradas
+route.step2=Paradas/Estaciones
 route.step3=Patrones de viajes
 route.step4=Viajes
 route.step5=Revisar
@@ -164,7 +164,6 @@ route.stops-stop-description=Descripción
 route.stops-major-stop= Parada/ estación principal 
 
 
-route.trip-pattern-instructions= Clic en las paradas en el mapa para hacer un patrón de viaje ordenado. Reordene las filas a la derecha si es necesario.
 
 route.trip-pattern-trip-patterns=Patrones de viaje
 route.trip-pattern-select-pattern=Seleccionar patrón

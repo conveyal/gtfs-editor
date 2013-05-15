@@ -10,9 +10,6 @@ secure.error=Unknown username or password.
 secure.logout=You have been logged out.
 
 
-# You can specialize this file for each language.
-# For example, for French create a messages.fr file
-
 application.name=Transit Database
 
 # nav-bar
@@ -94,6 +91,12 @@ shared.button.add=Add
 shared.button.update=Update
 shared.button.remove=Remove
 
+
+shared.attribute.unknown=Unknown
+shared.attribute.available=Available
+shared.attribute.unavailable=Unavailable
+
+
 shared.explore-search-routes=Explore/Search Routes
 shared.new-route=New Route
 
@@ -108,7 +111,7 @@ route.edit-route.title=Edit Route
 route.steps-header=Steps to Add a New Route
 
 route.step1=Basic Info
-route.step2=Stops
+route.step2=Stops/Stations
 route.step3=Trip Patterns
 route.step4=Trips
 route.step5=Review
@@ -121,6 +124,8 @@ route.filter-all-stops=Show all stops
 route.filter-hidden-stops=Some stops may be hidden at current zoom level.
 
 
+
+# step 1 
 
 route.route-info-tpl.agency=Agency
 
@@ -153,6 +158,11 @@ route.route-info-tpl.air-con-checkbox=With AirCon
 route.route-info-tpl.comments=Comments
 route.route-info-tpl.comments-content=Add any helpful internal information about this route. This is an unofficial field that will not show up in the GTFS file.
 
+route.route-info-tpl.pattern-count=Trip Pattern Count
+route.route-info-tpl.trip-count=Trip Count
+
+
+# step 2
 
 route.stop-instructions-tpl=Right click the map to add a new stop, or click a marker to edit details. 
 
@@ -165,8 +175,16 @@ route.stops-stop-name=Stop Name
 route.stops-stop-description=Description
 route.stops-major-stop=Major Stop
 
+route.stops-bike-parking=Bike Parking 
+route.stops-wheelchair-boarding=Wheelchair Boarding
 
-route.trip-pattern-instructions=Click on stops on the map to make an ordered trip pattern. Re-order rows at right if necessary.
+route.stops-delete-stop-confirm=Are you sure you want to delete this stop?
+
+
+
+# step 3
+
+route.trip-pattern-instructions=Click on stops on the map to make an ordered trip pattern. Set the travel and dwell time for each stop and create an alignment.
 
 route.trip-pattern-trip-patterns=Trip Patterns
 route.trip-pattern-select-pattern=select pattern
@@ -196,6 +214,35 @@ route.trip-pattern-popup-pattern-stop=Pattern Stop
 route.trip-pattern-travel-time=Travel Time (mm:ss)
 route.trip-pattern-dwell-time=Dwell Time (mm:ss)
 
+route.trip-pattern-timing=Timing
+
+route.trip-pattern-select-trip=select trip
+
+
+route.trip-pattern-clear-pattern-confirm=Are you sure you want to clear stops from this pattern?
+route.trip-pattern-delete-pattern-confirm=Are you sure you want to delete this pattern?
+
+route.trip-pattern-create-failed=Failed to create trip pattern
+route.trip-pattern-create-failed-no-name=Failed to create trip pattern, please enter a name.
+route.trip-pattern-add-stop-failed=Failed to add stop
+route.trip-pattern-add-stop-failed-no-pattern=Select/create pattern before adding stops.
+
+
+route.trip-pattern-no-tw-data=No data available for TransitWand Id
+route.trip-pattern-tw-unknown-id=Unknown TransitWand Id
+route.trip-pattern-tw-unable-load=Unable to load TransitWand data
+
+
+
+# step 4
+
+route.trip-info-instructions=Create a service schedule by adding trips to patterns.
+route.trip-info-tpl.trip-pattern-content=Select an existing trip pattern to create trips.
+
+route.trip-info-tpl.trip=Trip
+route.trip-info-tpl.trip-content=Select or create a trip.
+
+route.trip-info-tpl.trip-description-content=Description of trip (e..g Weekday afternoon peak)
 
 
 route.trip-info-tpl.trip-pattern=Trip Pattern
@@ -222,6 +269,34 @@ route.trip-info-tpl.hhmmss=hh:mm[:ss]
 route.trip-info-tpl.calendar-create-modal.title=Create Calendar
 route.trip-info-tpl.calendar-create-modal.calendar-name=Calendar Name
 
+
+route.trip-info-tpl.service-calendar=Service Calendar
+route.trip-info-tpl.service-calendar-content=Specifies days of week when this trip is active.
+
+route.trip-info-tpl.calendar-create-modal.calendar-name-content=Name of calendar (e.g. Weekday Service).
+
+route.trip-info-tpl.calendar-modify=Modify Calendar
+
+
+route.trip-info-tpl.create-trip-btn=Create New Trip
+route.trip-info-tpl.delete-trip-btn=Delete Trip
+
+route.trip-info-new-trip-name=New Trip Description
+
+route.trip-info-delete-pattern-confirm=Are you sure you want to delete this trip?
+
+
+# step 5 
+
+
+route.route-review-instructions=Review route and approve for publication.
+
+route.review-status=Status
+route.review-publicly-visible=Publicly Visible
+
+route.review.status.in-progress=In-Progress
+route.review.status.pending-approval=Pending Approval
+route.review.status.approved=Approved
 
 
 # /search
@@ -294,3 +369,10 @@ export.kml.title=Export as KML
 # /export/shapefile
 
 export.shapefile.title=Export as Shapefile
+
+
+
+
+
+
+

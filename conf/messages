@@ -1,10 +1,14 @@
 
 
+secure.title=
+secure.username=Username:
+secure.password=Password:
+secure.remember=Remember me
+secure.signin=Sign in
+secure.error=Unknown username or password.
+secure.logout=You have been logged out.
+
 route.trip-pattern-timing=Timing
-
-
-
-route.trip-pattern-default-dwell=Default Dwell (mm:ss)
 
 
 route.trip-info-instructions=Create a service schedule by adding trips to patterns.
@@ -22,10 +26,13 @@ route.trip-info-tpl.trip-description-content=Description of trip (e..g Weekday a
 
 route.trip-pattern-select-trip=select trip
 
-route.trip-tpl.create-trip-btn=Create New Trip
-route.trip-tpl.delete-trip-btn=Delete Trip
+route.trip-info-tpl.create-trip-btn=Create New Trip
+route.trip-info-tpl.delete-trip-btn=Delete Trip
 
-route.trip-new-trip-name=New Trip Description
+route.trip-info-new-trip-name=New Trip Description
+
+route.trip-info-tpl.service-calendar=Service Calendar
+route.trip-info-tpl.service-calendar-content=Specifies days of week when this trip is active.
 
 route.trip-info-tpl.calendar-create-modal.calendar-name-content=Name of calendar (e.g. Weekday Service).
 
@@ -50,3 +57,27 @@ shared.attribute.available=Available
 shared.attribute.unavailable=Unavailable
 
 
+# this is already translated but the english text changed slightly.
+route.trip-pattern-instructions=Click on stops on the map to make an ordered trip pattern. Set the travel and dwell time for each stop and create an alignment.
+
+
+# error messages and prompts
+
+route.stops-delete-stop-confirm=Are you sure you want to delete this stop?
+
+route.trip-pattern-clear-pattern-confirm=Are you sure you want to clear stops from this pattern?
+route.trip-pattern-delete-pattern-confirm=Are you sure you want to delete this pattern?
+
+
+route.trip-info-delete-pattern-confirm=Are you sure you want to delete this trip?
+
+
+route.trip-pattern-create-failed=Failed to create trip pattern
+route.trip-pattern-create-failed-no-name=Failed to create trip pattern, please enter a name.
+route.trip-pattern-add-stop-failed=Failed to add stop
+route.trip-pattern-add-stop-failed-no-pattern=Select/create pattern before adding stops.
+
+
+route.trip-pattern-no-tw-data=No data available for TransitWand Id
+route.trip-pattern-tw-unknown-id=Unknown TransitWand Id
+route.trip-pattern-tw-unable-load=Unable to load TransitWand data

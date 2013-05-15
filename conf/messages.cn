@@ -8,7 +8,7 @@ application.name=运输数据库
 nav-bar.agency=机构数据
 nav-bar.home=家
 nav-bar.contact=联系
-nav-bar.user-greeting=问候 %s
+nav-bar.user-greeting=问候
 
 
 # shared
