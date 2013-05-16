@@ -291,3 +291,95 @@ export.kml.title=Exportar como KML
 
 export.shapefile.title=Exportar como Shapefile
 
+
+
+
+
+
+
+
+
+
+
+secure.title=
+secure.username=Usuario:
+secure.password=Contraseña:
+secure.remember=Recordar detalles
+secure.signin=Iniciar sesión 
+secure.error=Nombre de usuario o contraseña incorrectos
+secure.logout=Has cerrado sesión
+
+route.trip-pattern-timing=Tiempos
+
+
+route.trip-info-instructions=Generar una programación de servicio agregando ‘viajes’ a los ‘patrones de viaje’.  
+
+route.trip-info-tpl.trip-pattern-content=Seleccionar un patrón de viaje existente para crear viajes.
+
+route.route-info-tpl.pattern-count=Recuento de patrones de viaje
+route.route-info-tpl.trip-count=Recuento de viajes
+
+
+route.trip-info-tpl.trip=Viaje
+route.trip-info-tpl.trip-content=Seleccionar o crear un viaje. 
+
+route.trip-info-tpl.trip-description-content=Descripción del viaje (ej. Hora pico en día hábil). 
+
+route.trip-pattern-select-trip=Seleccionar viaje
+
+route.trip-info-tpl.create-trip-btn=Crear nuevo viaje
+route.trip-info-tpl.delete-trip-btn=Borrar viaje
+
+route.trip-info-new-trip-name=Descripción del nuevo viaje
+
+route.trip-info-tpl.service-calendar=Calendario de servicio
+route.trip-info-tpl.service-calendar-content= Especificar los días de la semana en los que este viaje funciona. 
+
+route.trip-info-tpl.calendar-create-modal.calendar-name-content=Nombre del calendario(ej. Servicio en día hábil).
+
+route.trip-info-tpl.calendar-modify=Modificar Calendario
+
+route.stops-bike-parking=Biciestacionamiento 
+route.stops-wheelchair-boarding=Acceso con silla de ruedas
+
+
+route.route-review-instructions=Revisar ruta/línea y aprobar para publicación.
+
+route.review-status=Estado
+route.review-publicly-visible=Visible públicamente
+
+route.review.status.in-progress=En curso
+route.review.status.pending-approval=Aprobación pendiente
+route.review.status.approved=Aprobada
+
+
+shared.attribute.unknown=Sin información
+shared.attribute.available=Disponible
+shared.attribute.unavailable=No disponible
+
+
+# this is already translated but the english text changed slightly.
+route.trip-pattern-instructions=Clic en las paradas/estaciones en el mapa para crear la secuencia de un patrón de viaje. Establezca el tiempo de recorrido entre paradas/estaciones y el de ascenso-descenso de pasajeros y genere un alineamiento. 
+
+
+# error messages and prompts
+
+route.stops-delete-stop-confirm=¿Está seguro de querer borrar esta parada/estación?
+
+route.trip-pattern-clear-pattern-confirm==¿Está seguro de querer quitar las paradas/estaciones de este patrón?
+
+route.trip-pattern-delete-pattern-confirm==¿Está seguro de querer borrar este patrón?
+
+
+route.trip-info-delete-pattern-confirm==¿Está seguro de querer borrar este viaje?
+
+
+route.trip-pattern-create-failed=Error al crear el patrón de viaje.
+route.trip-pattern-create-failed-no-name=Error al crear patrón de viaje, por favor introduzca un nombre.
+route.trip-pattern-add-stop-failed=Error al añadir la parada/estación
+route.trip-pattern-add-stop-failed-no-pattern=Seleccionar o crear un patrón antes de añadir paradas/estaciones. 
+
+
+route.trip-pattern-no-tw-data=No hay datos disponibles para este número Id. de TransitWand. 
+route.trip-pattern-tw-unknown-id=Número Id. de TransitWand incorrecto. 
+route.trip-pattern-tw-unable-load=Error al cargar los datos desde TransitWand
