@@ -398,6 +398,22 @@ public class Api extends Controller {
 
         ok();
     }
+    
+    
+    public static void mergeStops(Long stop1Id, Long stop2Id) {
+        if(stop1Id == null || stop2Id == null)
+            badRequest();
+
+        Stop stop1 = Stop.findById(stop1Id);
+        Stop stop2 = Stop.findById(stop2Id);
+
+        if(stop1 == null || stop2 == null)
+            badRequest();
+
+        stop1.merge(stop2);
+
+        ok();
+    }
 
     // **** trip pattern controllers ****
     public static void getTripPattern(Long id, Long routeId) {

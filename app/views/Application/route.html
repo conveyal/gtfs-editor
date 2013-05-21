@@ -391,6 +391,15 @@
         <button type="button" class="btn disabled stop-delete-btn">&{'route.stops-upload-data'}</button>
     </div>
 
+
+    <div class="stop-merge-details well">
+      <legend>Merge/Manage Stops</legend>
+        <p>
+          <button type="button" class="btn disabled stop-find-duplicates-btn">Find Duplicate Stops</button>
+          <button type="button" class="btn disabled stop-merge-btn">Merge Duplicates Stops</button>
+        </p>
+    </div>
+
   </script>
 
 <!-- The route review tempate -->
@@ -529,9 +538,21 @@
 
 <!-- The stop details view appears in the map popup. -->
 <script id="stop-view-tpl" type="text/html">
-    <label><strong>&{'route.route-info-tpl.agency'}</strong>: {{agency.name}}</<label>
-    <label><strong>&{'route.stops-stop-name'}</strong>: {{stopName}}</<label>
-    <label><strong>&{'route.stops-stop-description'}</strong>: {{stopDesc}}</<label>  
+    <label><strong>&{'route.route-info-tpl.agency'}</strong>: {{agency.name}}</label>
+    <label><strong>&{'route.stops-stop-name'}</strong>: {{stopName}}</label>
+    <label><strong>&{'route.stops-stop-description'}</strong>: {{stopDesc}}</label>
+
+</script>
+
+<script id="stop-merge-view-tpl" type="text/html">
+  <legend>Merge Stops</legend>
+
+    {{#stops}}
+    <p>
+      <label><strong>&{'route.stops-stop-name'}</strong>: {{stopName}}</label>
+      <label><strong>&{'route.stops-stop-description'}</strong>: {{stopDesc}}</label>  
+    </p>
+    {{/stops}}
 </script>
 
 <!-- The trippattern stop patterns details form that appears in the map popup. -->
@@ -745,6 +766,7 @@
   #{script 'lib/leaflet.label-src.js' /}
   #{script 'lib/leaflet.encoded-polyline.js' /}
   #{script 'lib/bootstrap-colorpicker.js' /}
+  #{script 'lib/geolib.js' /}
 
   #{script 'models.js' /}
   #{script 'views/route-summary-view.js' /}

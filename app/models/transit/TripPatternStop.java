@@ -59,6 +59,14 @@ public class TripPatternStop extends Model {
 
 		this.defaultDistance = 0.0;
 	}
+	
+	public static void replaceStop(Stop newStop, Stop oldStop) {
+    	
+		TripPatternStop.em().createNativeQuery("UPDATE trippatternstop SET stop_id = ? WHERE stop_id = ?;")
+   	          .setParameter(1, newStop.id)
+   	          .setParameter(2, oldStop.id)
+   	          .executeUpdate();
+   }
 }
 
 

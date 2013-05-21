@@ -59,6 +59,14 @@ public class StopTime extends Model {
     	this.stop = stop;
     } 
     
+    public static void replaceStop(Stop newStop, Stop oldStop) {
+    	
+    	 StopTime.em().createNativeQuery("UPDATE stoptime SET stop_id = ? WHERE stop_id = ?;")
+    	          .setParameter(1, newStop.id)
+    	          .setParameter(2, oldStop.id)
+    	          .executeUpdate();
+    }
+    
     public static StopTimePickupDropOffType mapGtfsPickupDropOffType(Integer pickupDropOffType)
     {
     	switch(pickupDropOffType)

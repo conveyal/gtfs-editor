@@ -79,6 +79,16 @@ public class Stop extends Model {
         loc.put("lng", this.location.getX());
         return loc;
     }
+    
+    public void merge(Stop mergedStop) {
+   
+    	// find replace references to mergedStop 
+    	StopTime.replaceStop(this, mergedStop);
+    	TripPatternStop.replaceStop(this, mergedStop);
+    	
+    	mergedStop.delete();
+    	
+    }
 
     public void setLocation(Hashtable<String, Double> loc) {
         GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);

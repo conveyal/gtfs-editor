@@ -4,6 +4,7 @@ var GtfsEditor = GtfsEditor || {};
   G.RouteStopsView = Backbone.View.extend({
     events: {
       'submit .stop-details-form': 'save',
+      'click .stop-find-duplicates-btn': 'findDuplicateStops',
       'change .stops-toggle': 'onStopVisibilityChange',
       'change input[name="stopFilterRadio"]': 'onStopFilterChange'
     },
@@ -13,7 +14,6 @@ var GtfsEditor = GtfsEditor || {};
       // Marker caches
       this.stopLayers = {};
       this.stopIcons = {}
-      
 
       // Event bindings for the Stop collection
       this.collection.on('add', this.onModelAdd, this);
@@ -59,7 +59,7 @@ var GtfsEditor = GtfsEditor || {};
         shadowSize: [41, 41]
       });
 
-        _.bindAll(this, 'sizeContent', 'onStopFilterChange', 'destroy', 'save');
+        _.bindAll(this, 'sizeContent', 'onStopFilterChange', 'destroy', 'save', 'findDuplicateStops', 'deduplicateStops');
         $(window).resize(this.sizeContent);
     },
 
@@ -100,6 +100,9 @@ var GtfsEditor = GtfsEditor || {};
 
       // Add a layer group for standard and major stops
       this.stopLayerGroup = L.layerGroup().addTo(this.map);
+
+      // create a mergeStopLayerGroup
+      this.mergeStopLayerGroup = L.layerGroup()
 
       // Bind map events
       this.map.on('contextmenu', this.onMapRightClick, this);
@@ -149,7 +152,7 @@ var GtfsEditor = GtfsEditor || {};
 
     updateStops: function (mapCenter) {
       // don't keep more than 500 markers on map at anytime. 
-       if(this.collection.length > 500)
+       if(this.collection.length > 750)
           this.collection.remove(this.collection.slice(0, 200));
       
        var agencyId = null;
@@ -159,8 +162,6 @@ var GtfsEditor = GtfsEditor || {};
        if(G.config.showStandardStops && this.map.getZoom() >= 15) {
           if(mapCenter == null)
             mapCenter = this.map.getCenter();
-
-         
 
         this.collection.fetch({remove: false, data: {agencyId: agencyId, lat: mapCenter.lat, lon: mapCenter.lng}});
       }
@@ -172,6 +173,71 @@ var GtfsEditor = GtfsEditor || {};
 
     clearStops: function() {
       this.collection.reset();
+    },
+
+    findDuplicateStops: function() {
+      this.duplicateStopsCollection = new G.Stops();
+      this.stopGroups = new G.StopGroups();
+
+      this.duplicateStopsCollection.on('reset', this.deduplicateStops);
+
+      this.duplicateStopsCollection.fetch({reset: true, data: {agencyId: this.model.get('agency').id}});
+
+    },
+
+    deduplicateStops: function() {
+
+      var view = this;
+
+      var stopLatLngs = new Array();
+
+      this.map.removeLayer(this.stopLayerGroup);
+      this.map.addLayer(this.mergeStopLayerGroup);
+
+      this.duplicateStopsCollection.each(function(stop) {
+        
+        stopLatLngs.push({latitude: stop.get('location').lat, longitude: stop.get('location').lng, stopId: stop.id});
+
+      });
+
+      // check distance for each stop pair
+      _.each(stopLatLngs, function(stop1) {
+
+        _.each(stopLatLngs, function(stop2) {
+
+            var dist = geolib.getDistance(stop1, stop2);
+            if(dist < 5 &&  stop1.stopId != stop2.stopId) {
+              view.stopGroups.group(view.duplicateStopsCollection.get(stop1.stopId), view.duplicateStopsCollection.get(stop2.stopId));
+            }
+              
+        });
+
+      });
+
+      this.stopGroups.each(function(stopGroup) {
+
+
+        var data = {
+          mergedStop: stopGroup.get('mergedStop'),
+          stops: stopGroup.get('stops')
+        }
+        var $popupContent = ich['stop-merge-view-tpl'](data);
+
+        var markerLayer = L.marker([stopGroup.get('mergedStop').get('location').lat,
+          stopGroup.get('mergedStop').get('location').lng], {
+          draggable: false,
+          icon: view.selectedStopIcon
+        });
+
+
+        markerLayer.bindPopup($('<div>').append($popupContent).html());
+
+        view.mergeStopLayerGroup.addLayer(markerLayer);
+
+
+
+      });
+
     },
 
     onStopFilterChange: function(evt) {
