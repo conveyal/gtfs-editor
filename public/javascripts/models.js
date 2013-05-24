@@ -89,10 +89,20 @@ G.RouteTypes = Backbone.Collection.extend({
       location: null
     },
 
-    blacklist: ['justAdded',],
+    blacklist: ['justAdded','lat','lng'],
     toJSON: function(options) {
         return _.omit(this.attributes, this.blacklist);
     },
+
+    set: function(attributes, options) {    
+            //my custom code
+        var finalAttributes = _.omit(attributes, this.blacklist);
+
+        if(attributes.lat != undefined &&  attributes.lng != undefined)
+          finalAttributes['location'] = {lat: attributes.lat, lng: attributes.lng};
+
+        return Backbone.Model.prototype.set.call(this, finalAttributes, options);
+    }
   });
 
   G.Stops = Backbone.Collection.extend({

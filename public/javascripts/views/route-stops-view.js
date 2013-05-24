@@ -288,6 +288,9 @@ var GtfsEditor = GtfsEditor || {};
     //  - Change icons
     //  - Handle visiblity
     onModelStopChange: function(model) {
+
+      this.stopLayers[model.id].setLatLng([model.get('location').lat,model.get('location').lng]);
+
       if (model.get('majorStop')) {
   
         this.stopLayers[model.id].setIcon(this.agencyMajorStopIcon);
