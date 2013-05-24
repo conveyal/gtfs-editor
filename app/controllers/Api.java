@@ -209,7 +209,7 @@ public class Api extends Controller {
     
     // **** route controllers ****
 
-    public static void getRoute(Long id) {
+    public static void getRoute(Long id, Long agencyId) {
         try {
             if(id != null)
             {
@@ -219,8 +219,16 @@ public class Api extends Controller {
                 else
                     notFound();
             }
-            else
-                renderJSON(Api.toJson(Route.find("order by routeShortName").fetch(), false));
+            else {
+                if(agencyId != null) {
+                    Agency agency = Agency.findById(agencyId);
+                    renderJSON(Api.toJson(Route.find("agency = ? order by routeShortName", agency).fetch(), false));
+                }
+                else
+                    renderJSON(Api.toJson(Route.find("order by routeShortName").fetch(), false));   
+                    
+            }
+                
         } catch (Exception e) {
             e.printStackTrace();
             badRequest();
