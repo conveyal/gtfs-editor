@@ -14,7 +14,7 @@
 
   			this.collection.on('remove', this.render, this)
 
-  			this.collection.fetch().complete(function(){
+  			this.collection.fetch({data: {agencyId: G.session.agencyId}}).complete(function(){
 			  self.render();
 			});
 
