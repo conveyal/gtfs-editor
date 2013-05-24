@@ -115,8 +115,7 @@ var GtfsEditor = GtfsEditor || {};
 
       this.$(".collapse").collapse() 
 
-      this.onTripPatternsReset();
-
+      
       // Base layer config is optional, default to Mapbox Streets
       var url = 'http://{s}.tiles.mapbox.com/v3/' + G.config.mapboxKey + '/{z}/{x}/{y}.png',
           baseLayer = L.tileLayer(url, {
@@ -189,6 +188,8 @@ var GtfsEditor = GtfsEditor || {};
 
 
       var mapCenter = this.map.getCenter();
+
+      this.onTripPatternsReset();
 
       this.clearStops();
 
