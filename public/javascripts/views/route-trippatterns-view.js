@@ -15,8 +15,8 @@ var GtfsEditor = GtfsEditor || {};
       'submit .trippattern-stop-add-form': 'addStopToPattern',
       'change #trip-pattern-select': 'onTripPatternChange',
       'change #trip-pattern-stop-select': 'onTripPatternStopSelectChange',      
-      'change input[name="stopFilterRadio"]': 'onStopFilterChange'
-
+      'change input[name="stopFilterRadio"]': 'onStopFilterChange',
+      'change #transit-wand-select': 'updateTransitWandOverlay'
     },
 
 
@@ -94,7 +94,7 @@ var GtfsEditor = GtfsEditor || {};
         labelAnchor: [10, -16]
       });
 
-      _.bindAll(this, 'sizeContent', 'onStopFilterChange', 'loadTransitWand', 'calcTimesFromVelocity', 'saveTripPatternLine', 'onTripPatternChange', 'onTripPatternStopSelectChange', 'updateStops', 'zoomToPatternExtent', 'clearPatternButton', 'deletePatternButton', 'stopUpdateButton', 'stopRemoveButton');
+      _.bindAll(this, 'sizeContent', 'onStopFilterChange', 'loadTransitWand', 'calcTimesFromVelocity', 'saveTripPatternLine', 'onTripPatternChange', 'onTripPatternStopSelectChange', 'updateStops', 'zoomToPatternExtent', 'clearPatternButton', 'deletePatternButton', 'stopUpdateButton', 'stopRemoveButton', 'updateTransitWandOverlay');
         $(window).resize(this.sizeContent);
     },
 

@@ -6,7 +6,7 @@
 GET     /                                       Application.index
 GET     /scaffolding/                           Application.scaffolding
 GET     /search/                                Application.search
-GET     /route/{id}/info                        Application.route
+GET     /route/{id}/.*                        	Application.route
 GET     /route/	                        		Application.route
 
 GET     /manage/routetypes                      Application.manageRouteTypes
