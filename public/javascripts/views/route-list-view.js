@@ -36,7 +36,8 @@
   			var id = $(evt.currentTarget).data("id");
   			//alert('edit ' + id);
 
-  			window.location = editRouteAction({id:id});
+        // need to use route action !!!
+  			window.location = '/route/' + id + '/info'; //editRouteAction({id:id});
 
   		},
 
