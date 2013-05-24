@@ -262,7 +262,6 @@
           <button type="button" class="create-trip btn btn-primary btn-mini">&{'route.trip-info-tpl.create-trip-btn'}</button> 
           <button type="button" id="delete-trip-btn" class="btn disabled btn-mini btn-danger">&{'route.trip-info-tpl.delete-trip-btn'}</button>
         </p>
-        
         <div id="trip-create"></div>   
         
       </div>
@@ -642,6 +641,26 @@
       <p>
         <button type="submit" class="btn btn-mini btn-primary trippattern-create-confirm-btn">&{'shared.button.add'}</button> <button type="button" class="btn btn-mini trippattern-create-cancel-btn">&{'shared.button.cancel'}</button>
       </p>
+       
+      
+      
+    </form>
+  </ul>
+</script>
+
+
+<script id="trippattern-duplicate-tpl" type="text/html">
+  <ul>
+    <form class="trippattern-duplicate-form">
+      <p>&{'route.trip-pattern-duplicate-pattern'}: {{patternName}}</p>
+      <input type="hidden" name="id" value="{{id}}">
+      <p>
+        <input name="name" required class="input" type="text" placeholder="&{'route.trip-pattern-new-pattern-name'}" value="{{name}}">
+      </p>
+      <p>
+        <button type="submit" class="btn btn-mini btn-primary trippattern-duplicate-confirm-btn">&{'shared.button.duplicate'}</button> <button type="button" class="btn btn-mini trippattern-duplicate-cancel-btn">&{'shared.button.cancel'}</button>
+      </p>
+       
       
       
     </form>
@@ -661,6 +680,9 @@
   <p>
     <button type="button" id="zoom-pattern-extent-btn" class="btn btn-mini">&{'route.trip-pattern-zoom-pattern'}</button>
     <button type="button" id="clear-pattern-btn" class="btn btn-mini btn-danger">&{'route.trip-pattern-clear-pattern'}</button>
+  </p>
+  <p>
+    <button type="button" id="reverse-pattern-btn" class="btn btn-mini btn-danger">&{'route.trip-pattern-reverse-pattern'}</button>
   </p>
   
   <hr/>
@@ -702,6 +724,12 @@
           <button type="submit" class="btn btn-mini btn-primary trippattern-create-btn">&{'route.trip-pattern-create-new-pattern'}</button>
           <button type="button" id="delete-pattern-btn" class="btn disabled btn-mini btn-danger">&{'route.trip-pattern-delete-pattern'}</button>
         </p>
+
+        <p>
+          <button type="button" class="trippattern-duplicate-btn btn btn-primary btn-mini">&{'route.trip-pattern-duplicate-pattern'}</button> 
+        </p>
+
+        <div id="trippattern-duplicate"></div>   
         <div id="trippattern-create"></div>      
         <div id="trippattern-stop-list"></div>     
   </div>    

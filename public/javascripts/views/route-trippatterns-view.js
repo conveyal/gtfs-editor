@@ -5,13 +5,17 @@ var GtfsEditor = GtfsEditor || {};
     events: {
       'click .trippattern-create-btn': 'createNewTripPattern',
       'click .trippattern-create-cancel-btn': 'cancelCreateNewTripPattern',
+      'click .trippattern-duplicate-btn': 'duplicateTripPattern',
+      'click .trippattern-duplicate-cancel-btn': 'cancelDuplicateTripPattern',
       'click #create-pattern-from-alignment-btn': 'createTripPatternLine',
       'click #zoom-pattern-extent-btn': 'zoomToPatternExtent',
       'click #calc-times-from-velocity-btn': 'calcTimesFromVelocity',
       'click #clear-pattern-btn': 'clearPatternButton',
+      'click #reverse-pattern-btn': 'reversePatternButton',
       'click #delete-pattern-btn': 'deletePatternButton',
       'click .trippattern-load-transitwand-btn': 'loadTransitWand',
       'submit .trippattern-create-form': 'addNewTripPattern',
+      'submit .trippattern-duplicate-form': 'addDuplicateTripPattern',
       'submit .trippattern-stop-add-form': 'addStopToPattern',
       'change #trip-pattern-select': 'onTripPatternChange',
       'change #trip-pattern-stop-select': 'onTripPatternStopSelectChange',      
@@ -94,7 +98,7 @@ var GtfsEditor = GtfsEditor || {};
         labelAnchor: [10, -16]
       });
 
-      _.bindAll(this, 'sizeContent', 'onStopFilterChange', 'loadTransitWand', 'calcTimesFromVelocity', 'saveTripPatternLine', 'onTripPatternChange', 'onTripPatternStopSelectChange', 'updateStops', 'zoomToPatternExtent', 'clearPatternButton', 'deletePatternButton', 'stopUpdateButton', 'stopRemoveButton', 'updateTransitWandOverlay');
+      _.bindAll(this, 'sizeContent', 'duplicateTripPattern', 'addDuplicateTripPattern', 'cancelDuplicateTripPattern', 'onStopFilterChange', 'loadTransitWand', 'calcTimesFromVelocity', 'saveTripPatternLine', 'onTripPatternChange', 'onTripPatternStopSelectChange', 'updateStops', 'zoomToPatternExtent', 'clearPatternButton', 'deletePatternButton', 'stopUpdateButton', 'stopRemoveButton', 'updateTransitWandOverlay');
         $(window).resize(this.sizeContent);
     },
 
@@ -429,6 +433,7 @@ var GtfsEditor = GtfsEditor || {};
     createNewTripPattern: function() {
       this.$('#delete-pattern-btn').hide();
       this.$('.trippattern-create-btn').hide();
+      this.$('.trippattern-duplicate-btn').hide();
 
       this.$('#trippattern-create').html(ich['trippattern-create-tpl']());
 
@@ -439,8 +444,45 @@ var GtfsEditor = GtfsEditor || {};
     cancelCreateNewTripPattern: function() {
       this.$('#delete-pattern-btn').show();
       this.$('.trippattern-create-btn').show();
+      this.$('.trippattern-duplicate-btn').show();
 
       this.$('#trippattern-create').html("");
+      
+      this.impportedPattern = null;
+      this.transitWandOverlayGroup.clearLayers();
+
+    },
+
+    duplicateTripPattern: function() {
+
+      var selectedPatternId  = this.$('#trip-pattern-select').val();
+
+      if(selectedPatternId != undefined && selectedPatternId != "") {
+
+        var data = {
+              patternName: this.model.tripPatterns.get(selectedPatternId).attributes.name, 
+              id : selectedPatternId
+        }
+
+        this.$('#delete-pattern-btn').hide();
+        this.$('.trippattern-create-btn').hide();
+        this.$('.trippattern-duplicate-btn').hide();
+
+
+
+        this.$('#trippattern-duplicate').html(ich['trippattern-duplicate-tpl'](data));
+
+        this.$('#trippattern-duplicate-form').bind('submit', this.duplicateTripPattern);
+      }
+    },
+
+
+    cancelDuplicateTripPattern: function() {
+      this.$('#delete-pattern-btn').show();
+      this.$('.trippattern-create-btn').show();
+      this.$('.trippattern-duplicate-btn').show();
+
+      this.$('#trippattern-duplicate').html("");
       
       this.impportedPattern = null;
       this.transitWandOverlayGroup.clearLayers();
@@ -507,6 +549,48 @@ var GtfsEditor = GtfsEditor || {};
               view.model.tripPatterns.get(data.id).save();
 
             }
+
+            view.impportedPattern = null;
+            view.transitWandOverlayGroup.clearLayers();
+
+            G.session.tripPattern = data.id;
+
+            view.onTripPatternsReset();
+           
+
+        },
+        error: function() {
+          G.Utils.error(G.strings.tripPatternPatternCreateFailed);
+        }
+      });
+    },
+
+
+    addDuplicateTripPattern: function(evt) {
+      evt.preventDefault();
+
+      if(this.$('[name=name]').val() == "") {
+        G.Utils.error(G.strings.tripPatternPatternCreateFailedNoName);
+        return;
+      }
+
+
+      var originalTpData = this.model.tripPatterns.get(this.$('[name=id]').val()).attributes;
+
+      originalTpData.id = null;
+      originalTpData.name = this.$('[name=name]').val();
+      originalTpData.patternStops = _.map(originalTpData.patternStops, function(data){
+        data.id = null;
+        return data;
+      });
+      originalTpData.route = originalTpData.route.id;
+
+      var view = this;
+
+      this.model.tripPatterns.create(originalTpData, {
+        wait: true,
+        success: function(data) {
+        
 
             view.impportedPattern = null;
             view.transitWandOverlayGroup.clearLayers();
@@ -646,11 +730,13 @@ var GtfsEditor = GtfsEditor || {};
       if( this.model.tripPatterns.get(selectedPatternId) == undefined) {
 
         this.$('#delete-pattern-btn').addClass("disabled");
+        this.$('.trippattern-duplicate-btn').addClass("disabled");
         this.$('#trippattern-stop-list').html("");
         return;      
       }
 
       this.$('#delete-pattern-btn').removeClass("disabled");
+      this.$('.trippattern-duplicate-btn').removeClass("disabled");
       
       var data = {
         stops : this.model.tripPatterns.get(selectedPatternId).attributes.patternStops
@@ -750,6 +836,16 @@ var GtfsEditor = GtfsEditor || {};
         var selectedPatternId  = this.$('#trip-pattern-select').val();
         this.model.tripPatterns.get(selectedPatternId).removeAllStops();
         this.clearTripPatternLine();
+      }
+    },
+
+    reversePatternButton: function(evt) {
+
+      if (G.Utils.confirm(G.strings['tripPatternReverseconfirm'])) {
+        var selectedPatternId  = this.$('#trip-pattern-select').val();
+        this.model.tripPatterns.get(selectedPatternId).reverse();
+        this.model.tripPatterns.get(selectedPatternId).save();
+        this.onTripPatternChange();
       }
     },
 

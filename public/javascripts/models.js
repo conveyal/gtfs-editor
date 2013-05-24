@@ -242,6 +242,33 @@ G.RouteTypes = Backbone.Collection.extend({
       return stopsSequences.join(" & ");
     },
 
+    reverse: function() {
+      var patternStops = this.get('patternStops');
+
+      // need to shift travel times forward
+
+      /*_.each(patternStops, function(stop, i){
+        if(i+1 < patternStops.length)
+          stop.travelTime = patternStops[i+1].travelTime;
+        if(patternStops.length == i+1)
+           stop.travelTime = null; 
+      }); */
+
+      patternStops.reverse();
+
+      this.set('patternStops', patternStops);
+
+      this.normalizeSequence();
+
+      var latlngs = (new L.EncodedPolyline(this.get('encodedShape'))).getLatLngs();
+
+      latlngs.reverse();
+
+      var reversedLine = createEncodedPolyline(L.polyline(latlngs));
+
+      this.get('encodedShape', reversedLine);
+
+    },
   
     sortPatternStops: function() {
       var patternStops = _.sortBy(this.get('patternStops'), function(ps){
