@@ -85,6 +85,33 @@ public class TripPattern extends Model {
     	this.shape = shape;
     	this.route = route;
     }
+    
+    public TripPattern delete() {
+    	
+    	this.patternStops = new ArrayList<TripPatternStop>();
+    	this.save();
+        
+        List<TripPatternStop> patternStops = TripPatternStop.find("pattern = ?", this).fetch();
+        for(TripPatternStop patternStop : patternStops)
+        {
+            patternStop.delete();
+        }
+        
+        List<StopTime> stopTimes = StopTime.find("trip.pattern = ?", this).fetch();
+        for(StopTime stopTime : stopTimes)
+        {
+            stopTime.delete();
+        }
+
+        List<Trip> trips = Trip.find("pattern = ?", this).fetch();
+        
+        for(Trip trip : trips)
+        {
+            trip.delete();
+        }
+        
+        return super.delete();
+    }
 
     public static BigInteger createFromTrip(EntityManager em, BigInteger tripId)
     {

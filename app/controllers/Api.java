@@ -561,38 +561,11 @@ public class Api extends Controller {
 
         TripPattern tripPattern = TripPattern.findById(id);
 
-        
-        
         if(tripPattern == null)
             badRequest();
 
-       	
-    	tripPattern.patternStops = new ArrayList<TripPatternStop>();
-    	tripPattern.save();
-        
-        List<TripPatternStop> patternStops = TripPatternStop.find("pattern = ?", tripPattern).fetch();
-        for(TripPatternStop patternStop : patternStops)
-        {
-            patternStop.delete();
-        }
-        
-        
-        
-        List<StopTime> stopTimes = StopTime.find("trip.pattern = ?", tripPattern).fetch();
-        for(StopTime stopTime : stopTimes)
-        {
-            stopTime.delete();
-        }
-
-        List<Trip> trips = Trip.find("pattern = ?", tripPattern).fetch();
-        
-        for(Trip trip : trips)
-        {
-            trip.delete();
-        }
-        
         tripPattern.delete();
-
+       	
         ok();
     }
     

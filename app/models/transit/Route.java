@@ -1,6 +1,7 @@
 package models.transit;
 
 import java.math.BigInteger;
+import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EnumType;
@@ -91,6 +92,17 @@ public class Route extends Model {
         this.routeDesc = routeDescription;
 
         this.agency = agency;
+    }
+    
+    public Route delete() {
+    	
+    	 List<TripPattern> patterns = TripPattern.find("route = ?", this).fetch();
+         for(TripPattern pattern : patterns)
+         {
+        	 pattern.delete();
+         }
+    	
+    	return super.delete();
     }
 
     // slightly tricky as we can't match 1:1 against GTFS and TDM route types -- we'll pick or create a type.

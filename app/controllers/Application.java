@@ -75,7 +75,7 @@ public class Application extends Controller {
         render(routes);
     }
 
-    public static void route() {
+    public static void route(Long id) {
     	List<RouteType> routeTypes = RouteType.findAll();
         render(routeTypes);
     }
