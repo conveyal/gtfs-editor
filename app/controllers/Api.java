@@ -601,7 +601,7 @@ public class Api extends Controller {
     
     // **** calendar controllers ****
 
-    public static void getCalendar(Long id) {
+    public static void getCalendar(Long id, Long agencyId) {
         try {
             if(id != null) {
             	ServiceCalendar cal = ServiceCalendar.findById(id);
@@ -611,7 +611,13 @@ public class Api extends Controller {
                     notFound();
             }
             else {
-                renderJSON(Api.toJson(ServiceCalendar.all().fetch(), false));
+                if(agencyId != null) {
+
+                    Agency agency = Agency.findById(agencyId);
+                    renderJSON(Api.toJson(ServiceCalendar.find("agency = ?", agency).fetch(), false));
+                }
+                else
+                    renderJSON(Api.toJson(ServiceCalendar.all().fetch(), false));
             }
         } catch (Exception e) {
             e.printStackTrace();

@@ -21,7 +21,7 @@ var GtfsEditor = GtfsEditor || {};
 
       this.calendars = new G.Calendars();
 
-      this.calendars.fetch();
+      this.calendars.fetch({data: {agencyId: this.model.get('agency').id}});
 
       this.calendars.on('add', this.onCalendarsReset, this);
       this.calendars.on('remove', this.onCalendarsReset, this);
