@@ -3,7 +3,7 @@ var GtfsEditor = GtfsEditor || {};
 (function(G, $) {
 
   G.Agency = Backbone.Model.extend({
-    url: '/api/agency/',
+    urlRoot: '/api/agency/',
     
     defaults: {
       id: null,
