@@ -3,6 +3,7 @@ package jobs;
 import java.io.File;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -118,7 +119,12 @@ public class ProcessGtfsSnapshotExport extends Job {
 					c.setServiceId(calendarId);
 					
 					c.setStartDate(new ServiceDate(new Date())); // calendar.startDate
-					c.setEndDate(new ServiceDate(new Date())); // calendar.endDate
+
+					Calendar cal = Calendar.getInstance();
+					cal.setTime(new Date());
+					cal.add(Calendar.MONTH, 1);  //
+
+					c.setEndDate(new ServiceDate(cal.getTime())); // calendar.endDate
 					
 					c.setMonday(calendar.monday? 1 : 0);
 					c.setTuesday(calendar.tuesday? 1 : 0);
@@ -149,6 +155,9 @@ public class ProcessGtfsSnapshotExport extends Job {
 					
 					for(Trip trip : trips)
 					{	
+						if(!trip.pattern.route.agency.id.equals(agency.id) )
+							continue;
+
 						if(!routeList.containsKey(trip.pattern.route.id))
 						{
 							Route route = trip.pattern.route;
@@ -163,7 +172,7 @@ public class ProcessGtfsSnapshotExport extends Job {
 								routeId.setId(route.gtfsRouteId);
 							else
 								routeId.setId(route.id.toString());
-							
+							Logger.info(gtfsAgencyId + " " + routeId);
 							r.setId(routeId);
 							r.setAgency(a);
 							r.setColor(route.routeColor);

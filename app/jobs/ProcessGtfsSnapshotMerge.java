@@ -101,7 +101,7 @@ public class ProcessGtfsSnapshotMerge extends Job {
     	
     	try {
     		
-    		File gtfsFile = new File(Play.configuration.getProperty("application.publicGtfsDataDirectory"), snapshotMerge.snapshot.getFilename());
+    		File gtfsFile = new File("/tmp/manila.gtfs.zip"); //Play.configuration.getProperty("application.publicGtfsDataDirectory"), snapshotMerge.snapshot.getFilename());
     		
     		reader.setInputLocation(gtfsFile);
         	reader.setEntityStore(store);
@@ -120,6 +120,8 @@ public class ProcessGtfsSnapshotMerge extends Job {
         		agencyIdMap.put(agency.gtfsAgencyId, new BigInteger(agency.id.toString()));
         	}
         	
+        	BigInteger primaryAgencyId = null;
+        	
 	    	for (org.onebusaway.gtfs.model.Agency gtfsAgency : reader.getAgencies()) {
 	    		
 	    		if(!agencyIdMap.containsKey(gtfsAgency.getId()))
@@ -129,8 +131,12 @@ public class ProcessGtfsSnapshotMerge extends Job {
 		    		
 		    		agencyIdMap.put(agency.gtfsAgencyId, BigInteger.valueOf(agency.id));
 		    		
+		    		primaryAgencyId = BigInteger.valueOf(agency.id);
+		    		
 		    		agencyCount++;  		
 	    		}
+	    		else
+	    			primaryAgencyId = agencyIdMap.get(gtfsAgency.getId());
 	    		
 	    		if(_quickTest && agencyCount == 100)
 	    			break;
@@ -158,6 +164,9 @@ public class ProcessGtfsSnapshotMerge extends Job {
 	    			break;
 	        }
 	        
+	        if(agencyCount > 1)
+	    		primaryAgencyId = null;
+	        
 	        routeTask.completeTask("Imported " + routeCount + " routes.", GtfsSnapshotMergeTaskStatus.SUCCESS);
 	        
 	        Logger.info("Routes loaded:" + routeCount.toString()); 
@@ -168,7 +177,7 @@ public class ProcessGtfsSnapshotMerge extends Job {
 	    	
 	        for (org.onebusaway.gtfs.model.Stop gtfsStop : store.getAllStops()) {	     
 	           
-	        	BigInteger stopId = Stop.nativeInsert(snapshotMerge.em(), gtfsStop);
+	        	BigInteger stopId = Stop.nativeInsert(snapshotMerge.em(), gtfsStop, primaryAgencyId);
 	            stopIdMap.put(gtfsStop.getId().toString(), stopId );
 	           	          
 	        	stopCount++;
@@ -254,7 +263,7 @@ public class ProcessGtfsSnapshotMerge extends Job {
 	    	
 	        for (org.onebusaway.gtfs.model.ServiceCalendar gtfsService : store.getAllCalendars()) {
 	        	
-	        	BigInteger serviceId = ServiceCalendar.nativeInsert(snapshotMerge.em(), gtfsService);
+	        	BigInteger serviceId = ServiceCalendar.nativeInsert(snapshotMerge.em(), gtfsService, primaryAgencyId);
 	        	        	
 	        	serviceIdMap.put(gtfsService.getServiceId().toString(), serviceId);
 	        	

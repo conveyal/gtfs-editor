@@ -175,12 +175,23 @@ public class TripPattern extends Model {
     		{
     			q.setParameter(6,  stopTime.shapeDistTraveled - previousDistance);
     			q.setParameter(7,  stopTime.arrivalTime - previousDepartureTime);
+    	
 
     			previousDepartureTime = stopTime.departureTime;
     			previousDistance = stopTime.shapeDistTraveled;
     		}
 
     		q.executeUpdate();
+    		
+    		q = em.createNativeQuery("INSERT INTO trippattern_trippatternstop (trippattern_id, patternstops_id) VALUES (?, ?);");
+    		
+    		q.setParameter(1,  tripPatternId.longValue());
+    		q.setParameter(2,  tripPatternStopId.longValue());
+    		
+    		q.executeUpdate();
+    		
+    				
+    				
     	}
 
     	Logger.info("Adding trip pattern: " + trip.route.routeShortName + " (" + trip.tripHeadsign + ")");
