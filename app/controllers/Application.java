@@ -7,10 +7,14 @@ import play.mvc.*;
 import java.util.*;
 
 import jobs.ProcessGtfsSnapshotExport;
+import jobs.ProcessGtfsSnapshotMerge;
 
 import models.*;
+import models.gtfs.GtfsSnapshot;
 import models.gtfs.GtfsSnapshotExport;
 import models.gtfs.GtfsSnapshotExportCalendars;
+import models.gtfs.GtfsSnapshotMerge;
+import models.gtfs.GtfsSnapshotSource;
 import models.transit.Route;
 import models.transit.RouteType;
 import models.transit.StopType;
@@ -29,7 +33,10 @@ public class Application extends Controller {
             
             Account account = Account.find("username = ?", Security.connected()).first();
             
-            
+            if(account == null && Account.count() == 0) {
+            	account = new Account("admin", "admin", "admin@test.com", true, null);
+            	account.save();
+            }
             
             if(account.admin != null && account.admin)
             	agencies = Agency.findAll();
@@ -80,9 +87,25 @@ public class Application extends Controller {
         render(routeTypes);
     }
     
+    public static void importGtfs() {
+    	
+    	GtfsSnapshot snapshot = new GtfsSnapshot("", new Date(), GtfsSnapshotSource.UPLOAD);
+    	snapshot.save();
+    	GtfsSnapshotMerge merge = new GtfsSnapshotMerge(snapshot);
+    	merge.save();
+    	
+    	ProcessGtfsSnapshotMerge mergeJob = new ProcessGtfsSnapshotMerge(merge.id);
+    	mergeJob.doJob();
+    	
+    }
+    
     public static void exportGtfs() {
     
-    	List<Agency> agencyObjects = Agency.findAll();
+    	List<Agency> agencyObjects = new ArrayList<Agency>(); 
+
+        Agency a = Agency.findById(13858L);
+
+        agencyObjects.add(a);
     
     	GtfsSnapshotExportCalendars calendarEnum;
     	calendarEnum = GtfsSnapshotExportCalendars.CURRENT_AND_FUTURE;

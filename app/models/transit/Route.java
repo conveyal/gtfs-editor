@@ -114,22 +114,31 @@ public class Route extends Model {
     	{
     		case 0:
     			type = GtfsRouteType.TRAM;
+    			break;
     		case 1:
     			type = GtfsRouteType.SUBWAY;
+    			break;
     		case 2:
     			type = GtfsRouteType.RAIL;
+    			break;
     		case 3:
     			type = GtfsRouteType.BUS;
+    			break;
     		case 4:
     			type = GtfsRouteType.FERRY;
+    			break;
     		case 5:
     			type = GtfsRouteType.CABLECAR;
+    			break;
     		case 6:
     			type = GtfsRouteType.GONDOLA;
+    			break;
     		case 7:
     			type = GtfsRouteType.FUNICULAR;
+    			break;
     		default:
     			type = null;
+    			break;
     		
     	}
     	
@@ -182,7 +191,7 @@ public class Route extends Model {
     	Query idQuery = em().createNativeQuery("SELECT NEXTVAL('hibernate_sequence');");
     	BigInteger nextId = (BigInteger)idQuery.getSingleResult();
 
-        em.createNativeQuery("INSERT INTO route (id, routecolor, routedesc, gtfsrouteid, routelongname, routeshortname, routetextcolor, routetype, routeurl, agency_id)" +
+        em.createNativeQuery("INSERT INTO route (id, routecolor, routedesc, gtfsrouteid, routelongname, routeshortname, routetextcolor, routetype_id, routeurl, agency_id)" +
         	"  VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?);")
           .setParameter(1,  nextId)
           .setParameter(2,  gtfsRoute.getColor())

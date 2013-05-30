@@ -130,13 +130,13 @@ public class Stop extends Model {
     }
 
 
-    public static BigInteger nativeInsert(EntityManager em, org.onebusaway.gtfs.model.Stop gtfsStop)
+    public static BigInteger nativeInsert(EntityManager em, org.onebusaway.gtfs.model.Stop gtfsStop, BigInteger agencyId)
     {
         Query idQuery = em.createNativeQuery("SELECT NEXTVAL('hibernate_sequence');");
         BigInteger nextId = (BigInteger)idQuery.getSingleResult();
 
-        em.createNativeQuery("INSERT INTO stop (id, locationtype, parentstation, stopcode, stopdesc, gtfsstopid, stopname, stopurl, zoneid, location)" +
-            "  VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ST_GeomFromText( ? , 4326));")
+        em.createNativeQuery("INSERT INTO stop (id, locationtype, parentstation, stopcode, stopdesc, gtfsstopid, stopname, stopurl, zoneid, location, agency_id)" +
+            "  VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ST_GeomFromText( ? , 4326), ?);")
           .setParameter(1,  nextId)
           .setParameter(2,  gtfsStop.getLocationType() == 1 ? LocationType.STATION.name() : LocationType.STOP.name())
           .setParameter(3,  gtfsStop.getParentStation())
@@ -147,6 +147,7 @@ public class Stop extends Model {
           .setParameter(8,  gtfsStop.getUrl())
           .setParameter(9,  gtfsStop.getZoneId())
           .setParameter(10,  "POINT(" + gtfsStop.getLon() + " " + gtfsStop.getLat() + ")")
+          .setParameter(11, agencyId)
           .executeUpdate();
 
         return nextId;

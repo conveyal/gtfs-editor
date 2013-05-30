@@ -50,13 +50,13 @@ public class ServiceCalendar extends Model {
       return ServiceCalendar.findById(Long.parseLong(id));
     }
 
-    public static BigInteger nativeInsert(EntityManager em, org.onebusaway.gtfs.model.ServiceCalendar gtfsServiceCalendar)
+    public static BigInteger nativeInsert(EntityManager em, org.onebusaway.gtfs.model.ServiceCalendar gtfsServiceCalendar, BigInteger agencyId)
     {
     	Query idQuery = em.createNativeQuery("SELECT NEXTVAL('hibernate_sequence');");
 		BigInteger nextId = (BigInteger)idQuery.getSingleResult();
 		
-		em.createNativeQuery("INSERT INTO servicecalendar (id, gtfsserviceid, monday, tuesday, wednesday, thursday, friday, saturday, sunday, startdate, enddate)" +
-	    	"  VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);")
+		em.createNativeQuery("INSERT INTO servicecalendar (id, gtfsserviceid, monday, tuesday, wednesday, thursday, friday, saturday, sunday, startdate, enddate, agency_id)" +
+	    	"  VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);")
 	      .setParameter(1,  nextId)
 	      .setParameter(2, gtfsServiceCalendar.getId())
 	      .setParameter(3, gtfsServiceCalendar.getMonday() == 1 ? true : false)
@@ -68,6 +68,7 @@ public class ServiceCalendar extends Model {
 	      .setParameter(9, gtfsServiceCalendar.getSunday() == 1 ? true : false)
 	      .setParameter(10, gtfsServiceCalendar.getStartDate().getAsDate())
 	      .setParameter(11, gtfsServiceCalendar.getEndDate().getAsDate())
+	      .setParameter(12, agencyId)
 	      .executeUpdate();
 		
 		return nextId;
