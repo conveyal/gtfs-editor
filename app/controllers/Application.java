@@ -101,11 +101,8 @@ public class Application extends Controller {
     
     public static void exportGtfs() {
     
-    	List<Agency> agencyObjects = new ArrayList<Agency>(); 
-
-        Agency a = Agency.findById(13858L);
-
-        agencyObjects.add(a);
+    	List<Agency> agencyObjects = Agency.findAll();
+        
     
     	GtfsSnapshotExportCalendars calendarEnum;
     	calendarEnum = GtfsSnapshotExportCalendars.CURRENT_AND_FUTURE;
