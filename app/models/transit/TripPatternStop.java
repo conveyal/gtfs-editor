@@ -66,6 +66,8 @@ public class TripPatternStop extends Model {
    	          .setParameter(1, newStop.id)
    	          .setParameter(2, oldStop.id)
    	          .executeUpdate();
+		
+		
    }
 }
 

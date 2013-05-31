@@ -3,6 +3,7 @@ package models.transit;
 
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
@@ -15,11 +16,13 @@ import javax.persistence.Enumerated;
 import javax.persistence.ManyToOne;
 import javax.persistence.Query;
 
+import com.mysql.jdbc.log.Log;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.PrecisionModel;
 
+import org.codehaus.groovy.tools.shell.util.Logger;
 import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
@@ -151,6 +154,34 @@ public class Stop extends Model {
           .executeUpdate();
 
         return nextId;
+    }
+    
+    public static List<List<Stop>> findDuplicateStops(BigInteger agencyId) {
+    	
+    	// !!! need to autodetect proper SRID for UTM Zone
+    	Query q = Stop.em().createNativeQuery("SELECT s1_id, s2_id, dist FROM " + 
+    			"(SELECT s1.id as s1_id, s2.id as s2_id, st_distance(transform(s1.location, 32614), transform(s2.location, 32614)) as dist " + 
+    			"FROM stop as s1, stop as s2 WHERE s1.agency_id = s2.agency_id and s1.agency_id = ?) AS calcdist WHERE dist < 15 and dist > 0;");
+    	
+    	q.setParameter(1, agencyId);
+    	
+    	List<Object[]> pairsResults = q.getResultList();
+    	
+    	ArrayList<List<Stop>> stopPairs = new ArrayList<List<Stop>>();
+    	
+    	for(Object[] cols : pairsResults) {
+    		Stop s1 =  Stop.findById(((BigInteger)cols[0]).longValue());
+    		Stop s2 =  Stop.findById(((BigInteger)cols[1]).longValue());
+    		
+    		if(s1 != null && s2 != null) {
+    			List<Stop> pair = new ArrayList<Stop>();
+    			pair.add(s1);
+    			pair.add(s2);
+    			stopPairs.add(pair);
+    		}
+    	}
+    	
+    	return stopPairs;
     }
 
     public Set<Route> routesServed()

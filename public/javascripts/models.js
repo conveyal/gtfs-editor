@@ -117,6 +117,11 @@ G.RouteTypes = Backbone.Collection.extend({
       mergedStop: null,
       stops: []
     },
+    initialize: function() {
+       this.set('stops', []);
+
+       _.bindAll(this, 'setMergedStop', 'addStop', 'addGroup', 'merge', 'onFinishedMerge');
+    },
 
     addStop: function(stop) {
 
@@ -146,7 +151,7 @@ G.RouteTypes = Backbone.Collection.extend({
         this.set('mergedStop', stop);
     },
 
-    mergeGroup: function(group){
+    addGroup: function(group){
 
       var existingGroup = this;
 
@@ -156,17 +161,68 @@ G.RouteTypes = Backbone.Collection.extend({
           existingGroup.addStop(stop);
         }
       });
+    },
+
+    onFinishedMerge: function(evt) {
+      this.trigger('merge');
+    },
+
+    merge: function() {
+
+
+        if(this.get('mergedStop') != null && this.get('stops').length > 0) {
+
+          var ids = _.without(_.pluck(this.get('stops'), 'id'), this.get('mergedStop').id);
+          var idList = ids.join(',');
+
+          $.get('/api/mergeStops', {stop1Id: this.get('mergedStop').id, mergedStopIds: idList}, this.onFinishedMerge);  
+        }
 
     }
+
   });
 
   G.StopGroups = Backbone.Collection.extend({
     type: 'StopGroups',
     model: G.StopGroup,
-    url: '/api/stopgroup/',
 
-    initialize: function() {
+    initialize: function(opts) {
+      
+      this.agencyId = opts.agencyId;
       this.groupMap = {};
+
+      this.on('merge', this.onMerge);
+
+      _.bindAll(this, 'loadGroups', 'group', 'findDuplicateStops', 'onMerge');
+    },
+
+    onMerge: function(evt) {
+      this.findDuplicateStops();
+    },
+
+    findDuplicateStops: function() {
+
+      this.reset();
+      this.groupMap = {};
+
+      $.get('/api/findDuplicateStops', {agencyId: this.agencyId}, this.loadGroups);
+    },
+
+    loadGroups: function(pairs) {
+
+      var _stopGroups = this;
+
+      _.each(pairs, function(pair) {
+
+        _stopGroups.group(new G.Stop(pair[0]), new G.Stop(pair[1]));
+
+      });
+    },
+
+    merge: function(groupId) {
+
+      this.groupMap[groupId].merge();
+
     },
 
     group: function(stop1, stop2){
@@ -174,13 +230,13 @@ G.RouteTypes = Backbone.Collection.extend({
       if(this.groupMap[stop1.id] == undefined) {
         if(this.groupMap[stop2.id] != undefined) {
           // add stop1 to existing group for stop2
-          this.groupMap[stop2.id].addStop(stop1);
+          (this.groupMap[stop2.id]).addStop(stop1);
         }
         else {
           // add stop1 and stop2 to new group
           this.groupMap[stop1.id] = new G.StopGroup();
-          this.groupMap[stop1.id].addStop(stop1);
-          this.groupMap[stop1.id].addStop(stop2);
+          (this.groupMap[stop1.id]).addStop(stop1);
+          (this.groupMap[stop1.id]).addStop(stop2);
 
           this.add(this.groupMap[stop1.id]);
         }
@@ -192,7 +248,7 @@ G.RouteTypes = Backbone.Collection.extend({
         }
         else {
           // both stop1 and stop2 belong to existing group, merge stop2 group into stop1 group
-          this.groupMap[stop1.id].mergeGroup(this.groupMap[stop2.id]);
+          this.groupMap[stop1.id].addGroup(this.groupMap[stop2.id]);
         }
       }
     }

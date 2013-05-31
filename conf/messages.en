@@ -91,6 +91,8 @@ shared.button.add=Add
 shared.button.update=Update
 shared.button.remove=Remove
 
+shared.button.merge=Merge
+
 
 shared.attribute.unknown=Unknown
 shared.attribute.available=Available

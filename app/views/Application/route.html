@@ -560,10 +560,12 @@
 
     {{#stops}}
     <p>
-      <label><strong>&{'route.stops-stop-name'}</strong>: {{stopName}}</label>
-      <label><strong>&{'route.stops-stop-description'}</strong>: {{stopDesc}}</label>  
+      <label><strong>&{'route.stops-stop-name'}</strong>: {{attributes.stopName}}</label>
+      <label><strong>&{'route.stops-stop-description'}</strong>: {{attributes.stopdesc}}</label>  
     </p>
     {{/stops}}
+
+    <button type="button" class="btn btn-primary stop-merge-btn" data-id="{{mergedStop.id}}">&{'shared.button.merge'}</button>
 </script>
 
 <!-- The trippattern stop patterns details form that appears in the map popup. -->

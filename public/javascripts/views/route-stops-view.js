@@ -21,6 +21,12 @@ var GtfsEditor = GtfsEditor || {};
       this.collection.on('remove', this.onModelRemove, this);
       this.collection.on('change', this.onModelStopChange, this);
 
+      this.stopGroups = new G.StopGroups({agencyId: this.model.get('agency').id});
+
+      this.stopGroups.on('reset', this.resetDuplicateStops, this);
+      this.stopGroups.on('add', this.addStopGroup, this);
+
+
       // Custom icons
       this.agencyMajorStopIcon = L.icon({
         iconUrl: '/public/images/markers/marker-0d85e9.png',
@@ -59,7 +65,7 @@ var GtfsEditor = GtfsEditor || {};
         shadowSize: [41, 41]
       });
 
-        _.bindAll(this, 'sizeContent', 'onStopFilterChange', 'destroy', 'save', 'findDuplicateStops', 'deduplicateStops');
+        _.bindAll(this, 'sizeContent', 'onStopFilterChange', 'destroy', 'save', 'findDuplicateStops', 'addStopGroup', 'resetDuplicateStops', 'mergeStops');
         $(window).resize(this.sizeContent);
     },
 
@@ -176,18 +182,58 @@ var GtfsEditor = GtfsEditor || {};
     },
 
     findDuplicateStops: function() {
-      this.duplicateStopsCollection = new G.Stops();
-      this.stopGroups = new G.StopGroups();
+  
+      this.mergeStopLayerGroup.clearLayers();
+
+
+      this.stopGroups.findDuplicateStops();
+
+      this.map.removeLayer(this.stopLayerGroup);
+      this.map.addLayer(this.mergeStopLayerGroup);
+
+      /*this.duplicateStopsCollection = new G.Stops();
+      
 
       this.duplicateStopsCollection.on('reset', this.deduplicateStops);
 
-      this.duplicateStopsCollection.fetch({reset: true, data: {agencyId: this.model.get('agency').id}});
+      this.duplicateStopsCollection.fetch({reset: true, data: {agencyId: this.model.get('agency').id}});*/
 
     },
 
-    deduplicateStops: function() {
+    resetDuplicateStops: function() {
 
-      var view = this;
+      this.mergeStopLayerGroup.clearLayers();
+
+    },
+
+    mergeStops: function(evt) {
+      //alert('merge clicked: ' + $(evt.target).data('id'));
+
+      this.stopGroups.merge($(evt.target).data('id'));
+    },
+
+    addStopGroup: function(stopGroup) {
+
+
+      var data = {
+        mergedStop: stopGroup.get('mergedStop'),
+        stops: stopGroup.get('stops')
+      }
+      var $popupContent = ich['stop-merge-view-tpl'](data);
+
+      var markerLayer = L.marker([stopGroup.get('mergedStop').get('location').lat,
+        stopGroup.get('mergedStop').get('location').lng], {
+        draggable: false,
+        icon: this.selectedStopIcon
+      });
+
+
+      markerLayer.bindPopup($('<div>').append($popupContent).html());
+
+      this.mergeStopLayerGroup.addLayer(markerLayer);
+
+
+      /*var view = this;
 
       var stopLatLngs = new Array();
 
@@ -236,7 +282,7 @@ var GtfsEditor = GtfsEditor || {};
 
 
 
-      });
+      });*/
 
     },
 
@@ -260,6 +306,12 @@ var GtfsEditor = GtfsEditor || {};
           var id = $(this).parent().find('[name=id]').val();
           self.destroy(id);
         });
+
+
+        // Bind the delete button inside the popup when it opens
+      $(this.map.getPanes().popupPane)
+        .find('.stop-merge-btn')
+        .on('click', this.mergeStops);
     },
 
     // Save the location of a stop after you drag it around
