@@ -132,7 +132,7 @@ public class TripPattern extends Model {
 			    	"  VALUES(?, ?, ?, ?);");
 
 	      q.setParameter(1,  tripPatternId.longValue())
-	      .setParameter(2,  trip.route.routeShortName + " (" + trip.tripHeadsign + ")")
+	      .setParameter(2,  trip.route.routeShortName) //+ " (" + trip.tripHeadsign + ")")
 	      .setParameter(3,  trip.route.id)
 	      .setParameter(4,  trip.tripHeadsign);
 
@@ -148,6 +148,9 @@ public class TripPattern extends Model {
     	Double previousDistance = new Double(0);
 
     	Boolean firstStop = true;
+    	
+    	String firstStopName = null;
+    	String lastStopName = null;
 
     	for(StopTime stopTime : stopTimes)
     	{
@@ -170,6 +173,8 @@ public class TripPattern extends Model {
     			q.setParameter(7,  0);
 
     			firstStop = false;
+    			
+    			firstStopName = stopTime.stop.stopName;
     		}
     		else
     		{
@@ -180,6 +185,8 @@ public class TripPattern extends Model {
     			previousDepartureTime = stopTime.departureTime;
     			previousDistance = stopTime.shapeDistTraveled;
     		}
+    		
+    		lastStopName = stopTime.stop.stopName;
 
     		q.executeUpdate();
     		
@@ -193,6 +200,9 @@ public class TripPattern extends Model {
     				
     				
     	}
+    	
+    	trip.route.routeLongName = firstStopName + " - " + lastStopName;
+    	trip.route.save();
 
     	Logger.info("Adding trip pattern: " + trip.route.routeShortName + " (" + trip.tripHeadsign + ")");
 
