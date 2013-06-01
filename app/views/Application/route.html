@@ -260,10 +260,13 @@
         </p>
         <p>
           <button type="button" class="create-trip btn btn-primary btn-mini">&{'route.trip-info-tpl.create-trip-btn'}</button> 
+          <button type="button" class="copy-trip btn btn-primary btn-mini">&{'route.trip-info-tpl.copy-trip-btn'}</button> 
           <button type="button" id="delete-trip-btn" class="btn disabled btn-mini btn-danger">&{'route.trip-info-tpl.delete-trip-btn'}</button>
         </p>
         <div id="trip-create"></div>   
-        
+        <div id="trip-copy"></div>  
+
+
       </div>
     </div>
   </div>
@@ -343,6 +346,29 @@
       <input type="hidden" name="id" value="{{id}}">
       <p>
         <input name="name" required class="input" type="text" placeholder="&{'route.trip-info-new-trip-name'}" value="{{name}}">
+      </p>
+      <p>
+        <button type="submit" class="btn btn-mini btn-primary trip-create-confirm-btn">&{'shared.button.add'}</button> <button type="button" class="btn btn-mini trip-create-cancel-btn">&{'shared.button.cancel'}</button>
+      </p>
+    </form>
+  </ul>
+</script>
+
+
+<script id="trip-copy-tpl" type="text/html">
+  <ul>
+    <form id="trip-copy-form">
+      <input type="hidden" name="id" value="{{id}}">
+      <p>
+        <input name="name" required class="input" type="text" placeholder="&{'route.trip-info-new-trip-name'}" value="{{name}}">
+      </p>
+      <p>
+        <select required name="existingTripId" id="existingTripId" class="input" title="&{'route.trip-info-tpl.existing-trip'}" data-content="&{'route.trip-info-tpl.existing-trip-content'}">
+            <option value="">-- &{'route.trip-info-tpl.select-trip-copy'} --</option>
+
+            {{#trips}}<option value="{{attributes.id}}">{{attributes.tripDescription}} ({{attributes.pattern.route.routeShortName}})</option>{{/trips}}
+
+        </select>
       </p>
       <p>
         <button type="submit" class="btn btn-mini btn-primary trip-create-confirm-btn">&{'shared.button.add'}</button> <button type="button" class="btn btn-mini trip-create-cancel-btn">&{'shared.button.cancel'}</button>

@@ -70,7 +70,7 @@ $(document).ready(function() {
 
      $(".agency-select").click(function(e){
         $.get('/application/setAgency', {agencyId: $(e.target).data('agency')}, function(){
-          location.reload();
+          location.href = '/search/';
         });
         e.preventDefault();
 

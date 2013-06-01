@@ -50,6 +50,34 @@ public class ServiceCalendar extends Model {
       return ServiceCalendar.findById(Long.parseLong(id));
     }
 
+    public String toString() {
+
+    	String str = "";
+
+    	if(this.monday)
+    		str += "Mo";
+
+    	if(this.tuesday)
+    		str += "Tu";
+
+    	if(this.wednesday)
+    		str += "We";
+
+    	if(this.thursday)
+    		str += "Th";
+
+    	if(this.friday)
+    		str += "Fr";
+
+    	if(this.saturday)
+    		str += "Sa";
+
+    	if(this.sunday)
+    		str += "Su";
+
+    	return str;
+    }
+
     public static BigInteger nativeInsert(EntityManager em, org.onebusaway.gtfs.model.ServiceCalendar gtfsServiceCalendar, BigInteger agencyId)
     {
     	Query idQuery = em.createNativeQuery("SELECT NEXTVAL('hibernate_sequence');");

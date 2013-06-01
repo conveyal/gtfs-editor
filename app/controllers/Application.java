@@ -19,6 +19,7 @@ import models.transit.Route;
 import models.transit.RouteType;
 import models.transit.StopType;
 import models.transit.Agency;
+import models.transit.Trip;
 
 //@With(Secure.class)
 public class Application extends Controller {
@@ -62,7 +63,6 @@ public class Application extends Controller {
 
             
         }
-        //session.put("agencyId", null);
     }
 
     public static void index() {
@@ -86,34 +86,6 @@ public class Application extends Controller {
     	List<RouteType> routeTypes = RouteType.findAll();
         render(routeTypes);
     }
-    
-    public static void importGtfs() {
-    	
-    	GtfsSnapshot snapshot = new GtfsSnapshot("", new Date(), GtfsSnapshotSource.UPLOAD);
-    	snapshot.save();
-    	GtfsSnapshotMerge merge = new GtfsSnapshotMerge(snapshot);
-    	merge.save();
-    	
-    	ProcessGtfsSnapshotMerge mergeJob = new ProcessGtfsSnapshotMerge(merge.id);
-    	mergeJob.doJob();
-    	
-    }
-    
-    public static void exportGtfs() {
-    
-    	List<Agency> agencyObjects = Agency.findAll();
-        
-    
-    	GtfsSnapshotExportCalendars calendarEnum;
-    	calendarEnum = GtfsSnapshotExportCalendars.CURRENT_AND_FUTURE;
-    	
-    	GtfsSnapshotExport snapshotExport = new GtfsSnapshotExport(agencyObjects, calendarEnum, "test");
-    	
-    	ProcessGtfsSnapshotExport exportJob = new ProcessGtfsSnapshotExport(snapshotExport.id);
-    	
-    	exportJob.now();
-    }
-    
     
     public static void manageRouteTypes() {
     	List<RouteType> routeTypes = RouteType.findAll();
@@ -160,11 +132,53 @@ public class Application extends Controller {
 
     public static void setMap(String zoom, String lat, String lon) {
 
-
         session.put("zoom", zoom);
         session.put("lat", lat);
         session.put("lon", lon);
 
         ok();
     }
+
+    // import/export  functions
+
+    public static void importGtfs() {
+        
+        GtfsSnapshot snapshot = new GtfsSnapshot("", new Date(), GtfsSnapshotSource.UPLOAD);
+        snapshot.save();
+        GtfsSnapshotMerge merge = new GtfsSnapshotMerge(snapshot);
+        merge.save();
+        
+        ProcessGtfsSnapshotMerge mergeJob = new ProcessGtfsSnapshotMerge(merge.id);
+        mergeJob.doJob();
+        
+    }
+    
+    public static void exportGtfs() {
+    
+        List<Agency> agencyObjects = Agency.findAll();
+    
+        GtfsSnapshotExportCalendars calendarEnum;
+        calendarEnum = GtfsSnapshotExportCalendars.CURRENT_AND_FUTURE;
+        
+        GtfsSnapshotExport snapshotExport = new GtfsSnapshotExport(agencyObjects, calendarEnum, "test");
+        
+        ProcessGtfsSnapshotExport exportJob = new ProcessGtfsSnapshotExport(snapshotExport.id);
+        
+        exportJob.now();
+    }
+
+    // utility methods for testing/cleaning up crufty data
+
+    public static void calendarCleanup() {
+
+        List<Trip> trips = Trip.findAll();
+
+        for(Trip t : trips ){
+            if(t.serviceCalendar.agency.id.longValue() != t.pattern.route.agency.id.longValue()) {
+                Logger.info("Trip calendar mismatch: " + t.gtfsTripId + " - " + t.pattern.route.gtfsRouteId + " " + t.serviceCalendar.id + " " + t.serviceCalendar + " " + t.serviceCalendar.agency.gtfsAgencyId + " " + t.pattern.route.agency.gtfsAgencyId);
+            }
+            	
+        }
+    }
+
 }

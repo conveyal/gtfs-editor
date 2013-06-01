@@ -4,6 +4,7 @@ var GtfsEditor = GtfsEditor || {};
   G.TripInfoView = Backbone.View.extend({
     events: {
       'click .create-trip': 'showCreateTrip', 
+      'click .copy-trip': 'showCopyTrip', 
       'click .trip-create-cancel-btn': 'cancelTripCreate',
       'click #delete-trip-btn': 'deleteTrip',
       'click #calendar-create-btn': 'showCalendarCreateModal',
@@ -13,12 +14,15 @@ var GtfsEditor = GtfsEditor || {};
       'change #trip': 'onTripChange',
       'change #calendar': 'onCalendarSelectChange',
       'submit #trip-create-form': 'onTripCreate',
+      'submit #trip-copy-form': 'onTripCopy',
       'submit #trip-info-form':  'onSaveTrip',
       'submit #create-calendar-form': 'createCalendar'
     },
 
     initialize: function () {
 
+
+      this.agencyTrips = new G.Trips();
       this.calendars = new G.Calendars();
 
       this.calendars.fetch({data: {agencyId: this.model.get('agency').id}});
@@ -33,7 +37,7 @@ var GtfsEditor = GtfsEditor || {};
       this.model.tripPatterns.on('remove', this.onTripPatternsReset, this);
       this.model.tripPatterns.on('reset', this.onTripPatternsReset, this);
 
-      _.bindAll(this, 'onTripPatternChange', 'bindPopovers', 'onTripChange', 'onTripsLoaded', 'createCalendar', 'showCreateTrip', 'onTripCreate', 'cancelTripCreate', 'deleteTrip', 'onSaveTrip', 'showCalendarCreateModal', 'onCalendarsReset', 'calendarCreateClose', 'onCalendarSelectChange');
+      _.bindAll(this, 'onTripPatternChange', 'bindPopovers', 'onTripChange', 'onTripsLoaded', 'createCalendar', 'showCreateTrip', 'showCopyTrip', 'onTripCreate', 'onTripCopy', 'cancelTripCreate', 'deleteTrip', 'onSaveTrip', 'showCalendarCreateModal', 'onCalendarsReset', 'calendarCreateClose', 'onCalendarSelectChange', 'onLoadAgencyTrips');
 
     },
 
@@ -118,6 +122,7 @@ var GtfsEditor = GtfsEditor || {};
     showCreateTrip: function() {
 
       this.$('.create-trip').hide();
+      this.$('.copy-trip').hide();
       this.$('#delete-trip-btn').hide();
 
       this.$('#trip-create').html(ich['trip-create-tpl']());
@@ -127,12 +132,39 @@ var GtfsEditor = GtfsEditor || {};
 
     },
 
+    showCopyTrip: function() {
+      this.$('.create-trip').hide();
+      this.$('.copy-trip').hide();
+      this.$('#delete-trip-btn').hide();
+
+      this.agencyTrips.fetch({data: {agencyId: this.model.get('agency').id}, success: this.onLoadAgencyTrips});
+
+    },
+
+    onLoadAgencyTrips: function(data) {
+
+      var tripData =  {
+        trips: data.models
+      }
+
+      this.$('#trip-copy').html(ich['trip-copy-tpl'](tripData));
+
+      // something upstream is causing this form not to bind automagically
+      this.$('#trip-copy-form').bind('submit', this.onTripCopy);
+
+      this.bindPopovers();
+
+    },
+
     cancelTripCreate: function() {
     
       this.$('.create-trip').show();
+      this.$('.copy-trip').show();
       this.$('#delete-trip-btn').show();
 
       this.$('#trip-create').html("");
+      this.$('#trip-copy').html("");
+
     },
 
     deleteTrip: function(evt) {
@@ -170,10 +202,47 @@ var GtfsEditor = GtfsEditor || {};
         
         },
         error: function() {
-          G.Utils.error('Failed to create trip pattern');
+          G.Utils.error('Failed to create trip.');
         }
       });
      
+    },
+
+    onTripCopy: function(evt) {
+
+      evt.preventDefault();
+
+      var selectedPatternId  = this.$('#tripPattern').val();
+
+      var existingTripId  = this.$('#existingTripId').val();
+
+      var existingTrip = this.agencyTrips.get(existingTripId).attributes;
+
+      var tripData = {
+        useFrequency: true,
+        pattern: selectedPatternId,
+        tripDescription: this.$('[name=name]').val(),
+        serviceCalendar: existingTrip.serviceCalendar.id,
+        startTime: existingTrip.startTime,
+        endTime: existingTrip.endTime,
+        headway: existingTrip.headway,
+    
+      };
+
+      var view = this;
+
+      this.model.tripPatterns.get(selectedPatternId).trips.create(tripData, {
+        wait: true,
+        success: function(data) {
+            
+            G.session.trip = data.id;
+        
+        },
+        error: function() {
+          G.Utils.error('Failed to create trip.');
+        }
+      });
+
     },
 
     updateTripPatterns: function() {
@@ -306,9 +375,7 @@ var GtfsEditor = GtfsEditor || {};
             G.Utils.error('Calendar create failed');
           }, this)
         });
-
       }
-
     },
 
     onCalendarsReset: function(evt) {
@@ -327,7 +394,6 @@ var GtfsEditor = GtfsEditor || {};
           this.$('#calendar').val(this.model.tripPatterns.get(selectedPatternId).trips.get(selectedTripId).attributes.serviceCalendar.id);
         else  
           this.$('#calendar').val(G.session.calendar);
-
       }
 
       this.onCalendarSelectChange();

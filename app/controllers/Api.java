@@ -713,7 +713,7 @@ public class Api extends Controller {
 
     // **** route controllers ****
 
-    public static void getTrip(Long id, Long patternId) {
+    public static void getTrip(Long id, Long patternId, Long agencyId) {
         try {
             if(id != null)
             {
@@ -725,11 +725,16 @@ public class Api extends Controller {
             }
             else {
 
-                if(patternId == null)
-                    renderJSON(Api.toJson(Trip.all().fetch(), false));
-                else {
+                if(agencyId != null) {
+                    Agency agency = Agency.findById(agencyId);
+                    renderJSON(Api.toJson(Trip.find("pattern.route.agency = ?", agency).fetch(), false));
+                }                    
+                if(patternId != null) {
                     TripPattern pattern = TripPattern.findById(patternId);
                     renderJSON(Api.toJson(Trip.find("pattern = ?", pattern).fetch(), false));
+                }
+                else {
+                    renderJSON(Api.toJson(Trip.all().fetch(), false));
                 }
             }
                 
@@ -749,6 +754,11 @@ public class Api extends Controller {
             if(Route.findById(trip.pattern.route.id) == null)
                 badRequest();
 
+            // if endtime is before start time add a day (e.g 07:00-00:30 becomes 07:00-24:30)
+            if(trip.useFrequency && trip.endTime < trip.startTime) {
+            	trip.endTime += (24 * 60 * 60 );
+            }
+            
             trip.save();
 
             // check if gtfsRouteId is specified, if not create from DB id
@@ -773,6 +783,11 @@ public class Api extends Controller {
 
             if(trip.id == null || Trip.findById(trip.id) == null)
                 badRequest();
+            
+            // if endtime is before start time add a day (e.g 07:00-00:30 becomes 07:00-24:30)
+            if(trip.useFrequency && trip.endTime < trip.startTime) {
+            	trip.endTime += (24 * 60 * 60 );
+            }
 
             // check if gtfsRouteId is specified, if not create from DB id
              if(trip.gtfsTripId == null) {
