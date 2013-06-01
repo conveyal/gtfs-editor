@@ -295,6 +295,12 @@ var GtfsEditor = GtfsEditor || {};
       if(this.map == undefined)
         return;
 
+      var selectedPatternId  = this.$('#trip-pattern-select').val();
+      if(this.model.tripPatterns.get(selectedPatternId) != undefined) {
+        var patternStops = _.pluck(this.model.tripPatterns.get(selectedPatternId).attributes.patternStops, 'stop');
+        this.options.stops.add(patternStops);
+      } 
+
       // don't keep more than 500 markers on map at anytime. 
        if(this.options.stops.length > 500)
           this.options.stops.remove(this.options.stops.slice(0, 200));
@@ -308,6 +314,8 @@ var GtfsEditor = GtfsEditor || {};
             mapCenter = this.map.getCenter();
 
           this.options.stops.fetch({remove: false, data: {agencyId: agencyId, lat: mapCenter.lat, lon: mapCenter.lng}});
+
+          this.options.stops
       }
         
       this.updatePatternList();

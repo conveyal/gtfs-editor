@@ -2,10 +2,12 @@ package controllers;
 
 import play.*;
 import play.mvc.*;
+import play.data.binding.As;
 import utils.GeoUtils;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.math.BigInteger;
 import java.util.*;
 
 import org.codehaus.jackson.JsonFactory;
@@ -408,19 +410,37 @@ public class Api extends Controller {
     }
     
     
-    public static void mergeStops(Long stop1Id, Long stop2Id) {
-        if(stop1Id == null || stop2Id == null)
+    public static void findDuplicateStops(Long agencyId) {
+
+    	try {    	
+    		
+    		List<List<Stop>> duplicateStopPairs = Stop.findDuplicateStops(BigInteger.valueOf(agencyId.longValue()));
+    		renderJSON(Api.toJson(duplicateStopPairs, false));
+    		
+    	 } catch (Exception e) {
+             e.printStackTrace();
+             badRequest();
+         }
+    }
+
+    public static void mergeStops(Long stop1Id, @As(",") List<String> mergedStopIds) {
+        
+        if(stop1Id == null)
             badRequest();
 
         Stop stop1 = Stop.findById(stop1Id);
-        Stop stop2 = Stop.findById(stop2Id);
 
-        if(stop1 == null || stop2 == null)
-            badRequest();
+        for(String stopIdStr : mergedStopIds) {
 
-        stop1.merge(stop2);
+            Stop stop2 = Stop.findById(Long.parseLong(stopIdStr));
 
-        ok();
+            if(stop1 == null && stop2 == null)
+                badRequest();
+
+            stop1.merge(stop2);
+
+            ok();
+        }
     }
 
     // **** trip pattern controllers ****
@@ -693,7 +713,7 @@ public class Api extends Controller {
 
     // **** route controllers ****
 
-    public static void getTrip(Long id, Long patternId) {
+    public static void getTrip(Long id, Long patternId, Long agencyId) {
         try {
             if(id != null)
             {
@@ -705,11 +725,16 @@ public class Api extends Controller {
             }
             else {
 
-                if(patternId == null)
-                    renderJSON(Api.toJson(Trip.all().fetch(), false));
-                else {
+                if(agencyId != null) {
+                    Agency agency = Agency.findById(agencyId);
+                    renderJSON(Api.toJson(Trip.find("pattern.route.agency = ?", agency).fetch(), false));
+                }                    
+                if(patternId != null) {
                     TripPattern pattern = TripPattern.findById(patternId);
                     renderJSON(Api.toJson(Trip.find("pattern = ?", pattern).fetch(), false));
+                }
+                else {
+                    renderJSON(Api.toJson(Trip.all().fetch(), false));
                 }
             }
                 
