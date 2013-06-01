@@ -754,6 +754,11 @@ public class Api extends Controller {
             if(Route.findById(trip.pattern.route.id) == null)
                 badRequest();
 
+            // if endtime is before start time add a day (e.g 07:00-00:30 becomes 07:00-24:30)
+            if(trip.useFrequency && trip.endTime < trip.startTime) {
+            	trip.endTime += (24 * 60 * 60 );
+            }
+            
             trip.save();
 
             // check if gtfsRouteId is specified, if not create from DB id
@@ -778,6 +783,11 @@ public class Api extends Controller {
 
             if(trip.id == null || Trip.findById(trip.id) == null)
                 badRequest();
+            
+            // if endtime is before start time add a day (e.g 07:00-00:30 becomes 07:00-24:30)
+            if(trip.useFrequency && trip.endTime < trip.startTime) {
+            	trip.endTime += (24 * 60 * 60 );
+            }
 
             // check if gtfsRouteId is specified, if not create from DB id
              if(trip.gtfsTripId == null) {

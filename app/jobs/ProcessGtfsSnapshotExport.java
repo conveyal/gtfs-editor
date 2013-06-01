@@ -179,7 +179,7 @@ public class ProcessGtfsSnapshotExport extends Job {
 							if(route.routeColor != null && !route.routeColor.isEmpty())
 								r.setColor(route.routeColor.replace("#", ""));
 							
-							r.setDesc(route.routeDesc);
+							r.setDesc(route.routeDesc.replace("\n", "").replace("\r", ""));
 							r.setLongName(route.routeLongName);
 							r.setShortName(route.routeShortName);
 							r.setType(Route.mapGtfsRouteType(route.routeType));
@@ -341,7 +341,7 @@ public class ProcessGtfsSnapshotExport extends Job {
 									
 									s.setCode(stop.stopCode);
 									s.setName(stop.stopName);
-									s.setDesc(stop.stopDesc);
+									s.setDesc(stop.stopDesc.replace("\n", "").replace("\r", ""));
 									s.setUrl(stop.stopUrl);
 									
 									s.setLon(stop.location.getX());
