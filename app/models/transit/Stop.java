@@ -161,7 +161,7 @@ public class Stop extends Model {
     	// !!! need to autodetect proper SRID for UTM Zone
     	Query q = Stop.em().createNativeQuery("SELECT s1_id, s2_id, dist FROM " + 
     			"(SELECT s1.id as s1_id, s2.id as s2_id, st_distance(transform(s1.location, 32614), transform(s2.location, 32614)) as dist " + 
-    			"FROM stop as s1, stop as s2 WHERE s1.agency_id = s2.agency_id and s1.agency_id = ?) AS calcdist WHERE dist < 15 and dist > 0;");
+    			"FROM stop as s1, stop as s2 WHERE s1.agency_id = s2.agency_id and s1.agency_id = ? and s1.id != s2.id) AS calcdist WHERE dist < 15;");
     	
     	q.setParameter(1, agencyId);
     	
