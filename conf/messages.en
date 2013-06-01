@@ -281,6 +281,13 @@ route.trip-info-tpl.calendar-modify=Modify Calendar
 
 
 route.trip-info-tpl.create-trip-btn=Create New Trip
+
+route.trip-info-tpl.copy-trip-btn=Copy Existing Trip
+route.trip-info-tpl.select-trip-copy=select existing trip
+
+route.trip-info-tpl.existing-trip=Existing Trip
+route.trip-info-tpl.existing-trip-content=Select and copy an existing trip, including those from other routes and patterns.
+
 route.trip-info-tpl.delete-trip-btn=Delete Trip
 
 route.trip-info-new-trip-name=New Trip Description

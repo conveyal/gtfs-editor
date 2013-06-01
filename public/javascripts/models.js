@@ -435,17 +435,17 @@ G.Trip = Backbone.Model.extend({
       startTime: null,
       endTime: null,
       headway: null,
-      serviceCalendar: null
     }
    });
 
   G.Trips = Backbone.Collection.extend({
-     type: 'Trips',
+    type: 'Trips',
     model: G.Trip,
     url: '/api/trip/',
     
     initialize: function(opts) {
-      this.patternId  = opts.patternId;
+      if(opts != undefined)
+        this.patternId  = opts.patternId;
     },
 
     fetchTrips: function() {
