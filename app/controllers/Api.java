@@ -755,7 +755,7 @@ public class Api extends Controller {
                 badRequest();
 
             // if endtime is before start time add a day (e.g 07:00-00:30 becomes 07:00-24:30)
-            if(trip.useFrequency && trip.endTime < trip.startTime) {
+            if(trip != null && trip.useFrequency != null && trip.endTime != null &&  trip.useFrequency  && trip.startTime != null && trip.endTime < trip.startTime) {
             	trip.endTime += (24 * 60 * 60 );
             }
             
