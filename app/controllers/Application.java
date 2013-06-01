@@ -142,14 +142,16 @@ public class Application extends Controller {
     // import/export  functions
 
     public static void importGtfs() {
+
+        // tbd
         
-        GtfsSnapshot snapshot = new GtfsSnapshot("", new Date(), GtfsSnapshotSource.UPLOAD);
+        /*GtfsSnapshot snapshot = new GtfsSnapshot("", new Date(), GtfsSnapshotSource.UPLOAD);
         snapshot.save();
         GtfsSnapshotMerge merge = new GtfsSnapshotMerge(snapshot);
         merge.save();
         
         ProcessGtfsSnapshotMerge mergeJob = new ProcessGtfsSnapshotMerge(merge.id);
-        mergeJob.doJob();
+        mergeJob.doJob(); */
         
     }
     
@@ -165,20 +167,9 @@ public class Application extends Controller {
         ProcessGtfsSnapshotExport exportJob = new ProcessGtfsSnapshotExport(snapshotExport.id);
         
         exportJob.now();
+
+        
     }
 
-    // utility methods for testing/cleaning up crufty data
-
-    public static void calendarCleanup() {
-
-        List<Trip> trips = Trip.findAll();
-
-        for(Trip t : trips ){
-            if(t.serviceCalendar.agency.id.longValue() != t.pattern.route.agency.id.longValue()) {
-                Logger.info("Trip calendar mismatch: " + t.gtfsTripId + " - " + t.pattern.route.gtfsRouteId + " " + t.serviceCalendar.id + " " + t.serviceCalendar + " " + t.serviceCalendar.agency.gtfsAgencyId + " " + t.pattern.route.agency.gtfsAgencyId);
-            }
-            	
-        }
-    }
 
 }

@@ -69,7 +69,7 @@ public class Api extends Controller {
                     notFound();
             }
             else {
-                renderJSON(Api.toJson(Agency.all().fetch(), false));
+                renderJSON(Api.toJson(Agency.find("order by name").fetch(), false));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -149,7 +149,7 @@ public class Api extends Controller {
                     notFound();
             }
             else
-                renderJSON(Api.toJson(Route.all().fetch(), false));
+                renderJSON(Api.toJson(RouteType.find("order by localizedvehicletype").fetch(), false));
         } catch (Exception e) {
             e.printStackTrace();
             badRequest();
