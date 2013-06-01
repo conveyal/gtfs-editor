@@ -136,9 +136,20 @@
             });
 
 
+
         // Init the map
+        var mapCenter = undefined;
+        if(G.session.mapCenter != undefined) {
+            mapCenter = G.session.mapCenter;
+            mapZoom = 15;
+        }
+        else {
+            mapCenter = [0.0,0.0];
+            mapZoom = 7;   
+        }
+
         this.map = L.map($('#map').get(0), {
-          center: G.session.mapCenter,
+          center: mapCenter,
           zoom: G.session.mapZoom,
           maxZoom: 17
         });
@@ -146,6 +157,17 @@
 
        
         var view = this;
+
+        if($('#defaultLat').val() != '' && $('#defaultLon').val() != '') {
+
+           if(view.clickMarker != undefined)
+            view.map.removeLayer(view.clickMarker);
+
+           view.clickMarker = L.marker([$('#defaultLat').val(), $('#defaultLon').val()], {icon: view.clickMarkerIcon}).addTo(view.map);
+           
+        }
+        else
+          view.map.zo
 
         this.map.on('click', function(evt) {
 

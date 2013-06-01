@@ -40,7 +40,7 @@ public class Application extends Controller {
             }
             
             if(account.admin != null && account.admin)
-            	agencies = Agency.findAll();
+            	agencies = Agency.find("order by name").fetch();
             else {
             	agencies.add(((Agency)Agency.findById(account.agency.id)));            	
             }
