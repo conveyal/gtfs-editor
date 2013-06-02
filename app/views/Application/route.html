@@ -420,8 +420,14 @@
     <div class="stop-merge-details well">
       <legend>Merge/Manage Stops</legend>
         <p>
-          <button type="button" class="btn disabled stop-find-duplicates-btn">Find Duplicate Stops</button>
-          <button type="button" class="btn disabled stop-merge-btn">Merge Duplicates Stops</button>
+          <button type="button" class="btn btn-primary stop-find-duplicates-btn">Find Duplicate Stops</button>
+        </p>
+        <p class="hide" id="stop-duplicate-search-progress"> 
+          <img src="@{'/public/images/loading.gif'}"/>Searching...
+        </p>
+
+        <p class="hide" id="stop-duplicate-search-cancel"> 
+            <button type="button" class="btn btn-primary stop-find-duplicates-cancel-btn">Close Duplicate Search</button>
         </p>
     </div>
 

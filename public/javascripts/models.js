@@ -189,6 +189,7 @@ G.RouteTypes = Backbone.Collection.extend({
     initialize: function(opts) {
       
       this.agencyId = opts.agencyId;
+      this.success = opts.success;
       this.groupMap = {};
 
       this.on('merge', this.onMerge);
@@ -209,6 +210,8 @@ G.RouteTypes = Backbone.Collection.extend({
     },
 
     loadGroups: function(pairs) {
+
+      this.success();
 
       var _stopGroups = this;
 

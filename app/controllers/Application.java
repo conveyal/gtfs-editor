@@ -66,6 +66,34 @@ public class Application extends Controller {
         }
     }
 
+    public static void changePassword(String currentPassword, String newPassword) {
+        
+        if(Security.isConnected())
+        {
+            if(currentPassword != null && newPassword != null)
+            {
+                Boolean changed = Account.changePassword(Security.connected(), currentPassword, newPassword);
+                
+                if(changed)
+                    Application.passwordChanged();
+                else
+                {
+                    Boolean badPassword = true;
+                    render(badPassword);
+                }
+            }   
+            else
+                render();
+        }
+        else
+            Application.index();
+    }
+    
+    public static void passwordChanged() {
+        
+        render();
+    }
+
     public static void index() {
         
         render();

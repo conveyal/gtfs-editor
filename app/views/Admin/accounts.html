@@ -1,0 +1,465 @@
+#{extends 'main.html' /}
+
+#{set 'styles'}
+
+  #{stylesheet 'main.css' /}
+#{/set}
+
+<script id="createAccount" type="text/html">
+<form method="POST" id="createAccountForm" action="@{Admin.createAccount()}" class="form-horizontal">
+  <div class="control-group">
+    <label class="control-label" for="username">Username</label>
+    <div class="controls">
+      <input onchange="validateUsername();" type="text" id="username" name="username" placeholder="Username"/>
+	  <span id="badUsername" style="color: red; display: none;" class="help-block"><strong>Username alreday taken.</strong></span>
+    </div>
+  </div>
+  <div class="control-group">
+    <label class="control-label" for="email">Email</label>
+    <div class="controls">
+      <input onchange="validateCreateUser();" type="text" id="email" name="email" placeholder="Email">
+		<span id="badEmail" style="color: red; display: none;" class="help-block"><strong>Invalid email address.</strong></span>
+    </div>
+  </div>
+  <div class="control-group">
+    <label class="control-label" for="password">Password</label>
+    <div class="controls">
+      <input onchange="validateCreateUser();" type="password" id="password" name="password" placeholder="Password"/>
+    </div>
+  </div>
+  <div class="control-group">
+    <label class="control-label" for="passwordRetry">Password (again)</label>
+    <div class="controls">
+      <input onchange="validateCreateUser();" type="password" id="passwordRetry" name="passwordRetry" placeholder="Password (again)"/>
+	  <span id="badPassword" style="color: red; display: none;" class="help-block"><strong>Passwords don't match.</strong></span>
+    </div>
+  </div>
+  <div class="control-group">
+	<label class="control-label" for="admin">Access</label>
+    <div class="controls">
+	<label class="checkbox">
+        <input type="checkbox" name="admin" id="admin"> Admin
+      </label>
+    </div>
+  </div>
+  
+
+	<div class="control-group">
+	<label class="control-label" for="inputAgency">Agency</label>
+    <div class="controls">
+      <label class="select">
+        <select name="agencyId" id="agencyId">
+			<option value="">All Agencies</option>
+
+			#{list items:agencies, as:'agency'}
+			<option value="${agency.id}">${agency.name}</option>
+			#{/list}
+			
+		</select>
+      </label>
+    </div>
+  </div>
+
+</form>
+</script>
+
+<script id="editAccount" type="text/html">
+<form method="POST" id="editAccountForm" action="@{Admin.updateAccount()}" class="form-horizontal">
+  <div class="control-group">
+    <label class="control-label" for="username">Username</label>
+    <div class="controls">
+      <input type="hidden" id="username" name="username" value="{{ username }}"/>
+	  <strong>{{ username }}</strong>
+    </div>
+  </div>
+  <div class="control-group">
+    <label class="control-label" for="email">Email</label>
+    <div class="controls">
+      <input onchange="validateEditUser();" type="text" id="email" name="email" placeholder="Email" value="{{ email }}">
+		<span id="badEmail" style="color: red; display: none;" class="help-block"><strong>Invalid email address.</strong></span>
+    </div>
+  </div>
+
+  <div class="control-group">
+	<label class="control-label" for="admin">Account</label>
+    <div class="controls">
+	<label class="checkbox">
+        <input type="checkbox" name="active" id="active" {{#active}}checked{{/active}}> Active
+      </label>
+    </div>
+  </div>
+
+  <div class="control-group">
+	<label class="control-label" for="admin">Access</label>
+    <div class="controls">
+	<label class="checkbox">
+        <input type="checkbox" name="admin" id="admin" {{#admin}}checked{{/admin}}> Admin
+      </label>
+    </div>
+  </div>
+  
+
+	<div class="control-group">
+	<label class="control-label" for="inputAgency">Agency</label>
+    <div class="controls">
+      <label class="select">
+        <select name="agencyId" id="agencyId">
+			<option value="">All Agencies</option>
+
+				#{list items:agencies, as:'agency'}
+					<option value="${agency.id}">${agency.name}</option>
+				#{/list}
+		</select>
+      </label>
+    </div>
+  </div>
+
+</form>
+</script>
+
+<script id="resetPassword" type="text/html">
+<form method="POST" id="resetPasswordForm" action="@{Admin.changePassword()}" class="form-horizontal">
+  <div class="control-group">
+    <label class="control-label" for="username">Username</label>
+    <div class="controls">
+      <input type="hidden" id="username" name="username" value="{{ username }}"/>
+	  <strong>{{ username }}</strong>
+    </div>
+  </div>
+  <div class="control-group">
+    <label class="control-label" for="password">Password</label>
+    <div class="controls">
+      <input onchange="validateCreateUser();" type="password" id="password" name="password" placeholder="Password"/>
+    </div>
+  </div>
+  <div class="control-group">
+    <label class="control-label" for="passwordRetry">Password (again)</label>
+    <div class="controls">
+      <input onchange="validateCreateUser();" type="password" id="passwordRetry" name="passwordRetry" placeholder="Password (again)"/>
+	  <span id="badPassword" style="color: red; display: none;" class="help-block"><strong>Passwords don't match.</strong></span>
+    </div>
+  </div>
+</form>
+</script>
+
+
+
+	<h3>Account Management</h3>
+	
+	<p><a href="#createAccountModal" onclick="createAccount();">Create Account</a></p>
+	
+	<table class="table">
+	 
+	 <tr><th>username</th><th>email</th><th>last login</th><th>active</th><th>admin</th><th>agency</th><th></th></tr>
+	 
+	 #{list items:accounts, as:'account'}
+	 	<tr><td>${account.username}</td><td>${account.email}</td>
+	 		<td>#{if account.lastLogin}${account.lastLogin.format('yyyy-MM-dd hh:mm')}#{/if}#{else}--#{/else}</td>
+	 		<td>#{if account.active}<i class="icon-ok"></i>#{/if}#{else}<i class="icon-remove"></i>#{/else}</td>
+	 		<td>#{if account.admin}<i class="icon-ok"></i>#{/if}#{else}<i class="icon-remove"></i>#{/else}</td>
+	 		<td>#{if account.agency}${account.agency.name}#{/if}</td>	 	
+	 		<td><a href="#editAccountModal" onclick="editAccount('${account.username}');">Edit</a> <!-- | <a href="#resetPasswordModal" onclick="resetPassword('${account.username}');">Reset Password</a> --></td>
+	 		
+	 	</tr>
+	 #{/list }
+	 
+	</table>
+		
+		
+
+<div id="createAccountModal" class="modal hide" tabindex="-1" role="dialog" aria-labelledby="accountModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="accountModalLabel">Create Account</h3>
+  </div>
+  <div class="modal-body">
+    <p></p>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+    <button id="createAccountButton" class="btn btn-primary disabled">Save</button>
+  </div>
+</div>
+
+
+<div id="editAccountModal" class="modal hide" tabindex="-1" role="dialog" aria-labelledby="accountModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="accountModalLabel">Edit Account</h3>
+  </div>
+  <div class="modal-body">
+    <p></p>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+    <button id="editAccountButton" class="btn btn-primary">Save</button>
+  </div>
+</div>
+
+<div id="resetPasswordModal" class="modal hide" tabindex="-1" role="dialog" aria-labelledby="accountModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="accountModalLabel">Reset Password</h3>
+  </div>
+  <div class="modal-body">
+    <p></p>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+    <button id="resetPasswordButton"  class="btn btn-primary disabled">Save</button>
+  </div>
+</div>
+
+
+#{set 'scripts'}
+
+	#{script "lib/handlebars.js"/}
+
+	<script>
+
+	var validUsername = false;
+	var validCreateAccount = false;
+	var validEditAccount = false;
+
+	var createAccountTemplate = Handlebars.compile($("#createAccount").html());
+	var editAccountTemplate = Handlebars.compile($("#editAccount").html());
+	var resetPasswordTemplate = Handlebars.compile($("#resetPassword").html());
+
+	function createAccount()
+	{
+
+
+		html = createAccountTemplate();
+		
+		$('#createAccountButton').addClass("disabled");
+		
+		$('#createAccountModal > .modal-body').html(html);
+		
+		$('#createAccountButton').on('click', function () {
+			
+			validateCreateUser();
+			
+			if(validCreateAccount)
+			{
+				$('#createAccountForm').submit();
+			}
+		});
+		
+		$('#createAccountModal').on('hidden', function () {
+			$('#createAccountModal > .modal-body').html('');
+		});
+		
+		$('#createAccountModal').modal();
+	}
+
+
+	function editAccount(username)
+	{
+		$.ajax("@{Admin.getAccount}", {data: {username: username}, 
+			 statusCode: {
+				  
+				    200: function(data) {
+				    	html = editAccountTemplate(data);
+				    	
+				    	$('#editAccountModal > .modal-body').html(html);
+				    	
+				    	$('#editAccountButton').on('click', function () {
+				    		
+				    		validateEditUser();
+				    		
+				    		if(validEditAccount)
+				    		{
+				    			$('#editAccountForm').submit();
+				    		}
+				    	});
+				    	
+				    	$('#editAccountModal').on('hidden', function () {
+				    		$('#editAccountModal > .modal-body').html('');
+				    	});
+				    	
+				    	$('#editAccountModal').modal();
+				    	
+					    }
+				  }
+		
+		});
+		
+	}
+
+	function resetPassword(username)
+	{
+		$.ajax("@{Admin.getAccount}", {data: {username: username}, 
+			 statusCode: {
+				  
+				    200: function(data) {
+				    	html = resetPasswordTemplate(data);
+				    	
+				    	$('#resetPasswordButton').addClass("disabled");
+				    	
+				    	$('#resetPasswordModal > .modal-body').html(html);
+				    	
+				    	$('#resetPasswordButton').on('click', function () {
+				    		
+				    		validateEditUser();
+				    		
+				    		if(validEditAccount)
+				    		{
+				    			$('#editAccountForm').submit();
+				    		}
+				    	});
+				    	
+				    	$('#resetPasswordModal').on('hidden', function () {
+				    		$('#resetPasswordModal > .modal-body').html('');
+				    	});
+				    	
+				    	$('#resetPasswordModal').modal();
+				    	
+					    }
+				  }
+		
+		});
+		
+	}
+
+	function validateEditUser()
+	{
+		var validData = true;
+		
+		// check email
+		if($('#email').val() != '')
+		{
+			if(isValidEmailAddress($('#email').val()))
+			{
+				$('#badEmail').hide();
+			}
+			else
+			{
+				$('#badEmail').show();
+				validData = false;
+			}
+		}
+		else
+		{
+			$('#badEmail').hide();
+			validData = false;
+		}
+		
+		validEditAccount = validData;
+	}
+
+
+	function validateCreateUser()
+	{
+		var validData = true;
+		
+		// check username
+		validData = validUsername;
+		
+		// check email
+		if($('#email').val() != '')
+		{
+			if(isValidEmailAddress($('#email').val()))
+			{
+				$('#badEmail').hide();
+			}
+			else
+			{
+				$('#badEmail').show();
+				validData = false;
+			}
+		}
+		else
+		{
+			$('#badEmail').hide();
+			validData = false;
+		}	
+		
+		if($('#password').val() != '' && $('#passwordRetry').val() != '')
+		{
+			if($('#password').val() != $('#passwordRetry').val())
+			{
+				$('#badPassword').show();
+				validData = false;
+			}
+			else
+				$('#badPassword').hide();
+		}
+		else
+		{
+			$('#badPassword').hide();
+			validData = false;
+		}	
+		
+		if(validData)
+		{
+			$('#createAccountButton').removeClass("disabled");
+		}
+		else
+		{
+			$('#createAccountButton').addClass("disabled");
+		}
+		
+		validCreateAccount = validData;
+	}
+
+	function validateResetPassword()
+	{
+		var validData = true;
+		
+		if($('#password').val() != '' && $('#passwordRetry').val() != '')
+		{
+			if($('#password').val() != $('#passwordRetry').val())
+			{
+				$('#badPassword').show();
+				validData = false;
+			}
+			else
+				$('#badPassword').hide();
+		}
+		else
+		{
+			$('#badPassword').hide();
+			validData = false;
+		}	
+		
+		if(validData)
+		{
+			$('#createAccountButton').removeClass("disabled");
+		}
+		else
+		{
+			$('#createAccountButton').addClass("disabled");
+		}
+		
+		validCreateAccount = validData;
+	}
+
+	function validateUsername()
+	{	
+		validUsername = false;
+		var username = $('#username').val();
+		$.ajax("@{Admin.checkUsername}", {data: {username: username}, 
+			 statusCode: {
+				    400: function() {
+				    	validUsername = false;
+				    	$('#badUsername').show();
+				    	validateCreateUser()
+				    },
+				    200: function() {
+				    	validUsername = true;
+				    	$('#badUsername').hide();
+				    	validateCreateUser()
+					    }
+				  }
+		
+		});
+		
+	}
+
+	function isValidEmailAddress(emailAddress) {
+	    var pattern = new RegExp(/^((([a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+(\.([a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+)*)|((\x22)((((\x20|\x09)*(\x0d\x0a))?(\x20|\x09)+)?(([\x01-\x08\x0b\x0c\x0e-\x1f\x7f]|\x21|[\x23-\x5b]|[\x5d-\x7e]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(\\([\x01-\x09\x0b\x0c\x0d-\x7f]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]))))*(((\x20|\x09)*(\x0d\x0a))?(\x20|\x09)+)?(\x22)))@((([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.?$/i);
+	    return pattern.test(emailAddress);
+	};
+
+	</script>
+#{/set}

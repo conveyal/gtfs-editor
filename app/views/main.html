@@ -80,7 +80,8 @@
                     <li><a href="@{Application.manageRouteTypes}" class="manage-route-types">&{'manage.route-types.title'}</a></li>  
                     <!-- <li><a href="@{Application.manageStopTypes}" class="manage-stop-types">&{'manage.stop-types.title'}</a></li>  -->
                     <!-- <li><a href="@{Application.manageRouteTypes}" class="manage-users" data-lang="en">Manage Users</a></li> -->
-                    <li><a href="@{Application.manageAgencies}" class="manage-agenices">&{'manage.agencies.title'}</a></li>                 
+                    <li><a href="@{Application.manageAgencies}" class="manage-agenices">&{'manage.agencies.title'}</a></li> 
+                    <li><a href="@{Admin.accounts}" class="manage-agenices">Manage Accounts</a></li>                 
                   </ul>
                 </li>
               #{/secure.check}
@@ -106,6 +107,7 @@
                   <i class="icon-user"></i>&{'nav-bar.user-greeting', user}<b class="caret"></b>
                 </a>
                 <ul class="dropdown-menu" role="menu">
+                  <li><a href="@{Application.changePassword}">Change Password</a></li>
                   <li><a href="@{Secure.logout}">&{'nav-bar.logout'}</a></li> 
                 </ul>
               </li>
