@@ -4,6 +4,7 @@ import play.*;
 import play.i18n.Lang;
 import play.mvc.*;
 
+import java.io.File;
 import java.util.*;
 
 import jobs.ProcessGtfsSnapshotExport;
@@ -157,18 +158,32 @@ public class Application extends Controller {
     
     public static void exportGtfs() {
     
+        render();
+                
+    }
+    
+    
+    
+    public static void createGtfs(Long calendarFrom, Long calendarTo) {
+        
+    	// currently exports all agencies 
+    	
         List<Agency> agencyObjects = Agency.findAll();
     
         GtfsSnapshotExportCalendars calendarEnum;
         calendarEnum = GtfsSnapshotExportCalendars.CURRENT_AND_FUTURE;
         
-        GtfsSnapshotExport snapshotExport = new GtfsSnapshotExport(agencyObjects, calendarEnum, "test");
+        Date calendarFromDate = new Date(calendarFrom);
+        Date calendarToDate = new Date(calendarTo);
+        
+        GtfsSnapshotExport snapshotExport = new GtfsSnapshotExport(agencyObjects, calendarEnum, calendarFromDate, calendarToDate, "");
         
         ProcessGtfsSnapshotExport exportJob = new ProcessGtfsSnapshotExport(snapshotExport.id);
         
-        exportJob.now();
-
+        // running as a sync task for now -- needs to be async for processing larger feeds.
+        exportJob.doJob(); 
         
+        redirect("/public/data/gtfs/"  + snapshotExport.getZipFilename());
     }
 
 

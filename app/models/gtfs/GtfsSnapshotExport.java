@@ -30,12 +30,18 @@ public class GtfsSnapshotExport extends Model {
 	public Date mergeStarted;
     public Date mergeComplete;
     
+    public Date calendarFrom;
+    public Date calendarTo;
     
-    public GtfsSnapshotExport(List<Agency> agencies, GtfsSnapshotExportCalendars calendars, String descipriton) {
+    
+    public GtfsSnapshotExport(List<Agency> agencies, GtfsSnapshotExportCalendars calendars, Date calendarFrom, Date calendarTo, String descipriton) {
     	
     	this.agencies = agencies;
     	this.calendars = calendars;
     	this.description = descipriton;
+    	
+    	this.calendarFrom = calendarFrom;
+    	this.calendarTo = calendarTo;
     	
     	this.description = descipriton;
     	

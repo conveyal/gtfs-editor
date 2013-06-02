@@ -10,6 +10,9 @@ GET     /route/{id}/.*                        	Application.route
 GET     /route/	                        		Application.route
 GET     /route/.*                        		Application.route
 
+GET     /export/gtfs                      		Application.exportGtfs
+GET     /export/creategtfs                      Application.createGtfs
+
 GET     /manage/routetypes                      Application.manageRouteTypes
 GET     /manage/agencies                      	Application.manageAgencies
 
