@@ -103,8 +103,10 @@
 
         var $tpl = ich['agency-dialog-tpl'](agency.attributes);
 
-        $tpl.find('#defaultRouteType option[value="' + agency.attributes.defaultRouteType.id + '"]')
-            .attr('selected', true);
+        if(agency.attributes.defaultRouteType != null) {
+          $tpl.find('#defaultRouteType option[value="' + agency.attributes.defaultRouteType.id + '"]')
+              .attr('selected', true);
+        }
 
         $tpl.find('#timezone option[value="' + agency.attributes.timezone + '"]')
             .attr('selected', true);
@@ -145,12 +147,14 @@
         }
         else {
             mapCenter = [0.0,0.0];
-            mapZoom = 7;   
+            mapZoom = 1;  
         }
+
+        
 
         this.map = L.map($('#map').get(0), {
           center: mapCenter,
-          zoom: G.session.mapZoom,
+          zoom: mapZoom,
           maxZoom: 17
         });
         this.map.addLayer(baseLayer);
@@ -163,11 +167,13 @@
            if(view.clickMarker != undefined)
             view.map.removeLayer(view.clickMarker);
 
-           view.clickMarker = L.marker([$('#defaultLat').val(), $('#defaultLon').val()], {icon: view.clickMarkerIcon}).addTo(view.map);
-           
+           var lat = parseFloat($('#defaultLat').val());
+           var lon = parseFloat($('#defaultLon').val());
+
+           view.clickMarker = L.marker([lat, lon], {icon: view.clickMarkerIcon}).addTo(view.map);
+           view.map.panTo([lat, lon]);
         }
-        else
-          view.map.zo
+      
 
         this.map.on('click', function(evt) {
 
