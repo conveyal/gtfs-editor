@@ -447,8 +447,12 @@ var GtfsEditor = GtfsEditor || {};
       
       var selectedPatternId  = this.$('#tripPattern').val();
 
-      var data = {
-        items: this.model.tripPatterns.get(selectedPatternId).trips.models
+      var data = [];
+      
+      if(this.model.tripPatterns.get(selectedPatternId).trips != undefined && this.model.tripPatterns.get(selectedPatternId).trips.models != undefined) {
+        data = {
+          items: this.model.tripPatterns.get(selectedPatternId).trips.models
+        }
       }
 
       this.$('#trip-select').html(ich['trip-select-tpl'](data));
