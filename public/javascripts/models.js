@@ -26,7 +26,7 @@ var GtfsEditor = GtfsEditor || {};
   });
 
 G.RouteType = Backbone.Model.extend({
-    url: '/api/routetype/',
+    urlRoot: '/api/routetype/',
 
     defaults: {
       id: null,
@@ -47,8 +47,8 @@ G.RouteTypes = Backbone.Collection.extend({
   G.Route = Backbone.Model.extend({
     defaults: {
       id: null,
-      status: null,
-      publiclyVisible: null,
+      status: 'IN_PROGRESS',
+      publiclyVisible: false,
       gtfsRouteId: null,
       routeShortName: null,
       routeLongName: null,

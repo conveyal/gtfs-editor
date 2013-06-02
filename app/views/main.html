@@ -65,8 +65,8 @@
               <li class="dropdown">
                 <a href="#" role="button" class="dropdown-toggle" data-toggle="dropdown">&{'nav-bar.export'}<b class="caret"></b></a>
                 <ul class="dropdown-menu" role="menu">
-                  <li><a href="#export" class="manage-route-types">&{'export.gtfs.title'}</a></li>  
-                  <li><a href="#export" class="manage-route-types">&{'export.kml.title'}</a></li>  
+                  <li><a href="/export/gtfs" class="manage-route-types">&{'export.gtfs.title'}</a></li>  
+                  <!-- <li><a href="#export" class="manage-route-types">&{'export.kml.title'}</a></li> --> 
                   <!-- <li><a href="@{Application.manageStopTypes}" class="manage-stop-types">&{'manage.stop-types.title'}</a></li>  -->
                   <!-- <li><a href="@{Application.manageRouteTypes}" class="manage-users" data-lang="en">Manage Users</a></li> -->
                   <li><a href="#export" class="manage-agenices">&{'export.shapefile.title'}</a></li>                 
@@ -119,8 +119,8 @@
     <div class="container-fluid">
       <ul class="nav nav-pills" id="tools-nav">
         <!--<li><a href="/"><i class="icon-list-alt"></i> News &amp; Updates</a></li>-->
-        <li><a href="/search/"><i class="icon-map-marker"></i>&{'shared.explore-search-routes'}</a></li>
-        <li><a href="/route/"><i class="icon-pencil"></i>&{'shared.new-route'}</a></li>
+        <li><a href="/search/"><i class="icon-map-marker"></i> &{'shared.explore-search-routes'}</a></li>
+        <li><a href="/route/info"><i class="icon-pencil"></i> &{'shared.new-route'}</a></li>
       </ul>
 
       #{doLayout /}

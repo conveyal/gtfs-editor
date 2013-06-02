@@ -1,0 +1,108 @@
+#{extends 'main.html' /}
+
+#{set 'styles'}
+  #{stylesheet 'main.css' /}
+  #{stylesheet 'datepicker/bootstrap-datepicker.css' /}
+#{/set}
+
+
+<h3>Export GTFS</h3>
+
+<form id="gtfs-export-form" class="route-info-form form-horizontal span12" action="/export/creategtfs">
+  
+  <input type="hidden" name="calendarFrom" id="calendarFrom"/>
+  <input type="hidden" name="calendarTo" id="calendarTo"/>
+
+  <div class="control-group">
+    <label class="control-label" for="routeLongName"><strong>Calendar Valid From</strong><br>(&{'shared.required'})</label>
+    <div class="controls">
+
+    	<div class="input-append date" id="dateFrom">
+    		<input required type="text"  class="input-medium"  title="&{'route.route-info-tpl.long-name'}" data-content="&{'route.route-info-tpl.long-name-content'}"/>
+		  	<span class="add-on"><i class="icon-th"></i></span>
+		</div>
+
+    </div>
+  </div>
+
+  <div class="control-group">
+    <label class="control-label" for="routeLongName"><strong>Calendar Valid To</strong><br>(&{'shared.required'})</label>
+    <div class="controls">
+
+    	<div class="input-append date" id="dateTo">
+    		<input required type="text"  class="input-medium"  title="&{'route.route-info-tpl.long-name'}" data-content="&{'route.route-info-tpl.long-name-content'}"/>
+		  	<span class="add-on"><i class="icon-th"></i></span>
+		</div>
+
+    </div>
+  </div>
+
+  <!-- <div class="control-group">
+    <label class="control-label" for="routeType"><strong>&{'route.route-info-tpl.route-type'}</strong><br>(&{'shared.required'})</label>
+    <div class="controls">
+      <select required name="routeType" id="routeType" class="input-xlarge" title="&{'route.route-info-tpl.route-type'}" data-content="&{'route.route-info-tpl.route-type-content'}">
+        
+        #{list items:routeTypes, as:'routeType'}
+            <option value="${routeType.id}">${routeType.localizedVehicleType} (${routeType.hvtRouteType})</option>
+        #{/list}
+
+      </select>
+		<a href="#route-type-modal" role="button small" class="btn" data-toggle="modal">&{'route.trip-info-tpl.route-types.title'}</a>
+    </div>
+  </div> -->
+
+  <div class="form-actions">
+    <button type="button" class="btn btn-primary" id="gtfs-export-btn">Export Data</button>
+  </div>
+</form>
+
+#{set 'scripts'}
+
+  #{script 'lib/bootstrap-datepicker.js' /}
+  #{script 'lib/moment.js' /}
+
+  #{script 'models.js' /}
+
+  <script type="text/javascript">
+
+    $(function(){
+
+    	this.dateTo = $("#dateTo").datepicker({autoclose: true}).on('changeDate', function(ev) { });
+      	this.dateFrom = $("#dateFrom").datepicker({autoclose: true}).on('changeDate', function(ev) { });
+
+      	var now = new Date();
+      	var month = moment().add('months', 1);
+      	
+      	this.dateTo.datepicker('setDate', month.toDate());
+      	this.dateFrom.datepicker('setDate', now);
+
+      	var view = this;
+
+        $('#gtfs-export-btn').on('click', function (evt){
+
+        	var fd = view.dateFrom.data('datepicker').date;
+		    var td = view.dateTo.data('datepicker').date;
+
+		    $('#calendarFrom').val(fd.getTime());
+		    $('#calendarTo').val(td.getTime());
+
+		    $('#gtfs-export-form').submit();
+
+        });
+
+      });
+
+  </script>
+
+#{/set}
+
+
+
+#{extends 'main.html' /}
+
+#{set 'title'}
+   &{'application.name'} | &{'manage.agencies.title'}
+#{/set}
+
+
+

@@ -1,47 +1,51 @@
 #{extends 'main.html' /}
 
-#{set 'title'}
-   &{'application.name'} | &{'manage.agencies.title'}
+#{set 'styles'}
+
+  #{stylesheet 'leaflet/leaflet.css' /}
+  #{stylesheet 'main.css' /}
 #{/set}
 
+<script id="agency-table-tpl" type="text/html">
+	<tr><th>&{'manage.agencies.gtfs-agency-id'}</th><th>&{'manage.agencies.name'}</th><th>&{'manage.agencies.url'}</th><th></th></tr>
 
-<h3>&{'manage.agencies.title'}</h3>
+  {{#routes}}
+	<tr><td>{{gtfsAgencyId}}</td><td>{{name}}</td><td>{{url}}</td><td> <i class="icon-pencil agency-edit" data-id="{{id}}"></i> <i class="icon-trash agency-delete" data-id="{{id}}"></i></td></tr>
+  {{/routes}}
+</script>
 
-	<form id="new-agency-form" class="agency-form form-horizontal">
-		<div id="new-agency-modal" class="modal hide" tabindex="-1" role="dialog" data-backdrop="static" aria-labelledby="route-type-modal-label" aria-hidden="true">
-			<div class="modal-header">
-				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-				<h3 id="agency-modal-label">&{'manage.agencies.dialog-title'}</h3>	
-				</div>
-				<div id="agency-modal-body" class="modal-body">
-					
+<script id="agency-dialog-tpl" type="text/html"> 
 
+	<input type="hidden" name="id" value="{{id}}"/>
+	
 				<div class="control-group">
 					<label class="control-label" for="gtfsAgencyId"><strong>&{'manage.agencies.gtfs-agency-id'}</strong><br>(&{'shared.optional'})</label>
 					<div class="controls">
-					  <input type="text" name="gtfsAgencyId" id="gtfsAgencyId" class="input-xlarge" value="" title="&{'manage.agencies.gtfs-agency-id'}" data-content="&{'manage.agencies.gtfs-agency-id-content'}">
+					  <input type="text" name="gtfsAgencyId" id="gtfsAgencyId" class="input-xlarge" value="{{gtfsAgencyId}}" title="&{'manage.agencies.gtfs-agency-id'}" data-content="&{'manage.agencies.gtfs-agency-id-content'}">
 					</div>
 				</div>
 
 				<div class="control-group">
 					<label class="control-label" for="name"><strong>&{'manage.agencies.name'}</strong><br>(&{'shared.required'})</label>
 					<div class="controls">
-					  <input required type="text" name="name" id="name" class="input-xlarge" value="" title="&{'manage.agencies.name'}" data-content="&{'manage.agencies.name-content'}">
+					  <input required type="text" name="name" id="name" class="input-xlarge" value="{{name}}" title="&{'manage.agencies.name'}" data-content="&{'manage.agencies.name-content'}">
 					</div>
 				</div>
 
 				<div class="control-group">
 					<label class="control-label" for="url"><strong>&{'manage.agencies.url'}</strong><br>(&{'shared.required'})</label>
 					<div class="controls">
-					  <input required type="text" name="url" id="url" class="input-xlarge" value="" title="&{'manage.agencies.url'}" data-content="&{'manage.agencies.url-content'}">
+					  <input required type="text" name="url" id="url" class="input-xlarge" value="{{url}}" title="&{'manage.agencies.url'}" data-content="&{'manage.agencies.url-content'}">
 					</div>
 				</div>
+
+				<div id="map" class="hide" style="height: 180px; margin-bottom: 10px;"></div>
 
 
 				<div class="control-group">
 					<label class="control-label" for="defaultLat"><strong>&{'manage.agencies.default-lat'}</strong><br>(&{'shared.required'})</label>
 					<div class="controls">
-					  <input required type="text" name="defaultLat" id="defaultLat" class="input" value="" title="&{'manage.agencies.default-lat'}" data-content="&{'manage.agencies.default-lat-content'}">
+					  <input required type="text" name="defaultLat" id="defaultLat" class="input" value="{{defaultLat}}" title="&{'manage.agencies.default-lat'}" data-content="&{'manage.agencies.default-lat-content'}"> <i class="icon-globe agency-map-toggle"></i>
 					</div>
 				</div>
 
@@ -49,7 +53,7 @@
 				<div class="control-group">
 					<label class="control-label" for="defaultLon"><strong>&{'manage.agencies.default-lon'}</strong><br>(&{'shared.required'})</label>
 					<div class="controls">
-					  <input required type="text" name="defaultLon" id="defaultLon" class="input" value="" title="&{'manage.agencies.default-lon'}" data-content="&{'manage.agencies.default-lon-content'}">
+					  <input required type="text" name="defaultLon" id="defaultLon" class="input" value="{{defaultLon}}" title="&{'manage.agencies.default-lon'}" data-content="&{'manage.agencies.default-lon-content'}"> <i class="icon-globe agency-map-toggle"></i>
 					</div>
 				</div>
 
@@ -688,32 +692,62 @@
 
 					    </select>
 					</div>
-				</div>
-			</div>
-			<div class="modal-footer">
-				<button class="btn" data-dismiss="modal" aria-hidden="true">&{'shared.button.cancel'}</button>
-				<button type="submit" class="btn btn-primary" aria-hidden="true">&{'shared.button.save'}</button>
-			</div>
+</script>
+
+
+<form id="agency-form" class="agency-form form-horizontal">
+	<div id="agency-modal" class="modal hide" tabindex="-1" role="dialog" data-backdrop="static" aria-labelledby="agency-modal-label" aria-hidden="true">
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+			<h3 id="agency-modal-label">&{'manage.agencies.dialog-title'}</h3>	
 		</div>
-	</form>
+		<div id="agency-modal-body" class="modal-body">
+			
+		
+		</div>
+		<div class="modal-footer">
+			<button class="btn" data-dismiss="modal" aria-hidden="true">&{'shared.button.cancel'}</button>
+			<button type="submit" class="btn btn-primary" aria-hidden="true">&{'shared.button.save'}</button>
+		</div>
+	</div>
+</form>
 
-	<table class="table table">
-		<tr><th>&{'manage.agencies.gtfs-agency-id'}</th><th>&{'manage.agencies.name'}</th><th>&{'manage.agencies.url'}</th><th></th></tr>
+<h3>&{'manage.agencies.title'}</h3>
 
-		#{list items:agencies, as:'agency'}
-		    <tr><td>${agency.gtfsAgencyId}</td><td>${agency.name}</td><td>${agency.url}</td><td><i class="icon-pencil"></i></td></tr>
-		#{/list}
+<table id="agency-list-content" class="table table">
 
-	</table>
+    <tr><th>&{'manage.agencies.gtfs-agency-id'}</th><th>&{'manage.agencies.name'}</th><th>&{'manage.agencies.url'}</th><th></th></tr>
 
-  	<button type="button" id="show-new-route-type-dialog-button" class="btn btn-primary" aria-hidden="true" data-toggle="modal" data-target="#new-agency-modal">&{'manage.agencies.create-new-agency-button'}</button>
+</table>
+
+<button type="button" id="agency-dialog-button" class="btn btn-primary" aria-hidden="true" data-toggle="modal" data-target="#agency-modal">&{'manage.route-types.create-new-type-button'}</button>
 
 #{set 'scripts'}
 
-	<script src="@{'/public/lib/jquery.serializeObject.min.js'}"></script>
+  #{script 'lib/leaflet.js' /}
 
-	#{script 'models.js' /}
+  #{script 'models.js' /}
+  #{script 'views/agency-list-view.js' /}
 
-	#{script 'pages/manage-agencies.js' /}
+  <script src="@{'/public/lib/jquery.serializeObject.min.js'}"></script>
+
+  <script type="text/javascript">
+
+    $(function(){
+
+         var agencyListView = new GtfsEditor.AgencyListView({el: $('#agency-list-content')});
+      });
+
+  </script>
 
 #{/set}
+
+
+
+#{extends 'main.html' /}
+
+#{set 'title'}
+   &{'application.name'} | &{'manage.agencies.title'}
+#{/set}
+
+

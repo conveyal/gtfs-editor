@@ -4,6 +4,7 @@ import play.*;
 import play.i18n.Lang;
 import play.mvc.*;
 
+import java.io.File;
 import java.util.*;
 
 import jobs.ProcessGtfsSnapshotExport;
@@ -40,7 +41,7 @@ public class Application extends Controller {
             }
             
             if(account.admin != null && account.admin)
-            	agencies = Agency.findAll();
+            	agencies = Agency.find("order by name").fetch();
             else {
             	agencies.add(((Agency)Agency.findById(account.agency.id)));            	
             }
@@ -142,43 +143,48 @@ public class Application extends Controller {
     // import/export  functions
 
     public static void importGtfs() {
+
+        // tbd
         
-        GtfsSnapshot snapshot = new GtfsSnapshot("", new Date(), GtfsSnapshotSource.UPLOAD);
+        /*GtfsSnapshot snapshot = new GtfsSnapshot("", new Date(), GtfsSnapshotSource.UPLOAD);
         snapshot.save();
         GtfsSnapshotMerge merge = new GtfsSnapshotMerge(snapshot);
         merge.save();
         
         ProcessGtfsSnapshotMerge mergeJob = new ProcessGtfsSnapshotMerge(merge.id);
-        mergeJob.doJob();
+        mergeJob.doJob(); */
         
     }
     
     public static void exportGtfs() {
     
+        render();
+                
+    }
+    
+    
+    
+    public static void createGtfs(Long calendarFrom, Long calendarTo) {
+        
+    	// currently exports all agencies 
+    	
         List<Agency> agencyObjects = Agency.findAll();
     
         GtfsSnapshotExportCalendars calendarEnum;
         calendarEnum = GtfsSnapshotExportCalendars.CURRENT_AND_FUTURE;
         
-        GtfsSnapshotExport snapshotExport = new GtfsSnapshotExport(agencyObjects, calendarEnum, "test");
+        Date calendarFromDate = new Date(calendarFrom);
+        Date calendarToDate = new Date(calendarTo);
+        
+        GtfsSnapshotExport snapshotExport = new GtfsSnapshotExport(agencyObjects, calendarEnum, calendarFromDate, calendarToDate, "");
         
         ProcessGtfsSnapshotExport exportJob = new ProcessGtfsSnapshotExport(snapshotExport.id);
         
-        exportJob.now();
+        // running as a sync task for now -- needs to be async for processing larger feeds.
+        exportJob.doJob(); 
+        
+        redirect("/public/data/gtfs/"  + snapshotExport.getZipFilename());
     }
 
-    // utility methods for testing/cleaning up crufty data
-
-    public static void calendarCleanup() {
-
-        List<Trip> trips = Trip.findAll();
-
-        for(Trip t : trips ){
-            if(t.serviceCalendar.agency.id.longValue() != t.pattern.route.agency.id.longValue()) {
-                Logger.info("Trip calendar mismatch: " + t.gtfsTripId + " - " + t.pattern.route.gtfsRouteId + " " + t.serviceCalendar.id + " " + t.serviceCalendar + " " + t.serviceCalendar.agency.gtfsAgencyId + " " + t.pattern.route.agency.gtfsAgencyId);
-            }
-            	
-        }
-    }
 
 }

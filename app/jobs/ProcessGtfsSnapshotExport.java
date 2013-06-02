@@ -118,13 +118,9 @@ public class ProcessGtfsSnapshotExport extends Job {
 				
 					c.setServiceId(calendarId);
 					
-					c.setStartDate(new ServiceDate(new Date())); // calendar.startDate
+					c.setStartDate(new ServiceDate(snapshotExport.calendarFrom)); // calendar.startDate
 
-					Calendar cal = Calendar.getInstance();
-					cal.setTime(new Date());
-					cal.add(Calendar.MONTH, 1);  //
-
-					c.setEndDate(new ServiceDate(cal.getTime())); // calendar.endDate
+					c.setEndDate(new ServiceDate(snapshotExport.calendarTo)); // calendar.endDate
 					
 					c.setMonday(calendar.monday? 1 : 0);
 					c.setTuesday(calendar.tuesday? 1 : 0);
@@ -179,7 +175,9 @@ public class ProcessGtfsSnapshotExport extends Job {
 							if(route.routeColor != null && !route.routeColor.isEmpty())
 								r.setColor(route.routeColor.replace("#", ""));
 							
-							r.setDesc(route.routeDesc.replace("\n", "").replace("\r", ""));
+							if(route.routeDesc != null)
+								r.setDesc(route.routeDesc.replace("\n", "").replace("\r", ""));
+							
 							r.setLongName(route.routeLongName);
 							r.setShortName(route.routeShortName);
 							r.setType(Route.mapGtfsRouteType(route.routeType));

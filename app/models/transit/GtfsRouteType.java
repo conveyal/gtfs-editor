@@ -6,7 +6,6 @@ public enum GtfsRouteType {
 	RAIL, 
 	BUS, 
 	FERRY,
-	JEEPNEY,
 	CABLECAR,
 	GONDOLA,
 	FUNICULAR;

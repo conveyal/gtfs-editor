@@ -14,9 +14,11 @@
 
   			this.collection.on('remove', this.render, this)
 
-  			this.collection.fetch({data: {agencyId: G.session.agencyId}}).complete(function(){
-			  self.render();
-			});
+  			this.collection.fetch({data: {agencyId: G.session.agencyId}}).complete(function() {
+
+  			  self.render();
+
+  			});
 
   			_.bindAll(this, 'editRoute', 'deleteRoute');
   		},
@@ -29,7 +31,7 @@
   				routes: _.pluck(this.collection.models, 'attributes')
   			}
 
-  			this.$el.append(ich['route-table-tpl'](data));
+  			this.$el.append(ich['route-table-tpl'](data)); 
   		}, 
 
   		editRoute: function(evt) {
