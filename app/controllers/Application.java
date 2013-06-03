@@ -7,10 +7,13 @@ import play.mvc.*;
 import java.io.File;
 import java.util.*;
 
+import jobs.ProcessGisExport;
 import jobs.ProcessGtfsSnapshotExport;
 import jobs.ProcessGtfsSnapshotMerge;
 
 import models.*;
+import models.gis.GisExport;
+import models.gis.GisUploadType;
 import models.gtfs.GtfsSnapshot;
 import models.gtfs.GtfsSnapshotExport;
 import models.gtfs.GtfsSnapshotExportCalendars;
@@ -213,6 +216,47 @@ public class Application extends Controller {
         
         redirect("/public/data/gtfs/"  + snapshotExport.getZipFilename());
     }
+    
+    
+    public static void exportStopGis() {
+        
+    	List<Agency> agencyObjects = Agency.findAll();
+    	
+    	
+    	GisUploadType typeEnum;
+    	
+    	typeEnum = GisUploadType.STOPS;
+    	
+    	GisExport gisExport = new GisExport(agencyObjects, typeEnum, "");
+    	
+    	ProcessGisExport exportJob = new ProcessGisExport(gisExport.id);
+    	
+    	exportJob.doJob();
+    	
+    	redirect("/public/data/gtfs/"  + gisExport.getFilename());
+             
+    }
+    
+    public static void exportRouteGis() {
+        
+    	List<Agency> agencyObjects = Agency.findAll();
+    	
+    	
+    	GisUploadType typeEnum;
+    	
+    	typeEnum = GisUploadType.ROUTES;
+    	
+    	GisExport gisExport = new GisExport(agencyObjects, typeEnum, "");
+    	
+    	ProcessGisExport exportJob = new ProcessGisExport(gisExport.id);
+    	
+    	exportJob.doJob();
+    	
+    	redirect("/public/data/gtfs/"  + gisExport.getFilename());
+             
+    }
+    
+    
 
 
 }
