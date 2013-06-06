@@ -1,25 +1,378 @@
+
 # You can specialize this file for each language.
 # For example, for French create a messages.fr file
+#
+secure.title=
+secure.username=用户名:
+secure.password=密码:
+secure.remember=自动登陆
+secure.signin=登陆
+secure.error=用户名或密码不正确
+secure.logout=您已安全退出
 
-application.name=运输数据库
+
+application.name=国家公共交通数据库
 
 # nav-bar
 
-nav-bar.agency=机构数据
-nav-bar.home=家
-nav-bar.contact=联系
-nav-bar.user-greeting=问候
+nav-bar.agency=运营单位信息
+nav-bar.home=主页
+nav-bar.contact=联系我们
+nav-bar.user-greeting=%s，欢迎您!
 
+nav-bar.export=导出
+nav-bar.admin=管理
+
+nav-bar.logout=退出
 
 # shared
 
 shared.optional=可选
-shared.required=需要
+shared.required=必填
+
+
+shared.monday=周一
+shared.tuesday=周二
+shared.wednesday=周三
+shared.thursday=周四
+shared.friday=周五
+shared.saturday=周六 
+shared.sunday=周日
+
+shared.route-type.tram=有轨电车
+shared.route-type.subway=地铁
+shared.route-type.rail=火车
+shared.route-type.bus=公共汽车
+shared.route-type.ferry=水运
+shared.route-type.cable-car=电缆车
+shared.route-type.gondola=Gondola
+shared.route-type.funicular=Funicular
+
+shared.route-type.hvt.rail=铁路
+shared.route-type.hvt.rail_hs=高铁
+shared.route-type.hvt.rail_ld=长途火车
+shared.route-type.hvt.rail_shuttle=Rail Shuttle (within complex)
+shared.route-type.hvt.rail_suburban=郊区铁路 
+shared.route-type.hvt.coach=Coach Service
+shared.route-type.hvt.coach_international=International Coach Service
+shared.route-type.hvt.coach_national=National Coach Service
+shared.route-type.hvt.coach_regional=Regional Coach Service
+shared.route-type.hvt.coach_commuter=Commuter Coach Service
+shared.route-type.hvt.urbanrail=城市铁路
+shared.route-type.hvt.urbanrail_metro=地铁
+shared.route-type.hvt.urbanrail_underground=Underground Service
+shared.route-type.hvt.urbanrail_monorail=Monorail
+shared.route-type.hvt.bus=公共汽车
+shared.route-type.hvt.bus_regional=区域性公共汽车
+shared.route-type.hvt.bus_express=快速公交
+shared.route-type.hvt.bus_local=局域公共汽车
+shared.route-type.hvt.bus_unscheduled=Unscheduled Bus Service
+shared.route-type.hvt.trolleybus=Trolleybus Service
+shared.route-type.hvt.tram=有轨电车
+shared.route-type.hvt.water=水陆交通
+shared.route-type.hvt.air=航空运输
+shared.route-type.hvt.telecabin=Telecabin Service
+shared.route-type.hvt.funicular=Funicular Service
+shared.route-type.hvt.miscellaneous=Miscellaneous Service
+shared.route-type.hvt.miscellaneous_cable_car=缆车
+shared.route-type.hvt.miscellaneous_horse_carriage=马车
+
+
+
+shared.details=细节
+
+shared.button.save=保存
+shared.button.delete=删除
+shared.button.save-continue=保存并继续
+shared.button.edit=编辑
+shared.button.close=关闭
+shared.button.cancel=取消
+shared.button.add=添加
+shared.button.update=更新
+shared.button.remove=删除
+
+shared.button.merge=合并
+
+
+shared.attribute.unknown=未知
+shared.attribute.available=是
+shared.attribute.unavailable=否
+
+
+shared.explore-search-routes=搜索线路
+shared.new-route=新建线路
+
 
 # /index
 
 
 # /route
 
-route-info-tpl.short-name=短名称
-route-info-tpl.short-name-content=route_short_name包含路由的短名称。这往往是很短的，抽象的标识符，如 &quot;32&quot;， &quot;100X&quot;或 &quot;绿色&quot;，乘客用它来识别路由，但不给任何指示什么地方的路线服务。
+route.edit-route.title=编辑线路
+
+route.steps-header=如何新建路线？
+
+route.step1=基本信息
+route.step2=站点
+route.step3=线路走向
+route.step4=服务时刻表
+route.step5=回顾
+
+route.filter-stops=过滤站点
+
+route.filter-stops-by-agency=只显示该运营商的站点： 
+
+route.filter-all-stops=显示所有站点
+route.filter-hidden-stops=在当前比例下某些站点可能被隐藏
+
+
+
+# step 1 
+
+route.route-info-tpl.agency=运营单位
+
+route.route-info-tpl.gtfs-id=GTFS编号
+
+route.route-info-tpl.short-name=线路简称
+route.route-info-tpl.short-name-content=线路简称通常为一组简短、抽象的字符（如&quot;32&quot; &quot;100X&quot;或&quot;Green&quot），供乘客辨别该简称代表的线路。简称并不包含线路的具体位置信息。
+
+
+route.route-info-tpl.long-name=线路全称
+route.route-info-tpl.long-name-content=线路全称通常包括该线路的终点或站点信息。
+
+route.route-info-tpl.route-type=线路类型
+route.route-info-tpl.route-type-content=线路类型用来描述该路线采用的公共交通方式。
+
+route.route-info-tpl.description=描述
+route.route-info-tpl.description-content=请提关于该线路准确、实用、详细的信息。
+route.route-info-tpl.url=网站地址
+route.route-info-tpl.url-content=请提供关于该线路的网站地址。该网址可与运营商网址不同请确保网址中包括http://或https://。
+
+route.route-info-tpl.route-color=线路颜色
+route.route-info-tpl.route-color-content=线路颜色必须为六位十六进制的数字，如00FFFF.若不指定线路颜色，线路将被自动被设置为白色（FFFFFF）。
+
+route.route-info-tpl.route-text-color=线路名称颜色
+route.route-info-tpl.route-text-color-content=为保证显示效果，线路名称颜色需要与线路颜色不同。线路颜色必须为六位十六进制的数字，如FFD700.若不指定线路颜色，线路将被自动被设置为黑色（000000）。
+
+route.route-info-tpl.air-con-label=是否为空调线路
+route.route-info-tpl.air-con-checkbox=空调线路
+
+route.route-info-tpl.comments=评论
+route.route-info-tpl.comments-content=请填写任何您认为将会有帮助的信息。
+
+route.route-info-tpl.pattern-count=线路走向数目
+route.route-info-tpl.trip-count=服务时刻表数目
+
+
+# step 2
+
+route.stop-instructions-tpl=请单击右键添加新站点，或点击标记以编辑详细信息。
+route.stops-import=导入站点
+route.stops-upload-data=上传站点数据
+
+route.stops-stop-details=站点详细信息
+
+route.stops-stop-name=站点名称
+route.stops-stop-description=描述
+route.stops-major-stop=主要站点
+
+route.stops-bike-parking=自行车停放设施
+route.stops-wheelchair-boarding=无障碍设施 
+
+route.stops-delete-stop-confirm=是否确定删除该站点？
+
+
+# step 3
+
+route.trip-pattern-instructions=单击地图上的站点以创建。请设置间隔时间与停靠时间以创建序列。
+
+route.trip-pattern-trip-patterns=线路走向
+route.trip-pattern-select-pattern=请选择线路走向
+
+route.trip-pattern-create-new-pattern=创建新的线路走向
+route.trip-pattern-delete-pattern=删除该线路走向
+
+route.trip-pattern-stop-sequence=站点序列
+route.trip-pattern-pattern-stops=线路走向中的站点
+
+route.trip-pattern-zoom-pattern=放大到该线路走向
+route.trip-pattern-clear-pattern=清除改线路走向
+
+route.trip-pattern-kmh=公里/小时
+route.trip-pattern-calculate-times=计算时间
+
+
+route.trip-pattern-alignment=序列
+route.trip-pattern-create-alignment-from-pattern=通过线路走向创建序列
+route.trip-pattern-new-pattern-name=新建线路走向名称
+route.trip-pattern-transit-wand-id=TransitWand序列号（六位）
+route.trip-pattern-load-transitwand=由TransitWand导入
+
+route.trip-pattern-popup-add-stop-pattern=添加站点到线路走向
+route.trip-pattern-popup-pattern-stop=线路走向中的站点
+route.trip-pattern-travel-time=间隔时间（分：秒）
+route.trip-pattern-dwell-time=停靠时间（分：秒）
+
+route.trip-pattern-timing=计时
+
+route.trip-pattern-select-trip=选择服务时刻表
+
+
+route.trip-pattern-clear-pattern-confirm=是否确定清除线路走向中的站点？
+route.trip-pattern-delete-pattern-confirm=是否确定删除该线路走向？
+
+route.trip-pattern-create-failed=创建线路走向失败
+route.trip-pattern-create-failed-no-name=创建线路走向失败，请重新输入线路走向名称。
+route.trip-pattern-add-stop-failed=添加站点失败
+route.trip-pattern-add-stop-failed-no-pattern=添加站点前请选择或新建线路走向
+
+
+route.trip-pattern-no-tw-data=TransitWand序列号错误
+route.trip-pattern-tw-unknown-id=未知TransitWand序列号
+route.trip-pattern-tw-unable-load=上传TransitWand数据失败
+
+
+
+# step 4
+
+route.trip-info-instructions=添加线路走向到服务时刻表
+route.trip-info-tpl.trip-pattern-content=选择一个现有的线路走向以创造服务时刻表
+
+route.trip-info-tpl.trip=服务时刻表
+route.trip-info-tpl.trip-content=选择或创造一个服务时刻表
+
+route.trip-info-tpl.trip-description-content=服务时刻表描述（如工作日下午高峰）
+
+
+route.trip-info-tpl.trip-pattern=线路走向
+
+route.trip-info-tpl.trip-description=服务时刻表描述
+
+route.trip-info-tpl.start-time=开始时间 
+route.trip-info-tpl.start-time-content=线路走向开始时间运营时间
+
+route.trip-info-tpl.end-time=终止时间
+route.trip-info-tpl.end-time-content=线路走向终止运营时间
+
+route.trip-info-tpl.service-frequency=发车频率
+route.trip-info-tpl.service-frequency-content=平均到达时间之间的时间间隔
+
+route.trip-info-tpl.days-in-service=运营时间
+
+route.trip-info-tpl.route-types.title=路线类型
+
+route.trip-info-tpl.select-calendar=选择日历
+
+route.trip-info-tpl.hhmmss=小时:分钟[:秒]
+
+route.trip-info-tpl.calendar-create-modal.title=新建日历
+route.trip-info-tpl.calendar-create-modal.calendar-name=日历名称
+
+
+route.trip-info-tpl.service-calendar=运营时间安排
+route.trip-info-tpl.service-calendar-content=每周运营时间（日期）
+
+route.trip-info-tpl.calendar-create-modal.calendar-name-content=日历名称（工作日服务）
+
+route.trip-info-tpl.calendar-modify=修改日历
+
+
+route.trip-info-tpl.create-trip-btn=创建新服务时刻表
+
+route.trip-info-tpl.copy-trip-btn=复制现有服务时刻表
+route.trip-info-tpl.select-trip-copy=选择现有服务时刻表
+
+route.trip-info-tpl.existing-trip=现有服务时刻表
+route.trip-info-tpl.existing-trip-content=选择并复制一个现有服务时刻表（包括其他线路和模式）。
+
+route.trip-info-tpl.delete-trip-btn=删除服务时刻表
+
+route.trip-info-new-trip-name=新服务时刻表描述
+
+route.trip-info-delete-pattern-confirm=是否确定删除服务时刻表？
+
+
+# step 5 
+
+
+route.route-review-instructions=回顾并发布线路信息
+
+route.review-status=状态
+route.review-publicly-visible=公开可见
+
+route.review.status.in-progress=审核中
+route.review.status.pending-approval=待定
+route.review.status.approved=通过
+
+
+# /search
+
+search.title=选择路线： 
+
+
+# /manage/routeTypes
+
+manage.route-types.title=路线类型管理
+manage.route-types.dialog-title=新建路线类型
+manage.route-types.create-new-type-button=新建类型
+
+
+manage.route-types.localized-vehicle-type=本地化的公交类型
+manage.route-types.localized-vehicle-type-content=本地化的公交类型作为GTFS的补充，用来描述当地公众对某种公交方式的称谓。
+
+manage.route-types.description=描述
+manage.route-types.description-content=线路种类的描述
+
+manage.route-types.gtfs-route-type=GTFS种类
+manage.route-types.gtfs-route-type-content=该字段描述线路使用的交通方式种类。
+
+
+manage.route-types.hsv-route-type=HVT类型
+manage.route-types.hsv-route-type-content=该字段使用HVT命名系统描述线路使用的交通方式种类。
+
+# manage/stopTypes
+
+manage.stop-types.title=管理站点类型
+
+
+# /manage/agencies
+
+manage.agencies.title=账户管理
+manage.agencies.dialog-title=新账户
+manage.agencies.create-new-agency-button=创建新的运营单位
+
+manage.agencies.gtfs-agency-id=GTFS序列号
+manage.agencies.gtfs-agency-id-content=选择性的GTFS序列号应包含字符和数字并与运营单位一一对应。如不指定GTFS序列号，系统将自动生成序列号。
+
+manage.agencies.name=名称
+manage.agencies.name-content=运营单位名称
+
+manage.agencies.url=网站
+manage.agencies.url-content=运营单位网站
+
+manage.agencies.default-lat=默认纬度
+manage.agencies.default-lat-content=地图中心点默认维度。
+
+manage.agencies.default-lon=默认经度
+manage.agencies.default-lon-content=地图中心点默认
+
+manage.agencies.default-route-type=默认线路种类
+manage.agencies.default-route-type-content=默认线路种类
+
+manage.agencies.timezone=时区
+manage.agencies.timezone-content=数据传送时区
+
+manage.agencies.lang=语言
+manage.agencies.lang-content=数据传送语言
+
+# /export/gtfs
+
+export.gtfs.title=以GTFS格式导出
+
+# /export/kml
+
+export.kml.title=以KML格式导出
+
+# /export/shapefile
+
+export.shapefile.title=以Shapefile格式导出
