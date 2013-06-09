@@ -241,10 +241,10 @@ public class ProcessGtfsSnapshotExport extends Job {
 						store.saveEntity(t);
 						
 						
-						if(trip.useFrequency != null && trip.useFrequency)
+						if(trip.useFrequency != null && trip.useFrequency && trip.headway > 0)
 						{
 							org.onebusaway.gtfs.model.Frequency f = new org.onebusaway.gtfs.model.Frequency();
-							
+											
 							f.setTrip(t);
 							
 							f.setStartTime(trip.startTime);
@@ -270,18 +270,23 @@ public class ProcessGtfsSnapshotExport extends Job {
 									if(stop.gtfsStopId != null && !stop.gtfsStopId.isEmpty())
 										stopId.setId(stop.gtfsStopId);
 									else
-										stopId.setId(stop.id.toString());
+										stopId.setId("STOP_" + stop.id.toString());
 									
 									org.onebusaway.gtfs.model.Stop s = new org.onebusaway.gtfs.model.Stop();
 									
 									s.setId(stopId);
 									
 									s.setCode(stop.stopCode);
+									
 									if(stop.stopName == null || stop.stopName.isEmpty())
 										s.setName(stop.id.toString());
 									else
-										s.setName(stop.stopName);
-									s.setDesc(stop.stopDesc);
+										s.setName(stop.stopName.replace("\n", "").replace("\r", ""));
+									
+									
+									if(stop.stopDesc != null && !stop.stopName.isEmpty())
+										s.setDesc(stop.stopDesc.replace("\n", "").replace("\r", ""));
+									
 									s.setUrl(stop.stopUrl);
 									
 									s.setLat(stop.locationPoint().getX());
@@ -338,7 +343,7 @@ public class ProcessGtfsSnapshotExport extends Job {
 									s.setId(stopId);
 									
 									s.setCode(stop.stopCode);
-									s.setName(stop.stopName);
+									s.setName(stop.stopName.replace("\n", "").replace("\r", ""));
 									s.setDesc(stop.stopDesc.replace("\n", "").replace("\r", ""));
 									s.setUrl(stop.stopUrl);
 									

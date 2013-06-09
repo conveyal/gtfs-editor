@@ -33,7 +33,7 @@ public class Application extends Controller {
 
     	List<Agency> agencies = new ArrayList<Agency>();
     	
-       if(Security.isConnected()) {
+      if(Security.isConnected()) {
             renderArgs.put("user", Security.connected());
             
             Account account = Account.find("username = ?", Security.connected()).first();
@@ -66,7 +66,7 @@ public class Application extends Controller {
             session.put("zoom", 12);
 
             
-        }
+        } 
     }
 
     public static void changePassword(String currentPassword, String newPassword) {
@@ -177,13 +177,13 @@ public class Application extends Controller {
 
         // tbd
         
-        /*GtfsSnapshot snapshot = new GtfsSnapshot("", new Date(), GtfsSnapshotSource.UPLOAD);
+        GtfsSnapshot snapshot = new GtfsSnapshot("", new Date(), GtfsSnapshotSource.UPLOAD);
         snapshot.save();
         GtfsSnapshotMerge merge = new GtfsSnapshotMerge(snapshot);
         merge.save();
         
         ProcessGtfsSnapshotMerge mergeJob = new ProcessGtfsSnapshotMerge(merge.id);
-        mergeJob.doJob(); */
+        mergeJob.doJob(); 
         
     }
     
