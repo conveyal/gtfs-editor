@@ -4,12 +4,16 @@ import play.*;
 import play.i18n.Lang;
 import play.mvc.*;
 
+import java.io.File;
 import java.util.*;
 
+import jobs.ProcessGisExport;
 import jobs.ProcessGtfsSnapshotExport;
 import jobs.ProcessGtfsSnapshotMerge;
 
 import models.*;
+import models.gis.GisExport;
+import models.gis.GisUploadType;
 import models.gtfs.GtfsSnapshot;
 import models.gtfs.GtfsSnapshotExport;
 import models.gtfs.GtfsSnapshotExportCalendars;
@@ -29,7 +33,7 @@ public class Application extends Controller {
 
     	List<Agency> agencies = new ArrayList<Agency>();
     	
-       if(Security.isConnected()) {
+      if(Security.isConnected()) {
             renderArgs.put("user", Security.connected());
             
             Account account = Account.find("username = ?", Security.connected()).first();
@@ -40,7 +44,7 @@ public class Application extends Controller {
             }
             
             if(account.admin != null && account.admin)
-            	agencies = Agency.findAll();
+            	agencies = Agency.find("order by name").fetch();
             else {
             	agencies.add(((Agency)Agency.findById(account.agency.id)));            	
             }
@@ -62,7 +66,35 @@ public class Application extends Controller {
             session.put("zoom", 12);
 
             
+        } 
+    }
+
+    public static void changePassword(String currentPassword, String newPassword) {
+        
+        if(Security.isConnected())
+        {
+            if(currentPassword != null && newPassword != null)
+            {
+                Boolean changed = Account.changePassword(Security.connected(), currentPassword, newPassword);
+                
+                if(changed)
+                    Application.passwordChanged();
+                else
+                {
+                    Boolean badPassword = true;
+                    render(badPassword);
+                }
+            }   
+            else
+                render();
         }
+        else
+            Application.index();
+    }
+    
+    public static void passwordChanged() {
+        
+        render();
     }
 
     public static void index() {
@@ -145,31 +177,86 @@ public class Application extends Controller {
 
         // tbd
         
-        /*GtfsSnapshot snapshot = new GtfsSnapshot("", new Date(), GtfsSnapshotSource.UPLOAD);
+        GtfsSnapshot snapshot = new GtfsSnapshot("", new Date(), GtfsSnapshotSource.UPLOAD);
         snapshot.save();
         GtfsSnapshotMerge merge = new GtfsSnapshotMerge(snapshot);
         merge.save();
         
         ProcessGtfsSnapshotMerge mergeJob = new ProcessGtfsSnapshotMerge(merge.id);
-        mergeJob.doJob(); */
+        mergeJob.doJob(); 
         
     }
     
     public static void exportGtfs() {
     
+        render();
+                
+    }
+    
+    
+    
+    public static void createGtfs(Long calendarFrom, Long calendarTo) {
+        
+    	// currently exports all agencies 
+    	
         List<Agency> agencyObjects = Agency.findAll();
     
         GtfsSnapshotExportCalendars calendarEnum;
         calendarEnum = GtfsSnapshotExportCalendars.CURRENT_AND_FUTURE;
         
-        GtfsSnapshotExport snapshotExport = new GtfsSnapshotExport(agencyObjects, calendarEnum, "test");
+        Date calendarFromDate = new Date(calendarFrom);
+        Date calendarToDate = new Date(calendarTo);
+        
+        GtfsSnapshotExport snapshotExport = new GtfsSnapshotExport(agencyObjects, calendarEnum, calendarFromDate, calendarToDate, "");
         
         ProcessGtfsSnapshotExport exportJob = new ProcessGtfsSnapshotExport(snapshotExport.id);
         
-        exportJob.now();
-
+        // running as a sync task for now -- needs to be async for processing larger feeds.
+        exportJob.doJob(); 
         
+        redirect("/public/data/gtfs/"  + snapshotExport.getZipFilename());
     }
+    
+    
+    public static void exportStopGis() {
+        
+    	List<Agency> agencyObjects = Agency.findAll();
+    	
+    	
+    	GisUploadType typeEnum;
+    	
+    	typeEnum = GisUploadType.STOPS;
+    	
+    	GisExport gisExport = new GisExport(agencyObjects, typeEnum, "");
+    	
+    	ProcessGisExport exportJob = new ProcessGisExport(gisExport.id);
+    	
+    	exportJob.doJob();
+    	
+    	redirect("/public/data/gtfs/"  + gisExport.getFilename());
+             
+    }
+    
+    public static void exportRouteGis() {
+        
+    	List<Agency> agencyObjects = Agency.findAll();
+    	
+    	
+    	GisUploadType typeEnum;
+    	
+    	typeEnum = GisUploadType.ROUTES;
+    	
+    	GisExport gisExport = new GisExport(agencyObjects, typeEnum, "");
+    	
+    	ProcessGisExport exportJob = new ProcessGisExport(gisExport.id);
+    	
+    	exportJob.doJob();
+    	
+    	redirect("/public/data/gtfs/"  + gisExport.getFilename());
+             
+    }
+    
+    
 
 
 }

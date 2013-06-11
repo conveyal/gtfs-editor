@@ -1,0 +1,52 @@
+#{extends 'main.html' /}
+
+#{set page:'admin' /}
+
+<div class="row-fluid" style="background-color: #fff;">
+
+<ul>
+#{list items:phones, as:'phone'}
+#{if phone.driver}
+	<strong>${phone.driver.driverId} -- ${phone.vehicle.bodyNumber} (${phone.imei})</strong> #{if visible == 10}<a href="@{Admin.vechicleStatus}?imei=${phone.imei}">[more]</a>#{/if}
+	<br/>
+	Recent boots:
+	<ul>
+		#{list items:phone.getRecentBoot(visible), as:'boot'}
+			#{if boot.adjustedTimestamp}
+				<span style="color: orange;">BOOT</span> ${boot.adjustedTimestamp.format('MM/dd HH:mm:ss')} (off for ${boot.getMinutesSinceLastUpdate()} mins)<br/>
+			#{/if}
+		#{/list}
+	</ul>
+	
+	Recent sthutdowns:
+	<ul>
+		#{list items:phone.getRecentShutdown(visible), as:'shutdown'}
+			#{if shutdown.adjustedTimestamp}
+				<span style="color: orange;">SHUTDOWN</span> ${shutdown.adjustedTimestamp.format('MM/dd HH:mm:ss')} network: ${shutdown.signal}/32   battery: #{if shutdown.battery < 0.15}<span style="color:red">#{/if}#{elseif shutdown.battery < 0.5}<span style="color:orange">#{/elseif}#{else}<span>#{/else} ${shutdown.battery} #{if shutdown.charging}charging#{/if}</span><br/>
+			#{/if}
+		#{/list}
+	</ul>
+	
+	Recent network failures:
+	<ul>
+		#{list items:phone.getRecentNetwork(visible), as:'network'}
+			#{if network.adjustedTimestamp}
+				<span style="color: red;">NETWORK FAILURE</span> ${network.adjustedTimestamp.format('MM/dd HH:mm:ss')} (off for ${network.getMinutesSinceLastGoodNetwork()} mins)<br/>
+			#{/if}
+		#{/list}
+	</ul>
+	
+	Location updates:
+	<ul>
+		#{list items:phone.getRecentUpdates(visible), as:'update'}
+			#{if update.adjustedTimestamp}
+				#{if update.lat}<span style="color: green">GPS</span> ${update.adjustedTimestamp.format('MM/dd HH:mm:ss')}#{/if}
+				#{else}<span style="color: red">NO GPS</span> ${update.adjustedTimestamp.format('MM/dd HH:mm:ss')}#{/else} network: ${update.signal}/32   battery: #{if update.battery < 0.15}<span style="color:red">#{/if}#{elseif update.battery < 0.5}<span style="color:orange">#{/elseif}#{else}<span>#{/else} ${update.battery} #{if update.charging}charging#{/if}</span><br/>
+			#{/if}
+		#{/list}
+	</ul>
+#{/if}
+#{/list}
+</ul>
+
+</div>

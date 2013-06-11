@@ -5,6 +5,7 @@ var GtfsEditor = GtfsEditor || {};
     events: {
       'submit .stop-details-form': 'save',
       'click .stop-find-duplicates-btn': 'findDuplicateStops',
+      'click .stop-find-duplicates-cancel-btn': 'cancelFindDuplicateStops',
       'change .stops-toggle': 'onStopVisibilityChange',
       'change input[name="stopFilterRadio"]': 'onStopFilterChange'
     },
@@ -21,7 +22,7 @@ var GtfsEditor = GtfsEditor || {};
       this.collection.on('remove', this.onModelRemove, this);
       this.collection.on('change', this.onModelStopChange, this);
 
-      this.stopGroups = new G.StopGroups({agencyId: this.model.get('agency').id});
+      this.stopGroups = new G.StopGroups({agencyId: this.model.get('agency').id, success: this.finishedFindDuplicateStops});
 
       this.stopGroups.on('reset', this.resetDuplicateStops, this);
       this.stopGroups.on('add', this.addStopGroup, this);
@@ -65,7 +66,7 @@ var GtfsEditor = GtfsEditor || {};
         shadowSize: [41, 41]
       });
 
-        _.bindAll(this, 'sizeContent', 'onStopFilterChange', 'destroy', 'save', 'findDuplicateStops', 'addStopGroup', 'resetDuplicateStops', 'mergeStops');
+        _.bindAll(this, 'sizeContent', 'onStopFilterChange', 'destroy', 'save', 'cancelFindDuplicateStops', 'findDuplicateStops', 'finishedFindDuplicateStops', 'addStopGroup', 'resetDuplicateStops', 'mergeStops');
         $(window).resize(this.sizeContent);
     },
 
@@ -191,6 +192,9 @@ var GtfsEditor = GtfsEditor || {};
       this.map.removeLayer(this.stopLayerGroup);
       this.map.addLayer(this.mergeStopLayerGroup);
 
+      $('#stop-duplicate-search-progress').show();
+      $('.stop-find-duplicates-btn').hide();
+
       /*this.duplicateStopsCollection = new G.Stops();
       
 
@@ -200,8 +204,29 @@ var GtfsEditor = GtfsEditor || {};
 
     },
 
+    finishedFindDuplicateStops: function() {
+
+      $('#stop-duplicate-search-progress').hide();
+      $('#stop-duplicate-search-cancel').show();
+
+    },
+
+    cancelFindDuplicateStops: function(evt) {
+
+
+      this.mergeStopLayerGroup.clearLayers();
+
+      this.map.addLayer(this.stopLayerGroup);
+      this.map.removeLayer(this.mergeStopLayerGroup);
+
+      $('#stop-duplicate-search-cancel').hide();
+      $('.stop-find-duplicates-btn').show();
+
+    },
+
     resetDuplicateStops: function() {
 
+      
       this.mergeStopLayerGroup.clearLayers();
 
     },

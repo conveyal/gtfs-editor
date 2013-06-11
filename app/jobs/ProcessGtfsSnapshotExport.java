@@ -118,13 +118,9 @@ public class ProcessGtfsSnapshotExport extends Job {
 				
 					c.setServiceId(calendarId);
 					
-					c.setStartDate(new ServiceDate(new Date())); // calendar.startDate
+					c.setStartDate(new ServiceDate(snapshotExport.calendarFrom)); // calendar.startDate
 
-					Calendar cal = Calendar.getInstance();
-					cal.setTime(new Date());
-					cal.add(Calendar.MONTH, 1);  //
-
-					c.setEndDate(new ServiceDate(cal.getTime())); // calendar.endDate
+					c.setEndDate(new ServiceDate(snapshotExport.calendarTo)); // calendar.endDate
 					
 					c.setMonday(calendar.monday? 1 : 0);
 					c.setTuesday(calendar.tuesday? 1 : 0);
@@ -179,7 +175,9 @@ public class ProcessGtfsSnapshotExport extends Job {
 							if(route.routeColor != null && !route.routeColor.isEmpty())
 								r.setColor(route.routeColor.replace("#", ""));
 							
-							r.setDesc(route.routeDesc.replace("\n", "").replace("\r", ""));
+							if(route.routeDesc != null)
+								r.setDesc(route.routeDesc.replace("\n", "").replace("\r", ""));
+							
 							r.setLongName(route.routeLongName);
 							r.setShortName(route.routeShortName);
 							r.setType(Route.mapGtfsRouteType(route.routeType));
@@ -243,10 +241,10 @@ public class ProcessGtfsSnapshotExport extends Job {
 						store.saveEntity(t);
 						
 						
-						if(trip.useFrequency != null && trip.useFrequency)
+						if(trip.useFrequency != null && trip.useFrequency && trip.headway > 0)
 						{
 							org.onebusaway.gtfs.model.Frequency f = new org.onebusaway.gtfs.model.Frequency();
-							
+											
 							f.setTrip(t);
 							
 							f.setStartTime(trip.startTime);
@@ -272,18 +270,23 @@ public class ProcessGtfsSnapshotExport extends Job {
 									if(stop.gtfsStopId != null && !stop.gtfsStopId.isEmpty())
 										stopId.setId(stop.gtfsStopId);
 									else
-										stopId.setId(stop.id.toString());
+										stopId.setId("STOP_" + stop.id.toString());
 									
 									org.onebusaway.gtfs.model.Stop s = new org.onebusaway.gtfs.model.Stop();
 									
 									s.setId(stopId);
 									
 									s.setCode(stop.stopCode);
+									
 									if(stop.stopName == null || stop.stopName.isEmpty())
 										s.setName(stop.id.toString());
 									else
-										s.setName(stop.stopName);
-									s.setDesc(stop.stopDesc);
+										s.setName(stop.stopName.replace("\n", "").replace("\r", ""));
+									
+									
+									if(stop.stopDesc != null && !stop.stopName.isEmpty())
+										s.setDesc(stop.stopDesc.replace("\n", "").replace("\r", ""));
+									
 									s.setUrl(stop.stopUrl);
 									
 									s.setLat(stop.locationPoint().getX());
@@ -340,7 +343,7 @@ public class ProcessGtfsSnapshotExport extends Job {
 									s.setId(stopId);
 									
 									s.setCode(stop.stopCode);
-									s.setName(stop.stopName);
+									s.setName(stop.stopName.replace("\n", "").replace("\r", ""));
 									s.setDesc(stop.stopDesc.replace("\n", "").replace("\r", ""));
 									s.setUrl(stop.stopUrl);
 									

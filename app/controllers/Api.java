@@ -41,6 +41,8 @@ import models.transit.TripPattern;
 import models.transit.TripPatternStop;
 import models.transit.TripShape;
 
+// to do: need to apply security model and account/agency verification
+
 public class Api extends Controller {
 
     private static ObjectMapper mapper = new ObjectMapper();

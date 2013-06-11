@@ -103,8 +103,10 @@
 
         var $tpl = ich['agency-dialog-tpl'](agency.attributes);
 
-        $tpl.find('#defaultRouteType option[value="' + agency.attributes.defaultRouteType.id + '"]')
-            .attr('selected', true);
+        if(agency.attributes.defaultRouteType != null) {
+          $tpl.find('#defaultRouteType option[value="' + agency.attributes.defaultRouteType.id + '"]')
+              .attr('selected', true);
+        }
 
         $tpl.find('#timezone option[value="' + agency.attributes.timezone + '"]')
             .attr('selected', true);
@@ -136,16 +138,42 @@
             });
 
 
+
         // Init the map
+        var mapCenter = undefined;
+        if(G.session.mapCenter != undefined) {
+            mapCenter = G.session.mapCenter;
+            mapZoom = 15;
+        }
+        else {
+            mapCenter = [0.0,0.0];
+            mapZoom = 1;  
+        }
+
+        
+
         this.map = L.map($('#map').get(0), {
-          center: G.session.mapCenter,
-          zoom: G.session.mapZoom,
+          center: mapCenter,
+          zoom: mapZoom,
           maxZoom: 17
         });
         this.map.addLayer(baseLayer);
 
        
         var view = this;
+
+        if($('#defaultLat').val() != '' && $('#defaultLon').val() != '') {
+
+           if(view.clickMarker != undefined)
+            view.map.removeLayer(view.clickMarker);
+
+           var lat = parseFloat($('#defaultLat').val());
+           var lon = parseFloat($('#defaultLon').val());
+
+           view.clickMarker = L.marker([lat, lon], {icon: view.clickMarkerIcon}).addTo(view.map);
+           view.map.panTo([lat, lon]);
+        }
+      
 
         this.map.on('click', function(evt) {
 

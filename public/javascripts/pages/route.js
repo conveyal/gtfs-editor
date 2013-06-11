@@ -168,7 +168,7 @@ var GtfsEditor = GtfsEditor || {};
       _agencyId = agencyId;
 
       // Populate the route collection
-      _routeCollection.fetch({
+      _routeCollection.fetch({data: {agencyId: agencyId},
         success: function(collection, response, options) {
           Backbone.history.start({pushState: true, root: '/route/'});
         }

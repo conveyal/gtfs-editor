@@ -47,8 +47,8 @@ G.RouteTypes = Backbone.Collection.extend({
   G.Route = Backbone.Model.extend({
     defaults: {
       id: null,
-      status: null,
-      publiclyVisible: null,
+      status: 'IN_PROGRESS',
+      publiclyVisible: false,
       gtfsRouteId: null,
       routeShortName: null,
       routeLongName: null,
@@ -189,6 +189,7 @@ G.RouteTypes = Backbone.Collection.extend({
     initialize: function(opts) {
       
       this.agencyId = opts.agencyId;
+      this.success = opts.success;
       this.groupMap = {};
 
       this.on('merge', this.onMerge);
@@ -209,6 +210,8 @@ G.RouteTypes = Backbone.Collection.extend({
     },
 
     loadGroups: function(pairs) {
+
+      this.success();
 
       var _stopGroups = this;
 
@@ -299,20 +302,27 @@ G.RouteTypes = Backbone.Collection.extend({
     },
 
     reverse: function() {
+
       var patternStops = this.get('patternStops');
+      var newPatternStops = new Array();
 
-      // need to shift travel times forward
+      _.each(patternStops, function(stop, i){
+        if(i+1 < patternStops.length) {
+          stop.defaultTravelTime = patternStops[i+1].defaultTravelTime;
+          stop.defaultDwellTime = patternStops[i+1].defaultDwellTime;
+        }
 
-      /*_.each(patternStops, function(stop, i){
-        if(i+1 < patternStops.length)
-          stop.travelTime = patternStops[i+1].travelTime;
-        if(patternStops.length == i+1)
-           stop.travelTime = null; 
-      }); */
+        if(patternStops.length == i+1) {
+          stop.defaultTravelTime = null;
+          stop.defaultDwellTime = null;
+        }
+        
+        newPatternStops.push(stop) 
+      }); 
 
-      patternStops.reverse();
+      newPatternStops.reverse();
 
-      this.set('patternStops', patternStops);
+      this.set('patternStops', newPatternStops);
 
       this.normalizeSequence();
 

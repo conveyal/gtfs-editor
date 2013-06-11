@@ -101,7 +101,7 @@ public class ProcessGtfsSnapshotMerge extends Job {
     	
     	try {
     		
-    		File gtfsFile = new File("/tmp/manila.gtfs.zip"); //Play.configuration.getProperty("application.publicGtfsDataDirectory"), snapshotMerge.snapshot.getFilename());
+    		File gtfsFile = new File("/home/kpw/Documents/Downloads/CCTgtfs.zip"); //Play.configuration.getProperty("application.publicGtfsDataDirectory"), snapshotMerge.snapshot.getFilename());
     		
     		reader.setInputLocation(gtfsFile);
         	reader.setEntityStore(store);
