@@ -11,7 +11,7 @@ secure.error=用户名或密码不正确
 secure.logout=您已安全退出
 
 
-application.name=国家公共交通数据库
+application.name=国家公共交通数据库（试验版）
 
 # nav-bar
 
@@ -181,6 +181,12 @@ route.stops-wheelchair-boarding=无障碍设施
 
 route.stops-delete-stop-confirm=是否确定删除该站点？
 
+route.stops-manage=站点合并与站点管理
+route.stops-manage.find-duplicate-btn=查找重复站点
+route.stops-manage.find-duplicate-searching=Searching...
+route.stops-manage.find-duplicate-close-btn=Close Duplicate Search
+
+
 
 # step 3
 
@@ -290,6 +296,9 @@ route.trip-info-tpl.delete-trip-btn=删除服务时刻表
 route.trip-info-new-trip-name=新服务时刻表描述
 
 route.trip-info-delete-pattern-confirm=是否确定删除服务时刻表？
+
+route.trip-pattern-duplicate-pattern=复制线路走向
+route.trip-pattern-reverse-pattern=反转线路走向
 
 
 # step 5 
