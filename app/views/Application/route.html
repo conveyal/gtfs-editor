@@ -418,16 +418,16 @@
 
 
     <div class="stop-merge-details well">
-      <legend>Merge/Manage Stops</legend>
+      <legend>&{'route.stops-manage'}</legend>
         <p>
-          <button type="button" class="btn btn-primary stop-find-duplicates-btn">Find Duplicate Stops</button>
+          <button type="button" class="btn btn-primary stop-find-duplicates-btn">&{'route.stops-manage.find-duplicate-btn'}</button>
         </p>
         <p class="hide" id="stop-duplicate-search-progress"> 
-          <img src="@{'/public/images/loading.gif'}"/>Searching...
+          <img src="@{'/public/images/loading.gif'}"/> &{'route.stops-manage.find-duplicate-searching'}
         </p>
 
         <p class="hide" id="stop-duplicate-search-cancel"> 
-            <button type="button" class="btn btn-primary stop-find-duplicates-cancel-btn">Close Duplicate Search</button>
+            <button type="button" class="btn btn-primary stop-find-duplicates-cancel-btn">&{'route.stops-manage.find-duplicate-close-btn'}</button>
         </p>
     </div>
 
@@ -582,7 +582,7 @@
 </script>
 
 <script id="stop-merge-view-tpl" type="text/html">
-  <legend>Merge Stops</legend>
+  <legend>&{'route.stops-merge'}</legend>
 
     {{#stops}}
     <p>

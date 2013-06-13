@@ -183,6 +183,13 @@ route.stops-wheelchair-boarding=Wheelchair Boarding
 route.stops-delete-stop-confirm=Are you sure you want to delete this stop?
 
 
+route.stops-manage=Merge/Manage Stops
+route.stops-manage.find-duplicate-btn=Find Duplicate Stops
+route.stops-manage.find-duplicate-searching=Searching...
+route.stops-manage.find-duplicate-close-btn=Close Duplicate Search
+
+route.stops-merge=Merge Stops
+
 
 # step 3
 
@@ -233,6 +240,11 @@ route.trip-pattern-add-stop-failed-no-pattern=Select/create pattern before addin
 route.trip-pattern-no-tw-data=No data available for TransitWand Id
 route.trip-pattern-tw-unknown-id=Unknown TransitWand Id
 route.trip-pattern-tw-unable-load=Unable to load TransitWand data
+
+shared.button.duplicate=Duplicate
+route.trip-pattern-duplicate-pattern=Duplicate Pattern
+route.trip-pattern-reverse-pattern=Reverse Pattern
+route.trip-pattern-reverse-pattern-confirm=Do you want to reverse the trip pattern?
 
 
 
@@ -367,6 +379,10 @@ manage.agencies.timezone-content=Feed timezone.
 manage.agencies.lang=Lanuage
 manage.agencies.lang-content=Feed language.
 
+# /manage/account
+
+manage.accounts.title=Manage Accounts
+
 # /export/gtfs
 
 export.gtfs.title=Export as GTFS
@@ -377,7 +393,8 @@ export.kml.title=Export as KML
 
 # /export/shapefile
 
-export.shapefile.title=Export as Shapefile
+export.shapefile-routes.title=Export Routes Shapefile
+export.shapefile-stops.title=Export Stops Shapefile
 
 
 

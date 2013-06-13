@@ -6,7 +6,7 @@
 #{/set}
 
 
-<h3>Export GTFS</h3>
+<h3><&{'export.gtfs.title'}/h3>
 
 <form id="gtfs-export-form" class="route-info-form form-horizontal span12" action="/export/creategtfs">
   
@@ -14,7 +14,7 @@
   <input type="hidden" name="calendarTo" id="calendarTo"/>
 
   <div class="control-group">
-    <label class="control-label" for="routeLongName"><strong>Calendar Valid From</strong><br>(&{'shared.required'})</label>
+    <label class="control-label" for="routeLongName"><strong>&{'export.gtfs.calendar-from'}</strong><br>(&{'shared.required'})</label>
     <div class="controls">
 
     	<div class="input-append date" id="dateFrom">
@@ -26,7 +26,7 @@
   </div>
 
   <div class="control-group">
-    <label class="control-label" for="routeLongName"><strong>Calendar Valid To</strong><br>(&{'shared.required'})</label>
+    <label class="control-label" for="routeLongName"><strong>&{'export.gtfs.calendar-to'}</strong><br>(&{'shared.required'})</label>
     <div class="controls">
 
     	<div class="input-append date" id="dateTo">
@@ -52,7 +52,7 @@
   </div> -->
 
   <div class="form-actions">
-    <button type="button" class="btn btn-primary" id="gtfs-export-btn">Export Data</button>
+    <button type="button" class="btn btn-primary" id="gtfs-export-btn">&{'shared.export-data-btn'}</button>
   </div>
 </form>
 
