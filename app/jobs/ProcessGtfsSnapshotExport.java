@@ -151,7 +151,7 @@ public class ProcessGtfsSnapshotExport extends Job {
 					
 					for(Trip trip : trips)
 					{	
-						if(!trip.pattern.route.agency.id.equals(agency.id) )
+						if(!trip.pattern.route.agency.id.equals(agency.id) || (trip.useFrequency && trip.headway.equals(0)) || (trip.useFrequency && trip.startTime.equals(trip.endTime)))
 							continue;
 
 						if(!routeList.containsKey(trip.pattern.route.id))
@@ -299,13 +299,27 @@ public class ProcessGtfsSnapshotExport extends Job {
 								
 								org.onebusaway.gtfs.model.StopTime st = new org.onebusaway.gtfs.model.StopTime();
 								
-								if(stopTime.defaultTravelTime != null)
-									cumulativeTime += stopTime.defaultTravelTime;
+								if(stopTime.defaultTravelTime != null) {
+									
+									// need to flag negative travel times in the patterns!
+									if(stopTime.defaultTravelTime < 0)
+										cumulativeTime -= stopTime.defaultTravelTime;
+									else
+										cumulativeTime += stopTime.defaultTravelTime;	
+								}
+									
 								
 								st.setArrivalTime(cumulativeTime);
 								
-								if(stopTime.defaultDwellTime != null)
-									cumulativeTime += stopTime.defaultDwellTime;
+								if(stopTime.defaultDwellTime != null) {
+									
+									// need to flag negative dwell times in the patterns!
+									if(stopTime.defaultDwellTime < 0)
+										cumulativeTime -= stopTime.defaultDwellTime;
+									else
+										cumulativeTime += stopTime.defaultDwellTime;
+								}
+									
 								
 								st.setDepartureTime(cumulativeTime);
 								
