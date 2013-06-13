@@ -121,7 +121,7 @@ var GtfsEditor = GtfsEditor || {};
 
       
       // Base layer config is optional, default to Mapbox Streets
-      var url = 'http://{s}.tiles.mapbox.com/v3/' + G.config.mapboxKey + '/{z}/{x}/{y}.png',
+      var url = 'http://emap1.mapabc.com/mapabc/maptile?x={x}&y={y}&z={z}',
           baseLayer = L.tileLayer(url, {
             attribution: '&copy; OpenStreetMap contributors, CC-BY-SA. <a href="http://mapbox.com/about/maps" target="_blank">Terms &amp; Feedback</a>'
           });
