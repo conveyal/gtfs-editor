@@ -227,8 +227,8 @@ public class ProcessGtfsSnapshotExport extends Job {
 						
 						t.setId(tripId);
 						t.setRoute(routeList.get(trip.pattern.route.id));
-						t.setRouteShortName(trip.tripShortName);
-						t.setTripHeadsign(trip.tripHeadsign);
+						t.setRouteShortName(trip.pattern.route.routeShortName);
+						t.setTripHeadsign(trip.pattern.name);
 						t.setServiceId(calendarId);
 						
 						if(trip.pattern.shape != null)
