@@ -151,7 +151,9 @@ public class ProcessGtfsSnapshotExport extends Job {
 					
 					for(Trip trip : trips)
 					{	
-						if(!trip.pattern.route.agency.id.equals(agency.id) || (trip.useFrequency && trip.headway.equals(0)) || (trip.useFrequency && trip.startTime.equals(trip.endTime)))
+						List<TripPatternStop> patternStopTimes = TripPatternStop.find("pattern = ? order by stopSequence", trip.pattern).fetch();
+						
+						if((trip.useFrequency && patternStopTimes.size() == 0) || !trip.pattern.route.agency.id.equals(agency.id) || (trip.useFrequency && trip.headway.equals(0)) || (trip.useFrequency && trip.startTime.equals(trip.endTime)))
 							continue;
 
 						if(!routeList.containsKey(trip.pattern.route.id))
@@ -218,6 +220,8 @@ public class ProcessGtfsSnapshotExport extends Job {
 						}
 						
 						
+						
+						
 						org.onebusaway.gtfs.model.Trip t = new org.onebusaway.gtfs.model.Trip();
 						
 						AgencyAndId tripId = new AgencyAndId(); 
@@ -241,6 +245,8 @@ public class ProcessGtfsSnapshotExport extends Job {
 						store.saveEntity(t);
 						
 						
+						
+						
 						if(trip.useFrequency != null && trip.useFrequency && trip.headway > 0)
 						{
 							org.onebusaway.gtfs.model.Frequency f = new org.onebusaway.gtfs.model.Frequency();
@@ -253,11 +259,11 @@ public class ProcessGtfsSnapshotExport extends Job {
 							
 							store.saveEntity(f);
 							
-							List<TripPatternStop> stopTimes = TripPatternStop.find("pattern = ? order by stopSequence", trip.pattern).fetch();
+							
 							
 							Integer cumulativeTime = 0;
 							
-							for(TripPatternStop stopTime : stopTimes)
+							for(TripPatternStop stopTime : patternStopTimes)
 							{
 								if(!stopList.containsKey(stopTime.stop.id))
 								{
