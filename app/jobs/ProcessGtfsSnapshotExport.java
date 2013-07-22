@@ -151,7 +151,9 @@ public class ProcessGtfsSnapshotExport extends Job {
 					
 					for(Trip trip : trips)
 					{	
-						if(!trip.pattern.route.agency.id.equals(agency.id) )
+						List<TripPatternStop> patternStopTimes = TripPatternStop.find("pattern = ? order by stopSequence", trip.pattern).fetch();
+						
+						if((trip.useFrequency && patternStopTimes.size() == 0) || !trip.pattern.route.agency.id.equals(agency.id) || (trip.useFrequency && trip.headway.equals(0)) || (trip.useFrequency && trip.startTime.equals(trip.endTime)))
 							continue;
 
 						if(!routeList.containsKey(trip.pattern.route.id))
@@ -218,6 +220,8 @@ public class ProcessGtfsSnapshotExport extends Job {
 						}
 						
 						
+						
+						
 						org.onebusaway.gtfs.model.Trip t = new org.onebusaway.gtfs.model.Trip();
 						
 						AgencyAndId tripId = new AgencyAndId(); 
@@ -227,8 +231,8 @@ public class ProcessGtfsSnapshotExport extends Job {
 						
 						t.setId(tripId);
 						t.setRoute(routeList.get(trip.pattern.route.id));
-						t.setRouteShortName(trip.tripShortName);
-						t.setTripHeadsign(trip.tripHeadsign);
+						t.setRouteShortName(trip.pattern.route.routeShortName);
+						t.setTripHeadsign(trip.pattern.name);
 						t.setServiceId(calendarId);
 						
 						if(trip.pattern.shape != null)
@@ -239,6 +243,8 @@ public class ProcessGtfsSnapshotExport extends Job {
 						t.setBlockId(trip.blockId);
 						
 						store.saveEntity(t);
+						
+						
 						
 						
 						if(trip.useFrequency != null && trip.useFrequency && trip.headway > 0)
@@ -253,11 +259,11 @@ public class ProcessGtfsSnapshotExport extends Job {
 							
 							store.saveEntity(f);
 							
-							List<TripPatternStop> stopTimes = TripPatternStop.find("pattern = ? order by stopSequence", trip.pattern).fetch();
+							
 							
 							Integer cumulativeTime = 0;
 							
-							for(TripPatternStop stopTime : stopTimes)
+							for(TripPatternStop stopTime : patternStopTimes)
 							{
 								if(!stopList.containsKey(stopTime.stop.id))
 								{
@@ -299,13 +305,27 @@ public class ProcessGtfsSnapshotExport extends Job {
 								
 								org.onebusaway.gtfs.model.StopTime st = new org.onebusaway.gtfs.model.StopTime();
 								
-								if(stopTime.defaultTravelTime != null)
-									cumulativeTime += stopTime.defaultTravelTime;
+								if(stopTime.defaultTravelTime != null) {
+									
+									// need to flag negative travel times in the patterns!
+									if(stopTime.defaultTravelTime < 0)
+										cumulativeTime -= stopTime.defaultTravelTime;
+									else
+										cumulativeTime += stopTime.defaultTravelTime;	
+								}
+									
 								
 								st.setArrivalTime(cumulativeTime);
 								
-								if(stopTime.defaultDwellTime != null)
-									cumulativeTime += stopTime.defaultDwellTime;
+								if(stopTime.defaultDwellTime != null) {
+									
+									// need to flag negative dwell times in the patterns!
+									if(stopTime.defaultDwellTime < 0)
+										cumulativeTime -= stopTime.defaultDwellTime;
+									else
+										cumulativeTime += stopTime.defaultDwellTime;
+								}
+									
 								
 								st.setDepartureTime(cumulativeTime);
 								
