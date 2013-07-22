@@ -25,7 +25,7 @@ import models.transit.StopType;
 import models.transit.Agency;
 import models.transit.Trip;
 
-//@With(Secure.class)
+@With(Secure.class)
 public class Application extends Controller {
 
     @Before

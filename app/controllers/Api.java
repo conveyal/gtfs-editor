@@ -41,10 +41,18 @@ import models.transit.TripPattern;
 import models.transit.TripPatternStop;
 import models.transit.TripShape;
 
-// to do: need to apply security model and account/agency verification
 
+@With(Secure.class)
 public class Api extends Controller {
 
+	@Before
+	static void initSession() throws Throwable {
+		 
+		if(!Security.isConnected())
+			Secure.login();
+		
+	}
+	
     private static ObjectMapper mapper = new ObjectMapper();
     private static JsonFactory jf = new JsonFactory();
 
