@@ -44,8 +44,7 @@ import utils.StopSequence;
 public class ProcessGtfsSnapshotMerge extends Job {
 
 	private Long _gtfsSnapshotMergeId;
-	
-	private Boolean _quickTest;
+
 	
 	private Map<String, BigInteger> agencyIdMap = new HashMap<String, BigInteger>();
 	private Map<String, BigInteger> routeIdMap = new HashMap<String, BigInteger>();
@@ -70,8 +69,7 @@ public class ProcessGtfsSnapshotMerge extends Job {
 	
 	public void doJob() {
 		
-		this._quickTest = false;
-		
+			
 		GtfsSnapshotMerge snapshotMerge = null;
 		while(snapshotMerge == null)
 		{
@@ -97,11 +95,10 @@ public class ProcessGtfsSnapshotMerge extends Job {
     	Long serviceCalendarCount = new Long(0);
     	Long serviceCalendarDateCount = new Long(0);
     	Long shapeCount = new Long(0);
-    
     	
     	try {
     		
-    		File gtfsFile = new File("/home/kpw/Documents/Downloads/CCTgtfs.zip"); //Play.configuration.getProperty("application.publicGtfsDataDirectory"), snapshotMerge.snapshot.getFilename());
+    		File gtfsFile = new File(Play.configuration.getProperty("application.publicGtfsDataDirectory"), snapshotMerge.snapshot.getFilename());
     		
     		reader.setInputLocation(gtfsFile);
         	reader.setEntityStore(store);
@@ -138,9 +135,6 @@ public class ProcessGtfsSnapshotMerge extends Job {
 	    		else
 	    			primaryAgencyId = agencyIdMap.get(gtfsAgency.getId());
 	    		
-	    		if(_quickTest && agencyCount == 100)
-	    			break;
-	    
 	    	}
 	    	
 	    	agencyTask.completeTask("Imported " + agencyCount + " agencies.", GtfsSnapshotMergeTaskStatus.SUCCESS);
@@ -159,9 +153,6 @@ public class ProcessGtfsSnapshotMerge extends Job {
 	            routeIdMap.put(gtfsRoute.getId().toString(), routeId );
 	           	          
 	        	routeCount++;
-	        	
-	        	if(_quickTest && routeCount == 100)
-	    			break;
 	        }
 	        
 	        if(agencyCount > 1)
@@ -181,10 +172,6 @@ public class ProcessGtfsSnapshotMerge extends Job {
 	            stopIdMap.put(gtfsStop.getId().toString(), stopId );
 	           	          
 	        	stopCount++;
-	        
-	        	
-	        	if(_quickTest && stopCount == 100)
-	    			break;
 	        }
 	        
 	        stopTask.completeTask("Imported " + stopCount + " stops.", GtfsSnapshotMergeTaskStatus.SUCCESS);
@@ -214,9 +201,7 @@ public class ProcessGtfsSnapshotMerge extends Job {
 	        	}
 	        	
 	        	shapePointCount++;
-	        	
-	        	if(_quickTest && shapePointCount == 100)
-	    			break;
+
 	        }
 	        
 	        
@@ -269,8 +254,6 @@ public class ProcessGtfsSnapshotMerge extends Job {
 	        	
 	        	serviceCalendarCount++;
 	        	
-	        	if(_quickTest && tripCount == 100)
-	    			break;
 	        }
 	    
 	        
@@ -292,8 +275,6 @@ public class ProcessGtfsSnapshotMerge extends Job {
 	        	
 	        	serviceCalendarDateCount++;
 	        	
-	        	if(_quickTest && tripCount == 100)
-	    			break;
 	        }
 	    
 	        serviceCalendarDatesTask.completeTask("Imported " + serviceCalendarDateCount.toString() + " Service calendar dates.", GtfsSnapshotMergeTaskStatus.SUCCESS);
@@ -322,9 +303,7 @@ public class ProcessGtfsSnapshotMerge extends Job {
 	        	tripIdMap.put(gtfsTrip.getId().toString(), tripId);
 	        	
 	        	tripCount++;
-	        	
-	        	if(_quickTest && tripCount == 100)
-	    			break;
+	        
 	        }
 	    
 	        

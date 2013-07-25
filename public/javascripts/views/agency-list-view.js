@@ -180,9 +180,11 @@
            if(view.clickMarker != undefined)
             view.map.removeLayer(view.clickMarker);
 
-           view.clickMarker = L.marker(evt.latlng, {icon: view.clickMarkerIcon}).addTo(view.map);
-           $('#defaultLat').val(evt.latlng.lat);
-           $('#defaultLon').val(evt.latlng.lng);
+
+          var latlng = evt.latlng.wrap();              
+           view.clickMarker = L.marker(latlng, {icon: view.clickMarkerIcon}).addTo(view.map);
+           $('#defaultLat').val(latlng.lat);
+           $('#defaultLon').val(latlng.lng);
 
         });
 

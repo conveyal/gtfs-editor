@@ -16,6 +16,8 @@ GET     /export/creategtfs                      Application.createGtfs
 GET     /manage/routetypes                      Application.manageRouteTypes
 GET     /manage/agencies                      	Application.manageAgencies
 
+GET     /bootstrap/index                      	Bootstrap.index
+
 GET     /api/agency/?                           Api.getAgency
 GET     /api/agency/{id}                        Api.getAgency
 POST    /api/agency/                            Api.createAgency

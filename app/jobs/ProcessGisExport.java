@@ -191,8 +191,20 @@ public class ProcessGisExport extends Job {
             	
                 List<Route> routes = Route.find("agency in (:ids)").bind("ids", gisExport.agencies).fetch();
             	
+                // check for duplicates
+
+                // HashMap<String, Boolean> existingRoutes = new HashMap<String,Boolean>();
+                
             	for(Route r : routes)
             	{
+//            		String routeId = r.routeLongName + "_" + r.routeDesc + "_ " + r.phone.id;
+//            		
+//            		if(existingRoutes.containsKey(routeId))
+//            			continue;
+//            		else
+//            			existingRoutes.put(routeId, true); 
+            		
+            		
             		List<TripPattern> patterns = TripPattern.find("route = ?", r).fetch();
             		for(TripPattern tp : patterns)
                 	{
@@ -204,7 +216,12 @@ public class ProcessGisExport extends Job {
 	            		featureBuilder.add(r.routeShortName);
 	                    featureBuilder.add(r.routeLongName);
 	                    featureBuilder.add(r.routeDesc);
-	                    featureBuilder.add(r.routeType.toString());
+	                    
+	                    if(r.routeType != null)
+	                    	featureBuilder.add(r.routeType.toString());
+	                    else
+	                    	featureBuilder.add("");
+	                    
 	                    featureBuilder.add(r.routeUrl);
 	                    featureBuilder.add(r.routeColor);
 	                    featureBuilder.add(r.routeTextColor);

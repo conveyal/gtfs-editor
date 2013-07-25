@@ -5,7 +5,7 @@ var GtfsEditor = GtfsEditor || {};
   G.config = {
   	mapboxKey: 'conveyal.map-jc4m5i21',
     agencyId: 1,
-    mapCenter: [14.666217, 120.978355],
+    mapCenter: [38.923092, -77.038879],
     mapZoom: 15, 
     showMajorStops: true,
     showStandardStops: true

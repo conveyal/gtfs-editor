@@ -33,14 +33,13 @@ public class Application extends Controller {
 
     	List<Agency> agencies = new ArrayList<Agency>();
     	
-      if(Security.isConnected()) {
+    	if(Security.isConnected()) {
             renderArgs.put("user", Security.connected());
             
             Account account = Account.find("username = ?", Security.connected()).first();
             
             if(account == null && Account.count() == 0) {
-            	account = new Account("admin", "admin", "admin@test.com", true, null);
-            	account.save();
+            	Bootstrap.index();
             }
             
             if(account.admin != null && account.admin)
@@ -52,19 +51,22 @@ public class Application extends Controller {
             renderArgs.put("agencies", agencies);
         }
         else {
-        	Secure.login();
+
+        	if(Account.count() == 0)
+        		Bootstrap.index();
+        	else
+        		Secure.login();
         }
 
         if(session.get("agencyId") == null) {
             
-            Agency agency = agencies.get(0);
+        	Agency agency = agencies.get(0);
 
             session.put("agencyId", agency.id);
             session.put("agencyName", agency.name);
             session.put("lat", agency.defaultLat);
             session.put("lon", agency.defaultLon);
-            session.put("zoom", 12);
-
+            session.put("zoom", 12); 
             
         } 
     }

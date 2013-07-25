@@ -1,0 +1,75 @@
+#{extends 'Secure/layout.html' /}
+
+
+
+<div class="container fill">
+  <div class="row" style="padding-top: 100px;">
+    <div class="offset4 span4">
+      
+    		<div class="">
+	
+				<img style="padding-bottom: 25px;" src="@{'/public/images/tdm_logo.png'}"/>
+				
+				<h3>Database Setup</h3>
+				<p><strong>Step 1:</strong> Create admin account
+				</p>
+				#{form @createAdmin()}
+					
+					#{errors} 
+						<p class="alert alert-error">
+							${error}
+						</p>
+					 #{/errors}
+					
+				
+
+				 <div class="control-group">
+				    <label for="username">&{'secure.username'}</label>
+				    <div class="controls">
+				      <input type="text" name="username" id="username" value="${flash.username}" />
+				    </div>
+				  </div>
+
+
+				  <div class="control-group">
+				    <label for="password">&{'secure.password'}</label>
+				    <div class="controls">
+				      <input type="password" name="password" id="password" value="" />
+				    </div>
+				  </div>
+				  
+				  <div class="control-group">
+				    <label for="password2">Password (retype):</label>
+				    <div class="controls">
+				      <input type="password" name="password2" id="password2" value="" />
+				    </div>
+				  </div>
+				  
+				   <div class="control-group">
+				    <label for="emal">Email</label>
+				    <div class="controls">
+				      <input type="email" name="email" id="email" value="" />
+				    </div>
+				  </div>
+
+				 <!--  <div class="control-group">
+				    
+				    <div class="controls">
+				     <input type="checkbox" name="remember" id="remember" value="true" ${flash.remember ? 'checked="true"' : ''} /> &{'secure.remember'}
+				    </div>
+				  </div> -->
+
+
+				
+					</p>
+					<p id="signin-field">
+						<button type="submit" class="btn" id="signin"/>Next &raquo;</button>
+					</p>
+				#{/form}
+			</div>
+
+
+
+    </div>
+  </div>
+</div>
