@@ -156,6 +156,18 @@ public class Stop extends Model {
         return nextId;
     }
     
+    public static Point findCentroid(BigInteger agencyId)
+    {
+    	List<Object[]> result = Stop.em().createNativeQuery("SELECT st_x(calc.center), st_y(calc.center) from (SELECT ST_Centroid(ST_Extent(location)) as center FROM stop WHERE agency_id = ?) calc ;")
+          .setParameter(1,  agencyId)
+          .getResultList();
+
+    	Object[] cols = result.get(0);
+        GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
+        
+        return geometryFactory.createPoint(new Coordinate((Double)cols[0], (Double)cols[1]));
+    }
+    
     public static List<List<Stop>> findDuplicateStops(BigInteger agencyId) {
     	
     	// !!! need to autodetect proper SRID for UTM Zone

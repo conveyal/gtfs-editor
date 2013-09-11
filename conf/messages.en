@@ -396,6 +396,10 @@ export.kml.title=Export as KML
 export.shapefile-routes.title=Export Routes Shapefile
 export.shapefile-stops.title=Export Stops Shapefile
 
+# /import/gtfs
+
+manage.import-gtfs.title=Import GTFS 
+
 
 
 

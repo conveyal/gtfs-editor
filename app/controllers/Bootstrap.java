@@ -24,7 +24,7 @@ public class Bootstrap extends Controller {
     		Bootstrap.adminForm();
     	
     	else if(Agency.count() == 0)
-    		Bootstrap.adminForm();
+    		Bootstrap.agencyForm();
     	
     	else 
     		Application.index();

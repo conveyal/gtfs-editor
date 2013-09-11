@@ -18,6 +18,7 @@ import org.onebusaway.gtfs.impl.GtfsDaoImpl;
 import org.onebusaway.gtfs.serialization.GtfsReader;
 
 import com.mchange.v2.c3p0.impl.DbAuth;
+import com.vividsolutions.jts.geom.Point;
 
 import models.gtfs.GtfsSnapshotMerge;
 import models.gtfs.GtfsSnapshotMergeTask;
@@ -32,8 +33,6 @@ import models.transit.TripPattern;
 import models.transit.TripPatternStop;
 import models.transit.TripShape;
 import models.transit.Trip;
-
-
 import play.Logger;
 import play.Play;
 import play.jobs.Job;
@@ -119,6 +118,8 @@ public class ProcessGtfsSnapshotMerge extends Job {
         	
         	BigInteger primaryAgencyId = null;
         	
+        	
+        	
 	    	for (org.onebusaway.gtfs.model.Agency gtfsAgency : reader.getAgencies()) {
 	    		
 	    		if(!agencyIdMap.containsKey(gtfsAgency.getId()))
@@ -136,6 +137,8 @@ public class ProcessGtfsSnapshotMerge extends Job {
 	    			primaryAgencyId = agencyIdMap.get(gtfsAgency.getId());
 	    		
 	    	}
+	    	
+	    	Agency primaryAgency = Agency.findById(primaryAgencyId.longValue());
 	    	
 	    	agencyTask.completeTask("Imported " + agencyCount + " agencies.", GtfsSnapshotMergeTaskStatus.SUCCESS);
 	    	
@@ -179,6 +182,16 @@ public class ProcessGtfsSnapshotMerge extends Job {
 	        Logger.info("Stops loaded: " + stopCount);
 	        Logger.info("GtfsImporter: importing Shapes...");
 	        
+	        Logger.info("Calculating agency centroid for stops...");
+	        
+		    Point centroid = Stop.findCentroid(primaryAgencyId);
+		    Logger.info("Center: " + centroid.getCoordinate().y + ", " + centroid.getCoordinate().x);
+	        
+		    primaryAgency.defaultLat = centroid.getCoordinate().y;
+		    primaryAgency.defaultLon = centroid.getCoordinate().x;
+		    
+		    primaryAgency.save();
+		    
 	        GtfsSnapshotMergeTask tripShapeTask = new GtfsSnapshotMergeTask(snapshotMerge);
 	        tripShapeTask.startTask();
 	        

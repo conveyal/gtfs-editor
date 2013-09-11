@@ -42,13 +42,13 @@ import play.jobs.OnApplicationStart;
 import utils.StopSequence;
 
 
-public class ProcessGtfsSnapshotAgencies extends Job {
+public class ProcessGtfsSnapshotUpload extends Job {
 
 	private Long _gtfsSnapshotMergeId;
 
 	private Map<String, BigInteger> agencyIdMap = new HashMap<String, BigInteger>();
 	
-	public ProcessGtfsSnapshotAgencies(Long gtfsSnapshotMergeId) {
+	public ProcessGtfsSnapshotUpload(Long gtfsSnapshotMergeId) {
 		this._gtfsSnapshotMergeId = gtfsSnapshotMergeId;
 	}
 	
@@ -83,7 +83,7 @@ public class ProcessGtfsSnapshotAgencies extends Job {
         	Logger.info("GtfsImporter: listing agencies...");
         	
 	    	for (org.onebusaway.gtfs.model.Agency gtfsAgency : reader.getAgencies()) {
-	    		
+	    		 
 	    		GtfsAgency agency = new GtfsAgency(gtfsAgency);
 	    		agency.snapshot = snapshotMerge.snapshot; 
 	    		agency.save();

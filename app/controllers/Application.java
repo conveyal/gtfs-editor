@@ -5,7 +5,12 @@ import play.i18n.Lang;
 import play.mvc.*;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.*;
+
+import org.apache.commons.io.IOUtils;
 
 import jobs.ProcessGisExport;
 import jobs.ProcessGtfsSnapshotExport;
@@ -172,30 +177,12 @@ public class Application extends Controller {
 
         ok();
     }
-
-    // import/export  functions
-
-    public static void importGtfs() {
-
-        // tbd
-        
-        GtfsSnapshot snapshot = new GtfsSnapshot("", new Date(), GtfsSnapshotSource.UPLOAD);
-        snapshot.save();
-        GtfsSnapshotMerge merge = new GtfsSnapshotMerge(snapshot);
-        merge.save();
-        
-        ProcessGtfsSnapshotMerge mergeJob = new ProcessGtfsSnapshotMerge(merge.id);
-        mergeJob.doJob(); 
-        
-    }
     
     public static void exportGtfs() {
     
         render();
                 
     }
-    
-    
     
     public static void createGtfs(Long calendarFrom, Long calendarTo) {
         
@@ -218,7 +205,6 @@ public class Application extends Controller {
         
         redirect("/public/data/gtfs/"  + snapshotExport.getZipFilename());
     }
-    
     
     public static void exportStopGis() {
         
@@ -258,7 +244,68 @@ public class Application extends Controller {
              
     }
     
+    public static void importGtfs() {
+    	
+    	render();
+    }
     
+    public static void uploadGtfs(File gtfsUpload) {
+   
+    	validation.required(gtfsUpload).message("GTFS file required.");
+    	
+    	if(gtfsUpload != null && !gtfsUpload.getName().contains(".zip"))
+    		validation.addError("gtfsUpload", "GTFS must have .zip extension.");
+    	
+    	if(validation.hasErrors()) {
+    		params.flash();
+    		validation.keep();
+    		importGtfs();
+        }
+    	else {
+    		
+    		GtfsSnapshot snapshot = new GtfsSnapshot(gtfsUpload.getName(), new Date(), GtfsSnapshotSource.UPLOAD);
+    		snapshot.save();
+    		
+    		FileOutputStream fileOutputStream;
+			try {
+				
+				File fileOut = new File(Play.configuration.getProperty("application.publicGtfsDataDirectory"), snapshot.getFilename());
+				
+				gtfsUpload.renameTo(fileOut);
+				//fileOutputStream = new FileOutputStream(fileOut);
+				//IOUtils.copy(gtfsUpload, fileOutputStream);
+			}	
+			catch (Exception e) {
+				
+				validation.addError("gtfsUpload", "Unable to process file.");
+				params.flash();
+	    		validation.keep();
+	    		importGtfs();
+			}
+            
+			snapshot.save();
+	        GtfsSnapshotMerge merge = new GtfsSnapshotMerge(snapshot);
+	        merge.save();
+	        
+	        ProcessGtfsSnapshotMerge mergeJob = new ProcessGtfsSnapshotMerge(merge.id);
+	        mergeJob.doJob(); 
+			
+			//valdiateGtfs(snapshot.id);
+    	}
+    	
+    }
+    
+    public static void valdiateGtfs(Long snapshotId) {
+    	
+    }
+    
+    public static void valdiateGtfsStatus(Long snapshotId) {
+    	
+    }
+    
+    public static void mergeGtfs(Long snapshotId) {
+    	
+    }
 
 
 }
