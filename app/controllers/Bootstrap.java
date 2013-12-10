@@ -2,13 +2,20 @@ package controllers;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Date;
 
-import controllers.Secure.Security;
+import org.geotools.geometry.jts.JTS;
+import org.opengis.referencing.operation.TransformException;
 
+import com.vividsolutions.jts.geom.Coordinate;
+
+import controllers.Secure.Security;
 import models.Account;
 import models.transit.Agency;
+import models.transit.TripPattern;
+import models.transit.TripPatternStop;
 import play.Play;
 import play.mvc.*;
 import play.data.validation.*;
@@ -41,7 +48,7 @@ public class Bootstrap extends Controller {
     
     public static void createAdmin(String username, String password, String password2, String email) throws Throwable {
         
-    	if(Account.count() > 0)
+    	if(Account.count() > 0 && !Play.configuration.getProperty("application.allowBootstrapAdminCreate").equals("true"))
     		Bootstrap.index();
     	
     	validation.required(username).message("Username cannot be blank.");
@@ -93,6 +100,75 @@ public class Bootstrap extends Controller {
     	agency.save();
     	
     	Bootstrap.index();
+    }
+    
+    // helper bootstap function for updating from GeoServer-centric db versions
+    
+    public static void encodeTripShapes() {
+    	
+    	List<TripPattern> tps = TripPattern.findAll();
+    	
+    	for(TripPattern tp : tps) {
+    		if(tp.shape != null && tp.encodedShape == null) {
+    			tp.encodedShape = tp.shape.generateEncoded();
+    			tp.save();
+    		}
+    	}
+    }
+    
+    public static void repackPatternSequences() {
+    	
+    	List<TripPattern> tps = TripPattern.findAll();
+    	
+    	for(TripPattern tp : tps) {
+    		List<TripPatternStop> tpStops = tp.patternStops;
+    		Collections.sort(tpStops);
+    		
+    		Integer stopSequence = 1;
+    		
+    		for(TripPatternStop tpStop : tpStops ) {
+    			tpStop.stopSequence = stopSequence;
+    			tpStop.save();
+    			stopSequence++;
+    		}
+    	}
+    }	
+    
+    
+public static void listReversedTripShapes() {
+    	
+    	List<TripPattern> tps = TripPattern.findAll();
+    	
+    	for(TripPattern tp : tps) {
+    		List<TripPatternStop> tpStops = tp.patternStops;
+    		
+    		Collections.sort(tpStops);
+    		
+    		Coordinate tpsc1 = tpStops.get(0).stop.locationPoint().getCoordinate();
+    		Coordinate tpsc2 = tpStops.get(tpStops.size() - 1).stop.locationPoint().getCoordinate();
+    		
+    		Coordinate sc1 = tp.shape.shape.getCoordinateN(0);
+    		Coordinate sc2 = tp.shape.shape.getCoordinateN(tp.shape.shape.getNumPoints() -1);
+    		
+    		try {
+				Double distance1a = JTS.orthodromicDistance(tpsc1,sc1,org.geotools.referencing.crs.DefaultGeographicCRS.WGS84);
+				Double distance1b = JTS.orthodromicDistance(tpsc1,sc2,org.geotools.referencing.crs.DefaultGeographicCRS.WGS84);
+				
+				Double distance2a = JTS.orthodromicDistance(tpsc2,sc2,org.geotools.referencing.crs.DefaultGeographicCRS.WGS84);
+				Double distance2b = JTS.orthodromicDistance(tpsc2,sc1,org.geotools.referencing.crs.DefaultGeographicCRS.WGS84);
+				
+				
+				if(distance2a > (distance2b * 5) || distance1a > (distance1b * 5))
+					play.Logger.info(distance1a + "|"  + distance1b + "--" + distance2a + "|"  + distance2b + " " + tp.route.agency.gtfsAgencyId + " " + tp.route.routeShortName + " "  + tp.route.routeLongName + " " +  tp.name);
+				//else
+				//	play.Logger.info(distance2a + "|"  + distance2b + " " + tp.route.agency.gtfsAgencyId + " " + tp.route.routeShortName + " "  + tp.route.routeLongName + " " +  tp.name);
+			} catch (TransformException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+    	
+    	
+    	}
     }
     
 }

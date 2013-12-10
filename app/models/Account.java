@@ -196,7 +196,7 @@ public class Account extends Model {
     		return false;
     	
     	String hashedPassword = Account.hash(password); 
-    	Account user = Account.find("username = ? and password = ?", username, hashedPassword).first();
+    	Account user = Account.find("username = ?", username).first();
     	
     	if(user != null && user.active)
     	{

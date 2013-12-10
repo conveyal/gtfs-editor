@@ -266,7 +266,8 @@ G.RouteTypes = Backbone.Collection.extend({
       encodedShape: null,
       patternStops: [],
       shape: null,
-      route: null
+      route: null,
+      useFrequency: null
     },
 
     initialize: function() {
@@ -441,10 +442,10 @@ G.Trip = Backbone.Model.extend({
       tripDescription: null,
       pattern: null,
       serviceCalendar: null,
-      useFrequency: null,
       startTime: null,
       endTime: null,
       headway: null,
+      useFrequency: null
     }
    });
 

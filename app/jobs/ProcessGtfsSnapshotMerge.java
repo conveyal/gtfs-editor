@@ -18,6 +18,7 @@ import org.onebusaway.gtfs.impl.GtfsDaoImpl;
 import org.onebusaway.gtfs.serialization.GtfsReader;
 
 import com.mchange.v2.c3p0.impl.DbAuth;
+import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 
 import models.gtfs.GtfsSnapshotMerge;
@@ -220,6 +221,8 @@ public class ProcessGtfsSnapshotMerge extends Job {
 	        
 	        // sort/load points 
 	        
+	        
+	        
 	        for(String gtfsShapeId : shapePointIdMap.keySet())
 	        {
 	        	
@@ -235,6 +238,8 @@ public class ProcessGtfsSnapshotMerge extends Job {
 	        		describedDistance += shapePoint.getDistTraveled();
 	        		
 	        		points.add(new Double(shapePoint.getLon()).toString() + " " + new Double(shapePoint.getLat()).toString());
+	        		
+	        		
 	        		
 	        	}
 	        	

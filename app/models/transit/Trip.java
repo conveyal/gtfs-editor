@@ -11,13 +11,13 @@ import javax.persistence.Enumerated;
 import javax.persistence.ManyToOne;
 import javax.persistence.Query;
 
+import org.codehaus.jackson.annotate.JsonBackReference;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.hibernate.annotations.Type;
 
 import play.Logger;
 import play.db.jpa.Model;
-
 import models.gtfs.GtfsSnapshot;
 
 @JsonIgnoreProperties({"entityId", "persistent"})
@@ -35,6 +35,7 @@ public class Trip extends Model {
     
     public String blockId;
     
+    @JsonBackReference
     @ManyToOne
     public Route route;
     
@@ -42,12 +43,14 @@ public class Trip extends Model {
     @ManyToOne
     public TripShape shape;
     
+    @JsonBackReference
     @ManyToOne
     public TripPattern pattern;
-    
+ 
     @ManyToOne
     public ServiceCalendar serviceCalendar;
     
+    @JsonBackReference
     @ManyToOne
     public ServiceCalendarDate serviceCalendarDate;
     

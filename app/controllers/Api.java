@@ -339,9 +339,9 @@ public class Api extends Controller {
             	String point = "POINT(" + lon + " " + lat + ")";
             	
                 if(agency != null)
-            	    renderJSON(Api.toJson(Stop.find("agency = ? and distance(location, geomfromtext(?, 4326)) < 0.025", agency, point).fetch(), false));
+            	    renderJSON(Api.toJson(Stop.find("agency = ? and distance(location, st_geomfromtext(?, 4326)) < 0.025", agency, point).fetch(), false));
                 else
-                    renderJSON(Api.toJson(Stop.find("distance(location, geomfromtext(?, 4326)) < 0.025", point).fetch(), false));
+                    renderJSON(Api.toJson(Stop.find("distance(location, st_geomfromtext(?, 4326)) < 0.025", point).fetch(), false));
             }
             else {
                 

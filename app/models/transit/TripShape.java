@@ -53,6 +53,13 @@ public class TripShape extends Model {
         this.refresh();
     }
 
+    public String generateEncoded() {
+        
+        EncodedPolylineBean ecb = PolylineEncoder.createEncodings(shape);
+        
+        return ecb.getPoints();
+    }
+
     public static TripShape createFromEncoded(String encoded) {
     	
         

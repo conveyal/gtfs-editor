@@ -14,6 +14,9 @@
   #{stylesheet 'leaflet.draw/leaflet.draw.css' /}
   #{stylesheet 'leaflet.label/leaflet.label.css' /}
   #{stylesheet 'colorpicker/bootstrap-colorpicker.css' /}
+
+  #{stylesheet 'handsontable/jquery.handsontable.css' /}
+
   #{stylesheet 'route.css' /}
 #{/set}
 
@@ -150,17 +153,53 @@
 
   <form  id="trip-info-form" class="form-horizontal span12">
     
-    <div id="trippattern-select">
+      <div id="trippattern-select">
 
+      </div>
+
+      <div id="trippattern-type">
+
+        <div class="control-group">
+          <label class="control-label" for="tripPattern"><strong>&{'route.trip-info-tpl.schedule-type'}</strong><br>(&{'shared.required'})</label>
+          <div class="controls">
+            <p>
+              <label class="radio">
+                <input type="radio" name="scheduleType" id="scheduleTypeFrequency" value="frequency" checked>
+                &{'route.trip-pattern-select-schedule-type-frequency'}
+              </label>
+              <label class="radio">
+                <input type="radio" name="scheduleType" id="scheduleTypeTimetable" value="timetable">
+                &{'route.trip-pattern-select-schedule-type-timetable'}
+              </label>
+
+            </p>
+
+          </div>
+        </div>
+      </div>
+
+      <div id="trip-frequency">
+
+        <div id="trip-select">
+
+        </div>
+
+        <div id="trip-details">
+
+        </div>  
+
+      </div>
+
+      <div id="trip-timetable">
+
+        <div id="calendar-select"></div>
+
+        <div id="timetable-data"></div>
+      </div>
+ 
    </div>
 
-   <div id="trip-select">
-
-   </div>
-
-    <div id="trip-details">
-
-    </div>
+   
     
     <div class="form-actions">
       <button type="submit" class="btn btn-primary" id="route-save-btn">&{'shared.button.save'}</button>
@@ -828,6 +867,8 @@
 #{set 'scripts'}
   <script src="@{'/public/javascripts/lib/jquery.dataTables.min.js'}"></script> <!-- http://cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.min.js -->
   <script src="@{'/public/lib/jquery.serializeObject.min.js'}"></script>
+
+
   
   #{script 'lib/leaflet.js' /}
   #{script 'lib/leaflet.draw.js' /}
@@ -835,6 +876,8 @@
   #{script 'lib/leaflet.encoded-polyline.js' /}
   #{script 'lib/bootstrap-colorpicker.js' /}
   #{script 'lib/geolib.js' /}
+
+  #{script 'lib/jquery.handsontable.full.js' /}
 
   #{script 'models.js' /}
   #{script 'views/route-summary-view.js' /}

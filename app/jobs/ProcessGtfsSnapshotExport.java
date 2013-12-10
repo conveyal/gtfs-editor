@@ -153,7 +153,7 @@ public class ProcessGtfsSnapshotExport extends Job {
 					{	
 						List<TripPatternStop> patternStopTimes = TripPatternStop.find("pattern = ? order by stopSequence", trip.pattern).fetch();
 						
-						if((trip.useFrequency && patternStopTimes.size() == 0) || !trip.pattern.route.agency.id.equals(agency.id) || (trip.useFrequency && trip.headway.equals(0)) || (trip.useFrequency && trip.startTime.equals(trip.endTime)))
+						if(trip.useFrequency == null || patternStopTimes == null || (trip.useFrequency && patternStopTimes.size() == 0) || !trip.pattern.route.agency.id.equals(agency.id) || (trip.useFrequency && trip.headway.equals(0)) || (trip.useFrequency && trip.startTime.equals(trip.endTime)))
 							continue;
 
 						if(!routeList.containsKey(trip.pattern.route.id))
@@ -289,7 +289,6 @@ public class ProcessGtfsSnapshotExport extends Job {
 									else
 										s.setName(stop.stopName.replace("\n", "").replace("\r", ""));
 									
-									
 									if(stop.stopDesc != null && !stop.stopName.isEmpty())
 										s.setDesc(stop.stopDesc.replace("\n", "").replace("\r", ""));
 									
@@ -363,8 +362,14 @@ public class ProcessGtfsSnapshotExport extends Job {
 									s.setId(stopId);
 									
 									s.setCode(stop.stopCode);
-									s.setName(stop.stopName.replace("\n", "").replace("\r", ""));
-									s.setDesc(stop.stopDesc.replace("\n", "").replace("\r", ""));
+									if(stop.stopName == null || stop.stopName.isEmpty())
+										s.setName(stop.id.toString());
+									else
+										s.setName(stop.stopName.replace("\n", "").replace("\r", ""));
+									
+									if(stop.stopDesc != null && !stop.stopName.isEmpty())
+										s.setDesc(stop.stopDesc.replace("\n", "").replace("\r", ""));
+									
 									s.setUrl(stop.stopUrl);
 									
 									s.setLon(stop.location.getX());

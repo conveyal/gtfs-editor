@@ -115,7 +115,7 @@ route.steps-header=Steps to Add a New Route
 route.step1=Basic Info
 route.step2=Stops/Stations
 route.step3=Trip Patterns
-route.step4=Trips
+route.step4=Schedules
 route.step5=Review
 
 route.filter-stops=Filter Stops
@@ -250,10 +250,15 @@ route.trip-pattern-reverse-pattern-confirm=Do you want to reverse the trip patte
 
 # step 4
 
-route.trip-info-instructions=Create a service schedule by adding trips to patterns.
+route.trip-info-instructions=Create a timetable service schedule by adding trips to patterns or by using a frequency-based schedule.
 route.trip-info-tpl.trip-pattern-content=Select an existing trip pattern to create trips.
 
-route.trip-info-tpl.trip=Trip
+route.trip-info-tpl.schedule-type=Schedule Type
+
+route.trip-pattern-select-schedule-type-frequency=Use Frequency
+route.trip-pattern-select-schedule-type-timetable=Use Timetable
+
+route.trip-info-tpl.trip=Schedule
 route.trip-info-tpl.trip-content=Select or create a trip.
 
 route.trip-info-tpl.trip-description-content=Description of trip (e..g Weekday afternoon peak)

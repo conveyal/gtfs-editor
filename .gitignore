@@ -1,7 +1,8 @@
 bin
-public/javascripts/config.js
 conf/application.conf
+precompiled
 tmp
 eclipse
 .classpath
+*.zip
 *~

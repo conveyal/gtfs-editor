@@ -28,7 +28,7 @@ import models.gtfs.GtfsSnapshot;
 
 @JsonIgnoreProperties({"entityId", "persistent"})
 @Entity
-public class TripPatternStop extends Model {
+public class TripPatternStop extends Model implements Comparable<TripPatternStop> {
 
 	@JsonBackReference
 	@ManyToOne
@@ -69,6 +69,15 @@ public class TripPatternStop extends Model {
 		
 		
    }
+
+	@Override
+	public int compareTo(TripPatternStop o) {
+		// TODO Auto-generated method stub
+		return this.stopSequence.compareTo(o.stopSequence);
+	}
+
+ 
+
 }
 
 
