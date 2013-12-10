@@ -283,7 +283,7 @@ var GtfsEditor = GtfsEditor || {};
             this.$('#scheduleTypeFrequency').prop("checked", false);
             this.$('#scheduleTypeTimetable').prop("checked", true);
 
-            this.onCalendarsReset();
+            this.initTimetable();
 
           }
           else {
@@ -430,7 +430,7 @@ var GtfsEditor = GtfsEditor || {};
         else  {
           this.$('#trip-frequency').hide();
           this.$('#trip-timetable').show();
-          this.onCalendarsReset();
+          this.initTimetable();
         }
       }
     },
@@ -537,7 +537,7 @@ var GtfsEditor = GtfsEditor || {};
       this.$('#calendar-select').html(ich['calendar-select-tpl'](data));
 
       if(this.model.tripPatterns.get(selectedPatternId) != undefined) {
-        if(this.model.tripPatterns.get(selectedPatternId).trips.get(selectedTripId) != undefined && this.model.tripPatterns.get(selectedPatternId).trips.get(selectedTripId).attributes.serviceCalendar != undefined)
+        if(this.model.tripPatterns.get(selectedPatternId).trips.get(selectedTripId).attributes.serviceCalendar != undefined)
           this.$('#calendar').val(this.model.tripPatterns.get(selectedPatternId).trips.get(selectedTripId).attributes.serviceCalendar.id);
         else  
           this.$('#calendar').val(G.session.calendar);
