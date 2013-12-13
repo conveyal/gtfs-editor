@@ -372,8 +372,8 @@ public class ProcessGtfsSnapshotExport extends Job {
 									
 									s.setUrl(stop.stopUrl);
 									
-									s.setLon(stop.location.getX());
-									s.setLat(stop.location.getY());
+									s.setLon(stop.locationPoint().getX());
+									s.setLat(stop.locationPoint().getY());
 									
 									store.saveEntity(s);
 																	

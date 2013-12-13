@@ -180,15 +180,29 @@ public class Application extends Controller {
     
     public static void exportGtfs() {
     
+        List<Agency> agencyObjects = Agency.findAll();
+
         render();
                 
     }
     
-    public static void createGtfs(Long calendarFrom, Long calendarTo) {
+    public static void createGtfs(List<Long> agencySelect, Long calendarFrom, Long calendarTo) {
         
-    	// currently exports all agencies 
-    	
-        List<Agency> agencyObjects = Agency.findAll();
+    	List<Agency> agencyObjects = new ArrayList<Agency>(); 
+        
+        if(agencySelect != null || agencySelect.size() > 0) {
+
+            for(Long agencyId : agencySelect) {
+                
+            	Agency a = Agency.findById(agencyId);
+                if(a != null)
+                	agencyObjects.add(a);
+            
+            }
+        }
+        else 
+            agencyObjects = Agency.findAll();
+
     
         GtfsSnapshotExportCalendars calendarEnum;
         calendarEnum = GtfsSnapshotExportCalendars.CURRENT_AND_FUTURE;

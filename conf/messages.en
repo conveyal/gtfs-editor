@@ -91,6 +91,8 @@ shared.button.add=Add
 shared.button.update=Update
 shared.button.remove=Remove
 
+shared.export-data-btn=Export
+
 shared.button.merge=Merge
 
 
@@ -391,6 +393,11 @@ manage.accounts.title=Manage Accounts
 # /export/gtfs
 
 export.gtfs.title=Export as GTFS
+
+export.gtfs.calendar-from=GTFS Valid From
+
+export.gtfs.calendar-to=GTFS Valid To
+export.agencies=Agencies to Export
 
 # /export/kml
 

@@ -9,7 +9,7 @@ var GtfsEditor = GtfsEditor || {};
     mapZoom: 15, 
     showMajorStops: true,
     showStandardStops: true,
-    baseUrl: '/'
+    baseUrl: '/gtfs-editor/'
   };
 
 })(GtfsEditor, jQuery);

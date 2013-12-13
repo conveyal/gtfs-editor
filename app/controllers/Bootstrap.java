@@ -1,6 +1,7 @@
 package controllers;
 
 import java.lang.reflect.InvocationTargetException;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -14,8 +15,13 @@ import com.vividsolutions.jts.geom.Coordinate;
 import controllers.Secure.Security;
 import models.Account;
 import models.transit.Agency;
+import models.transit.GtfsRouteType;
+import models.transit.Route;
+import models.transit.Stop;
+import models.transit.Trip;
 import models.transit.TripPattern;
 import models.transit.TripPatternStop;
+import play.Logger;
 import play.Play;
 import play.mvc.*;
 import play.data.validation.*;
@@ -114,6 +120,9 @@ public class Bootstrap extends Controller {
     			tp.save();
     		}
     	}
+    	
+    	String step = "Encode Trip Shapes";
+    	renderTemplate("Bootstrap/dataProcessingComplete.html", step);
     }
     
     public static void repackPatternSequences() {
@@ -132,10 +141,12 @@ public class Bootstrap extends Controller {
     			stopSequence++;
     		}
     	}
+    	
+    	String step = "Repack Pattern Sequences";
+    	renderTemplate("Bootstrap/dataProcessingComplete.html", step);
     }	
-    
-    
-public static void listReversedTripShapes() {
+   
+    public static void listReversedTripShapes() {
     	
     	List<TripPattern> tps = TripPattern.findAll();
     	
@@ -169,7 +180,69 @@ public static void listReversedTripShapes() {
     	
     	
     	}
+    	
+    	String step = "List Reversed Trip Shapes";
+    	renderTemplate("Bootstrap/dataProcessingComplete.html", step);
+    }
+
+    public static void updateFrequencySettings() {
+    	Trip.em().createNativeQuery("update trip set usefrequency = false where usefrequency is null").executeUpdate();
+    	Trip.em().createNativeQuery("update trippattern set usefrequency = false where usefrequency is null").executeUpdate();
+    
+    	String step = "Update Frequency Settings";
+    	renderTemplate("Bootstrap/dataProcessingComplete.html", step);
     }
     
+    public static void assignRouteTypes() {
+        
+    	List<Object[]> result = Route.em().createNativeQuery("SELECT id, routetype, routetype_id FROM route;").getResultList();
+
+    	for(Object[] o : result) {
+    		Logger.info(o[0].toString() + " " + o[1].toString());
+    		
+    		GtfsRouteType gtfsRouteType = GtfsRouteType.valueOf(o[1].toString());
+    
+    		Integer gtfsTypeId;
+    		
+    		switch(gtfsRouteType)
+        	{
+        		case TRAM:
+        			gtfsTypeId = 0;
+        			break;
+        		case SUBWAY:
+        			gtfsTypeId = 1;
+        			break;
+        		case RAIL:
+        			gtfsTypeId = 2;
+        			break;
+        		case BUS:
+        			gtfsTypeId = 3;
+        			break;
+        		case FERRY:
+        			gtfsTypeId = 4;
+        			break;
+        		case CABLECAR:
+        			gtfsTypeId = 5;
+        			break;
+        		case GONDOLA:
+        			gtfsTypeId = 6;
+        			break;
+        		case FUNICULAR:
+        			gtfsTypeId = 7;
+        			break;
+        		default:
+        			gtfsTypeId = null;
+        			break;
+        	}
+    		
+    		Route r = Route.findById(((BigInteger)o[0]).longValue());
+    		r.routeType = Route.mapGtfsRouteType(gtfsTypeId);
+    		
+    		r.save();
+    	}	
+    	
+    	String step = "Assign Route Types";
+    	renderTemplate("Bootstrap/dataProcessingComplete.html", step);
+    }   
 }
 
