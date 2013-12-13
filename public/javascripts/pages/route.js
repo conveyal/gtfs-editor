@@ -116,7 +116,7 @@ var GtfsEditor = GtfsEditor || {};
 
         if (model) {
           $('.route-link').each(function(i, el) {
-            $(el).attr('href', '/route/' + id + '/' +$(el).attr('data-route-step'));
+            $(el).attr('href', G.config.baseUrl + 'route/' + id + '/' +$(el).attr('data-route-step'));
           });
 
           this.enableDependentSteps();
@@ -127,7 +127,7 @@ var GtfsEditor = GtfsEditor || {};
 
         // Updates the hrefs for each step link (id vs non-id)
         $('.route-link').each(function(i, el) {
-          $(el).attr('href', '/route/' + $(el).attr('data-route-step'));
+          $(el).attr('href', G.config.baseUrl + 'route/' + $(el).attr('data-route-step'));
         });
 
         if (step === _steps[0]) {
@@ -170,7 +170,7 @@ var GtfsEditor = GtfsEditor || {};
       // Populate the route collection
       _routeCollection.fetch({data: {agencyId: agencyId},
         success: function(collection, response, options) {
-          Backbone.history.start({pushState: true, root: '/route/'});
+          Backbone.history.start({pushState: true, root: G.config.baseUrl + 'route/'});
         }
       });
     }

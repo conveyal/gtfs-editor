@@ -433,7 +433,7 @@ var GtfsEditor = GtfsEditor || {};
           this.initTimetable();
         }
       }
-    },
+    },  
 
     initTimetable : function() {
 

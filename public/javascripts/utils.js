@@ -52,27 +52,3 @@ var GtfsEditor = GtfsEditor || {};
   };
 
 })(GtfsEditor, jQuery);
-
-
-$(document).ready(function() {
-   // page init scripts
-  
-
-   // add language select handler
-     $(".lang-select").click(function(e){
-    		$.get('/application/setLang', {lang: $(e.target).data('lang')}, function(){
-    			location.reload();
-    		});
-    		e.preventDefault();
-  	 });
-
-
-
-     $(".agency-select").click(function(e){
-        $.get('/application/setAgency', {agencyId: $(e.target).data('agency')}, function(){
-          location.href = '/search/';
-        });
-        e.preventDefault();
-
-      });
- });

@@ -30,39 +30,39 @@ var GtfsEditor = GtfsEditor || {};
 
       // Custom icons
       this.agencyMajorStopIcon = L.icon({
-        iconUrl: '/public/images/markers/marker-0d85e9.png',
+        iconUrl: G.config.baseUrl + 'public/images/markers/marker-0d85e9.png',
         iconSize: [25, 41],
         iconAnchor: [12, 41],
         popupAnchor: [1, -34],
-        shadowUrl: '/public/images/markers/marker-shadow.png',
+        shadowUrl: G.config.baseUrl + 'public/images/markers/marker-shadow.png',
         shadowSize: [41, 41]
       });
 
       // Custom icons
       this.agencyMinorStopIcon = L.icon({
-        iconUrl: '/public/images/markers/marker-blue-gray.png',
+        iconUrl: G.config.baseUrl + 'public/images/markers/marker-blue-gray.png',
         iconSize: [25, 41],
         iconAnchor: [12, 41],
         popupAnchor: [1, -34],
-        shadowUrl: '/public/images/markers/marker-shadow.png',
+        shadowUrl: G.config.baseUrl + 'public/images/markers/marker-shadow.png',
         shadowSize: [41, 41]
       });
 
       this.otherStopIcon = L.icon({
-        iconUrl: '/public/images/markers/marker-gray.png',
+        iconUrl: G.config.baseUrl + 'public/images/markers/marker-gray.png',
         iconSize: [25, 41],
         iconAnchor: [12, 41],
         popupAnchor: [1, -34],
-        shadowUrl: '/public/images/markers/marker-shadow.png',
+        shadowUrl: G.config.baseUrl + 'public/images/markers/marker-shadow.png',
         shadowSize: [41, 41]
       });
 
       this.selectedStopIcon = L.icon({
-        iconUrl: '/public/images/markers/marker-dbcf2c.png',
+        iconUrl: G.config.baseUrl + 'public/images/markers/marker-dbcf2c.png',
         iconSize: [25, 41],
         iconAnchor: [12, 41],
         popupAnchor: [1, -34],
-        shadowUrl: '/public/images/markers/marker-shadow.png',
+        shadowUrl: G.config.baseUrl + 'public/images/markers/marker-shadow.png',
         shadowSize: [41, 41]
       });
 

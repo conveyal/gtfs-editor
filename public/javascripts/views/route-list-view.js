@@ -39,8 +39,8 @@
   			//alert('edit ' + id);
 
         // need to use route action !!!
-  			window.location = '/route/' + id + '/info'; //editRouteAction({id:id});
-
+  			window.location = G.config.baseUrl + 'route/' + id + '/info'; 
+        
   		},
 
   		deleteRoute: function(evt) {

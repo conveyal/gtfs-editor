@@ -8,7 +8,8 @@ var GtfsEditor = GtfsEditor || {};
     mapCenter: [38.923092, -77.038879],
     mapZoom: 15, 
     showMajorStops: true,
-    showStandardStops: true
+    showStandardStops: true,
+    baseUrl: '/'
   };
 
 })(GtfsEditor, jQuery);

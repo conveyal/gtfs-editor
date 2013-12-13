@@ -3,7 +3,7 @@ var GtfsEditor = GtfsEditor || {};
 (function(G, $) {
 
   G.Agency = Backbone.Model.extend({
-    urlRoot: '/api/agency/',
+    urlRoot: G.config.baseUrl + 'api/agency/',
     
     defaults: {
       id: null,
@@ -22,11 +22,11 @@ var GtfsEditor = GtfsEditor || {};
   G.Agencies = Backbone.Collection.extend({
     type: 'Agencies',
     model: G.Agency,
-    url: '/api/agency/'
+    url: G.config.baseUrl + 'api/agency/'
   });
 
 G.RouteType = Backbone.Model.extend({
-    urlRoot: '/api/routetype/',
+    urlRoot: G.config.baseUrl + 'api/routetype/',
 
     defaults: {
       id: null,
@@ -40,7 +40,7 @@ G.RouteType = Backbone.Model.extend({
 G.RouteTypes = Backbone.Collection.extend({
     type: 'RouteTypes',
     model: G.RouteType,
-    url: '/api/routetype/'
+    url: G.config.baseUrl + 'api/routetype/'
   });
 
 
@@ -68,7 +68,7 @@ G.RouteTypes = Backbone.Collection.extend({
   G.Routes = Backbone.Collection.extend({
     type: 'Routes',
     model: G.Route,
-    url: '/api/route/'
+    url: G.config.baseUrl + 'api/route/'
   });
 
   G.Stop = Backbone.Model.extend({
@@ -108,7 +108,7 @@ G.RouteTypes = Backbone.Collection.extend({
   G.Stops = Backbone.Collection.extend({
     type: 'Stops',
     model: G.Stop,
-    url: '/api/stop/'
+    url: G.config.baseUrl + 'api/stop/'
   });
 
   G.StopGroup = Backbone.Model.extend({
@@ -175,7 +175,7 @@ G.RouteTypes = Backbone.Collection.extend({
           var ids = _.without(_.pluck(this.get('stops'), 'id'), this.get('mergedStop').id);
           var idList = ids.join(',');
 
-          $.get('/api/mergeStops', {stop1Id: this.get('mergedStop').id, mergedStopIds: idList}, this.onFinishedMerge);  
+          $.get(G.config.baseUrl + 'api/mergeStops', {stop1Id: this.get('mergedStop').id, mergedStopIds: idList}, this.onFinishedMerge);  
         }
 
     }
@@ -206,7 +206,7 @@ G.RouteTypes = Backbone.Collection.extend({
       this.reset();
       this.groupMap = {};
 
-      $.get('/api/findDuplicateStops', {agencyId: this.agencyId}, this.loadGroups);
+      $.get(G.config.baseUrl + 'api/findDuplicateStops', {agencyId: this.agencyId}, this.loadGroups);
     },
 
     loadGroups: function(pairs) {
@@ -408,7 +408,7 @@ G.RouteTypes = Backbone.Collection.extend({
   G.TripPatterns = Backbone.Collection.extend({
     type: 'TripPatterns',
     model: G.TripPattern,
-    url: '/api/trippattern/'
+    url: G.config.baseUrl + 'api/trippattern/'
   });
 
   G.Calendar = Backbone.Model.extend({
@@ -434,7 +434,7 @@ G.RouteTypes = Backbone.Collection.extend({
   G.Calendars = Backbone.Collection.extend({
     type: 'Calendars',
     model: G.Calendar,
-    url: '/api/calendar/'
+    url: G.config.baseUrl + 'api/calendar/'
   });
 
 G.Trip = Backbone.Model.extend({
@@ -452,7 +452,7 @@ G.Trip = Backbone.Model.extend({
   G.Trips = Backbone.Collection.extend({
     type: 'Trips',
     model: G.Trip,
-    url: '/api/trip/',
+    url: G.config.baseUrl + 'api/trip/',
     
     initialize: function(opts) {
       if(opts != undefined)

@@ -1,3 +1,7 @@
+%{
+cf = play.Play.configuration
+}%
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -124,8 +128,8 @@
     <div class="container-fluid">
       <ul class="nav nav-pills" id="tools-nav">
         <!--<li><a href="/"><i class="icon-list-alt"></i> News &amp; Updates</a></li>-->
-        <li><a href="/search/"><i class="icon-map-marker"></i> &{'shared.explore-search-routes'}</a></li>
-        <li><a href="/route/info"><i class="icon-pencil"></i> &{'shared.new-route'}</a></li>
+        <li><a href="@{Application.search()}"><i class="icon-map-marker"></i> &{'shared.explore-search-routes'}</a></li>
+        <li><a href="@{Application.route()}"><i class="icon-pencil"></i> &{'shared.new-route'}</a></li>
       </ul>
 
       #{doLayout /}
@@ -174,6 +178,28 @@
           };
 
         })(GtfsEditor, jQuery);
+
+
+        $(document).ready(function() {
+           // page init scripts
+
+           // add language select handler
+           $(".lang-select").click(function(e){
+              $.get('@{Application.setLang()}', {lang: $(e.target).data('lang')}, function() {
+                location.reload();
+              });
+              e.preventDefault();
+           });
+
+           $(".agency-select").click(function(e){
+              $.get('@{Application.setAgency()}', {agencyId: $(e.target).data('agency')}, function() {
+                location.href = '@{Application.search()}';
+              });
+              e.preventDefault();
+
+            });
+        });
+
 
 
 
