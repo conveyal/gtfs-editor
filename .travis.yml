@@ -5,7 +5,7 @@ services:
   - postgresql
 before_install:
   - sudo apt-get update -qq
-  - sudo apt-get install -qq postgresql-9.1-postgis
+  - sudo apt-get install -qq postgis
 before_script: 
   # create spatially-enabled database
   - psql -c 'create database gtfs_editor;' -U postgres
