@@ -1,11 +1,10 @@
 language: scala # to trigger the build on JVM worker ('language: java' works the same)
 env:
   - PLAY_VERSION=1.2.5
-  - POSTGIS=2.0
 services:
   - postgresql
 before_install:
-  - sudo add-apt-repository ppa:ubuntugis/ppa
+  - echo "yes" | sudo add-apt-repository ppa:ubuntugis/ppa
   - sudo apt-get update -qq
   - sudo apt-get install -qq postgis
 before_script: 
