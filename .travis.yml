@@ -9,9 +9,9 @@ before_install:
 before_script: 
   # create spatially-enabled database
   - psql -c 'create database gtfs_editor;' -U postgres
-  - psql -d gtfs_editor < /usr/share/postgresql/9.1/contrib/postgis-1.5/postgis.sql
-  - psql -d gtfs_editor < /usr/share/postgresql/9.1/contrib/postgis-1.5/spatial_ref_sys.sql
-  - psql -d gtfs_editor < /usr/share/postgresql/9.1/contrib/postgis_comments.sql
+  - sudo -u postgres psql -d gtfs_editor < /usr/share/postgresql/9.1/contrib/postgis-1.5/postgis.sql
+  - sudo -u postgres psql -d gtfs_editor < /usr/share/postgresql/9.1/contrib/postgis-1.5/spatial_ref_sys.sql
+  - sudo -u postgres psql -d gtfs_editor < /usr/share/postgresql/9.1/contrib/postgis_comments.sql
   # get play framework
   - wget http://download.playframework.org/releases/play-${PLAY_VERSION}.zip
   - unzip -q play-${PLAY_VERSION}.zip 
