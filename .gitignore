@@ -6,3 +6,5 @@ eclipse
 .classpath
 *.zip
 *~
+logs
+test-result
