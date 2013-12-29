@@ -1,9 +1,22 @@
 language: scala # to trigger the build on JVM worker ('language: java' works the same)
 env:
   - PLAY_VERSION=1.2.5
+services:
+  - postgresql
+before_install:
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq postgresql-9.1-postgis
 before_script: 
+  # create spatially-enabled database
+  - psql -c 'create database gtfs_editor;' -U postgres
+  - psql -d gtfs_editor < /usr/share/postgresql/9.1/contrib/postgis-1.5/postgis.sql
+  - psql -d gtfs_editor < /usr/share/postgresql/9.1/contrib/postgis-1.5/spatial_ref_sys.sql
+  - psql -d gtfs_editor < /usr/share/postgresql/9.1/contrib/postgis_comments.sql
+  # get play framework
   - wget http://download.playframework.org/releases/play-${PLAY_VERSION}.zip
   - unzip -q play-${PLAY_VERSION}.zip 
+  # copy over config file
+  - cp conf/application.conf.template conf/application.conf
 script: play-${PLAY_VERSION}/play test
 notifications:
   # Email notifications are disabled to not annoy anybody.
