@@ -78,8 +78,8 @@ public class ProcessGtfsSnapshotExport extends Job {
 			GtfsWriter writer = new GtfsWriter();
 			GtfsDaoImpl store = new GtfsDaoImpl();
 			
-			File gtfsDirectory = new File(Play.configuration.getProperty("application.publicGtfsDataDirectory"), snapshotExport.getDirectory());
-			File gtfsZip = new File(Play.configuration.getProperty("application.publicGtfsDataDirectory"), snapshotExport.getDirectory() + ".zip");
+			File gtfsDirectory = new File(Play.configuration.getProperty("application.publicDataDirectory"), snapshotExport.getDirectory());
+			File gtfsZip = new File(Play.configuration.getProperty("application.publicDataDirectory"), snapshotExport.getDirectory() + ".zip");
 			
 			writer.setOutputLocation(gtfsDirectory);
 		

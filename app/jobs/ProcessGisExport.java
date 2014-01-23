@@ -104,9 +104,11 @@ public class ProcessGisExport extends Job {
 		
 		String exportName = "gis_" + this._gisExportId;
 		
-		File outputZipFile = new File(Play.configuration.getProperty("application.publicGtfsDataDirectory"), exportName + ".zip");
+		File outputZipFile = new File(Play.configuration.getProperty("application.publicDataDirectory"), exportName + ".zip");
 		
-		File outputDirectory = new File(Play.configuration.getProperty("application.publicGtfsDataDirectory"), exportName);
+		File outputDirectory = new File(Play.configuration.getProperty("application.publicDataDirectory"), exportName);
+		
+		Logger.info("outfile path:" + outputDirectory.getAbsolutePath());
 		
 		File outputShapefile = new File(outputDirectory, exportName + ".shp");
        
