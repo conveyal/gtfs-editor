@@ -114,6 +114,20 @@ public class TripPattern extends Model {
         
         return super.delete();
     }
+    
+    public void resequenceTripStops()
+    {
+        List<TripPatternStop> stops = TripPatternStop.find("pattern = ? order by stopSequence", this).fetch();
+
+        Integer sequence = 0;
+        for(TripPatternStop stop : stops)
+        {
+                stop.stopSequence = sequence;
+                stop.save();
+
+                sequence++;
+        }
+    }
 
     public static BigInteger createFromTrip(EntityManager em, BigInteger tripId)
     {

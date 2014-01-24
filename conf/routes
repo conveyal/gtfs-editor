@@ -13,6 +13,8 @@ GET     /route/.*                        		Application.route
 GET     /export/gtfs                      		Application.exportGtfs
 GET     /export/creategtfs                      Application.createGtfs
 
+GET     /export/schedule                      	Application.createCsvSchedule
+
 GET     /manage/routetypes                      Application.manageRouteTypes
 GET     /manage/agencies                      	Application.manageAgencies
 

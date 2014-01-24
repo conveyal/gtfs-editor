@@ -20,7 +20,9 @@ var GtfsEditor = GtfsEditor || {};
       'change #trip-pattern-select': 'onTripPatternChange',
       'change #trip-pattern-stop-select': 'onTripPatternStopSelectChange',      
       'change input[name="stopFilterRadio"]': 'onStopFilterChange',
-      'change #transit-wand-select': 'updateTransitWandOverlay'
+      'change #transit-wand-select': 'updateTransitWandOverlay',
+
+      'change input[name="trip-pattern-use-satellite"]': 'onSatelliteToggle'
     },
 
 
@@ -98,7 +100,7 @@ var GtfsEditor = GtfsEditor || {};
         labelAnchor: [10, -16]
       });
 
-      _.bindAll(this, 'sizeContent', 'duplicateTripPattern', 'addDuplicateTripPattern', 'cancelDuplicateTripPattern', 'onStopFilterChange', 'loadTransitWand', 'calcTimesFromVelocity', 'saveTripPatternLine', 'onTripPatternChange', 'onTripPatternStopSelectChange', 'updateStops', 'zoomToPatternExtent', 'clearPatternButton', 'deletePatternButton', 'stopUpdateButton', 'stopRemoveButton', 'updateTransitWandOverlay');
+      _.bindAll(this, 'sizeContent', 'duplicateTripPattern', 'addDuplicateTripPattern', 'cancelDuplicateTripPattern', 'onStopFilterChange', 'loadTransitWand', 'calcTimesFromVelocity', 'saveTripPatternLine', 'onTripPatternChange', 'onTripPatternStopSelectChange', 'updateStops', 'zoomToPatternExtent', 'clearPatternButton', 'deletePatternButton', 'stopUpdateButton', 'stopRemoveButton', 'updateTransitWandOverlay', 'onSatelliteToggle');
         $(window).resize(this.sizeContent);
     },
 
@@ -112,6 +114,7 @@ var GtfsEditor = GtfsEditor || {};
 
       var sidebarData = {
         route: this.model.attributes,
+        useSatellite : G.session.useSatellite
       }
 
       this.$('.route-sidebar').html(ich['trippatterns-sidebar-tpl'](sidebarData));
@@ -120,8 +123,15 @@ var GtfsEditor = GtfsEditor || {};
       this.$(".collapse").collapse() 
 
       
-      // Base layer config is optional, default to Mapbox Streets
-      var url = 'http://{s}.tiles.mapbox.com/v3/' + G.config.mapboxKey + '/{z}/{x}/{y}.png',
+      var tileKey;   
+      if(G.session.useSatellite)
+        tileKey = G.config.mapboxSatelliteKey;
+      else
+        tileKey = G.config.mapboxKey;
+        
+
+      var url = 'http://{s}.tiles.mapbox.com/v3/' + tileKey + '/{z}/{x}/{y}.png',
+
           baseLayer = L.tileLayer(url, {
             attribution: '&copy; OpenStreetMap contributors, CC-BY-SA. <a href="http://mapbox.com/about/maps" target="_blank">Terms &amp; Feedback</a>'
           });
@@ -202,6 +212,19 @@ var GtfsEditor = GtfsEditor || {};
       this.sizeContent();
 
       return this;
+    },
+
+    onSatelliteToggle: function(evt) {
+
+      if($('input[name="trip-pattern-use-satellite"]').attr('checked')) {
+          G.session.useSatellite  = true;
+      }
+      else {
+          G.session.useSatellite = false;
+      }
+
+      this.render();
+
     },
 
     loadTransitWand: function(evt) {
@@ -572,6 +595,8 @@ var GtfsEditor = GtfsEditor || {};
         }
       });
     },
+
+
 
 
     addDuplicateTripPattern: function(evt) {

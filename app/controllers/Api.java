@@ -824,6 +824,8 @@ public class Api extends Controller {
         if(trip == null)
             badRequest();
 
+        StopTime.delete("trip = ?", trip); 
+ 
         trip.delete();
 
         ok();

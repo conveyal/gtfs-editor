@@ -26,6 +26,9 @@ public class StopTime extends Model {
     public Integer stopSequence;
     public String stopHeadsign;
     
+    @ManyToOne
+    public TripPatternStop patternStop;
+    
     @Enumerated(EnumType.STRING)
     public StopTimePickupDropOffType pickupType;
     
@@ -38,7 +41,6 @@ public class StopTime extends Model {
     @ManyToOne
     public Trip trip;
     
-    @JsonBackReference
     @ManyToOne
     public Stop stop;
     

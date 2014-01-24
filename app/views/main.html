@@ -69,12 +69,12 @@ cf = play.Play.configuration
               <li class="dropdown">
                 <a href="#" role="button" class="dropdown-toggle" data-toggle="dropdown">&{'nav-bar.export'}<b class="caret"></b></a>
                 <ul class="dropdown-menu" role="menu">
-                  <li><a href="/export/gtfs" class="manage-route-types">&{'export.gtfs.title'}</a></li>  
+                  <li><a href="@{Application.exportGtfs}" class="manage-route-types">&{'export.gtfs.title'}</a></li>  
                   <!-- <li><a href="#export" class="manage-route-types">&{'export.kml.title'}</a></li> --> 
                   <!-- <li><a href="@{Application.manageStopTypes}" class="manage-stop-types">&{'manage.stop-types.title'}</a></li>  -->
                   <!-- <li><a href="@{Application.manageRouteTypes}" class="manage-users" data-lang="en">Manage Users</a></li> -->
-                  <li><a href="/application/exportStopGis" class="manage-agenices">&{'export.shapefile-stops.title'}</a></li>  
-                  <li><a href="/application/exportRouteGis" class="manage-agenices">&{'export.shapefile-routes.title'}</a></li>  
+                  <li><a href="@{Application.exportStopGis}" class="manage-agenices">&{'export.shapefile-stops.title'}</a></li>  
+                  <li><a href="@{Application.exportRouteGis}" class="manage-agenices">&{'export.shapefile-routes.title'}</a></li>  
 
                 </ul>
               </li>
@@ -173,7 +173,8 @@ cf = play.Play.configuration
             tripPatternTWUnknownId: "&{'route.trip-pattern-tw-unknown-id'}",
             tripPatternTWUnableLoad: "&{'route.trip-pattern-tw-unable-load'}",
             tripPatternReverseconfirm: "&{'route.trip-pattern-reverse-pattern-confirm'}",
-            tripInfoDeleteTripconfirm: "&{'route.trip-info-delete-pattern-confirm'}"
+            tripInfoDeleteTripconfirm: "&{'route.trip-info-delete-pattern-confirm'}",
+            tripInfoClearAllTripsConfirm: "&{'route.trip-info-clear-all-trips-confirm'}",
 
           };
 

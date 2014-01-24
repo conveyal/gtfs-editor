@@ -357,8 +357,9 @@ G.RouteTypes = Backbone.Collection.extend({
       // Override the sequence value to match the array order
       this.sortPatternStops();
     },
+
     // name, headsign, alignment, stop_times[], shape, route_id (fk)
-      // stop_id, travel_time, dwell_time
+    // stop_id, travel_time, dwell_time
 
     addStop: function(stopTime) {
       var patternStops = this.get('patternStops');
@@ -394,6 +395,7 @@ G.RouteTypes = Backbone.Collection.extend({
       this.insertStopAt(stopTime, toIndex);
       this.normalizeSequence();
     },
+
     updatePatternStop: function(data) {
       var patternStops = this.get('patternStops');
       this.removeAllStops();
@@ -402,7 +404,20 @@ G.RouteTypes = Backbone.Collection.extend({
       patternStops[data.stopSequence] = data;
       this.set('patternStops', patternStops);
       this.save();
+    },
+
+    useFrequency: function() {
+      this.trips.clearTrips();
+      this.set('useFrequency', true);
+      this.save();
+    },
+
+    useTimetable: function() {
+      this.trips.clearTrips();
+      this.set('useFrequency', false);
+      this.save()
     }
+
   });
 
   G.TripPatterns = Backbone.Collection.extend({
@@ -459,10 +474,28 @@ G.Trip = Backbone.Model.extend({
         this.patternId  = opts.patternId;
     },
 
-    fetchTrips: function() {
-      this.fetch({data: {patternId: this.patternId}});
+    fetchTrips: function(onSuccess) {
+      if(onSuccess)
+        this.fetch({data: {patternId: this.patternId}, success: onSuccess});
+      else
+        this.fetch({data: {patternId: this.patternId}});
+    },
+
+    clearTrips: function() {
+      var _this = this;
+
+      var deleteTripModels = function() {
+        var model;
+
+        while (model = _this.first()) {
+          model.destroy();
+        }
+      }
+
+      this.fetchTrips(deleteTripModels)
     }
 
+   
   });
 
 })(GtfsEditor, jQuery);
