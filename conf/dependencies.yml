@@ -2,6 +2,7 @@
 
 require:
     - play
+    - play -> secure
     - com.typesafe.akka -> akka-actor 2.0.3
     - com.typesafe.akka -> akka-remote 2.0.3
     - gov.sandia.foundry -> gov-sandia-cognition-common-core 3.3.2

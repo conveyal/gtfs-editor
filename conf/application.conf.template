@@ -9,8 +9,6 @@ application.name=gtfs-editor
 application.mode=dev
 %prod.application.mode=prod
 
-module.secure=${play.path}/modules/secure
-
 # Secret key
 # ~~~~~
 # The secret key is used to secure cryptographics functions
