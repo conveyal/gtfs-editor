@@ -165,6 +165,9 @@ route.route-info-tpl.comments-content=Add any helpful internal information about
 route.route-info-tpl.pattern-count=Trip Pattern Count
 route.route-info-tpl.trip-count=Trip Count
 
+route.route-info-wheelchair-boarding=Wheelchair Boarding
+route.route-info-wheelchair-boarding-content=Status of wheelchair accessibility for trips on this route.
+
 
 # step 2
 
@@ -403,6 +406,16 @@ export.gtfs.title=Export as GTFS
 export.gtfs.calendar-from=GTFS Valid From
 
 export.gtfs.calendar-to=GTFS Valid To
+
+# /export/gis
+
+export.gis.title=Export as GIS
+
+export.gis.type=Export Type
+
+export.gis.routes=Routes
+export.gis.stops=Stops
+
 export.agencies=Agencies to Export
 
 # /export/kml
