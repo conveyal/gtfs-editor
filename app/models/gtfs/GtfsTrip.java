@@ -53,6 +53,7 @@ Optional. The shape_id field contains an ID that defines a shape for the trip. T
     public String directionId;
     public String blockId;
     public String shapeId;
+    public Integer wheelchairAccessible;
     
     public GtfsTrip(Trip trip) {
         this.routeId = trip.getRoute().getId().toString();
@@ -63,10 +64,10 @@ Optional. The shape_id field contains an ID that defines a shape for the trip. T
         this.directionId = trip.getDirectionId();
         this.blockId = trip.getBlockId();
         this.shapeId = trip.getShapeId().toString();
-        
+        this.wheelchairAccessible = trip.getWheelchairAccessible();  
     } 
     
-    public GtfsTrip(String routeId, String serviceId, String tripId, String tripHeadsign, String tripShortName, String directionId, String blockId, String shapeId) {
+    public GtfsTrip(String routeId, String serviceId, String tripId, String tripHeadsign, String tripShortName, String directionId, String blockId, String shapeId, Integer wheelchairAccessible) {
         this.routeId = routeId;
         this.serviceId = serviceId;
         this.tripId = tripId;
@@ -75,6 +76,7 @@ Optional. The shape_id field contains an ID that defines a shape for the trip. T
         this.directionId = directionId;
         this.blockId = blockId;
         this.shapeId = shapeId;
+        this.wheelchairAccessible = wheelchairAccessible;
     } 
     
 }

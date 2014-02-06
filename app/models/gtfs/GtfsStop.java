@@ -56,7 +56,7 @@ public class GtfsStop {
     public String parentStation;
     public Double stopLat;
     public Double stopLon;
-    
+    public Integer wheelchairBoarding;
  
     
     public GtfsStop(Stop stop, GtfsSnapshot gtfsSnapshot) {
@@ -70,10 +70,11 @@ public class GtfsStop {
         this.parentStation = stop.getParentStation();
         this.stopLat = stop.getLat();
         this.stopLon = stop.getLon();
+        this.wheelchairBoarding = stop.getWheelchairBoarding();
     } 
     
     
-    public GtfsStop(String stopId, String stopCode, String stopName, String stopDesc, String zoneId, String stopUrl, Integer locationType, String parentStation, Double stopLat, Double stopLon, GtfsSnapshot gtfsSnapshot) {
+    public GtfsStop(String stopId, String stopCode, String stopName, String stopDesc, String zoneId, String stopUrl, Integer locationType, String parentStation, Double stopLat, Double stopLon, Integer wheelchairBoarding, GtfsSnapshot gtfsSnapshot) {
         this.stopId = stopId;
         this.stopCode = stopCode;
         this.stopName = stopName;
@@ -84,6 +85,7 @@ public class GtfsStop {
         this.parentStation = parentStation;
         this.stopLat = stopLat;
         this.stopLon = stopLon;
+        this.wheelchairBoarding = wheelchairBoarding;
     } 
     
 

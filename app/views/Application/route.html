@@ -80,6 +80,17 @@
   </div>
 
   <div class="control-group">
+    <label class="control-label" for="wheelchairBoarding"><strong>&{'route.route-info-wheelchair-boarding'}</strong></label>
+    <div class="controls">
+      <select name="wheelchairBoarding" id="wheelchairBoarding" class="input-xlarge" title="&{'route.route-info-wheelchair-boarding'}" data-content="&{'route.route-info-wheelchair-boarding-content'}">
+                <option value="UNKNOWN">&{'shared.attribute.unknown'}</option>
+                <option value="AVAILABLE">&{'shared.attribute.available'}</option>
+                <option value="UNAVAILABLE">&{'shared.attribute.unavailable'}</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="control-group">
     <label class="control-label" for="routeDesc">&{'route.route-info-tpl.description'}</label>
     <div class="controls">
       <textarea name="routeDesc" id="routeDesc" class="input-xlarge" title="&{'route.route-info-tpl.description'}" data-content="&{'route.route-info-tpl.description-content'}">{{routeDesc}}</textarea>
@@ -222,7 +233,7 @@
     </div> 
 
     <div id="trip-timetable">
-      <div id="calendar-select"></div>
+      <div id="timetable-calendar-select"></div>
 
       <div class="controls" id="csv-upload-download">
           <button type="button" id="timetable-download-btn" class="btn"><i class="icon-download"></i> &{'route.trip-info-tpl.download-timetable'}</button> 
@@ -235,7 +246,7 @@
    
     
     <div class="form-actions">
-     
+        <button type="submit" class="btn btn-primary" id="route-save-btn">&{'shared.button.save'}</button>
     </div>
 
   </form>
@@ -276,13 +287,36 @@
   </div>
 </script>
 
-<script id="calendar-select-tpl" type="text/html">
+<script id="frequency-calendar-select-tpl" type="text/html">
 
     <div class="control-group">
       <label class="control-label" for="calendar"><strong>&{'route.trip-info-tpl.service-calendar'}</strong><br>(&{'shared.required'})</label>
       <div class="controls">
         <p>
-          <select required name="serviceCalendar" id="calendar" class="input" title="&{'route.trip-info-tpl.service-calendar'}" data-content="&{'route.trip-info-tpl.service-calendar-content'}">
+          <select required name="frequencyServiceCalendar" id="calendar" class="input" title="&{'route.trip-info-tpl.service-calendar'}" data-content="&{'route.trip-info-tpl.service-calendar-content'}">
+            <option value="">-- &{'route.trip-info-tpl.select-calendar'} --</option>
+
+            {{#items}}<option value="{{attributes.id}}">{{attributes.description}}</option>{{/items}}
+
+          </select>
+        </p>
+        <p>
+          <button type="button" id="calendar-create-btn" class="btn btn-primary btn-mini">&{'route.trip-info-tpl.calendar-create-modal.title'}</button> 
+          <button type="button" id="calendar-modify-btn" class="btn btn-mini">&{'route.trip-info-tpl.calendar-modify'}</button> 
+        </p>
+
+      </div>
+    </div>
+
+</script>
+
+<script id="timetable-calendar-select-tpl" type="text/html">
+
+    <div class="control-group">
+      <label class="control-label" for="calendar"><strong>&{'route.trip-info-tpl.service-calendar'}</strong><br>(&{'shared.required'})</label>
+      <div class="controls">
+        <p>
+          <select  name="timetableServiceCalendar" id="calendar" class="input" title="&{'route.trip-info-tpl.service-calendar'}" data-content="&{'route.trip-info-tpl.service-calendar-content'}">
             <option value="">-- &{'route.trip-info-tpl.select-calendar'} --</option>
 
             {{#items}}<option value="{{attributes.id}}">{{attributes.description}}</option>{{/items}}
@@ -398,7 +432,7 @@
       </div>
     </div>
 
-    <div id="calendar-select"></div>
+    <div id="frequency-calendar-select"></div>
     
   </div>
 </div>

@@ -125,6 +125,26 @@ public class Bootstrap extends Controller {
     	renderTemplate("Bootstrap/dataProcessingComplete.html", step);
     }
     
+    
+    // sync tripshpes 
+    public static void syncTripShapes() {
+    	
+    	List<TripPattern> tps = TripPattern.findAll();
+    	
+    	for(TripPattern tp : tps) {
+    		if(tp.shape != null && tp.encodedShape != null) {
+    			
+    			tp.shape.updateShapeFromEncoded(tp.encodedShape );
+        		tp.shape.save();
+    			
+    		}
+    	}
+    	
+    	String step = "Sync Trip Shapes";
+    	renderTemplate("Bootstrap/dataProcessingComplete.html", step);
+    }
+    
+    
     public static void repackPatternSequences() {
     	
     	List<TripPattern> tps = TripPattern.findAll();

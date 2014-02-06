@@ -32,6 +32,7 @@ import models.gtfs.GtfsSnapshotMerge;
 import models.gtfs.GtfsSnapshotMergeTask;
 import models.gtfs.GtfsSnapshotMergeTaskStatus;
 import models.transit.Agency;
+import models.transit.AttributeAvailabilityType;
 import models.transit.Route;
 import models.transit.ServiceCalendar;
 import models.transit.ServiceCalendarDate;
@@ -41,8 +42,6 @@ import models.transit.StopTime;
 import models.transit.TripPatternStop;
 import models.transit.TripShape;
 import models.transit.Trip;
-
-
 import play.Logger;
 import play.Play;
 import play.jobs.Job;
@@ -235,6 +234,24 @@ public class ProcessGtfsSnapshotExport extends Job {
 						t.setTripHeadsign(trip.pattern.name);
 						t.setServiceId(calendarId);
 						
+						if(trip.wheelchairBoarding != null){
+							if(trip.wheelchairBoarding.equals(AttributeAvailabilityType.AVAILABLE))
+								t.setWheelchairAccessible(1);
+							else if(trip.wheelchairBoarding.equals(AttributeAvailabilityType.UNAVAILABLE))
+								t.setWheelchairAccessible(2);
+							else
+								t.setWheelchairAccessible(0);
+						}
+						else if(trip.pattern.route.wheelchairBoarding != null) {
+							if(trip.pattern.route.wheelchairBoarding.equals(AttributeAvailabilityType.AVAILABLE))
+								t.setWheelchairAccessible(1);
+							else if(trip.pattern.route.wheelchairBoarding.equals(AttributeAvailabilityType.UNAVAILABLE))
+								t.setWheelchairAccessible(2);
+							else
+								t.setWheelchairAccessible(0);
+							
+						}
+						
 						if(trip.pattern.shape != null)
 							t.setShapeId(shapeList.get(trip.pattern.shape.id));
 						else
@@ -296,6 +313,13 @@ public class ProcessGtfsSnapshotExport extends Job {
 									
 									s.setLat(stop.locationPoint().getX());
 									s.setLon(stop.locationPoint().getY());
+									
+									if(stop.wheelchairBoarding != null && stop.wheelchairBoarding.equals(AttributeAvailabilityType.AVAILABLE))
+										s.setWheelchairBoarding(1);
+									else if(stop.wheelchairBoarding != null && stop.wheelchairBoarding.equals(AttributeAvailabilityType.UNAVAILABLE))
+										s.setWheelchairBoarding(2);
+									else
+										s.setWheelchairBoarding(0);
 									
 									store.saveEntity(s);
 																	
@@ -374,6 +398,13 @@ public class ProcessGtfsSnapshotExport extends Job {
 									
 									s.setLon(stop.locationPoint().getX());
 									s.setLat(stop.locationPoint().getY());
+									
+									if(stop.wheelchairBoarding != null && stop.wheelchairBoarding.equals(AttributeAvailabilityType.AVAILABLE))
+										s.setWheelchairBoarding(1);
+									else if(stop.wheelchairBoarding != null && stop.wheelchairBoarding.equals(AttributeAvailabilityType.UNAVAILABLE))
+										s.setWheelchairBoarding(2);
+									else
+										s.setWheelchairBoarding(0);
 									
 									store.saveEntity(s);
 																	

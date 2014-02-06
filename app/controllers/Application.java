@@ -199,6 +199,8 @@ public class Application extends Controller {
                 
     }
     
+    
+    
     public static void createGtfs(List<Long> agencySelect, Long calendarFrom, Long calendarTo) {
         
     	List<Agency> agencyObjects = new ArrayList<Agency>(); 
@@ -233,33 +235,38 @@ public class Application extends Controller {
         redirect(Play.configuration.getProperty("application.appBase") + "/public/data/"  + snapshotExport.getZipFilename());
     }
     
-    public static void exportStopGis() {
+    public static void exportGis(List<Long> agencySelect) {
         
-    	List<Agency> agencyObjects = Agency.findAll();
-    	
-    	
-    	GisUploadType typeEnum;
-    	
-    	typeEnum = GisUploadType.STOPS;
-    	
-    	GisExport gisExport = new GisExport(agencyObjects, typeEnum, "");
-    	
-    	ProcessGisExport exportJob = new ProcessGisExport(gisExport.id);
-    	
-    	exportJob.doJob();
-    	
-    	redirect(Play.configuration.getProperty("application.appBase") + "/public/data/"  + gisExport.getFilename());
-             
+        List<Agency> agencyObjects = Agency.findAll();
+
+        render();
+                
     }
     
-    public static void exportRouteGis() {
+    
+    public static void createGis(List<Long> agencySelect, String exportType) {
+    	
+    	List<Agency> agencyObjects = new ArrayList<Agency>(); 
         
-    	List<Agency> agencyObjects = Agency.findAll();
+        if(agencySelect != null || agencySelect.size() > 0) {
+
+            for(Long agencyId : agencySelect) {
+                
+            	Agency a = Agency.findById(agencyId);
+                if(a != null)
+                	agencyObjects.add(a);
+            
+            }
+        }
+        else 
+            agencyObjects = Agency.findAll();
     	
+    	GisUploadType typeEnum = null;
     	
-    	GisUploadType typeEnum;
-    	
-    	typeEnum = GisUploadType.ROUTES;
+    	if(exportType.equals("routes"))
+    		typeEnum = GisUploadType.ROUTES;
+    	else
+    		typeEnum = GisUploadType.STOPS;
     	
     	GisExport gisExport = new GisExport(agencyObjects, typeEnum, "");
     	

@@ -75,7 +75,7 @@ public class TripShape extends Model {
         
         List<String> points = new ArrayList<String>();
         for(Coordinate coord : coords) {
-            points.add(new Double(coord.x).toString() + " " + new Double(coord.y).toString());
+            points.add(new Double(coord.y).toString() + " " + new Double(coord.x).toString());
         }
         
         String linestring = "LINESTRING(" + StringUtils.join(points, ", ") + ")";

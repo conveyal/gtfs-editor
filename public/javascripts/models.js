@@ -469,6 +469,8 @@ G.Trip = Backbone.Model.extend({
     model: G.Trip,
     url: G.config.baseUrl + 'api/trip/',
     
+   
+
     initialize: function(opts) {
       if(opts != undefined)
         this.patternId  = opts.patternId;

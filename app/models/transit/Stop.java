@@ -102,7 +102,7 @@ public class Stop extends Model {
    
     	Hashtable<String, Double> loc = this.getLocation();
     	GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
-        return geometryFactory.createPoint(new Coordinate(loc.get("lat"), loc.get("lng")));
+        return geometryFactory.createPoint(new Coordinate(loc.get("lng"), loc.get("lat")));
     }
 
     public Stop(org.onebusaway.gtfs.model.Stop stop, GeometryFactory geometryFactory) {

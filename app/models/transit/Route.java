@@ -58,6 +58,9 @@ public class Route extends Model {
 
     @ManyToOne
     public GisUpload gisUpload;
+    
+    @Enumerated(EnumType.STRING)
+    public AttributeAvailabilityType wheelchairBoarding;
 
     @JsonCreator
     public static Route factory(long id) {

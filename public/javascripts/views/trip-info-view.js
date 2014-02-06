@@ -60,7 +60,7 @@ var GtfsEditor = GtfsEditor || {};
       this.render();
     },
 
-    render: function () {
+   render: function () {
      
       // Get the markup from icanhaz
       var $tpl = ich['trip-info-tpl']();
@@ -91,6 +91,10 @@ var GtfsEditor = GtfsEditor || {};
       var selectedPatternId  = this.$('#tripPattern').val();
 
       var data = G.Utils.serializeForm($(evt.target));
+      
+      data.serviceCalendar = data.frequencyServiceCalendar;
+
+      data = _.omit(data, ['file', 'scheduleType', 'frequencyServiceCalendar', 'timetableServiceCalendar']);
 
       data.pattern = selectedPatternId;
       data.startTime = this.calcTime(data.startTimeString);
@@ -445,6 +449,7 @@ var GtfsEditor = GtfsEditor || {};
         
         if(useFrequencyCurrent != useFrequencyChange) {
 
+
           if (G.Utils.confirm(G.strings.tripInfoClearAllTripsConfirm)) {
 
             if(useFrequencyChange) 
@@ -470,6 +475,7 @@ var GtfsEditor = GtfsEditor || {};
 
     initFrequency : function() {
 
+      this.$('#route-save-btn').show();
       this.$('#trip-frequency').show();
       this.$('#trip-timetable').hide();
 
@@ -479,6 +485,7 @@ var GtfsEditor = GtfsEditor || {};
 
     initTimetable : function() {
 
+      this.$('#route-save-btn').hide();
       this.$('#trip-frequency').hide();
       this.$('#trip-timetable').show();
 
@@ -586,7 +593,8 @@ var GtfsEditor = GtfsEditor || {};
       var selectedPatternId  = this.$('#tripPattern').val();
       var selectedTripId  = this.$('#trip').val();
 
-      this.$('#calendar-select').html(ich['calendar-select-tpl'](data));
+      this.$('#timetable-calendar-select').html(ich['timetable-calendar-select-tpl'](data));
+      this.$('#frequency-calendar-select').html(ich['frequency-calendar-select-tpl'](data));
 
       if(this.model.tripPatterns.get(selectedPatternId) != undefined && selectedTripId != undefined) {
         if(this.model.tripPatterns.get(selectedPatternId).trips.get(selectedTripId).attributes.serviceCalendar != undefined)

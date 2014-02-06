@@ -50,6 +50,9 @@ public class Trip extends Model {
     @ManyToOne
     public ServiceCalendarDate serviceCalendarDate;
     
+    @Enumerated(EnumType.STRING)
+    public AttributeAvailabilityType wheelchairBoarding;
+    
     public Boolean useFrequency;
     
     public Integer startTime;
