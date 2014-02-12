@@ -4,6 +4,7 @@ package models.transit;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.persistence.Entity;
@@ -71,6 +72,9 @@ public class TripShape extends Model {
     public static TripShape createFromPattern(TripPattern tp) {
     	
     	List<String> points = new ArrayList<String>();
+    	
+    	Collections.sort(tp.patternStops);
+    	
         for(TripPatternStop tps : tp.patternStops) {
         
             points.add(new Double(tps.stop.locationPoint().getX()).toString() + " " + new Double(tps.stop.locationPoint().getY()).toString());
