@@ -21,6 +21,7 @@ import models.transit.Stop;
 import models.transit.Trip;
 import models.transit.TripPattern;
 import models.transit.TripPatternStop;
+import models.transit.TripShape;
 import play.Logger;
 import play.Play;
 import play.mvc.*;
@@ -262,6 +263,30 @@ public class Bootstrap extends Controller {
     	}	
     	
     	String step = "Assign Route Types";
+    	renderTemplate("Bootstrap/dataProcessingComplete.html", step);
+    }
+    
+    
+    public static void createShapesFromPatterns() {
+        
+    	List<TripPattern> tps = TripPattern.findAll();
+   
+    	
+    	for(TripPattern tp : tps) {
+    		
+    		if(tp.shape == null) {
+    			
+    			tp.shape = TripShape.createFromPattern(tp);
+    			if(tp.shape != null) {
+    				tp.encodedShape = tp.shape.generateEncoded();
+    				tp.save();
+    			}
+    			Logger.info("Creating shape for: " + tp.name);
+    			
+    		}
+    	}
+    	
+    	String step = "Create TripShapes from TripPatterns";
     	renderTemplate("Bootstrap/dataProcessingComplete.html", step);
     }   
 }
