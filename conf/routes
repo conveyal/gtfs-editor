@@ -14,6 +14,7 @@ GET     /export/gtfs                      		Application.exportGtfs
 GET     /export/creategtfs                      Application.createGtfs
 
 GET     /export/gis                      		Application.exportGis
+GET     /export/creategis                      Application.createGis
 
 GET     /export/schedule                      	Application.createCsvSchedule
 
