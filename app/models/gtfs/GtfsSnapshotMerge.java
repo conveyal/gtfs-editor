@@ -51,19 +51,16 @@ public class GtfsSnapshotMerge extends Model {
     	this.status = GtfsSnapshotMergeStatus.INPROGRESS;
     	this.mergeStarted = new Date();
     	this.snapshot = snapshot;
-       
     }
     
-    public void complete(String description)
-    {
+    public void complete(String description) {
     	this.status = GtfsSnapshotMergeStatus.COMPLETED;
     	this.description = description;
     	this.mergeComplete = new Date();
     	this.save();
     }
     
-    public void failed(String description)
-    {
+    public void failed(String description) {
     	this.em().getTransaction().rollback();
 
     	this.em().getTransaction().begin();
@@ -78,8 +75,7 @@ public class GtfsSnapshotMerge extends Model {
     	this.em().getTransaction().commit();
     }
    
-    public List<GtfsSnapshotMergeTask> getTasks()
-    {
+    public List<GtfsSnapshotMergeTask> getTasks() {
     	List<GtfsSnapshotMergeTask> tasks = GtfsSnapshotMergeTask.find("merge = ?", this).fetch();
     	
     	return tasks;

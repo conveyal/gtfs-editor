@@ -2,14 +2,16 @@ package models.gis;
  
 import java.io.File;
 import java.util.*;
+
 import javax.persistence.*;
 
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
+
 import jobs.ProcessGisUpload;
-
 import models.transit.Agency;
-
 import play.db.jpa.*;
  
+@JsonIgnoreProperties({"entityId", "persistent"})
 @Entity
 public class GisUpload extends Model {
  

@@ -13,8 +13,15 @@ GET     /route/.*                        		Application.route
 GET     /export/gtfs                      		Application.exportGtfs
 GET     /export/creategtfs                      Application.createGtfs
 
+GET     /export/gis                      		Application.exportGis
+GET     /export/creategis                      Application.createGis
+
+GET     /export/schedule                      	Application.createCsvSchedule
+
 GET     /manage/routetypes                      Application.manageRouteTypes
 GET     /manage/agencies                      	Application.manageAgencies
+
+GET     /bootstrap/index                      	Bootstrap.index
 
 GET     /api/agency/?                           Api.getAgency
 GET     /api/agency/{id}                        Api.getAgency

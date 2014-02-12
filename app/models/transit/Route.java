@@ -58,6 +58,9 @@ public class Route extends Model {
 
     @ManyToOne
     public GisUpload gisUpload;
+    
+    @Enumerated(EnumType.STRING)
+    public AttributeAvailabilityType wheelchairBoarding;
 
     @JsonCreator
     public static Route factory(long id) {
@@ -69,7 +72,7 @@ public class Route extends Model {
       return Route.findById(Long.parseLong(id));
     }
 
-    public Route(org.onebusaway.gtfs.model.Route route,  Agency agency) {
+    public Route(org.onebusaway.gtfs.model.Route route,  Agency agency) {	
         this.gtfsRouteId = route.getId().toString();
         this.routeShortName = route.getShortName();
         this.routeLongName = route.getLongName();
@@ -155,6 +158,7 @@ public class Route extends Model {
     		routeType = new RouteType();
     		routeType.gtfsRouteType = type;
     		routeType.description = type.name();
+    		routeType.save();
     		
     		return routeType;
     	}    

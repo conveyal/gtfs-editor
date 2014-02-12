@@ -50,6 +50,14 @@ var GtfsEditor = GtfsEditor || {};
           .attr('selected', true);
       }
 
+      // select wheelchairBoarding type the option
+      if(data.wheelchairBoarding != undefined) {
+        $tpl
+          .find('#wheelchairBoarding option[value="' + data.wheelchairBoarding + '"]')
+          .attr('selected', true);
+      }
+
+
       // Render to the dom
       this.$el.html($tpl);
 

@@ -20,7 +20,9 @@ var GtfsEditor = GtfsEditor || {};
       'change #trip-pattern-select': 'onTripPatternChange',
       'change #trip-pattern-stop-select': 'onTripPatternStopSelectChange',      
       'change input[name="stopFilterRadio"]': 'onStopFilterChange',
-      'change #transit-wand-select': 'updateTransitWandOverlay'
+      'change #transit-wand-select': 'updateTransitWandOverlay',
+
+      'change input[name="trip-pattern-use-satellite"]': 'onSatelliteToggle'
     },
 
 
@@ -48,57 +50,57 @@ var GtfsEditor = GtfsEditor || {};
 
      // Custom icons
       this.agencyMajorStopIcon = L.icon({
-        iconUrl: '/public/images/markers/marker-0d85e9.png',
+        iconUrl: G.config.baseUrl + 'public/images/markers/marker-0d85e9.png',
         iconSize: [25, 41],
         iconAnchor: [12, 41],
         popupAnchor: [1, -34],
-        shadowUrl: '/public/images/markers/marker-shadow.png',
+        shadowUrl: G.config.baseUrl + 'public/images/markers/marker-shadow.png',
         shadowSize: [41, 41],
         labelAnchor: [10, -16]
       });
 
       // Custom icons
       this.agencyMinorStopIcon = L.icon({
-        iconUrl: '/public/images/markers/marker-blue-gray.png',
+        iconUrl: G.config.baseUrl + 'public/images/markers/marker-blue-gray.png',
         iconSize: [25, 41],
         iconAnchor: [12, 41],
         popupAnchor: [1, -34],
-        shadowUrl: '/public/images/markers/marker-shadow.png',
+        shadowUrl: G.config.baseUrl + 'public/images/markers/marker-shadow.png',
         shadowSize: [41, 41],
         labelAnchor: [10, -16]
       });
 
       this.otherStopIcon = L.icon({
-        iconUrl: '/public/images/markers/marker-gray.png',
+        iconUrl: G.config.baseUrl + 'public/images/markers/marker-gray.png',
         iconSize: [25, 41],
         iconAnchor: [12, 41],
         popupAnchor: [1, -34],
-        shadowUrl: '/public/images/markers/marker-shadow.png',
+        shadowUrl: G.config.baseUrl + 'public/images/markers/marker-shadow.png',
         shadowSize: [41, 41],
         labelAnchor: [10, -16]
       });
 
       this.patternStopIcon = L.icon({
-        iconUrl: '/public/images/markers/marker-4ab767.png',
+        iconUrl: G.config.baseUrl + 'public/images/markers/marker-4ab767.png',
         iconSize: [25, 41],
         iconAnchor: [12, 41],
         popupAnchor: [1, -34],
-        shadowUrl: '/public/images/markers/marker-shadow.png',
+        shadowUrl: G.config.baseUrl + 'public/images/markers/marker-shadow.png',
         shadowSize: [41, 41],
         labelAnchor: [10, -16]
       });
 
       this.selectedStopIcon = L.icon({
-        iconUrl: '/public/images/markers/marker-dbcf2c.png',
+        iconUrl: G.config.baseUrl + 'public/images/markers/marker-dbcf2c.png',
         iconSize: [25, 41],
         iconAnchor: [12, 41],
         popupAnchor: [1, -34],
-        shadowUrl: '/public/images/markers/marker-shadow.png',
+        shadowUrl: G.config.baseUrl + 'public/images/markers/marker-shadow.png',
         shadowSize: [41, 41],
         labelAnchor: [10, -16]
       });
 
-      _.bindAll(this, 'sizeContent', 'duplicateTripPattern', 'addDuplicateTripPattern', 'cancelDuplicateTripPattern', 'onStopFilterChange', 'loadTransitWand', 'calcTimesFromVelocity', 'saveTripPatternLine', 'onTripPatternChange', 'onTripPatternStopSelectChange', 'updateStops', 'zoomToPatternExtent', 'clearPatternButton', 'deletePatternButton', 'stopUpdateButton', 'stopRemoveButton', 'updateTransitWandOverlay');
+      _.bindAll(this, 'sizeContent', 'duplicateTripPattern', 'addDuplicateTripPattern', 'cancelDuplicateTripPattern', 'onStopFilterChange', 'loadTransitWand', 'calcTimesFromVelocity', 'saveTripPatternLine', 'onTripPatternChange', 'onTripPatternStopSelectChange', 'updateStops', 'zoomToPatternExtent', 'clearPatternButton', 'deletePatternButton', 'stopUpdateButton', 'stopRemoveButton', 'updateTransitWandOverlay', 'onSatelliteToggle');
         $(window).resize(this.sizeContent);
     },
 
@@ -112,6 +114,7 @@ var GtfsEditor = GtfsEditor || {};
 
       var sidebarData = {
         route: this.model.attributes,
+        useSatellite : G.session.useSatellite
       }
 
       this.$('.route-sidebar').html(ich['trippatterns-sidebar-tpl'](sidebarData));
@@ -120,8 +123,15 @@ var GtfsEditor = GtfsEditor || {};
       this.$(".collapse").collapse() 
 
       
-      // Base layer config is optional, default to Mapbox Streets
-      var url = 'http://{s}.tiles.mapbox.com/v3/' + G.config.mapboxKey + '/{z}/{x}/{y}.png',
+      var tileKey;   
+      if(G.session.useSatellite)
+        tileKey = G.config.mapboxSatelliteKey;
+      else
+        tileKey = G.config.mapboxKey;
+        
+
+      var url = 'http://{s}.tiles.mapbox.com/v3/' + tileKey + '/{z}/{x}/{y}.png',
+
           baseLayer = L.tileLayer(url, {
             attribution: '&copy; OpenStreetMap contributors, CC-BY-SA. <a href="http://mapbox.com/about/maps" target="_blank">Terms &amp; Feedback</a>'
           });
@@ -202,6 +212,19 @@ var GtfsEditor = GtfsEditor || {};
       this.sizeContent();
 
       return this;
+    },
+
+    onSatelliteToggle: function(evt) {
+
+      if($('input[name="trip-pattern-use-satellite"]').attr('checked')) {
+          G.session.useSatellite  = true;
+      }
+      else {
+          G.session.useSatellite = false;
+      }
+
+      this.render();
+
     },
 
     loadTransitWand: function(evt) {
@@ -574,6 +597,8 @@ var GtfsEditor = GtfsEditor || {};
     },
 
 
+
+
     addDuplicateTripPattern: function(evt) {
       evt.preventDefault();
 
@@ -893,7 +918,7 @@ var GtfsEditor = GtfsEditor || {};
         velocity = parseFloat(velocity) * 0.277778;
 
         var view = this;
-        $.get('/api/calctrippatterntimes', {id: selectedPatternId, velocity: velocity, defaultDwell: defaultDwell}, function(){
+        $.get(G.config.baseUrl + 'api/calctrippatterntimes', {id: selectedPatternId, velocity: velocity, defaultDwell: defaultDwell}, function(){
 
           view.model.tripPatterns.fetch({data: {routeId: view.model.id}});
         });

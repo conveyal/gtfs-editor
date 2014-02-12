@@ -7,7 +7,8 @@ var GtfsEditor = GtfsEditor || {};
       'click .stop-find-duplicates-btn': 'findDuplicateStops',
       'click .stop-find-duplicates-cancel-btn': 'cancelFindDuplicateStops',
       'change .stops-toggle': 'onStopVisibilityChange',
-      'change input[name="stopFilterRadio"]': 'onStopFilterChange'
+      'change input[name="stopFilterRadio"]': 'onStopFilterChange',
+      'change input[name="stop-use-satellite"]': 'onSatelliteToggle',
     },
 
     initialize: function () {
@@ -30,48 +31,50 @@ var GtfsEditor = GtfsEditor || {};
 
       // Custom icons
       this.agencyMajorStopIcon = L.icon({
-        iconUrl: '/public/images/markers/marker-0d85e9.png',
+        iconUrl: G.config.baseUrl + 'public/images/markers/marker-0d85e9.png',
         iconSize: [25, 41],
         iconAnchor: [12, 41],
         popupAnchor: [1, -34],
-        shadowUrl: '/public/images/markers/marker-shadow.png',
+        shadowUrl: G.config.baseUrl + 'public/images/markers/marker-shadow.png',
         shadowSize: [41, 41]
       });
 
       // Custom icons
       this.agencyMinorStopIcon = L.icon({
-        iconUrl: '/public/images/markers/marker-blue-gray.png',
+        iconUrl: G.config.baseUrl + 'public/images/markers/marker-blue-gray.png',
         iconSize: [25, 41],
         iconAnchor: [12, 41],
         popupAnchor: [1, -34],
-        shadowUrl: '/public/images/markers/marker-shadow.png',
+        shadowUrl: G.config.baseUrl + 'public/images/markers/marker-shadow.png',
         shadowSize: [41, 41]
       });
 
       this.otherStopIcon = L.icon({
-        iconUrl: '/public/images/markers/marker-gray.png',
+        iconUrl: G.config.baseUrl + 'public/images/markers/marker-gray.png',
         iconSize: [25, 41],
         iconAnchor: [12, 41],
         popupAnchor: [1, -34],
-        shadowUrl: '/public/images/markers/marker-shadow.png',
+        shadowUrl: G.config.baseUrl + 'public/images/markers/marker-shadow.png',
         shadowSize: [41, 41]
       });
 
       this.selectedStopIcon = L.icon({
-        iconUrl: '/public/images/markers/marker-dbcf2c.png',
+        iconUrl: G.config.baseUrl + 'public/images/markers/marker-dbcf2c.png',
         iconSize: [25, 41],
         iconAnchor: [12, 41],
         popupAnchor: [1, -34],
-        shadowUrl: '/public/images/markers/marker-shadow.png',
+        shadowUrl: G.config.baseUrl + 'public/images/markers/marker-shadow.png',
         shadowSize: [41, 41]
       });
 
-        _.bindAll(this, 'sizeContent', 'onStopFilterChange', 'destroy', 'save', 'cancelFindDuplicateStops', 'findDuplicateStops', 'finishedFindDuplicateStops', 'addStopGroup', 'resetDuplicateStops', 'mergeStops');
+        _.bindAll(this, 'sizeContent', 'onStopFilterChange', 'destroy', 'save', 'cancelFindDuplicateStops', 'findDuplicateStops', 'finishedFindDuplicateStops', 'addStopGroup', 'resetDuplicateStops', 'mergeStops', 'onSatelliteToggle');
+        
         $(window).resize(this.sizeContent);
     },
 
     render: function () {
       // Setup the containers for a map page
+
       this.$el.html(ich['map-tpl']());
 
       // Add the route summary
@@ -81,7 +84,8 @@ var GtfsEditor = GtfsEditor || {};
       }).render();
 
       var sidebarData = {
-        route: this.model.attributes
+        route: this.model.attributes,
+        useSatellite : G.session.useSatellite
       }
 
       // Add the instructions and sidebar contents
@@ -89,7 +93,15 @@ var GtfsEditor = GtfsEditor || {};
       this.$('.step-instructions').html(ich['stop-instructions-tpl']());
 
       // Base layer config is optional, default to Mapbox Streets
-      var url = 'http://{s}.tiles.mapbox.com/v3/' + G.config.mapboxKey + '/{z}/{x}/{y}.png',
+      
+      var tileKey;   
+      if(G.session.useSatellite)
+        tileKey = G.config.mapboxSatelliteKey;
+      else
+        tileKey = G.config.mapboxKey;
+        
+
+      var url = 'http://{s}.tiles.mapbox.com/v3/' + tileKey + '/{z}/{x}/{y}.png',
           baseLayer = L.tileLayer(url, {
             attribution: '&copy; OpenStreetMap contributors, CC-BY-SA. <a href="http://mapbox.com/about/maps" target="_blank">Terms &amp; Feedback</a>'
           });
@@ -413,6 +425,19 @@ var GtfsEditor = GtfsEditor || {};
           .bindPopup($('<div>').append($popupContent).html())
           .openPopup();
       }, this);
+
+    },
+
+    onSatelliteToggle: function(evt) {
+
+      if($('input[name="stop-use-satellite"]').attr('checked')) {
+          G.session.useSatellite  = true;
+      }
+      else {
+          G.session.useSatellite = false;
+      }
+
+      this.render();
 
     },
 

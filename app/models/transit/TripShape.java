@@ -53,6 +53,13 @@ public class TripShape extends Model {
         this.refresh();
     }
 
+    public String generateEncoded() {
+        
+        EncodedPolylineBean ecb = PolylineEncoder.createEncodings(shape);
+        
+        return ecb.getPoints();
+    }
+
     public static TripShape createFromEncoded(String encoded) {
     	
         
@@ -61,6 +68,27 @@ public class TripShape extends Model {
         return TripShape.findById(tripShapeId.longValue());
     }
 
+    public static TripShape createFromPattern(TripPattern tp) {
+    	
+    	List<String> points = new ArrayList<String>();
+        for(TripPatternStop tps : tp.patternStops) {
+        
+            points.add(new Double(tps.stop.locationPoint().getX()).toString() + " " + new Double(tps.stop.locationPoint().getY()).toString());
+        }
+        
+        if(points.size() > 0) {
+        	String linestring = "LINESTRING(" + StringUtils.join(points, ", ") + ")";
+        	
+        	
+        	BigInteger tripShapeId = TripShape.nativeInsert(TripShape.em(), "", linestring, 0.0);
+
+            return TripShape.findById(tripShapeId.longValue());
+        }
+        else 
+        	return null;
+        
+    }
+    
     public static String generateLinestring(String encoded) {
         
         EncodedPolylineBean ecb = new EncodedPolylineBean(encoded, null, 0);
@@ -68,7 +96,7 @@ public class TripShape extends Model {
         
         List<String> points = new ArrayList<String>();
         for(Coordinate coord : coords) {
-            points.add(new Double(coord.x).toString() + " " + new Double(coord.y).toString());
+            points.add(new Double(coord.y).toString() + " " + new Double(coord.x).toString());
         }
         
         String linestring = "LINESTRING(" + StringUtils.join(points, ", ") + ")";

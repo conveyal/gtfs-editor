@@ -102,7 +102,7 @@ public class Stop extends Model {
    
     	Hashtable<String, Double> loc = this.getLocation();
     	GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
-        return geometryFactory.createPoint(new Coordinate(loc.get("lat"), loc.get("lng")));
+        return geometryFactory.createPoint(new Coordinate(loc.get("lng"), loc.get("lat")));
     }
 
     public Stop(org.onebusaway.gtfs.model.Stop stop, GeometryFactory geometryFactory) {
@@ -156,11 +156,23 @@ public class Stop extends Model {
         return nextId;
     }
     
+    public static Point findCentroid(BigInteger agencyId)
+    {
+    	List<Object[]> result = Stop.em().createNativeQuery("SELECT st_x(calc.center), st_y(calc.center) from (SELECT ST_Centroid(ST_Extent(location)) as center FROM stop WHERE agency_id = ?) calc ;")
+          .setParameter(1,  agencyId)
+          .getResultList();
+
+    	Object[] cols = result.get(0);
+        GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
+        
+        return geometryFactory.createPoint(new Coordinate((Double)cols[0], (Double)cols[1]));
+    }
+    
     public static List<List<Stop>> findDuplicateStops(BigInteger agencyId) {
     	
     	// !!! need to autodetect proper SRID for UTM Zone
     	Query q = Stop.em().createNativeQuery("SELECT s1_id, s2_id, dist FROM " + 
-    			"(SELECT s1.id as s1_id, s2.id as s2_id, st_distance(transform(s1.location, 32651), transform(s2.location, 32651)) as dist " + 
+    			"(SELECT s1.id as s1_id, s2.id as s2_id, st_distance(transform(s1.location, 32614), transform(s2.location, 32614)) as dist " + 
     			"FROM stop as s1, stop as s2 WHERE s1.agency_id = s2.agency_id and s1.agency_id = ? and s1.id != s2.id) AS calcdist WHERE dist < 15;");
     	
     	q.setParameter(1, agencyId);

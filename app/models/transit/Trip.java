@@ -17,7 +17,6 @@ import org.hibernate.annotations.Type;
 
 import play.Logger;
 import play.db.jpa.Model;
-
 import models.gtfs.GtfsSnapshot;
 
 @JsonIgnoreProperties({"entityId", "persistent"})
@@ -44,12 +43,15 @@ public class Trip extends Model {
     
     @ManyToOne
     public TripPattern pattern;
-    
+ 
     @ManyToOne
     public ServiceCalendar serviceCalendar;
     
     @ManyToOne
     public ServiceCalendarDate serviceCalendarDate;
+    
+    @Enumerated(EnumType.STRING)
+    public AttributeAvailabilityType wheelchairBoarding;
     
     public Boolean useFrequency;
     

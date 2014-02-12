@@ -41,10 +41,18 @@ import models.transit.TripPattern;
 import models.transit.TripPatternStop;
 import models.transit.TripShape;
 
-// to do: need to apply security model and account/agency verification
 
+@With(Secure.class)
 public class Api extends Controller {
 
+	@Before
+	static void initSession() throws Throwable {
+		 
+		if(!Security.isConnected())
+			Secure.login();
+		
+	}
+	
     private static ObjectMapper mapper = new ObjectMapper();
     private static JsonFactory jf = new JsonFactory();
 
@@ -331,9 +339,9 @@ public class Api extends Controller {
             	String point = "POINT(" + lon + " " + lat + ")";
             	
                 if(agency != null)
-            	    renderJSON(Api.toJson(Stop.find("agency = ? and distance(location, geomfromtext(?, 4326)) < 0.025", agency, point).fetch(), false));
+            	    renderJSON(Api.toJson(Stop.find("agency = ? and distance(location, st_geomfromtext(?, 4326)) < 0.025", agency, point).fetch(), false));
                 else
-                    renderJSON(Api.toJson(Stop.find("distance(location, geomfromtext(?, 4326)) < 0.025", point).fetch(), false));
+                    renderJSON(Api.toJson(Stop.find("distance(location, st_geomfromtext(?, 4326)) < 0.025", point).fetch(), false));
             }
             else {
                 
@@ -816,6 +824,8 @@ public class Api extends Controller {
         if(trip == null)
             badRequest();
 
+        StopTime.delete("trip = ?", trip); 
+ 
         trip.delete();
 
         ok();

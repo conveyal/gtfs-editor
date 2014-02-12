@@ -1,0 +1,88 @@
+#{extends 'main.html' /}
+
+#{set 'styles'}
+  #{stylesheet 'main.css' /}
+  #{stylesheet 'datepicker/bootstrap-datepicker.css' /}
+#{/set}
+
+
+<h3>&{'export.gis.title'}</h3>
+
+<form id="gis-export-form" class="route-info-form form-horizontal span12" action="@{Application.createGis()}">
+  
+  <div class="control-group">
+    <label class="control-label" for="exportType"><strong>&{'export.gis.type'}</strong><br>(&{'shared.required'})</label>
+    <div class="controls">
+      <p>
+        <label class="radio">
+          <input type="radio" name="exportType" id="exportTypeStops" value="stops" checked>
+          &{'export.gis.stops'}
+        </label>
+        <label class="radio">
+          <input type="radio" name="exportType" id="exportTypeRoutes" value="routes">
+          &{'export.gis.routes'}
+        </label>
+      </p>
+    </div>
+  </div>
+
+  <div class="control-group">
+    <label class="control-label" for="agencySelect"><strong>&{'export.agencies'}</strong></label>
+    <div class="controls">
+        <select multiple id="agencySelect" name="agencySelect" size="10">
+
+          #{list items:agencies, as:'agency'}
+
+          <option value="${agency.id}" selected>${agency.name}</option>
+          #{/list}
+
+        </select>
+    </div>
+  </div>
+
+  <!-- <div class="control-group">
+    <label class="control-label" for="routeType"><strong>&{'route.route-info-tpl.route-type'}</strong><br>(&{'shared.required'})</label>
+    <div class="controls">
+      <select required name="routeType" id="routeType" class="input-xlarge" title="&{'route.route-info-tpl.route-type'}" data-content="&{'route.route-info-tpl.route-type-content'}">
+        
+        #{list items:routeTypes, as:'routeType'}
+            <option value="${routeType.id}">${routeType.localizedVehicleType} (${routeType.hvtRouteType})</option>
+        #{/list}
+
+      </select>
+		<a href="#route-type-modal" role="button small" class="btn" data-toggle="modal">&{'route.trip-info-tpl.route-types.title'}</a>
+    </div>
+  </div> -->
+
+  <div class="form-actions">
+    <button type="button" class="btn btn-primary" id="gis-export-btn">&{'shared.export-data-btn'}</button>
+  </div>
+</form>
+
+#{set 'scripts'}
+
+  <script type="text/javascript">
+
+    $(function(){
+
+        $('#gis-export-btn').on('click', function (evt){
+
+        $('#gis-export-form').submit();
+
+        });
+
+      });
+
+  </script>
+
+#{/set}
+
+
+#{extends 'main.html' /}
+
+#{set 'title'}
+   &{'application.name'} | &{'manage.agencies.title'}
+#{/set}
+
+
+

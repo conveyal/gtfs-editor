@@ -15,4 +15,16 @@
 		<nature>org.eclipse.jdt.core.javanature</nature>
 		<nature>org.playframework.playclipse.playNature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>java</name>
+			<type>2</type>
+			<location>/home/kpw/workspace/netty/src/main/java</location>
+		</link>
+		<link>
+			<name>play-src</name>
+			<type>2</type>
+			<location>/opt/play-1.2.5/framework/src</location>
+		</link>
+	</linkedResources>
 </projectDescription>

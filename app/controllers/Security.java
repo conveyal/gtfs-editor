@@ -10,7 +10,13 @@ public class Security extends Secure.Security {
     
     static boolean check(String profile) {
         if("admin".equals(profile)) {
-            return Account.find("username", connected()).<Account>first().isAdmin();
+        	Account account = Account.find("username", connected()).<Account>first();
+        	
+        	if(account == null) {
+        		return false;
+        	}
+        		
+            return account.isAdmin();
         }
    
         return false;

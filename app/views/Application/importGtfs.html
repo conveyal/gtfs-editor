@@ -1,0 +1,34 @@
+#{extends 'main.html' /}
+
+#{set 'styles'}
+  #{stylesheet 'main.css' /}
+#{/set}
+
+
+<h3>Import GTFS</h3>
+
+<p>Select GTFS zip file to import.</p>
+<form id="gtfs-import-form" method="post" enctype="multipart/form-data" class="route-info-form form-horizontal span12" action="@{application.uploadGtfs()}">
+  
+  
+  #{errors} 
+	<p class="alert alert-error">
+		${error}
+	</p>
+  #{/errors}
+					
+  
+  <input type="file" name="gtfsUpload" title="Select GTFS"/>  
+  <input type="submit" class="btn btn-primary" value="Upload"/>
+  
+</form>
+
+
+#{extends 'main.html' /}
+
+#{set 'title'}
+   &{'application.name'} | &{'manage.agencies.title'}
+#{/set}`
+
+
+

@@ -3,7 +3,7 @@ var GtfsEditor = GtfsEditor || {};
 (function(G, $) {
 
   G.Agency = Backbone.Model.extend({
-    urlRoot: '/api/agency/',
+    urlRoot: G.config.baseUrl + 'api/agency/',
     
     defaults: {
       id: null,
@@ -22,11 +22,11 @@ var GtfsEditor = GtfsEditor || {};
   G.Agencies = Backbone.Collection.extend({
     type: 'Agencies',
     model: G.Agency,
-    url: '/api/agency/'
+    url: G.config.baseUrl + 'api/agency/'
   });
 
 G.RouteType = Backbone.Model.extend({
-    urlRoot: '/api/routetype/',
+    urlRoot: G.config.baseUrl + 'api/routetype/',
 
     defaults: {
       id: null,
@@ -40,7 +40,7 @@ G.RouteType = Backbone.Model.extend({
 G.RouteTypes = Backbone.Collection.extend({
     type: 'RouteTypes',
     model: G.RouteType,
-    url: '/api/routetype/'
+    url: G.config.baseUrl + 'api/routetype/'
   });
 
 
@@ -68,7 +68,7 @@ G.RouteTypes = Backbone.Collection.extend({
   G.Routes = Backbone.Collection.extend({
     type: 'Routes',
     model: G.Route,
-    url: '/api/route/'
+    url: G.config.baseUrl + 'api/route/'
   });
 
   G.Stop = Backbone.Model.extend({
@@ -108,7 +108,7 @@ G.RouteTypes = Backbone.Collection.extend({
   G.Stops = Backbone.Collection.extend({
     type: 'Stops',
     model: G.Stop,
-    url: '/api/stop/'
+    url: G.config.baseUrl + 'api/stop/'
   });
 
   G.StopGroup = Backbone.Model.extend({
@@ -175,7 +175,7 @@ G.RouteTypes = Backbone.Collection.extend({
           var ids = _.without(_.pluck(this.get('stops'), 'id'), this.get('mergedStop').id);
           var idList = ids.join(',');
 
-          $.get('/api/mergeStops', {stop1Id: this.get('mergedStop').id, mergedStopIds: idList}, this.onFinishedMerge);  
+          $.get(G.config.baseUrl + 'api/mergeStops', {stop1Id: this.get('mergedStop').id, mergedStopIds: idList}, this.onFinishedMerge);  
         }
 
     }
@@ -206,7 +206,7 @@ G.RouteTypes = Backbone.Collection.extend({
       this.reset();
       this.groupMap = {};
 
-      $.get('/api/findDuplicateStops', {agencyId: this.agencyId}, this.loadGroups);
+      $.get(G.config.baseUrl + 'api/findDuplicateStops', {agencyId: this.agencyId}, this.loadGroups);
     },
 
     loadGroups: function(pairs) {
@@ -266,7 +266,8 @@ G.RouteTypes = Backbone.Collection.extend({
       encodedShape: null,
       patternStops: [],
       shape: null,
-      route: null
+      route: null,
+      useFrequency: null
     },
 
     initialize: function() {
@@ -356,8 +357,9 @@ G.RouteTypes = Backbone.Collection.extend({
       // Override the sequence value to match the array order
       this.sortPatternStops();
     },
+
     // name, headsign, alignment, stop_times[], shape, route_id (fk)
-      // stop_id, travel_time, dwell_time
+    // stop_id, travel_time, dwell_time
 
     addStop: function(stopTime) {
       var patternStops = this.get('patternStops');
@@ -393,6 +395,7 @@ G.RouteTypes = Backbone.Collection.extend({
       this.insertStopAt(stopTime, toIndex);
       this.normalizeSequence();
     },
+
     updatePatternStop: function(data) {
       var patternStops = this.get('patternStops');
       this.removeAllStops();
@@ -401,13 +404,26 @@ G.RouteTypes = Backbone.Collection.extend({
       patternStops[data.stopSequence] = data;
       this.set('patternStops', patternStops);
       this.save();
+    },
+
+    useFrequency: function() {
+      this.trips.clearTrips();
+      this.set('useFrequency', true);
+      this.save();
+    },
+
+    useTimetable: function() {
+      this.trips.clearTrips();
+      this.set('useFrequency', false);
+      this.save()
     }
+
   });
 
   G.TripPatterns = Backbone.Collection.extend({
     type: 'TripPatterns',
     model: G.TripPattern,
-    url: '/api/trippattern/'
+    url: G.config.baseUrl + 'api/trippattern/'
   });
 
   G.Calendar = Backbone.Model.extend({
@@ -433,7 +449,7 @@ G.RouteTypes = Backbone.Collection.extend({
   G.Calendars = Backbone.Collection.extend({
     type: 'Calendars',
     model: G.Calendar,
-    url: '/api/calendar/'
+    url: G.config.baseUrl + 'api/calendar/'
   });
 
 G.Trip = Backbone.Model.extend({
@@ -441,27 +457,47 @@ G.Trip = Backbone.Model.extend({
       tripDescription: null,
       pattern: null,
       serviceCalendar: null,
-      useFrequency: null,
       startTime: null,
       endTime: null,
       headway: null,
+      useFrequency: null
     }
    });
 
   G.Trips = Backbone.Collection.extend({
     type: 'Trips',
     model: G.Trip,
-    url: '/api/trip/',
+    url: G.config.baseUrl + 'api/trip/',
     
+   
+
     initialize: function(opts) {
       if(opts != undefined)
         this.patternId  = opts.patternId;
     },
 
-    fetchTrips: function() {
-      this.fetch({data: {patternId: this.patternId}});
+    fetchTrips: function(onSuccess) {
+      if(onSuccess)
+        this.fetch({data: {patternId: this.patternId}, success: onSuccess});
+      else
+        this.fetch({data: {patternId: this.patternId}});
+    },
+
+    clearTrips: function() {
+      var _this = this;
+
+      var deleteTripModels = function() {
+        var model;
+
+        while (model = _this.first()) {
+          model.destroy();
+        }
+      }
+
+      this.fetchTrips(deleteTripModels)
     }
 
+   
   });
 
 })(GtfsEditor, jQuery);

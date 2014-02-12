@@ -2,6 +2,10 @@
 # ~~~~~
 application.name=gtfs-editor
 
+# if installing as a stand-alone app this should be "public/data" if installed as tomcat application this should be the absolute path to public/data, e.g.
+# /usr/local/Cellar/tomcat/7.0.47/libexec/webapps/gtfs-editor/WEB-INF/application/public/data/
+application.publicDataDirectory=public/data/
+
 # Application mode
 # ~~~~~
 # Set to dev to enable instant reloading and other development help.
@@ -9,7 +13,6 @@ application.name=gtfs-editor
 application.mode=dev
 %prod.application.mode=prod
 
-module.secure=${play.path}/modules/secure
 
 # Secret key
 # ~~~~~

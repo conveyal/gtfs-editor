@@ -21,11 +21,11 @@
         });
 
         this.clickMarkerIcon = L.icon({
-        iconUrl: '/public/images/markers/marker-0d85e9.png',
+        iconUrl: G.config.baseUrl + 'public/images/markers/marker-0d85e9.png',
         iconSize: [25, 41],
         iconAnchor: [12, 41],
         popupAnchor: [1, -34],
-        shadowUrl: '/public/images/markers/marker-shadow.png',
+        shadowUrl: G.config.baseUrl + 'public/images/markers/marker-shadow.png',
         shadowSize: [41, 41],
         labelAnchor: [10, -16]
       });
@@ -180,9 +180,11 @@
            if(view.clickMarker != undefined)
             view.map.removeLayer(view.clickMarker);
 
-           view.clickMarker = L.marker(evt.latlng, {icon: view.clickMarkerIcon}).addTo(view.map);
-           $('#defaultLat').val(evt.latlng.lat);
-           $('#defaultLon').val(evt.latlng.lng);
+
+          var latlng = evt.latlng.wrap();              
+           view.clickMarker = L.marker(latlng, {icon: view.clickMarkerIcon}).addTo(view.map);
+           $('#defaultLat').val(latlng.lat);
+           $('#defaultLon').val(latlng.lng);
 
         });
 

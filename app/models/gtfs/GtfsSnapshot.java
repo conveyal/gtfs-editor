@@ -13,6 +13,11 @@ public class GtfsSnapshot extends Model {
     public String description;
     public Date creationDate;
     
+    public Integer agencyCount;
+    public Integer routeCount;
+    public Integer stopCount;
+    public Integer tripCount;
+    
     @Enumerated(EnumType.STRING)
     public GtfsSnapshotSource source; 
     
