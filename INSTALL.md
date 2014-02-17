@@ -27,7 +27,7 @@ Create database
 
 	psql gtfs-editor < /usr/share/postgresql/9.1/contrib/postgis-1.5/postgis.sql
 
-Change database security settings to allow local access:
+Change database security settings to allow local access. Note: this is acceptable for testing/development. For production applications please consult Postgres documentation on how to create and configure use accounts.
 
 	sudo nano /etc/postgresql/9.1/main/pg_hba.conf
 
