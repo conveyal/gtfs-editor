@@ -100,7 +100,7 @@ date.format=yyyy-MM-dd
 # db=mysql://user:pwd@host/database
 #
 # To connect to a local PostgreSQL9 database, use:
- db.url=jdbc:postgresql://127.0.0.1/gtfs_editor
+ db.url=jdbc:postgresql://127.0.0.1/gtfs-editor
  db.driver=org.postgresql.Driver
  db.user=postgres
 #
