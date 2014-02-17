@@ -5,7 +5,7 @@ A web-based GTFS editing framework.
 
 *Requires*
 
-	Play Framework 1.2.5+
+	Play Framework 1.2.x (does not work with Play 2.x)
 	Postgresql 9.1+ 
 	PostGIS 1.5+
 
