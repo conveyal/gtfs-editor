@@ -1,10 +1,17 @@
 # This is the main configuration file for the application.
 # ~~~~~
-application.name=gtfs-editor
 
 # if installing as a stand-alone app this should be "public/data" if installed as tomcat application this should be the absolute path to public/data, e.g.
 # /usr/local/Cellar/tomcat/7.0.47/libexec/webapps/gtfs-editor/WEB-INF/application/public/data/
 application.publicDataDirectory=public/data/
+
+# if installing as stand-alone this should be blank. if installed as tomcat app this should be /gtfs-editor
+application.appBase=
+
+# this allows injection admin accounts -- only use for testing/dev purposes, otherwise set to false
+application.allowBootstrapAdminCreate=false
+
+application.name=gtfs-editor
 
 # Application mode
 # ~~~~~
