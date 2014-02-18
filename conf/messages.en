@@ -252,6 +252,7 @@ shared.button.duplicate=Duplicate
 route.trip-pattern-duplicate-pattern=Duplicate Pattern
 route.trip-pattern-reverse-pattern=Reverse Pattern
 route.trip-pattern-reverse-pattern-confirm=Do you want to reverse the trip pattern?
+route.trip-pattern-edit-pattern=Edit Pattern Name
 
 route.trip-pattern-map-satellite=Use Satellite Images
 

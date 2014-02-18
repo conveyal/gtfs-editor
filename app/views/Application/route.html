@@ -769,6 +769,25 @@
   </ul>
 </script>
 
+
+<script id="trippattern-edit-tpl" type="text/html">
+  <ul>
+    <form class="trippattern-edit-form">
+      <p>&{'route.trip-pattern-edit-pattern'}: {{patternName}}</p>
+      <input type="hidden" name="id" value="{{id}}">
+      <p>
+        <input name="name" required class="input" type="text" placeholder="&{'route.trip-pattern-new-pattern-name'}" value="{{patternName}}">
+      </p>
+      <p>
+        <button type="submit" class="btn btn-mini btn-primary trippattern-edit-confirm-btn">&{'shared.button.edit'}</button> <button type="button" class="btn btn-mini trippattern-edit-cancel-btn">&{'shared.button.cancel'}</button>
+      </p>
+       
+      
+      
+    </form>
+  </ul>
+</script>
+
 <script id="trippattern-stop-list-tpl" type="text/html">
   <hr/>
   <p><strong>&{'route.trip-pattern-stop-sequence'}</strong></p>
@@ -829,6 +848,10 @@
 
         <p>
           <button type="button" class="trippattern-duplicate-btn btn btn-primary btn-mini">&{'route.trip-pattern-duplicate-pattern'}</button> 
+        </p>
+
+        <p>
+          <button type="button" class="trippattern-edit-btn btn btn-primary btn-mini">&{'route.trip-pattern-edit-pattern'}</button> 
         </p>
 
         <div id="trippattern-duplicate"></div>   

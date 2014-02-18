@@ -94,6 +94,8 @@ shared.button.add=Agregar
 shared.button.update=Actualizar
 shared.button.remove=Quitar
 
+shared.export-data-btn=Exportar
+
 shared.explore-search-routes=Explorar/Buscar rutas
 shared.new-route=Nueva ruta
 
@@ -283,6 +285,10 @@ manage.agencies.lang-content=Idioma del feed.
 
 export.gtfs.title=Exportar como GTFS
 
+export.gtfs.calendar-from=GTFS Válido desde
+
+export.gtfs.calendar-to=GTFS Válido hasta
+
 # /export/kml
 
 export.kml.title=Exportar como KML
@@ -291,12 +297,14 @@ export.kml.title=Exportar como KML
 
 export.shapefile.title=Exportar como Shapefile
 
+export.gis.title=Exportar como Shapefile 
+export.gis.type=Tipo de Exportación
 
+export.gis.stops=Exportar Paradas/Estaciones
 
+export.gis.routes=Exportar Rutas
 
-
-
-
+export.agencies=Exportar Organismo de Transporte
 
 
 
@@ -388,3 +396,11 @@ route.trip-pattern-add-stop-failed-no-pattern=Seleccionar o crear un patrón ant
 route.trip-pattern-no-tw-data=No hay datos disponibles para este número Id. de TransitWand. 
 route.trip-pattern-tw-unknown-id=Número Id. de TransitWand incorrecto. 
 route.trip-pattern-tw-unable-load=Error al cargar los datos desde TransitWand
+
+shared.button.duplicate=Duplicar
+route.trip-pattern-duplicate-pattern=Duplicar Patrón
+route.trip-pattern-reverse-pattern=Patrón Inverso
+route.trip-pattern-reverse-pattern-confirm=¿Quieres invertir el patrón de viaje?
+route.trip-pattern-edit-pattern=Editar Patrón Nombre
+
+route.trip-pattern-map-satellite=Utilizar Satélite
