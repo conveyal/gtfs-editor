@@ -320,6 +320,11 @@ route.route-info-tpl.pattern-count=Recuento de patrones de viaje
 route.route-info-tpl.trip-count=Recuento de viajes
 
 
+route.trip-info-tpl.schedule-type=Tipo de Programación
+
+route.trip-pattern-select-schedule-type-frequency=Utilizar Frecuencia
+route.trip-pattern-select-schedule-type-timetable=Utilizar Calendario
+
 route.trip-info-tpl.trip=Viaje
 route.trip-info-tpl.trip-content=Seleccionar o crear un viaje. 
 
