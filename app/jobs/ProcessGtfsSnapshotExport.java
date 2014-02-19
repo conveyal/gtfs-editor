@@ -206,8 +206,8 @@ public class ProcessGtfsSnapshotExport extends Job {
 								
 								coord.setShapeId(shapeId);
 								
-								coord.setLon(coordinate.y);
-								coord.setLat(coordinate.x);
+								coord.setLon(coordinate.x);
+								coord.setLat(coordinate.y);
 								coord.setSequence(sequence);
 								
 								sequence++;
@@ -311,8 +311,9 @@ public class ProcessGtfsSnapshotExport extends Job {
 									
 									s.setUrl(stop.stopUrl);
 									
-									s.setLat(stop.locationPoint().getX());
-									s.setLon(stop.locationPoint().getY());
+									s.setLon(stop.locationPoint().getX());
+									s.setLat(stop.locationPoint().getY());
+									
 									
 									if(stop.wheelchairBoarding != null && stop.wheelchairBoarding.equals(AttributeAvailabilityType.AVAILABLE))
 										s.setWheelchairBoarding(1);
