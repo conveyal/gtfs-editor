@@ -9,6 +9,7 @@ import javax.persistence.Enumerated;
 import javax.persistence.ManyToOne;
 import javax.persistence.Entity;
 import javax.persistence.Query;
+import javax.persistence.Column;
 
 import models.gis.GisRoute;
 import models.gis.GisUpload;
@@ -29,6 +30,9 @@ public class Route extends Model {
 	public String gtfsRouteId;
     public String routeShortName;
     public String routeLongName;
+ 
+
+    @Column(length = 8000,columnDefinition="TEXT")
     public String routeDesc;
 
     @ManyToOne
