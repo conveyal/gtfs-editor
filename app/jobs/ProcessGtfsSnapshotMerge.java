@@ -364,7 +364,7 @@ public class ProcessGtfsSnapshotMerge extends Job {
 	        
 	        inferTripPatterns(snapshotMerge.em());
 	       
-	        Bootstrap.encodeTripShapes();
+	        encodeTripShapes();
 	        
 	        snapshotMerge.em().getTransaction().commit();
 	        
@@ -379,6 +379,18 @@ public class ProcessGtfsSnapshotMerge extends Job {
     	}
 	}
 	
+	 public static void encodeTripShapes() {
+	    	
+		List<TripPattern> tps = TripPattern.findAll();
+		
+		for(TripPattern tp : tps) {
+			if(tp.shape != null && tp.encodedShape == null) {
+				tp.encodedShape = tp.shape.generateEncoded();
+				tp.save();
+			}
+		}
+	}
+
 	private void addTripPatternToLookup(BigInteger patternId, ArrayList<StopSequence> stopTimes)
 	{
 		if(!tripPatternFirstStopMap.containsKey(stopTimes.get(0).stopId))
