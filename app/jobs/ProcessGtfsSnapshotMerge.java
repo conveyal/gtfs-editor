@@ -21,6 +21,7 @@ import com.mchange.v2.c3p0.impl.DbAuth;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 
+import controllers.Bootstrap;
 import models.gtfs.GtfsSnapshotMerge;
 import models.gtfs.GtfsSnapshotMergeTask;
 import models.gtfs.GtfsSnapshotMergeTaskStatus;
@@ -363,7 +364,11 @@ public class ProcessGtfsSnapshotMerge extends Job {
 	        
 	        inferTripPatterns(snapshotMerge.em());
 	       
+	        Bootstrap.encodeTripShapes();
+	        
 	        snapshotMerge.em().getTransaction().commit();
+	        
+	        
 	        
     	}
         catch (Exception e) {

@@ -146,7 +146,7 @@ public class TripPattern extends Model {
 			    	"  VALUES(?, ?, ?, ?);");
 
 	      q.setParameter(1,  tripPatternId.longValue())
-	      .setParameter(2,  trip.route.routeShortName) //+ " (" + trip.tripHeadsign + ")")
+	      .setParameter(2,  trip.route.routeShortName + "(" + trip.tripHeadsign + ")")
 	      .setParameter(3,  trip.route.id)
 	      .setParameter(4,  trip.tripHeadsign);
 

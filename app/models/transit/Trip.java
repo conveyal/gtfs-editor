@@ -86,11 +86,11 @@ public class Trip extends Model {
 			Query q;
 			
 			if(shapeId != null)
-				q = em.createNativeQuery("INSERT INTO trip (id, gtfstripid, tripheadsign, tripshortname, tripdirection, blockid, route_id, servicecalendar_id, shape_id)" +
-		    	"  VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?);");
+				q = em.createNativeQuery("INSERT INTO trip (id, gtfstripid, tripheadsign, tripshortname, tripdirection, blockid, route_id, servicecalendar_id, useFrequency, shape_id)" +
+		    	"  VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
 		    else
-		    	q = em.createNativeQuery("INSERT INTO trip (id, gtfstripid, tripheadsign, tripshortname, tripdirection, blockid, route_id, servicecalendar_id)" +
-				    	"  VALUES(?, ?, ?, ?, ?, ?, ?, ?);");
+		    	q = em.createNativeQuery("INSERT INTO trip (id, gtfstripid, tripheadsign, tripshortname, tripdirection, blockid, route_id, servicecalendar_id, useFrequency)" +
+				    	"  VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?);");
 		    	
 		      q.setParameter(1,  nextId)
 		      .setParameter(2,  gtfsTrip.getId().toString())
@@ -99,10 +99,11 @@ public class Trip extends Model {
 		      .setParameter(5,  dir.name())
 		      .setParameter(6,  gtfsTrip.getBlockId())
 		      .setParameter(7,  routeId)
-		      .setParameter(8,  serviceCalendarId);
+		      .setParameter(8,  serviceCalendarId)
+		      .setParameter(9,  false);
 		      
 			if(shapeId != null)
-		      q.setParameter(9,  shapeId);
+		      q.setParameter(10,  shapeId);
 			
 		      
 		      q.executeUpdate();
