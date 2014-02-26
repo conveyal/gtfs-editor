@@ -645,7 +645,7 @@ var GtfsEditor = GtfsEditor || {};
       }
 
 
-      var originalTpData = this.model.tripPatterns.get(this.$('[name=id]').val()).attributes;
+      var originalTpData = _.clone(this.model.tripPatterns.get(this.$('[name=id]').val()).attributes);
 
       originalTpData.id = null;
       originalTpData.name = this.$('[name=name]').val();
