@@ -555,6 +555,8 @@ public class Application extends Controller {
    	        		trip.tripHeadsign = csvLine[3];
    	        		trip.tripShortName = csvLine[4];
    	        		
+   	        		trip.useFrequency = false;
+   	        		
    	        		trip.save();
    	        		
    	        		Integer firstTimepoint = null;
