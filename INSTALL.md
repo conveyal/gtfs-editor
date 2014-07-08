@@ -20,12 +20,13 @@ Unzip play framework
 
 	unzip play-1.2.5.zip
 
-Create database
+Create database as the postgres user
 
 	sudo su postgres
 	createdb gtfs-editor 
 
 	psql gtfs-editor < /usr/share/postgresql/9.1/contrib/postgis-1.5/postgis.sql
+	exit
 
 Change database security settings to allow local access. Note: this is acceptable for testing/development. For production applications please consult Postgres documentation on how to create and configure use accounts.
 
