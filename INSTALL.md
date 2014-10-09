@@ -36,7 +36,10 @@ Create database as the postgres user
 	sudo su postgres
 	createdb gtfs-editor 
 
-	psql gtfs-editor < /usr/share/postgresql/9.3/contrib/postgis-2.1/postgis.sql
+	psql gtfs-editor < /usr/share/postgresql/9.1/contrib/postgis-1.5/postgis.sql
+
+(on 14.04, run instead `psql gtfs-editor < /usr/share/postgresql/9.3/contrib/postgis-2.1/postgis.sql`)
+
 	exit
 
 
