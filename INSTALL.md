@@ -1,13 +1,14 @@
 Installation Instructions
 =========================
 
-The following instructions assume installation on an Ubuntu server with sudo permissions. These steps assume Ubuntu 12.04.5 LTS, if using different version of Ubunutu the available versions of software may change requiring slight modifications to these steps. 
+The following instructions assume installation on an Ubuntu server with sudo permissions. These steps assume Ubuntu 12.04.5 LTS, if using different version of Ubuntu the available versions of software may change requiring slight modifications to these steps. 
 
 Install database
 
 	sudo apt-get install postgresql-9.1
 	sudo apt-get install postgresql-9.1-postgis
 
+(for Ubuntu 14.04 LTS, install `postgresql-9.3` and `postgresql-9.3-postgis-2.1` instead)
 	
 Install zip and git utilities (if not already installed)
 
@@ -35,7 +36,7 @@ Create database as the postgres user
 	sudo su postgres
 	createdb gtfs-editor 
 
-	psql gtfs-editor < /usr/share/postgresql/9.1/contrib/postgis-1.5/postgis.sql
+	psql gtfs-editor < /usr/share/postgresql/9.3/contrib/postgis-2.1/postgis.sql
 	exit
 
 
