@@ -1,0 +1,22 @@
+#{extends 'main.html' /}
+
+#{set 'title'}
+    &{'application.name'} | &{'route.edit-route.title'}
+#{/set}
+
+#{set 'styles'}
+  #{stylesheet 'handsontable/jquery.handsontable.full.min.css' /}
+#{/set}
+
+#{set 'scripts'}
+  #{script 'lib/jquery.handsontable.full.js' /}
+  #{script 'models.js' /}
+  #{script 'views/trip-pattern-schedule-view.js' /}
+  #{script 'pages/trip-pattern-schedule-page.js' /}
+#{/set}
+
+<div id="timetable-container"></div>
+
+<script id="timetable-tpl" type="text/html">
+  <div id="timetable"></div>
+</script>

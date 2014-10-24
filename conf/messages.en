@@ -35,7 +35,7 @@ shared.tuesday=Tuesday
 shared.wednesday=Wednesday
 shared.thursday=Thursday
 shared.friday=Friday
-shared.saturday=Saturday 
+shared.saturday=Saturday
 shared.sunday=Sunday
 
 shared.route-type.tram=Tram
@@ -52,7 +52,7 @@ shared.route-type.hvt.rail=Railway Service
 shared.route-type.hvt.rail_hs=High Speed Rail Service
 shared.route-type.hvt.rail_ld=Long Distance Trains
 shared.route-type.hvt.rail_shuttle=Rail Shuttle (within complex)
-shared.route-type.hvt.rail_suburban=Suburban Railway 
+shared.route-type.hvt.rail_suburban=Suburban Railway
 shared.route-type.hvt.coach=Coach Service
 shared.route-type.hvt.coach_international=International Coach Service
 shared.route-type.hvt.coach_national=National Coach Service
@@ -122,14 +122,14 @@ route.step5=Review
 
 route.filter-stops=Filter Stops
 
-route.filter-stops-by-agency=Show only stops for 
+route.filter-stops-by-agency=Show only stops for
 
 route.filter-all-stops=Show all stops
 route.filter-hidden-stops=Some stops may be hidden at current zoom level.
 
 
 
-# step 1 
+# step 1
 
 route.route-info-tpl.agency=Agency
 
@@ -171,7 +171,7 @@ route.route-info-wheelchair-boarding-content=Status of wheelchair accessibility 
 
 # step 2
 
-route.stop-instructions-tpl=Right click the map to add a new stop, or click a marker to edit details. 
+route.stop-instructions-tpl=Right click the map to add a new stop, or click a marker to edit details.
 
 route.stops-import=Import Stops
 route.stops-upload-data=Upload Stop Data
@@ -182,7 +182,7 @@ route.stops-stop-name=Stop Name
 route.stops-stop-description=Description
 route.stops-major-stop=Major Stop
 
-route.stops-bike-parking=Bike Parking 
+route.stops-bike-parking=Bike Parking
 route.stops-wheelchair-boarding=Wheelchair Boarding
 
 route.stops-delete-stop-confirm=Are you sure you want to delete this stop?
@@ -277,7 +277,7 @@ route.trip-info-tpl.trip-pattern=Trip Pattern
 
 route.trip-info-tpl.trip-description=Trip Description
 
-route.trip-info-tpl.start-time=Start Time 
+route.trip-info-tpl.start-time=Start Time
 route.trip-info-tpl.start-time-content=The time of day when the this pattern begins operation.
 
 route.trip-info-tpl.end-time=End Time
@@ -318,13 +318,15 @@ route.trip-info-tpl.existing-trip-content=Select and copy an existing trip, incl
 
 route.trip-info-tpl.delete-trip-btn=Delete Trip
 
+route.trip-info-tpl.edit-timetable=Edit timetable
+
 route.trip-info-new-trip-name=New Trip Description
 
 route.trip-info-delete-pattern-confirm=Are you sure you want to delete this trip?
 
 route.trip-info-clear-all-trips-confirm=Changing the schedule type will clear all existing trips for this pattern. Are you sure you want to do this?
 
-# step 5 
+# step 5
 
 
 route.route-review-instructions=Review route and approve for publication.
@@ -339,7 +341,7 @@ route.review.status.approved=Approved
 
 # /search
 
-search.title=Routes for 
+search.title=Routes for
 
 
 # /manage/routeTypes
@@ -373,7 +375,7 @@ manage.agencies.dialog-title=New Agency
 manage.agencies.create-new-agency-button=Create New Agency
 
 manage.agencies.gtfs-agency-id=GTFS ID
-manage.agencies.gtfs-agency-id-content=Optional GTFS agency id. Should be a short alphanumeric identifer, unique to the agency (e.g. the abreviated agency name). If not specified will be automatically set with unique number. 
+manage.agencies.gtfs-agency-id-content=Optional GTFS agency id. Should be a short alphanumeric identifer, unique to the agency (e.g. the abreviated agency name). If not specified will be automatically set with unique number.
 
 manage.agencies.name=Name
 manage.agencies.name-content=Public name of agency
@@ -430,11 +432,4 @@ export.shapefile-stops.title=Export Stops Shapefile
 
 # /import/gtfs
 
-manage.import-gtfs.title=Import GTFS 
-
-
-
-
-
-
-
+manage.import-gtfs.title=Import GTFS
