@@ -4,7 +4,7 @@ var GtfsEditor = GtfsEditor || {};
 
   G.Agency = Backbone.Model.extend({
     urlRoot: G.config.baseUrl + 'api/agency/',
-    
+
     defaults: {
       id: null,
       gtfsAgencyId: null,
@@ -94,7 +94,7 @@ G.RouteTypes = Backbone.Collection.extend({
         return _.omit(this.attributes, this.blacklist);
     },
 
-    set: function(attributes, options) {    
+    set: function(attributes, options) {
             //my custom code
         var finalAttributes = _.omit(attributes, this.blacklist);
 
@@ -137,10 +137,10 @@ G.RouteTypes = Backbone.Collection.extend({
       if(!this.existingStops[stop.id]) {
 
         this.existingStops[stop.id] = true;
-        
+
         var stops = this.get('stops');
         stops.push(stop);
-        
+
         this.set('stops', stops);
       }
 
@@ -175,7 +175,7 @@ G.RouteTypes = Backbone.Collection.extend({
           var ids = _.without(_.pluck(this.get('stops'), 'id'), this.get('mergedStop').id);
           var idList = ids.join(',');
 
-          $.get(G.config.baseUrl + 'api/mergeStops', {stop1Id: this.get('mergedStop').id, mergedStopIds: idList}, this.onFinishedMerge);  
+          $.get(G.config.baseUrl + 'api/mergeStops', {stop1Id: this.get('mergedStop').id, mergedStopIds: idList}, this.onFinishedMerge);
         }
 
     }
@@ -187,7 +187,7 @@ G.RouteTypes = Backbone.Collection.extend({
     model: G.StopGroup,
 
     initialize: function(opts) {
-      
+
       this.agencyId = opts.agencyId;
       this.success = opts.success;
       this.groupMap = {};
@@ -229,7 +229,7 @@ G.RouteTypes = Backbone.Collection.extend({
     },
 
     group: function(stop1, stop2){
-      
+
       if(this.groupMap[stop1.id] == undefined) {
         if(this.groupMap[stop2.id] != undefined) {
           // add stop1 to existing group for stop2
@@ -317,9 +317,9 @@ G.RouteTypes = Backbone.Collection.extend({
           stop.defaultTravelTime = null;
           stop.defaultDwellTime = null;
         }
-        
-        newPatternStops.push(stop) 
-      }); 
+
+        newPatternStops.push(stop)
+      });
 
       newPatternStops.reverse();
 
@@ -336,7 +336,7 @@ G.RouteTypes = Backbone.Collection.extend({
       this.get('encodedShape', reversedLine);
 
     },
-  
+
     sortPatternStops: function() {
       var patternStops = _.sortBy(this.get('patternStops'), function(ps){
         return ps.stopSequence;
@@ -400,7 +400,7 @@ G.RouteTypes = Backbone.Collection.extend({
       var patternStops = this.get('patternStops');
       this.removeAllStops();
       this.save();
-      
+
       patternStops[data.stopSequence] = data;
       this.set('patternStops', patternStops);
       this.save();
@@ -468,8 +468,16 @@ G.Trip = Backbone.Model.extend({
     type: 'Trips',
     model: G.Trip,
     url: G.config.baseUrl + 'api/trip/',
-    
-   
+    comparator: function (trip) {
+      var sts = trip.get('stopTimes');
+      if (!_.isUndefined(sts) && sts != null && sts.length > 0) {
+        return sts[0].departureTime;  
+      }
+      // 500 hours past midnight should put these trips at the end
+      // the longest train journey is Moscow to Pyongyang (210 h), per Wikipedia
+      return 500 * 60 * 60;
+    },
+
 
     initialize: function(opts) {
       if(opts != undefined)
@@ -497,8 +505,7 @@ G.Trip = Backbone.Model.extend({
       this.fetchTrips(deleteTripModels)
     }
 
-   
+
   });
 
 })(GtfsEditor, jQuery);
-                                                                
