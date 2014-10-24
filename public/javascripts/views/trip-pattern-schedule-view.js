@@ -34,6 +34,7 @@ var GtfsEditor = GtfsEditor || {};
           var sp = name.split(':');
           var stopId = sp[1];
           var stopSeq = sp[2];
+          var arr = sp[3] == 'arr';
 
           // find the stopTime with this stop id and stop sequence
           // note that this makes an assumption about stop_sequence: when a stop is ommitted,
@@ -50,9 +51,11 @@ var GtfsEditor = GtfsEditor || {};
             return '-';
           }
 
-          var secs = st.arrivalTime % 60;
-          var mins = (st.arrivalTime - secs) % (60 * 60) / 60;
-          var hours = (st.arrivalTime - secs - mins * 60) / (60 * 60);
+          var time = arr ? st.arrivalTime : st.departureTime;
+
+          var secs = time % 60;
+          var mins = (time - secs) % (60 * 60) / 60;
+          var hours = (time - secs - mins * 60) / (60 * 60);
 
           return hours + ':' + mins + ':' + secs;
         }
@@ -83,10 +86,25 @@ var GtfsEditor = GtfsEditor || {};
 
     var instance = this;
 
-    _.each(this.collection.at(0).get('pattern').patternStops, function (patternStop) {
+    // we generate a mergecells array to tell the table to merge the stop headers for arr and dep
+    var mergeCells = [];
+    // note: the merged header cells aren't actually merged, but depend on a really awful hack (in timetable.css) where the width of
+    // two columns is hardcoded as the header width. As a side effect, these numbers must be exactly twice the width of the time
+    // display cells
+    var colWidths = [150, 150, 150];
+
+    _.each(this.collection.at(0).get('pattern').patternStops, function (patternStop, idx) {
       // we put stopSequence here for loop routes
-      columns.push(instance.attr('stop:' + patternStop.stop.id + ':' + patternStop.stopSequence));
+      columns.push(instance.attr('stop:' + patternStop.stop.id + ':' + patternStop.stopSequence + ':arr'));
+      columns.push(instance.attr('stop:' + patternStop.stop.id + ':' + patternStop.stopSequence + ':dep'));
       headers.push(patternStop.stop.stopName);
+      // dummy header, will be overwritten when cells are merged
+      headers.push('');
+
+      // merge the two created header cells. idx + 4 is because there are three columns before the times,
+      // and columns are 1-based
+      mergeCells.push({row: -1, col: idx + 3, rowspan: 1, colspan: 2})
+      colWidths.push(75);
     });
 
     var $container = this.$('#timetable');
@@ -96,7 +114,9 @@ var GtfsEditor = GtfsEditor || {};
       // we'll be defining interaction on our own
       contextMenu: false,
       columns: columns,
-      colHeaders: headers
+      colHeaders: headers,
+      colWidths: colWidths
+      //mergeCells: mergeCells
     });
     return this;
   }
