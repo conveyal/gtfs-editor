@@ -12,12 +12,14 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Query;
 
 import org.codehaus.jackson.annotate.JsonBackReference;
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.hibernate.annotations.Type;
 
 import play.db.jpa.Model;
 import models.gtfs.GtfsSnapshot;
 
 @Entity
+@JsonIgnoreProperties({ "persistent", "entityId" })
 public class StopTime extends Model {
 	
     public Integer arrivalTime;

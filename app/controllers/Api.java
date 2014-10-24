@@ -10,6 +10,8 @@ import java.io.StringWriter;
 import java.math.BigInteger;
 import java.util.*;
 
+import javax.persistence.Entity;
+
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.JsonGenerator;
@@ -790,11 +792,40 @@ public class Api extends Controller {
     }
 
 
+    /**
+     * When trips come back over the wire, they contain stop times directly due to hierarchical serialization. 
+     */
+    public static class TripWithStopTimes extends Trip {
+        List<StopTime> stopTimes;
+        
+        public Trip toTrip () {
+            Trip ret = new Trip();
+            ret.blockId = this.blockId;
+            ret.endTime = this.endTime;
+            ret.gtfsTripId = this.gtfsTripId;
+            ret.headway = this.headway;
+            ret.id = this.id;
+            ret.pattern = this.pattern;
+            ret.route = this.route;
+            ret.serviceCalendar = this.serviceCalendar;
+            ret.serviceCalendarDate = this.serviceCalendarDate;
+            ret.shape = this.shape;
+            ret.startTime = this.startTime;
+            ret.tripDescription = this.tripDescription;
+            ret.tripDirection = this.tripDirection;
+            ret.tripHeadsign = this.tripHeadsign;
+            ret.tripShortName = this.tripShortName;
+            ret.useFrequency = this.useFrequency;
+            ret.wheelchairBoarding = this.wheelchairBoarding;
+            return ret;
+        }
+    }
+    
     public static void updateTrip() {
-        Trip trip;
-
+        TripWithStopTimes trip;
+        
         try {
-            trip = mapper.readValue(params.get("body"), Trip.class);
+            trip = mapper.readValue(params.get("body"), TripWithStopTimes.class);
 
             if(trip.id == null || Trip.findById(trip.id) == null)
                 badRequest();
@@ -810,8 +841,17 @@ public class Api extends Controller {
             }
 
 
-            Trip updatedTrip = Trip.em().merge(trip);
+            Trip updatedTrip = Trip.em().merge(trip.toTrip());
             updatedTrip.save();
+            
+            // update the stop times
+            // TODO: how to detect deleted StopTimes (i.e. route no longer stops here)?
+            for (StopTime stopTime : trip.stopTimes) {
+                StopTime updatedStopTime = StopTime.em().merge(stopTime);
+                // this was getting lost somehow
+                updatedStopTime.trip = updatedTrip;
+                updatedStopTime.save();
+            }
 
             renderJSON(Api.toJson(updatedTrip, false));
         } catch (Exception e) {

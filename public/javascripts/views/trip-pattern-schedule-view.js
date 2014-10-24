@@ -10,15 +10,21 @@ var GtfsEditor = GtfsEditor || {};
     // TODO: single-time view
     // value is stoptime
 
-    var arr = col % 2 == 1;
-    var time = arr ? value.arrivalTime : value.departureTime;
+    var text;
+
+    if (_.isUndefined(value)) {
+      text = '-';
+    }
+    else {
+      var arr = col % 2 == 1;
+      var time = arr ? value.arrivalTime : value.departureTime;
 
 
-    var secs = time % 60;
-    var mins = (time - secs) % (60 * 60) / 60;
-    var hours = (time - secs - mins * 60) / (60 * 60);
+      var secs = time % 60;
+      var mins = (time - secs) % (60 * 60) / 60;
+      var hours = (time - secs - mins * 60) / (60 * 60);
 
-    var text =
+      text =
       '<span class="hours">' + hours + '</span>' +
       '<span class="minutes">' + (mins < 10 ? '0' + mins : mins) + '</span>' +
       '<span class="seconds">' + (secs < 10 ? '0' + secs : secs) + '</span>';
@@ -29,7 +35,8 @@ var GtfsEditor = GtfsEditor || {};
 
       // dim departure times that are the same as their arrival times
       if (!arr && value.departureTime == value.arrivalTime)
-        $(td).addClass('time-dep-dimmed')
+        $(td).addClass('time-dep-dimmed');
+      }
 
       Handsontable.renderers.HtmlRenderer(instance, td, row, col, prop, text, cellProperties);
   };
@@ -128,6 +135,7 @@ var GtfsEditor = GtfsEditor || {};
       // merge the two created header cells. idx + 4 is because there are three columns before the times,
       // and columns are 1-based
       mergeCells.push({row: -1, col: idx + 3, rowspan: 1, colspan: 2})
+      colWidths.push(75);
       colWidths.push(75);
     });
 
