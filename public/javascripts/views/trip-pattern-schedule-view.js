@@ -62,8 +62,22 @@ var GtfsEditor = GtfsEditor || {};
       });
     },
 
+    // parse out a time entered by a human and return seconds since (noon - 12h)
+    parseTime: function (time) {
+      // TODO: many time formats
+      // 332p
+      // 1532
+      // 153200
+      // 15:33
+      // 3:33 PM
+      // etc.
+      var spTime = time.split(':');
+      return spTime[0] * 3600 + spTime[1] * 60 + spTime[2] * 1;
+    },
+
     // combination of getAttr and setAttr for handsontable
     attr: function (name) {
+      var instance = this;
       return {data: function (trip, val) {
         if (name.indexOf('stop:') === 0) {
           // we need to return a stop time, so first parse out the column header
@@ -79,15 +93,18 @@ var GtfsEditor = GtfsEditor || {};
             return st.stop.id == stopId && st.stopSequence == stopSeq;
           });
 
-          //return st;
-          // TODO: this is absolutely the wrong place to do time formatting
-          // TODO: don't just give departure time
-          // TODO: create a special cell editor for this
-          if (st === null) {
-            return '-';
+          if (_.isUndefined(val)) {
+            return st;
           }
-
-          return st;
+          else {
+            if (arr) {
+              st.arrivalTime = instance.parseTime(val) || st.arrivalTime;
+            }
+            else {
+              st.departureTime = instance.parseTime(val) || st.departureTime;
+            }
+            // TODO: save here
+          }
         }
 
         else if (name == 'trip_id') {
