@@ -5,6 +5,35 @@
 var GtfsEditor = GtfsEditor || {};
 
 (function (G, $, ich) {
+  G.stopTimeRenderer = function (instance, td, row, col, prop, value, cellProperties) {
+    // TODO: 12h time
+    // TODO: single-time view
+    // value is stoptime
+
+    var arr = col % 2 == 1;
+    var time = arr ? value.arrivalTime : value.departureTime;
+
+
+    var secs = time % 60;
+    var mins = (time - secs) % (60 * 60) / 60;
+    var hours = (time - secs - mins * 60) / (60 * 60);
+
+    var text =
+      '<span class="hours">' + hours + '</span>' +
+      '<span class="minutes">' + (mins < 10 ? '0' + mins : mins) + '</span>' +
+      '<span class="seconds">' + (secs < 10 ? '0' + secs : secs) + '</span>';
+
+      $(td).addClass('time');
+
+      $(td).addClass(arr ? 'time-arr' : 'time-dep');
+
+      // dim departure times that are the same as their arrival times
+      if (!arr && value.departureTime == value.arrivalTime)
+        $(td).addClass('time-dep-dimmed')
+
+      Handsontable.renderers.HtmlRenderer(instance, td, row, col, prop, text, cellProperties);
+  };
+
   G.TripPatternScheduleView = Backbone.View.extend({
     initialize: function (attr) {
       // consistency check
@@ -51,13 +80,7 @@ var GtfsEditor = GtfsEditor || {};
             return '-';
           }
 
-          var time = arr ? st.arrivalTime : st.departureTime;
-
-          var secs = time % 60;
-          var mins = (time - secs) % (60 * 60) / 60;
-          var hours = (time - secs - mins * 60) / (60 * 60);
-
-          return hours + ':' + mins + ':' + secs;
+          return st;
         }
 
         else if (name == 'trip_id') {
@@ -71,7 +94,8 @@ var GtfsEditor = GtfsEditor || {};
         else if (name == 'trip_name') {
           return trip.get('tripName');
         }
-      }
+      },
+      renderer: name.indexOf('stop:') === 0 ? G.stopTimeRenderer : Handsontable.renderers.TextRenderer
     };
   },
 

@@ -4,3 +4,14 @@
    trip-pattern-schedule-view.js */
 .handsontable th { overflow: visible }
 .handsontable th > div { width: 140px; overflow: hidden }
+
+/* Show colons in times */
+.handsontable .minutes::before, .handsontable .seconds::before {
+  content: ':'
+}
+
+/* align times right and display in monospace font */
+.handsontable .time { text-align: right; font-family: mono }
+.handsontable .time-arr { color: #050 }
+.handsontable .time-dep { color: #005 }
+.handsontable .time-dep-dimmed { color: #aaa }
