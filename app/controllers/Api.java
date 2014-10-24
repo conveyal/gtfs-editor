@@ -721,9 +721,7 @@ public class Api extends Controller {
 
     // trip controllers
 
-    // **** route controllers ****
-
-    public static void getTrip(Long id, Long patternId, Long agencyId) {
+    public static void getTrip(Long id, Long patternId, Long calendarId, Long agencyId) {
         try {
             if(id != null)
             {
@@ -738,8 +736,15 @@ public class Api extends Controller {
                 if(agencyId != null) {
                     Agency agency = Agency.findById(agencyId);
                     renderJSON(Api.toJson(Trip.find("pattern.route.agency = ?", agency).fetch(), false));
-                }                    
-                if(patternId != null) {
+                }
+                
+                else if (patternId != null && calendarId != null) {
+                    TripPattern pattern = TripPattern.findById(patternId);
+                    ServiceCalendar calendar = ServiceCalendar.findById(calendarId);
+                    renderJSON(Api.toJson(Trip.find("byPatternAndServiceCalendar", pattern, calendar).fetch(), false));
+                }
+                
+                else if(patternId != null) {
                     TripPattern pattern = TripPattern.findById(patternId);
                     renderJSON(Api.toJson(Trip.find("pattern = ?", pattern).fetch(), false));
                 }
