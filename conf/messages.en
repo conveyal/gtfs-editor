@@ -338,6 +338,8 @@ route.review.status.in-progress=In-Progress
 route.review.status.pending-approval=Pending Approval
 route.review.status.approved=Approved
 
+# /timetable
+timetable.save-changes=Save changes
 
 # /search
 

@@ -7,7 +7,7 @@ secure.password=Password: Contraseña
 secure.remember= Recordar detalles
 secure.signin=Sign in Entrar
 secure.error=Unknown username or password. Nombre de usuario o contraseña desconocido.
-secure.logout=You have been logged out. Ha cerrado sesión. 
+secure.logout=You have been logged out. Ha cerrado sesión.
 
 
 # You can specialize this file for each language.
@@ -19,7 +19,7 @@ application.name=Transit Database
 
 nav-bar.agency= Información de organismo de transporte
 nav-bar.home=  Inicio
-nav-bar.contact= Contacto 
+nav-bar.contact= Contacto
 nav-bar.user-greeting=¡Bienvenido!
 
 nav-bar.export=Exportar
@@ -38,7 +38,7 @@ shared.tuesday=Martes
 shared.wednesday=Miércoles
 shared.thursday=Jueves
 shared.friday=Viernes
-shared.saturday=Sábado 
+shared.saturday=Sábado
 shared.sunday=Domingo
 
 shared.route-type.tram=Tranvía
@@ -47,7 +47,7 @@ shared.route-type.rail=Tren
 shared.route-type.bus=Autobús
 shared.route-type.ferry=Ferry
 shared.route-type.colectivo=Microbús
-shared.route-type.cable-car=Teleférico 
+shared.route-type.cable-car=Teleférico
 shared.route-type.gondola=Góndola
 shared.route-type.funicular=Funicular
 
@@ -55,8 +55,8 @@ shared.route-type.hvt.rail=Servicio de tren
 shared.route-type.hvt.rail_hs=Servicio de tren de alta velocidad
 shared.route-type.hvt.rail_ld=Trenes de larga distancia
 shared.route-type.hvt.rail_shuttle=Tren de conexión (dentro de algún complejo)
-shared.route-type.hvt.rail_suburban=Tren suburbano 
-shared.route-type.hvt.coach=Servicio de autobús foráneo 
+shared.route-type.hvt.rail_suburban=Tren suburbano
+shared.route-type.hvt.coach=Servicio de autobús foráneo
 shared.route-type.hvt.coach_international=Servicio de autobús foráneo internacional
 shared.route-type.hvt.coach_national=Servicio de autobús foráneo nacional
 shared.route-type.hvt.coach_regional=Servicio de autobús foráneo regional
@@ -162,8 +162,8 @@ route.stops-upload-data=Subir información de paradas/estaciones
 route.stops-stop-details=Detalles de la parada/estación
 
 route.stops-stop-name=Nombre de parada/estación
-route.stops-stop-description=Descripción 
-route.stops-major-stop= Parada/ estación principal 
+route.stops-stop-description=Descripción
+route.stops-major-stop= Parada/ estación principal
 
 
 
@@ -174,16 +174,16 @@ route.trip-pattern-create-new-pattern=Crear un nuevo patrón
 route.trip-pattern-delete-pattern=Borrar patrón
 
 route.trip-pattern-stop-sequence=Detener la secuencia
-route.trip-pattern-pattern-stops=Parada/estaciones del patrón 
+route.trip-pattern-pattern-stops=Parada/estaciones del patrón
 
-route.trip-pattern-zoom-pattern=Zoom al patrón 
+route.trip-pattern-zoom-pattern=Zoom al patrón
 route.trip-pattern-clear-pattern=Limpiar patrón
 
 route.trip-pattern-kmh=km/hr
 route.trip-pattern-calculate-times=Calcular tiempos
 
 
-route.trip-pattern-alignment=Alineamiento 
+route.trip-pattern-alignment=Alineamiento
 route.trip-pattern-create-alignment-from-pattern= Crear alineamiento a partir del patrón
 
 route.trip-pattern-new-pattern-name=Nombre del nuevo patrón de viaje
@@ -197,18 +197,18 @@ route.trip-pattern-dwell-time=Tiempo de acenso-descenso Time (mm:ss)
 
 
 
-route.trip-info-tpl.trip-pattern=Patrón de viaje 
+route.trip-info-tpl.trip-pattern=Patrón de viaje
 
-route.trip-info-tpl.trip-description=Descripción del viaje 
+route.trip-info-tpl.trip-description=Descripción del viaje
 
-route.trip-info-tpl.start-time=Hora de inicio 
-route.trip-info-tpl.start-time-content=La hora del día en que este patrón empieza a operar. 
+route.trip-info-tpl.start-time=Hora de inicio
+route.trip-info-tpl.start-time-content=La hora del día en que este patrón empieza a operar.
 
 route.trip-info-tpl.end-time=Hora de cierre.
 route.trip-info-tpl.end-time-content=La hora del día en la que este patrón termina de operar.
 
 route.trip-info-tpl.service-frequency=Frecuencia en el servicio
-route.trip-info-tpl.service-frequency-content=Número de minutos y segundos entre los tiempos de arribo promedio. 
+route.trip-info-tpl.service-frequency-content=Número de minutos y segundos entre los tiempos de arribo promedio.
 
 route.trip-info-tpl.days-in-service=Días en servicio
 
@@ -221,6 +221,8 @@ route.trip-info-tpl.hhmmss=hh:mm[:ss]
 route.trip-info-tpl.calendar-create-modal.title=Crear calendario
 route.trip-info-tpl.calendar-create-modal.calendar-name=Nombre del calendario
 
+# timetable
+timetable.save-changes=Guardar cambios del horario
 
 # /search
 
@@ -231,11 +233,11 @@ search.title=Rutas de
 
 manage.route-types.title=Administrar tipo de rutas
 manage.route-types.dialog-title=Nuevo tipo de ruta
-manage.route-types.create-new-type-button=Crear nuevo tipo 
+manage.route-types.create-new-type-button=Crear nuevo tipo
 
 
 manage.route-types.localized-vehicle-type=Tipo de vehículo local
-manage.route-types.localized-vehicle-type-content= Los tipos de vehículo locales son una extensión de la especificación GTFS que define los nombres de los servicios de transporte como los entiende el público en una ciudad o región en especifico (ej. El metro en Washington DC se conoce como &quot;Metro&quot; el BRT en la Ciudad de México es  &quot;Metrobús&quot;). Deben reflejar el idioma y caracteres de un lugar en específico. El tipo de vehículo local se refiere al servicio brindado, no al operador o al organismo de transporte, aunque en algunos lugares los nombres de tipo de vehículos y los operadores pueden coincidir. 
+manage.route-types.localized-vehicle-type-content= Los tipos de vehículo locales son una extensión de la especificación GTFS que define los nombres de los servicios de transporte como los entiende el público en una ciudad o región en especifico (ej. El metro en Washington DC se conoce como &quot;Metro&quot; el BRT en la Ciudad de México es  &quot;Metrobús&quot;). Deben reflejar el idioma y caracteres de un lugar en específico. El tipo de vehículo local se refiere al servicio brindado, no al operador o al organismo de transporte, aunque en algunos lugares los nombres de tipo de vehículos y los operadores pueden coincidir.
 
 manage.route-types.description=Descripción
 manage.route-types.description-content=Descripción del tipo de ruta
@@ -243,8 +245,8 @@ manage.route-types.description-content=Descripción del tipo de ruta
 manage.route-types.gtfs-route-type=Tipo de ruta GTFS
 manage.route-types.gtfs-route-type-content=El campo route_type describe el tipo de transporte utilizado en una ruta.
 
-manage.route-types.hsv-route-type= Tipo de ruta HVT 
-manage.route-types.hsv-route-type-content= El campo route_type describe el tipo de transporte utilizado en una ruta, usando el sistema de nomenclatura alterno HVT. 
+manage.route-types.hsv-route-type= Tipo de ruta HVT
+manage.route-types.hsv-route-type-content= El campo route_type describe el tipo de transporte utilizado en una ruta, usando el sistema de nomenclatura alterno HVT.
 
 # manage/stopTypes
 
@@ -258,13 +260,13 @@ manage.agencies.dialog-title=Nuevo organismo de transporte
 manage.agencies.create-new-agency-button=Crear un nuevo organismo de transporte
 
 manage.agencies.gtfs-agency-id= ID GTFS de Organismo de Transporte
-manage.agencies.gtfs-agency-id-content= Identificador opcional GTFS de Organismo de Transporte. Debe ser un identificador alfanumérico corto, único para el organismo de transporte (ej. El nombre del organismo de transporte abreviado). Si no se especifica, se asignará un número exclusivo automáticamente. 
+manage.agencies.gtfs-agency-id-content= Identificador opcional GTFS de Organismo de Transporte. Debe ser un identificador alfanumérico corto, único para el organismo de transporte (ej. El nombre del organismo de transporte abreviado). Si no se especifica, se asignará un número exclusivo automáticamente.
 
 manage.agencies.name=Nombre
-manage.agencies.name-content= Nombre público del organismo de transporte 
+manage.agencies.name-content= Nombre público del organismo de transporte
 
 manage.agencies.url=URL
-manage.agencies.url-content= URL del sitio web del organismo de transporte 
+manage.agencies.url-content= URL del sitio web del organismo de transporte
 
 manage.agencies.default-lat=Latitud predeterminada
 manage.agencies.default-lat-content=Latitud predeterminada como punto central del mapa
@@ -297,7 +299,7 @@ export.kml.title=Exportar como KML
 
 export.shapefile.title=Exportar como Shapefile
 
-export.gis.title=Exportar como Shapefile 
+export.gis.title=Exportar como Shapefile
 export.gis.type=Tipo de Exportación
 
 export.gis.stops=Exportar Paradas/Estaciones
@@ -313,14 +315,14 @@ secure.title=
 secure.username=Usuario:
 secure.password=Contraseña:
 secure.remember=Recordar detalles
-secure.signin=Iniciar sesión 
+secure.signin=Iniciar sesión
 secure.error=Nombre de usuario o contraseña incorrectos
 secure.logout=Has cerrado sesión
 
 route.trip-pattern-timing=Tiempos
 
 
-route.trip-info-instructions=Generar una programación de servicio agregando ‘viajes’ a los ‘patrones de viaje’.  
+route.trip-info-instructions=Generar una programación de servicio agregando ‘viajes’ a los ‘patrones de viaje’.
 
 route.trip-info-tpl.trip-pattern-content=Seleccionar un patrón de viaje existente para crear viajes.
 
@@ -334,25 +336,26 @@ route.trip-pattern-select-schedule-type-frequency=Utilizar Frecuencia
 route.trip-pattern-select-schedule-type-timetable=Utilizar Calendario
 
 route.trip-info-tpl.trip=Viaje
-route.trip-info-tpl.trip-content=Seleccionar o crear un viaje. 
+route.trip-info-tpl.trip-content=Seleccionar o crear un viaje.
 
-route.trip-info-tpl.trip-description-content=Descripción del viaje (ej. Hora pico en día hábil). 
+route.trip-info-tpl.trip-description-content=Descripción del viaje (ej. Hora pico en día hábil).
 
 route.trip-pattern-select-trip=Seleccionar viaje
 
 route.trip-info-tpl.create-trip-btn=Crear nuevo viaje
 route.trip-info-tpl.delete-trip-btn=Borrar viaje
+route.trip-info-tpl.edit-timetable=Cambiar horario
 
 route.trip-info-new-trip-name=Descripción del nuevo viaje
 
 route.trip-info-tpl.service-calendar=Calendario de servicio
-route.trip-info-tpl.service-calendar-content= Especificar los días de la semana en los que este viaje funciona. 
+route.trip-info-tpl.service-calendar-content= Especificar los días de la semana en los que este viaje funciona.
 
 route.trip-info-tpl.calendar-create-modal.calendar-name-content=Nombre del calendario(ej. Servicio en día hábil).
 
 route.trip-info-tpl.calendar-modify=Modificar Calendario
 
-route.stops-bike-parking=Biciestacionamiento 
+route.stops-bike-parking=Biciestacionamiento
 route.stops-wheelchair-boarding=Acceso con silla de ruedas
 
 
@@ -372,7 +375,7 @@ shared.attribute.unavailable=No disponible
 
 
 # this is already translated but the english text changed slightly.
-route.trip-pattern-instructions=Clic en las paradas/estaciones en el mapa para crear la secuencia de un patrón de viaje. Establezca el tiempo de recorrido entre paradas/estaciones y el de ascenso-descenso de pasajeros y genere un alineamiento. 
+route.trip-pattern-instructions=Clic en las paradas/estaciones en el mapa para crear la secuencia de un patrón de viaje. Establezca el tiempo de recorrido entre paradas/estaciones y el de ascenso-descenso de pasajeros y genere un alineamiento.
 
 
 # error messages and prompts
@@ -390,11 +393,11 @@ route.trip-info-delete-pattern-confirm==¿Está seguro de querer borrar este via
 route.trip-pattern-create-failed=Error al crear el patrón de viaje.
 route.trip-pattern-create-failed-no-name=Error al crear patrón de viaje, por favor introduzca un nombre.
 route.trip-pattern-add-stop-failed=Error al añadir la parada/estación
-route.trip-pattern-add-stop-failed-no-pattern=Seleccionar o crear un patrón antes de añadir paradas/estaciones. 
+route.trip-pattern-add-stop-failed-no-pattern=Seleccionar o crear un patrón antes de añadir paradas/estaciones.
 
 
-route.trip-pattern-no-tw-data=No hay datos disponibles para este número Id. de TransitWand. 
-route.trip-pattern-tw-unknown-id=Número Id. de TransitWand incorrecto. 
+route.trip-pattern-no-tw-data=No hay datos disponibles para este número Id. de TransitWand.
+route.trip-pattern-tw-unknown-id=Número Id. de TransitWand incorrecto.
 route.trip-pattern-tw-unable-load=Error al cargar los datos desde TransitWand
 
 shared.button.duplicate=Duplicar
