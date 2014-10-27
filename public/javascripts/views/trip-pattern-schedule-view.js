@@ -29,7 +29,7 @@ var GtfsEditor = GtfsEditor || {};
     // TODO: single-time view
     // time is seconds since midnight
     var text;
-    if (value.get('stopTimes' === null)) {
+    if (value.get('stopTime') === null) {
       text = '<span class="time no-stop">-</span>';
     } else {
 
