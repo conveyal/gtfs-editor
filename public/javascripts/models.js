@@ -270,6 +270,8 @@ G.RouteTypes = Backbone.Collection.extend({
       useFrequency: null
     },
 
+    urlRoot: G.config.baseUrl + 'api/trippattern/',
+
     initialize: function() {
       this.on('change:patternStops', this.normalizeSequence, this);
 
@@ -441,7 +443,8 @@ G.RouteTypes = Backbone.Collection.extend({
       sunday: null,
       startDate: null,
       endDate: null
-    }
+    },
+    urlRoot: G.config.baseUrl + 'api/calendar/'
     // days, start_date, end_date, exceptions[]
   });
 
@@ -471,7 +474,7 @@ G.Trip = Backbone.Model.extend({
     comparator: function (trip) {
       var sts = trip.get('stopTimes');
       if (!_.isUndefined(sts) && sts != null && sts.length > 0) {
-        return sts[0].departureTime;  
+        return sts[0].departureTime;
       }
       // 500 hours past midnight should put these trips at the end
       // the longest train journey is Moscow to Pyongyang (210 h), per Wikipedia

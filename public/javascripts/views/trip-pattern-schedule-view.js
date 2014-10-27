@@ -168,6 +168,9 @@ var GtfsEditor = GtfsEditor || {};
 
   G.TripPatternScheduleView = Backbone.View.extend({
     initialize: function(attr) {
+      this.calendar = attr.calendar;
+      this.pattern = attr.pattern;
+
       // consistency check
       var tripPatternId = null;
       var serviceCalendarId = null;
@@ -194,7 +197,7 @@ var GtfsEditor = GtfsEditor || {};
       // backbone will just move it around anyhow, and handsontable doesn't seem to care if things don't end up where it put them
       this.add(arguments.slice(2));
       return toRemove;
-    }
+    };
 
       // event handlers
       _.bindAll(this, 'saveAll', 'newTrip');
@@ -294,15 +297,15 @@ var GtfsEditor = GtfsEditor || {};
     // create a new trip based on the pattern
     newTrip: function () {
       var trip = new G.Trip();
-      trip.set('pattern', this.pattern);
-      trip.set('serviceCalendar', this.calendar);
+      trip.set('pattern', this.pattern.toJSON());
+      trip.set('serviceCalendar', this.calendar.toJSON());
       var stopTimes = [];
 
       // prepopulate stop times based on the pattern
       // TODO: midnight is a bad initial time. what is a good intial time?
       var currentTime = 0;
 
-      _.each(this.pattern.patternStops, function (patternStop) {
+      _.each(this.pattern.get('patternStops'), function (patternStop) {
         var st = {};
         st.stop = patternStop.stop;
         st.patternStop = patternStop;
@@ -343,11 +346,7 @@ var GtfsEditor = GtfsEditor || {};
       // display cells
       var colWidths = [15, 150, 150, 150];
 
-      // TODO: how do you create the first trip?
-      this.pattern = this.collection.at(0).get('pattern');
-      this.calendar = this.collection.at(0).get('serviceCalendar');
-
-      _.each(this.pattern.patternStops, function(patternStop, idx) {
+      _.each(this.pattern.get('patternStops'), function(patternStop, idx) {
         // we put stopSequence here for loop routes
         columns.push(instance.attr('stop:' + patternStop.stop.id + ':' + patternStop.stopSequence + ':arr'));
         columns.push(instance.attr('stop:' + patternStop.stop.id + ':' + patternStop.stopSequence + ':dep'));
