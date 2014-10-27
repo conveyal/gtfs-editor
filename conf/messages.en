@@ -398,7 +398,7 @@ manage.agencies.default-route-type-content=Default Route Type
 manage.agencies.timezone=Timezone
 manage.agencies.timezone-content=Feed timezone.
 
-manage.agencies.lang=Lanuage
+manage.agencies.lang=Language
 manage.agencies.lang-content=Feed language.
 
 # /manage/account
