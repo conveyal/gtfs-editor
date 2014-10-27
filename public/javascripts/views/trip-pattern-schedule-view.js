@@ -299,6 +299,7 @@ var GtfsEditor = GtfsEditor || {};
       var trip = new G.Trip();
       trip.set('pattern', this.pattern.toJSON());
       trip.set('serviceCalendar', this.calendar.toJSON());
+      trip.set('route', this.pattern.get('route'));
       var stopTimes = [];
 
       // prepopulate stop times based on the pattern
