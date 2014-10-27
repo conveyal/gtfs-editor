@@ -223,6 +223,7 @@ route.trip-info-tpl.calendar-create-modal.calendar-name=Nombre del calendario
 
 # timetable
 timetable.save-changes=Guardar cambios del horario
+timetable.new-trip=Crear viaje
 
 # /search
 
