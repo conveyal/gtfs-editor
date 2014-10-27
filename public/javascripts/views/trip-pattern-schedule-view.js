@@ -216,6 +216,10 @@ var GtfsEditor = GtfsEditor || {};
               } else {
                 st.departureTime = parseTime(val);
               }
+
+              // keep track of modifications
+              // Backbone doesn't know quite how to handle nested objects inside models, so we track state ourselves
+              trip.set('modified', true);
             }
           } else if (name == 'trip_id') {
             return trip.get('gtfsTripId');
@@ -223,6 +227,8 @@ var GtfsEditor = GtfsEditor || {};
             return trip.get('blockId');
           } else if (name == 'trip_name') {
             return trip.get('tripName');
+          } else if (name == 'changed') {
+            return trip.get('modified') ? '*' : '';
           }
         },
       };
@@ -242,16 +248,16 @@ var GtfsEditor = GtfsEditor || {};
       this.$el.html(ich['timetable-tpl']());
 
       // figure out what columns we're rendering
-      var columns = [this.attr('trip_id'), this.attr('block_id'), this.attr('name')];
+      var columns = [this.attr('changed'), this.attr('trip_id'), this.attr('block_id'), this.attr('name')];
       // TODO: i18n
-      var headers = ['Trip ID', 'Block ID', 'Trip name'];
+      var headers = ['', 'Trip ID', 'Block ID', 'Trip name'];
 
       var instance = this;
 
       // note: the merged header cells aren't actually merged, but depend on a really awful hack (in timetable.css) where the width of
       // two columns is hardcoded as the header width. As a side effect, these numbers must be exactly twice the width of the time
       // display cells
-      var colWidths = [150, 150, 150];
+      var colWidths = [15, 150, 150, 150];
 
       _.each(this.collection.at(0).get('pattern').patternStops, function(patternStop, idx) {
         // we put stopSequence here for loop routes
@@ -265,8 +271,8 @@ var GtfsEditor = GtfsEditor || {};
         colWidths.push(75);
       });
 
-      var $container = this.$('#timetable');
-      $container.handsontable({
+      this.$container = this.$('#timetable');
+      this.$container.handsontable({
         data: this.collection.toArray(),
         dataSchema: function() {
           return new G.Trip();
