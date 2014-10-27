@@ -185,6 +185,17 @@ var GtfsEditor = GtfsEditor || {};
         }
       });
 
+      // Handsontable needs the collection to have a splice method
+      // inspired by code at http://handsontable.com/demo/backbone.html
+    this.collection.splice = function (idx, size) {
+      var toRemove = this.toArray().slice(idx, size + 1);
+      this.remove(toRemove);
+      // collections are not ordered, since this one has a comparator; thus it doesn't matter if we insert stuff in the middle
+      // backbone will just move it around anyhow, and handsontable doesn't seem to care if things don't end up where it put them
+      this.add(arguments.slice(2));
+      return toRemove;
+    }
+
       // event handlers
       _.bindAll(this, 'saveAll', 'newTrip');
     },
@@ -357,7 +368,7 @@ var GtfsEditor = GtfsEditor || {};
 
       this.$container = this.$('#timetable');
       this.$container.handsontable({
-        data: this.collection.toArray(),
+        data: this.collection,
         dataSchema: schema,
         // we'll be defining interaction on our own
         // also adding a column doesn't make sense
