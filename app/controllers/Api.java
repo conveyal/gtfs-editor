@@ -796,7 +796,7 @@ public class Api extends Controller {
      * When trips come back over the wire, they contain stop times directly due to hierarchical serialization. 
      */
     public static class TripWithStopTimes extends Trip {
-        List<StopTime> stopTimes;
+        List<StopTimeWithDeletion> stopTimes;
         
         public Trip toTrip () {
             Trip ret = new Trip();
@@ -817,6 +817,30 @@ public class Api extends Controller {
             ret.tripShortName = this.tripShortName;
             ret.useFrequency = this.useFrequency;
             ret.wheelchairBoarding = this.wheelchairBoarding;
+            return ret;
+        }
+    }
+    
+    /**
+     * When StopTimes come back, they also have field deleted, which if true indicate that this stop time has
+     * been deleted (i.e. trip no longer stops here).
+     */
+    public static class StopTimeWithDeletion extends StopTime {
+        public Boolean deleted;
+        
+        public StopTime toStopTime () {
+            StopTime ret = new StopTime();
+            ret.id = this.id;
+            ret.arrivalTime = this.arrivalTime;
+            ret.departureTime = this.departureTime;
+            ret.dropOffType = this.dropOffType;
+            ret.patternStop = this.patternStop;
+            ret.pickupType = this.pickupType;
+            ret.shapeDistTraveled = this.shapeDistTraveled;
+            ret.stop = this.stop;
+            ret.stopHeadsign = this.stopHeadsign;
+            ret.stopSequence = this.stopSequence;
+            ret.trip = this.trip;
             return ret;
         }
     }
@@ -846,11 +870,16 @@ public class Api extends Controller {
             
             // update the stop times
             // TODO: how to detect deleted StopTimes (i.e. route no longer stops here)?
-            for (StopTime stopTime : trip.stopTimes) {
-                StopTime updatedStopTime = StopTime.em().merge(stopTime);
-                // this was getting lost somehow
-                updatedStopTime.trip = updatedTrip;
-                updatedStopTime.save();
+            for (StopTimeWithDeletion stopTime : trip.stopTimes) {
+                if (Boolean.TRUE.equals(stopTime.deleted)) {
+                    StopTime.delete("id = ? AND trip = ?", stopTime.id, updatedTrip);
+                }
+                else {
+                    StopTime updatedStopTime = StopTime.em().merge(stopTime.toStopTime());
+                    // this was getting lost somehow
+                    updatedStopTime.trip = updatedTrip;
+                    updatedStopTime.save();
+                }
             }
 
             renderJSON(Api.toJson(updatedTrip, false));

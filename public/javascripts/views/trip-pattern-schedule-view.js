@@ -184,6 +184,9 @@ var GtfsEditor = GtfsEditor || {};
           }
         }
       });
+
+      // event handlers
+      _.bindAll(this, 'saveAll');
     },
 
     // combination of getAttr and setAttr for handsontable
@@ -221,28 +224,28 @@ var GtfsEditor = GtfsEditor || {};
               // Backbone doesn't know quite how to handle nested objects inside models, so we track state ourselves
               trip.modified = true;
             }
-          } else if (name == 'trip_id') {
+          } else if (name == 'tripId') {
             if (_.isUndefined(val)) {
               return trip.get('gtfsTripId');
             } else {
               trip.set('gtfsTripId', val);
               trip.modified = true;
             }
-          } else if (name == 'block_id') {
+          } else if (name == 'blockId') {
             if (_.isUndefined(val)) {
-              return trip.get('block_id');
+              return trip.get('blockId');
             } else {
-              trip.set('block_id', val);
+              trip.set('blockId', val);
               trip.modified = true;
             }
-          } else if (name == 'trip_name') {
+          } else if (name == 'tripHeadsign') {
             if (_.isUndefined(val)) {
-              return trip.get('trip_name');
+              return trip.get('tripHeadsign');
             } else {
-              trip.set('trip_name', val);
+              trip.set('tripHeadsign', val);
               trip.modified = true;
             }
-          } else if (name == 'changed') {
+          } else if (name == 'modified') {
             return trip.modified ? '*' : '';
           }
         },
@@ -258,14 +261,33 @@ var GtfsEditor = GtfsEditor || {};
       return ret;
     },
 
+    saveAll: function() {
+      var instance = this;
+      var deferreds = [];
+
+      this.collection.each(function(trip) {
+        if (trip.modified) {
+          deferreds.push(
+            trip.save().done(function() {
+              trip.modified = false;
+            })
+          );
+        }
+      });
+
+      $.when.apply($, deferreds).always(function () {
+        instance.$container.handsontable('render');
+      });
+    },
+
     render: function() {
       // render the template
       this.$el.html(ich['timetable-tpl']());
 
       // figure out what columns we're rendering
-      var columns = [this.attr('changed'), this.attr('trip_id'), this.attr('block_id'), this.attr('name')];
+      var columns = [this.attr('modified'), this.attr('tripId'), this.attr('blockId'), this.attr('tripHeadsign')];
       // TODO: i18n
-      var headers = ['', 'Trip ID', 'Block ID', 'Trip name'];
+      var headers = ['', 'Trip ID', 'Block ID', 'Trip headsign'];
 
       var instance = this;
 
@@ -286,18 +308,28 @@ var GtfsEditor = GtfsEditor || {};
         colWidths.push(75);
       });
 
+      // make a new trip, and since it's new it's been modified (from its previous state of non-existence)
+      var newTrip = function() {
+        var t = new G.Trip();
+        t.modified = true;
+        return t;
+      };
+
       this.$container = this.$('#timetable');
       this.$container.handsontable({
         data: this.collection.toArray(),
-        dataSchema: function() {
-          return new G.Trip();
-        },
+        dataSchema: newTrip,
         // we'll be defining interaction on our own
-        contextMenu: false,
+        // but for now we leave the context menu so that new trips can be added.
+        contextMenu: true,
         columns: columns,
         colHeaders: headers,
         colWidths: colWidths
       });
+
+      // add the save handler
+      this.$('.save').click(this.saveAll);
+
       return this;
     }
   });
