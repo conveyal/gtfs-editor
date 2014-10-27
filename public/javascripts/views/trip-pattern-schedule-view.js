@@ -43,13 +43,14 @@ var GtfsEditor = GtfsEditor || {};
 
       // TODO: template
       text =
-        '<span class="time ' + (arr ? 'time-arr' : 'time-dep') +
+        '<div class="time ' + (arr ? 'time-arr' : 'time-dep') +
         // dim departure times that are the same as their arrival times
         // TODO: only in two-time mode
         (!arr && st.departureTime == st.arrivalTime ? 'time-dep-dimmed' : '') + '">' +
         '<span class="hours">' + hours + '</span>' +
         '<span class="minutes">' + (mins < 10 ? '0' + mins : mins) + '</span>' +
-        '<span class="seconds">' + (secs < 10 ? '0' + secs : secs) + '</span>';
+        '<span class="seconds">' + (secs < 10 ? '0' + secs : secs) + '</span>' +
+        '</div>';
     }
 
     Handsontable.renderers.HtmlRenderer(instance, td, row, col, prop, text, cellProperties);
@@ -70,12 +71,14 @@ var GtfsEditor = GtfsEditor || {};
     var value = hours + ':' + (mins < 10 ? '0' + mins : mins) + ':' + (secs < 10 ? '0' + secs : secs);
 
     Handsontable.editors.TextEditor.prototype.setValue.apply(this, [value]);
+    $(this.TEXTAREA).addClass('time');
   };
 
   // select everything, since folks are usually overwriting
   StopTimeEditor.prototype.focus = function() {
     Handsontable.editors.TextEditor.prototype.focus.apply(this, arguments);
     this.TEXTAREA.setSelectionRange(0, this.TEXTAREA.value.length);
+    $(this.TEXTAREA).css('font-family', 'mono');
   };
 
   /**
