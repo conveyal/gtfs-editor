@@ -5,17 +5,38 @@
 var GtfsEditor = GtfsEditor || {};
 
 (function(G, $, ich) {
-  var displayTime = function(st, arr) {
+  /**
+   * A model representing a cell in the table. We need a toString because Handsontable calls toString before
+   * calling the editor setValue method, so the string needs to be something useful.
+   */
+  var StopTimeCell = Backbone.Model.extend({
+    defaults: {
+      stopTime: null,
+      // is this the arrival time cell, or the departure time cell?
+      arr: null
+    },
+    toString: function() {
+      var st = this.get('stopTime');
+      return String(this.get('arr') ? st.arrivalTime : st.departureTime);
+    }
+  })
+
+  /**
+   * A renderer that displays the time as a time rather than seconds since midnight.
+   */
+  var stopTimeRenderer = function(instance, td, row, col, prop, value, cellProperties) {
     // TODO: 12h time
     // TODO: single-time view
-
-    var time = arr ? st.arrivalTime : st.departureTime
-
+    // time is seconds since midnight
     var text;
-
-    if (_.isUndefined(time)) {
-      text = '-';
+    if (_.isUndefined(value)) {
+      text = '<span class="time no-stop">-</span>';
     } else {
+
+      var arr = value.get('arr');
+      var st = value.get('stopTime');
+      var time = arr ? st.arrivalTime : st.departureTime;
+
       var secs = time % 60;
       var mins = (time - secs) % (60 * 60) / 60;
       var hours = (time - secs - mins * 60) / (60 * 60);
@@ -29,28 +50,35 @@ var GtfsEditor = GtfsEditor || {};
         '<span class="hours">' + hours + '</span>' +
         '<span class="minutes">' + (mins < 10 ? '0' + mins : mins) + '</span>' +
         '<span class="seconds">' + (secs < 10 ? '0' + secs : secs) + '</span>';
-
-      return text;
     }
+
+    Handsontable.renderers.HtmlRenderer(instance, td, row, col, prop, text, cellProperties);
+  };
+
+  /**
+   * Edit a time
+   */
+  var StopTimeEditor = Handsontable.editors.TextEditor.prototype.extend();
+
+  StopTimeEditor.prototype.setValue = function(time) {
+    time = Number(time);
+
+    var secs = time % 60;
+    var mins = (time - secs) % (60 * 60) / 60;
+    var hours = (time - secs - mins * 60) / (60 * 60);
+
+    var value = hours + ':' + (mins < 10 ? '0' + mins : mins) + ':' + (secs < 10 ? '0' + secs : secs);
+
+    Handsontable.editors.TextEditor.prototype.setValue.apply(this, [value]);
   };
 
   /**
    * Parse time in many formats
    * return null if there is no time
+   * return false if the vehicle does not stop here
    * No time means "the vehicle does stop here, but it's up to the consumer to interpolate when"
    */
   var parseTime = function(time) {
-    // TODO: many time formats
-    // 332p
-    // 1532
-    // 153200
-    // 15:33
-    // 3:33 PM
-    // etc.
-    // TODO: validation
-    if (time == '')
-      return null;
-
     // get things into a standard format
     // everything lower case
     // no whitespace
@@ -58,6 +86,13 @@ var GtfsEditor = GtfsEditor || {};
     // we replace semicolons with colons, to allow folks to enter 3;32;21 pm, to be easier on the fingers
     // than having to type shift each time
     time = time.toLowerCase().replace(/([apm])(m?)/, '$1').replace(';', ':').replace(/\W/g, '');
+
+    if (time === '')
+      return null;
+
+    // TODO: handle this properly on re-render
+    if (time == '-')
+      return false;
 
     // separate the numbers from the letter
     var match = /([0-9:]{3,})([apm]?)/.exec(time);
@@ -114,13 +149,13 @@ var GtfsEditor = GtfsEditor || {};
    *
    * Note that 2090102 is not a valid time, while 209:01:02 is. Though 209 hours past midnight on the day
    * of the start of the trip is in fact a valid time, it's almost always a typo when entered without colons, so
-   * we disallow. If you're running the trans-Siberian railway (or another long-distance service), you'll just
+   * we disallow it. If you're running the trans-Siberian railway (or another long-distance service), you'll just
    * have to enter the colons.
    *
    * Semicolons and colons are treated as equivalent, for ease of typing.
    */
   var validTimeFormat =
-    /^\W*[0-9]{1,2}([0-5][0-9]){1,2}\W*[apmAPM]?[mM]?\W*$|^\W*[0-9]{1,}([:;][0-5][0-9]){1,2}\W*[apmAPM]?[mM]?\W*$/;
+    /^\W*$|^\W*-\W*|^\W*[0-9]{1,2}([0-5][0-9]){1,2}\W*[apmAPM]?[mM]?\W*$|^\W*[0-9]{1,}([:;][0-5][0-9]){1,2}\W*[apmAPM]?[mM]?\W*$/;
 
   G.TripPatternScheduleView = Backbone.View.extend({
     initialize: function(attr) {
@@ -162,7 +197,10 @@ var GtfsEditor = GtfsEditor || {};
             });
 
             if (_.isUndefined(val)) {
-              return displayTime(st, arr);
+              return new StopTimeCell({
+                arr: arr,
+                stopTime: st
+              });
             } else {
               if (arr) {
                 st.arrivalTime = parseTime(val);
@@ -182,7 +220,8 @@ var GtfsEditor = GtfsEditor || {};
 
       if (name.indexOf('stop:') === 0) {
         ret.validator = validTimeFormat;
-        ret.renderer = Handsontable.renderers.HtmlRenderer;
+        ret.renderer = stopTimeRenderer;
+        ret.editor = StopTimeEditor;
         ret.allowInvalid = false;
       }
 
