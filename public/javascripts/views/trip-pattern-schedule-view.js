@@ -72,6 +72,12 @@ var GtfsEditor = GtfsEditor || {};
     Handsontable.editors.TextEditor.prototype.setValue.apply(this, [value]);
   };
 
+  // select everything, since folks are usually overwriting
+  StopTimeEditor.prototype.focus = function() {
+    Handsontable.editors.TextEditor.prototype.focus.apply(this, arguments);
+    this.TEXTAREA.setSelectionRange(0, this.TEXTAREA.value.length);
+  };
+
   /**
    * Parse time in many formats
    * return null if there is no time
