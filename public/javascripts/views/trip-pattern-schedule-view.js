@@ -219,16 +219,31 @@ var GtfsEditor = GtfsEditor || {};
 
               // keep track of modifications
               // Backbone doesn't know quite how to handle nested objects inside models, so we track state ourselves
-              trip.set('modified', true);
+              trip.modified = true;
             }
           } else if (name == 'trip_id') {
-            return trip.get('gtfsTripId');
+            if (_.isUndefined(val)) {
+              return trip.get('gtfsTripId');
+            } else {
+              trip.set('gtfsTripId', val);
+              trip.modified = true;
+            }
           } else if (name == 'block_id') {
-            return trip.get('blockId');
+            if (_.isUndefined(val)) {
+              return trip.get('block_id');
+            } else {
+              trip.set('block_id', val);
+              trip.modified = true;
+            }
           } else if (name == 'trip_name') {
-            return trip.get('tripName');
+            if (_.isUndefined(val)) {
+              return trip.get('trip_name');
+            } else {
+              trip.set('trip_name', val);
+              trip.modified = true;
+            }
           } else if (name == 'changed') {
-            return trip.get('modified') ? '*' : '';
+            return trip.modified ? '*' : '';
           }
         },
       };
