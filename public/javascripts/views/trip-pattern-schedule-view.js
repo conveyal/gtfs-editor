@@ -120,7 +120,7 @@ var GtfsEditor = GtfsEditor || {};
    * Semicolons and colons are treated as equivalent, for ease of typing.
    */
   var validTimeFormat =
-    /^\W*[0-9]{3,6}\W*[apmAPM]?[mM]?\W*$|^\W*[0-9]{1,}[:;][0-9]{2}([:;][0-9]{2})?\W*[apmAPM]?[mM]?\W*$/;
+    /^\W*[0-9]{1,2}([0-5][0-9]){1,2}\W*[apmAPM]?[mM]?\W*$|^\W*[0-9]{1,}([:;][0-5][0-9]){1,2}\W*[apmAPM]?[mM]?\W*$/;
 
   G.TripPatternScheduleView = Backbone.View.extend({
     initialize: function(attr) {
@@ -182,7 +182,8 @@ var GtfsEditor = GtfsEditor || {};
 
       if (name.indexOf('stop:') === 0) {
         ret.validator = validTimeFormat;
-        ret.renderer = Handsontable.renderers.HtmlRenderer
+        ret.renderer = Handsontable.renderers.HtmlRenderer;
+        ret.allowInvalid = false;
       }
 
       return ret;
