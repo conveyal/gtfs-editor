@@ -762,36 +762,6 @@ public class Api extends Controller {
 
     }
 
-    public static void createTrip() {
-        Trip trip;
-
-        try {
-            trip = mapper.readValue(params.get("body"), Trip.class);
-
-            if(Route.findById(trip.pattern.route.id) == null)
-                badRequest();
-
-            // if endtime is before start time add a day (e.g 07:00-00:30 becomes 07:00-24:30)
-            if(trip != null && trip.useFrequency != null && trip.endTime != null &&  trip.useFrequency  && trip.startTime != null && trip.endTime < trip.startTime) {
-            	trip.endTime += (24 * 60 * 60 );
-            }
-            
-            trip.save();
-
-            // check if gtfsRouteId is specified, if not create from DB id
-            if(trip.gtfsTripId == null) {
-                trip.gtfsTripId = "TRIP_" + trip.id.toString();
-                trip.save();
-            }
-
-            renderJSON(Api.toJson(trip, false));
-        } catch (Exception e) {
-            e.printStackTrace();
-            badRequest();
-        }
-    }
-
-
     /**
      * When trips come back over the wire, they contain stop times directly due to hierarchical serialization. 
      */
@@ -822,7 +792,7 @@ public class Api extends Controller {
     }
     
     /**
-     * When StopTimes come back, they also have field deleted, which if true indicate that this stop time has
+     * When StopTimes come back, they may also have the field deleted, which if true indicate that this stop time has
      * been deleted (i.e. trip no longer stops here).
      */
     public static class StopTimeWithDeletion extends StopTime {
@@ -845,6 +815,51 @@ public class Api extends Controller {
         }
     }
     
+    public static void createTrip() {
+        TripWithStopTimes tripWithStopTimes = null;
+        Trip trip = null;
+
+        try {
+            try {
+                tripWithStopTimes = mapper.readValue(params.get("body"), TripWithStopTimes.class);
+            } catch (Exception e) {
+                trip = mapper.readValue(params.get("body"), Trip.class);
+            }
+
+            if (tripWithStopTimes != null) {
+                trip = tripWithStopTimes.toTrip();
+            }
+            
+            if(Route.findById(trip.pattern.route.id) == null)
+                badRequest();
+
+            // if endtime is before start time add a day (e.g 07:00-00:30 becomes 07:00-24:30)
+            if(trip != null && trip.useFrequency != null && trip.endTime != null &&  trip.useFrequency  && trip.startTime != null && trip.endTime < trip.startTime) {
+            	trip.endTime += (24 * 60 * 60 );
+            }
+            
+            trip.save();
+
+            // check if gtfsRouteId is specified, if not create from DB id
+            if(trip.gtfsTripId == null) {
+                trip.gtfsTripId = "TRIP_" + trip.id.toString();
+                trip.save();
+            }
+            
+            if (tripWithStopTimes != null && tripWithStopTimes.stopTimes != null) {
+                for (StopTimeWithDeletion stopTime: tripWithStopTimes.stopTimes) {
+                    stopTime.trip = trip;
+                    stopTime.toStopTime().save();
+                }
+            }
+
+            renderJSON(Api.toJson(trip, false));
+        } catch (Exception e) {
+            e.printStackTrace();
+            badRequest();
+        }
+    }
+    
     public static void updateTrip() {
         TripWithStopTimes trip;
         
@@ -864,10 +879,8 @@ public class Api extends Controller {
                 trip.gtfsTripId = "TRIP_" + trip.id.toString();
             }
 
-
-            Trip updatedTrip = Trip.em().merge(trip.toTrip());
-            updatedTrip.save();
-            
+             Trip updatedTrip = Trip.em().merge(trip.toTrip());
+             
             // update the stop times
             // TODO: how to detect deleted StopTimes (i.e. route no longer stops here)?
             for (StopTimeWithDeletion stopTime : trip.stopTimes) {
@@ -881,6 +894,8 @@ public class Api extends Controller {
                     updatedStopTime.save();
                 }
             }
+            
+            updatedTrip.save();
 
             renderJSON(Api.toJson(updatedTrip, false));
         } catch (Exception e) {

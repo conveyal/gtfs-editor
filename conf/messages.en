@@ -340,6 +340,7 @@ route.review.status.approved=Approved
 
 # /timetable
 timetable.save-changes=Save changes
+timetable.new-trip=New trip
 
 # /search
 

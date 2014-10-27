@@ -29,7 +29,7 @@ var GtfsEditor = GtfsEditor || {};
     // TODO: single-time view
     // time is seconds since midnight
     var text;
-    if (_.isUndefined(value)) {
+    if (value.get('stopTimes' === null)) {
       text = '<span class="time no-stop">-</span>';
     } else {
 
@@ -186,7 +186,7 @@ var GtfsEditor = GtfsEditor || {};
       });
 
       // event handlers
-      _.bindAll(this, 'saveAll');
+      _.bindAll(this, 'saveAll', 'newTrip');
     },
 
     // combination of getAttr and setAttr for handsontable
@@ -280,6 +280,42 @@ var GtfsEditor = GtfsEditor || {};
       });
     },
 
+    // create a new trip based on the pattern
+    newTrip: function () {
+      var trip = new G.Trip();
+      trip.set('pattern', this.pattern);
+      trip.set('serviceCalendar', this.calendar);
+      var stopTimes = [];
+
+      // prepopulate stop times based on the pattern
+      // TODO: midnight is a bad initial time. what is a good intial time?
+      var currentTime = 0;
+
+      _.each(this.pattern.patternStops, function (patternStop) {
+        var st = {};
+        st.stop = patternStop.stop;
+        st.patternStop = patternStop;
+        st.stopSequence = patternStop.stopSequence;
+
+        currentTime += patternStop.defaultTravelTime;
+        st.arrivalTime = currentTime;
+        currentTime += patternStop.defaultDwellTime;
+        st.departureTime = currentTime;
+
+        stopTimes.push(st);
+      });
+
+      trip.set('stopTimes', stopTimes);
+
+      // flag so it gets saved
+      trip.modified = true;
+
+      this.collection.add(trip);
+
+      // trigger redraw, show the new trip
+      this.$container.handsontable('render');
+    },
+
     render: function() {
       // render the template
       this.$el.html(ich['timetable-tpl']());
@@ -296,7 +332,11 @@ var GtfsEditor = GtfsEditor || {};
       // display cells
       var colWidths = [15, 150, 150, 150];
 
-      _.each(this.collection.at(0).get('pattern').patternStops, function(patternStop, idx) {
+      // TODO: how do you create the first trip?
+      this.pattern = this.collection.at(0).get('pattern');
+      this.calendar = this.collection.at(0).get('serviceCalendar');
+
+      _.each(this.pattern.patternStops, function(patternStop, idx) {
         // we put stopSequence here for loop routes
         columns.push(instance.attr('stop:' + patternStop.stop.id + ':' + patternStop.stopSequence + ':arr'));
         columns.push(instance.attr('stop:' + patternStop.stop.id + ':' + patternStop.stopSequence + ':dep'));
@@ -309,7 +349,7 @@ var GtfsEditor = GtfsEditor || {};
       });
 
       // make a new trip, and since it's new it's been modified (from its previous state of non-existence)
-      var newTrip = function() {
+      var schema = function() {
         var t = new G.Trip();
         t.modified = true;
         return t;
@@ -318,17 +358,19 @@ var GtfsEditor = GtfsEditor || {};
       this.$container = this.$('#timetable');
       this.$container.handsontable({
         data: this.collection.toArray(),
-        dataSchema: newTrip,
+        dataSchema: schema,
         // we'll be defining interaction on our own
-        // but for now we leave the context menu so that new trips can be added.
-        contextMenu: true,
+        // also adding a column doesn't make sense
+        // and adding a row (trip) causes display issues with handsontable
+        contextMenu: false,
         columns: columns,
         colHeaders: headers,
         colWidths: colWidths
       });
 
-      // add the save handler
+      // add the event handlers
       this.$('.save').click(this.saveAll);
+      this.$('.new-trip').click(this.newTrip);
 
       return this;
     }
