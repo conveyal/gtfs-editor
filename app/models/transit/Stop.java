@@ -52,6 +52,9 @@ public class Stop extends Model {
 
     @Enumerated(EnumType.STRING)
     public AttributeAvailabilityType bikeParking;
+    
+    @Enumerated(EnumType.STRING)
+    public AttributeAvailabilityType carParking;
 
     @Enumerated(EnumType.STRING)
     public AttributeAvailabilityType wheelchairBoarding;

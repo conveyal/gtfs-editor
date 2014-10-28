@@ -183,6 +183,7 @@ route.stops-stop-description=Description
 route.stops-major-stop=Major Stop
 
 route.stops-bike-parking=Bike Parking
+route.stops-car-parking=Car Parking
 route.stops-wheelchair-boarding=Wheelchair Boarding
 
 route.stops-delete-stop-confirm=Are you sure you want to delete this stop?

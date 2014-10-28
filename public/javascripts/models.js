@@ -84,6 +84,7 @@ G.RouteTypes = Backbone.Collection.extend({
       locationType: null,
       parentStation: null,
       bikeParking: null,
+      carParking: null,
       wheelchairBoarding: null,
       majorStop: false,
       location: null
@@ -486,6 +487,7 @@ G.Trip = Backbone.Model.extend({
     type: 'Trips',
     model: G.Trip,
     url: G.config.baseUrl + 'api/trip/',
+
     comparator: function (trip) {
       var sts = trip.get('stopTimes');
       if (!_.isUndefined(sts) && sts != null && sts.length > 0) {
