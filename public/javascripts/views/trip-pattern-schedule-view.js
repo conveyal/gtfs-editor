@@ -24,37 +24,43 @@ var GtfsEditor = GtfsEditor || {};
   /**
    * A renderer that displays the time as a time rather than seconds since midnight.
    */
-  var stopTimeRenderer = function(instance, td, row, col, prop, value, cellProperties) {
-    // TODO: 12h time
-    // TODO: single-time view
-    // time is seconds since midnight
-    var text;
-    if (value.get('stopTime') === null) {
-      text = '<span class="time no-stop">-</span>';
-    } else {
+   var stopTimeRenderer = function(instance, td, row, col, prop, value, cellProperties) {
+     // TODO: 12h time
+     // TODO: single-time view
+     // time is seconds since midnight
+     var text;
+     if (value.get('stopTime') === null) {
+       text = '<span class="time no-stop">-</span>';
+     } else {
 
-      var arr = value.get('arr');
-      var st = value.get('stopTime');
-      var time = arr ? st.arrivalTime : st.departureTime;
+       var arr = value.get('arr');
+       var st = value.get('stopTime');
+       var time = arr ? st.arrivalTime : st.departureTime;
 
-      var secs = time % 60;
-      var mins = (time - secs) % (60 * 60) / 60;
-      var hours = (time - secs - mins * 60) / (60 * 60);
+       if (time === null) {
+         // time is to be interpolated by consumer
+         text = '';
+       } else {
+         var secs = time % 60;
+         var mins = (time - secs) % (60 * 60) / 60;
+         var hours = (time - secs - mins * 60) / (60 * 60);
 
-      // TODO: template
-      text =
-        '<div class="time ' + (arr ? 'time-arr' : 'time-dep') +
-        // dim departure times that are the same as their arrival times
-        // TODO: only in two-time mode
-        (!arr && st.departureTime == st.arrivalTime ? 'time-dep-dimmed' : '') + '">' +
-        '<span class="hours">' + hours + '</span>' +
-        '<span class="minutes">' + (mins < 10 ? '0' + mins : mins) + '</span>' +
-        '<span class="seconds">' + (secs < 10 ? '0' + secs : secs) + '</span>' +
-        '</div>';
-    }
+         // TODO: template
+         text =
+           '<div class="time ' + (arr ? 'time-arr' : 'time-dep') +
+           // dim departure times that are the same as their arrival times
+           // TODO: only in two-time mode
+           (!arr && st.departureTime == st.arrivalTime ? 'time-dep-dimmed' : '') + '">' +
+           '<span class="hours">' + hours + '</span>' +
+           '<span class="minutes">' + (mins < 10 ? '0' + mins : mins) + '</span>' +
+           '<span class="seconds">' + (secs < 10 ? '0' + secs : secs) + '</span>' +
+           '</div>';
+       }
+     }
 
-    Handsontable.renderers.HtmlRenderer(instance, td, row, col, prop, text, cellProperties);
-  };
+     Handsontable.renderers.HtmlRenderer(instance, td, row, col, prop, text, cellProperties);
+   };
+
 
   /**
    * Edit a time
@@ -62,17 +68,23 @@ var GtfsEditor = GtfsEditor || {};
   var StopTimeEditor = Handsontable.editors.TextEditor.prototype.extend();
 
   StopTimeEditor.prototype.setValue = function(time) {
-    time = Number(time);
+    if (time === null || time == 'null') {
+      value = '';
+    } else {
 
-    var secs = time % 60;
-    var mins = (time - secs) % (60 * 60) / 60;
-    var hours = (time - secs - mins * 60) / (60 * 60);
+      time = Number(time);
 
-    var value = hours + ':' + (mins < 10 ? '0' + mins : mins) + ':' + (secs < 10 ? '0' + secs : secs);
+      var secs = time % 60;
+      var mins = (time - secs) % (60 * 60) / 60;
+      var hours = (time - secs - mins * 60) / (60 * 60);
+
+      var value = hours + ':' + (mins < 10 ? '0' + mins : mins) + ':' + (secs < 10 ? '0' + secs : secs);
+    }
 
     Handsontable.editors.TextEditor.prototype.setValue.apply(this, [value]);
     $(this.TEXTAREA).addClass('time');
   };
+
 
   // select everything, since folks are usually overwriting
   StopTimeEditor.prototype.focus = function() {
