@@ -30,6 +30,7 @@ var GtfsEditor = GtfsEditor || {};
 
 
     initialize: function (opts) {
+      window.rtpv = this;
 
       this.stopIcons = {};
       this.stopLayers = {};
@@ -377,9 +378,7 @@ var GtfsEditor = GtfsEditor || {};
     },
 
     onStopModelAdd: function(model) {
-      var markerLayer;
-
-      var $popupContent;
+      var $popupContent, markerLayer;
 
       var selectedPatternId  = this.$('#trip-pattern-select').val();
 
@@ -967,8 +966,13 @@ var GtfsEditor = GtfsEditor || {};
       ps.stopSequence = patStops[patStops.length - 1].stopSequence + 1;
       ps.id = undefined;
       patStops.push(ps);
-      pat.set('patternStops', patStops);
-      pat.save();
+
+      var instance = this;
+      pat.set({patternStops: patStops});
+      pat.save().done(function () {
+        // re-open popup
+        instance.stopLayers[ps.stop.id].fireEvent('click');
+      });
     },
 
     clearPatternButton: function(evt) {
