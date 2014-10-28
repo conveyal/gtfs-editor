@@ -230,6 +230,7 @@ route.trip-pattern-popup-add-stop-pattern=Add Stop to Trip Pattern
 route.trip-pattern-popup-pattern-stop=Pattern Stop
 route.trip-pattern-travel-time=Travel Time (mm:ss)
 route.trip-pattern-dwell-time=Dwell Time (mm:ss)
+route.trip-pattern-add-stop-again=Add stop again
 
 route.trip-pattern-timing=Timing
 

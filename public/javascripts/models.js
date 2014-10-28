@@ -280,19 +280,34 @@ G.RouteTypes = Backbone.Collection.extend({
       this.sortPatternStops();
     },
 
-    getPatternStop: function(stopId) {
+    /**
+     * Get all of the pattern stops for a particular stop.
+     * Generally there will only be one, but there can be more on a loop route.
+     * If you'd like only one stop, see getPatternStop(stopId, stopSequence)
+     */
+    getPatternStops: function(stopId) {
       return this.isPatternStop(stopId);
     },
 
     isPatternStop: function(stopId) {
-      var isPatternStop = false;
-      _.each(this.get('patternStops'), function(ps, i) {
-        if(ps.stop.id == stopId) {
-          isPatternStop = ps;
-        }
+      var patternStops = _.filter(this.get('patternStops'), function(ps, i) {
+        return ps.stop.id == stopId;
       });
-      return isPatternStop;
+      return patternStops.length > 0 ? patternStops : false;
     },
+
+    /**
+     * Get the pattern stop for this stop ID and stop sequence.
+     * If you don't have a stop sequence, see getPatternStops(stopId)
+     */
+     getPatternStop: function (stopId, stopSequence) {
+       var ret = _.find(this.get('patternStops'), function (ps) {
+         return ps.stop.id == stopId && ps.stopSequence == stopSequence;
+       });
+
+        // match the behavior of getPatternStop/isPatternStop
+       return ret === null ? false : ret;
+     },
 
     getPatternStopLabel: function(stopId) {
       var stopsSequences = [];
