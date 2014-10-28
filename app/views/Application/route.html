@@ -709,11 +709,8 @@
               {{#sequenceList}}
               <option value="{{sequence}}">{{sequence}}</option>
               {{/sequenceList}}
-              </select-->
-              <a class="accordion-toggle" style="display: inline" data-toggle="collapse" data-parent="#trippattern-stop-edit-accordion"
-              data-target="#trippattern-stop-edit-{{ patternStop.stopSequence }}" href="#">
-                    &{'route.trip-pattern-popup-pattern-stop'}
-                  </a>
+              </select>
+              &{'route.trip-pattern-popup-pattern-stop'}
           </legend>
 
           <input type="hidden" name="id" value="{{patternStop.stop.id}}">
