@@ -30,12 +30,12 @@
 <div id="route-type-modal" class="modal modal-wide hide" tabindex="-1" role="dialog" data-backdrop="static" aria-labelledby="route-type-modal-label" aria-hidden="true">
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">��</button>
-    <h3 id="route-type-modal-label">&{'route.trip-info-tpl.route-types.title'}</h3>	
+    <h3 id="route-type-modal-label">&{'route.trip-info-tpl.route-types.title'}</h3>
   </div>
   <div id="route-type-modal-body" class="modal-body">
      <table class="table table">
-      <tr><th>&{'manage.route-types.localized-vehicle-type'}</th><th>&{'manage.route-types.gtfs-route-typ'}</th><th>&{'manage.route-types.hsv-route-type'}</th><th>&{'manage.route-types.description'}</th></tr>      
-     
+      <tr><th>&{'manage.route-types.localized-vehicle-type'}</th><th>&{'manage.route-types.gtfs-route-typ'}</th><th>&{'manage.route-types.hsv-route-type'}</th><th>&{'manage.route-types.description'}</th></tr>
+
       #{list items:routeTypes, as:'routeType'}
           <tr><td>${routeType.localizedVehicleType}</td><td>${routeType.gtfsRouteType}</td><td>${routeType.hvtRouteType}</td><td>${routeType.description}</td></tr>
       #{/list}
@@ -69,7 +69,7 @@
     <label class="control-label" for="routeType"><strong>&{'route.route-info-tpl.route-type'}</strong><br>(&{'shared.required'})</label>
     <div class="controls">
       <select required name="routeType" id="routeType" class="input-xlarge" title="&{'route.route-info-tpl.route-type'}" data-content="&{'route.route-info-tpl.route-type-content'}">
-        
+
         #{list items:routeTypes, as:'routeType'}
             <option value="${routeType.id}">${routeType.localizedVehicleType} (${routeType.hvtRouteType})</option>
         #{/list}
@@ -143,12 +143,12 @@
 
 
 <script id="route-info-tpl-route-type-options-tpl" type="text/html">
-  
+
   <option value=""></option>
 
   {{#option}}
     <option value="{{id}}">{{localizedVehicleType}} ({{gtfsRouteType}})</option>
-  {{/option}}    
+  {{/option}}
 
 </script>
 
@@ -171,22 +171,22 @@
               <input name="monday" id="Monday" type="checkbox" value="true" {{#monday}}checked{{/monday}}> &{'shared.monday'}
             </label>
             <label class="checkbox" for="tuesday">
-              <input name="tuesday" id="Tuesday" type="checkbox" value="true" {{#tuesday}}checked{{/tuesday}}> &{'shared.tuesday'} 
+              <input name="tuesday" id="Tuesday" type="checkbox" value="true" {{#tuesday}}checked{{/tuesday}}> &{'shared.tuesday'}
             </label>
             <label class="checkbox" for="wednesday">
-              <input name="wednesday" id="Wednesday" type="checkbox" value="true" {{#wednesday}}checked{{/wednesday}}> &{'shared.wednesday'} 
+              <input name="wednesday" id="Wednesday" type="checkbox" value="true" {{#wednesday}}checked{{/wednesday}}> &{'shared.wednesday'}
             </label>
             <label class="checkbox" for="thursday">
-              <input name="thursday" id="Thursday" type="checkbox" value="true" {{#thursday}}checked{{/thursday}}> &{'shared.thursday'} 
+              <input name="thursday" id="Thursday" type="checkbox" value="true" {{#thursday}}checked{{/thursday}}> &{'shared.thursday'}
             </label>
             <label class="checkbox" for="friday">
-              <input name="friday" id="Friday" type="checkbox" value="true" {{#friday}}checked{{/friday}}> &{'shared.friday'} 
+              <input name="friday" id="Friday" type="checkbox" value="true" {{#friday}}checked{{/friday}}> &{'shared.friday'}
             </label>
             <label class="checkbox" for="saturday">
-              <input name="saturday" id="Saturday" type="checkbox" value="true" {{#saturday}}checked{{/saturday}}> &{'shared.saturday'} 
+              <input name="saturday" id="Saturday" type="checkbox" value="true" {{#saturday}}checked{{/saturday}}> &{'shared.saturday'}
             </label>
             <label class="checkbox" for="sunday">
-              <input name="sunday" id="Sunday" type="checkbox" value="true" {{#sunday}}checked{{/sunday}}> &{'shared.sunday'} 
+              <input name="sunday" id="Sunday" type="checkbox" value="true" {{#sunday}}checked{{/sunday}}> &{'shared.sunday'}
             </label>
           </div>
         </div>
@@ -204,7 +204,7 @@
 
 
   <form  id="trip-info-form" class="form-horizontal span12">
-    
+
       <div id="trippattern-select">
 
       </div>
@@ -230,21 +230,21 @@
     <div id="trip-frequency">
         <div id="trip-select"></div>
         <div id="trip-details"></div>
-    </div> 
+    </div>
 
     <div id="trip-timetable">
       <div id="timetable-calendar-select"></div>
 
       <div class="controls" id="csv-upload-download">
-          <button type="button" id="timetable-download-btn" class="btn"><i class="icon-download"></i> &{'route.trip-info-tpl.download-timetable'}</button> 
-          <button type="button" id="timetable-upload-btn" class="btn"><i class="icon-upload"></i> &{'route.trip-info-tpl.upload-timetable'}</button> 
+          <button type="button" id="timetable-download-btn" class="btn"><i class="icon-download"></i> &{'route.trip-info-tpl.download-timetable'}</button>
+          <button type="button" id="timetable-upload-btn" class="btn"><i class="icon-upload"></i> &{'route.trip-info-tpl.upload-timetable'}</button>
       </div>
     </div>
 
    </div>
 
-   
-    
+
+
     <div class="form-actions">
         <button type="submit" class="btn btn-primary" id="route-save-btn">&{'shared.button.save'}</button>
     </div>
@@ -255,18 +255,18 @@
     <div id="calendar-create-modal" class="modal hide" tabindex="-1" role="dialog" data-backdrop="static" aria-labelledby="route-type-modal-label" aria-hidden="true">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-        <h3 id="calendar-create-modal-label">&{'route.trip-info-tpl.calendar-create-modal.title'}</h3> 
+        <h3 id="calendar-create-modal-label">&{'route.trip-info-tpl.calendar-create-modal.title'}</h3>
       </div>
       <div id="calendar-create-modal-body" class="modal-body">
-        
-          
+
+
       </div>
       <div class="modal-footer">
             <button id="calendar-create-close" type="button" class="btn" aria-hidden="true">&{'shared.button.close'}</button>
-            <button type="submit" class="btn btn-primary">&{'route.trip-info-tpl.calendar-create-modal.title'}</button> 
+            <button type="submit" class="btn btn-primary">&{'route.trip-info-tpl.calendar-create-modal.title'}</button>
       </div>
     </div>
-  </form> 
+  </form>
 </script>
 
 <script id="trippattern-select-tpl" type="text/html">
@@ -301,8 +301,8 @@
           </select>
         </p>
         <p>
-          <button type="button" id="calendar-create-btn" class="btn btn-primary btn-mini">&{'route.trip-info-tpl.calendar-create-modal.title'}</button> 
-          <button type="button" id="calendar-modify-btn" class="btn btn-mini">&{'route.trip-info-tpl.calendar-modify'}</button> 
+          <button type="button" id="calendar-create-btn" class="btn btn-primary btn-mini">&{'route.trip-info-tpl.calendar-create-modal.title'}</button>
+          <button type="button" id="calendar-modify-btn" class="btn btn-mini">&{'route.trip-info-tpl.calendar-modify'}</button>
         </p>
 
       </div>
@@ -324,8 +324,8 @@
           </select>
         </p>
         <p>
-          <button type="button" id="calendar-create-btn" class="btn btn-primary btn-mini">&{'route.trip-info-tpl.calendar-create-modal.title'}</button> 
-          <button type="button" id="calendar-modify-btn" class="btn btn-mini">&{'route.trip-info-tpl.calendar-modify'}</button> 
+          <button type="button" id="calendar-create-btn" class="btn btn-primary btn-mini">&{'route.trip-info-tpl.calendar-create-modal.title'}</button>
+          <button type="button" id="calendar-modify-btn" class="btn btn-mini">&{'route.trip-info-tpl.calendar-modify'}</button>
         </p>
 
       </div>
@@ -347,12 +347,12 @@
           </select>
         </p>
         <p>
-          <button type="button" class="create-trip btn btn-primary btn-mini">&{'route.trip-info-tpl.create-trip-btn'}</button> 
-          <button type="button" class="copy-trip btn btn-primary btn-mini">&{'route.trip-info-tpl.copy-trip-btn'}</button> 
+          <button type="button" class="create-trip btn btn-primary btn-mini">&{'route.trip-info-tpl.create-trip-btn'}</button>
+          <button type="button" class="copy-trip btn btn-primary btn-mini">&{'route.trip-info-tpl.copy-trip-btn'}</button>
           <button type="button" id="delete-trip-btn" class="btn disabled btn-mini btn-danger">&{'route.trip-info-tpl.delete-trip-btn'}</button>
         </p>
-        <div id="trip-create"></div>   
-        <div id="trip-copy"></div>  
+        <div id="trip-create"></div>
+        <div id="trip-copy"></div>
 
 
       </div>
@@ -402,7 +402,7 @@
 <script id="trip-details-tpl" type="text/html">
   <div>
 
-    {{#id}}<input name="id" type="hidden" value="{{id}}"/>{{/id}} 
+    {{#id}}<input name="id" type="hidden" value="{{id}}"/>{{/id}}
 
     <div class="control-group">
       <label class="control-label" for="tripDescription"><strong>&{'route.trip-info-tpl.trip-description'}</strong><br>(&{'shared.required'})</label>
@@ -433,7 +433,7 @@
     </div>
 
     <div id="frequency-calendar-select"></div>
-    
+
   </div>
 </div>
 
@@ -473,7 +473,7 @@
 
    <!-- <div class="stop-import-details well">
       <legend>&{'route.stops-import'}</legend>
-       
+
         <button type="button" class="btn disabled stop-delete-btn">&{'route.stops-upload-data'}</button>
     </div> -->
 
@@ -483,11 +483,11 @@
         <p>
           <button type="button" class="btn btn-primary stop-find-duplicates-btn">&{'route.stops-manage.find-duplicate-btn'}</button>
         </p>
-        <p class="hide" id="stop-duplicate-search-progress"> 
+        <p class="hide" id="stop-duplicate-search-progress">
           <img src="@{'/public/images/loading.gif'}"/> &{'route.stops-manage.find-duplicate-searching'}
         </p>
 
-        <p class="hide" id="stop-duplicate-search-cancel"> 
+        <p class="hide" id="stop-duplicate-search-cancel">
             <button type="button" class="btn btn-primary stop-find-duplicates-cancel-btn">&{'route.stops-manage.find-duplicate-close-btn'}</button>
         </p>
     </div>
@@ -497,8 +497,8 @@
 
         <label class="checkbox">
 
-          <input name="stop-use-satellite" id="stop-use-satellite" type="checkbox" value="true" {{#useSatellite}}checked{{/useSatellite}} />   
-   
+          <input name="stop-use-satellite" id="stop-use-satellite" type="checkbox" value="true" {{#useSatellite}}checked{{/useSatellite}} />
+
           &{'route.stops-map-satellite'}
 
         </label>
@@ -516,7 +516,7 @@
   </div>
 
   <form  id="route-review-form" class="form-horizontal span12">
-    
+
     <input type="hidden" name="id" value="{{id}}"/>
 
     <div class="control-group">
@@ -527,15 +527,15 @@
                 <option value="PENDING_APPROVAL">&{'route.review.status.pending-approval'}</option>
                 <option value="APPROVED">&{'route.review.status.approved'}</option>
             </select>
-            
-        </div>      
+
+        </div>
       </div>
 
       <div class="control-group">
         <label class="control-label" for="publiclyVisible">&{'route.review-publicly-visible'}</label>
         <div class="controls">
           <label class="checkbox" for="publiclyVisible">
-            <input name="publiclyVisible" id="publiclyVisible" type="checkbox" value="true" {{#publiclyVisible}}checked{{/publiclyVisible}}> 
+            <input name="publiclyVisible" id="publiclyVisible" type="checkbox" value="true" {{#publiclyVisible}}checked{{/publiclyVisible}}>
           </label>
         </div>
       </div>
@@ -546,7 +546,7 @@
         <textarea name="comments" id="comments" class="input-xlarge" title="&{'route.route-info-tpl.comments'}" data-content="&{'route.route-info-tpl.comments-content'}">{{comments}}</textarea>
       </div>
     </div>
-    
+
     <div class="form-actions">
       <button type="submit" class="btn btn-primary" id="route-save-btn">&{'shared.button.save'}</button>
     </div>
@@ -591,7 +591,7 @@
   <form class="stop-details-form form-inline">
     <legend>&{'route.stops-stop-details'}</legend>
     <p><label><strong>&{'route.route-info-tpl.agency'}</strong>: {{agency.name}}</<label></p>
-    
+
     <p>
       <input type="hidden" name="id" value="{{id}}">
 
@@ -610,8 +610,8 @@
         <div class="controls">
           <textarea name="stopDesc" class="input-xlarge" placeholder="&{'route.stops-stop-description'}">{{stopDesc}}</textarea>
         </div>
-      </div> 
-      
+      </div>
+
       <div class="control-group">
         <div class="controls">
             <select class="input-medium" id="bikeParking" name="bikeParking">
@@ -620,19 +620,30 @@
                 <option value="UNAVAILABLE">&{'shared.attribute.unavailable'}</option>
             </select>
             <label for="bikeParking" class="control-label">&{'route.stops-bike-parking'}</label>
-        </div>      
+        </div>
       </div>
+
+     <div class="control-group">
+       <div class="controls">
+           <select class="input-medium" id="carParking" name="carParking">
+               <option value="UNKNOWN">&{'shared.attribute.unknown'}</option>
+               <option value="AVAILABLE">&{'shared.attribute.available'}</option>
+               <option value="UNAVAILABLE">&{'shared.attribute.unavailable'}</option>
+           </select>
+           <label for="carParking" class="control-label">&{'route.stops-car-parking'}</label>
+       </div>
+     </div>
 
       <div class="control-group">
         <div class="controls">
-            
+
             <select class="input-medium" id="wheelchairBoarding" name="wheelchairBoarding">
                 <option value="UNKNOWN">&{'shared.attribute.unknown'}</option>
                 <option value="AVAILABLE">&{'shared.attribute.available'}</option>
                 <option value="UNAVAILABLE">&{'shared.attribute.unavailable'}</option>
             </select>
             <label for="wheelchairBoarding" class="control-label">&{'route.stops-wheelchair-boarding'}</label>
-        </div>      
+        </div>
       </div>
 
 
@@ -661,7 +672,7 @@
     {{#stops}}
     <p>
       <label><strong>&{'route.stops-stop-name'}</strong>: {{attributes.stopName}}</label>
-      <label><strong>&{'route.stops-stop-description'}</strong>: {{attributes.stopdesc}}</label>  
+      <label><strong>&{'route.stops-stop-description'}</strong>: {{attributes.stopdesc}}</label>
     </p>
     {{/stops}}
 
@@ -720,7 +731,7 @@
 
 <script id="transit-wand-select-tpl" type="text/html">
 
-  {{#patterns}}  
+  {{#patterns}}
     <option value="{{id}}">{{headsign}}</option>
   {{/patterns}}
 
@@ -736,16 +747,16 @@
         <input name="name" required class="input" type="text" placeholder="&{'route.trip-pattern-new-pattern-name'}" value="{{name}}">
         <input id="transit-wand-id" name="transit-wand-id" class="input" type="text" placeholder="&{'route.trip-pattern-transit-wand-id'}" value="{{name}}">
         <select id="transit-wand-select" class="hide">
-          
+
         </select>
         <button type="button" class="btn btn-mini trippattern-load-transitwand-btn">&{'route.trip-pattern-load-transitwand'}</button>
       </p>
       <p>
         <button type="submit" class="btn btn-mini btn-primary trippattern-create-confirm-btn">&{'shared.button.add'}</button> <button type="button" class="btn btn-mini trippattern-create-cancel-btn">&{'shared.button.cancel'}</button>
       </p>
-       
-      
-      
+
+
+
     </form>
   </ul>
 </script>
@@ -762,9 +773,9 @@
       <p>
         <button type="submit" class="btn btn-mini btn-primary trippattern-duplicate-confirm-btn">&{'shared.button.duplicate'}</button> <button type="button" class="btn btn-mini trippattern-duplicate-cancel-btn">&{'shared.button.cancel'}</button>
       </p>
-       
-      
-      
+
+
+
     </form>
   </ul>
 </script>
@@ -781,9 +792,9 @@
       <p>
         <button type="submit" class="btn btn-mini btn-primary trippattern-edit-confirm-btn">&{'shared.button.edit'}</button> <button type="button" class="btn btn-mini trippattern-edit-cancel-btn">&{'shared.button.cancel'}</button>
       </p>
-       
-      
-      
+
+
+
     </form>
   </ul>
 </script>
@@ -793,7 +804,7 @@
   <p><strong>&{'route.trip-pattern-stop-sequence'}</strong></p>
   <select id="trip-pattern-stop-select">
     <option value="">-- &{'route.trip-pattern-pattern-stops'} --</option>
-    {{#stops}}  
+    {{#stops}}
       <option value="{{stop.id}}">{{stopSequence}}. {{#stop.stopName}}{{stop.stopName}}{{/stop.stopName}}{{^stop.stopName}}Unnamed Stop{{/stop.stopName}}</option>
       <hr/>
     {{/stops}}
@@ -805,7 +816,7 @@
   <p>
     <button type="button" id="reverse-pattern-btn" class="btn btn-mini btn-danger">&{'route.trip-pattern-reverse-pattern'}</button>
   </p>
-  
+
   <hr/>
   <p><strong>&{'route.trip-pattern-alignment'}</strong></p>
   <p>
@@ -816,16 +827,16 @@
   <p><strong>&{'route.trip-pattern-timing'}</strong></p>
   <div class="form-horizontal">
 
-    <div class="control-group">  
+    <div class="control-group">
       <input id="velocity-input" class="input input-medium" type="text" placeholder="&{'route.trip-pattern-kmh'}"> <button type="button" id="calc-times-from-velocity-btn" class="btn btn-mini btn-primary">&{'route.trip-pattern-calculate-times'}</button>
     </div>
-    
+
     <div>
       <input id="default-dwell-input" class="input input-medium" type="text" placeholder="&{'route.trip-pattern-dwell'}">
     </div>
 
   </div>
-  
+
 </script>
 
 
@@ -837,7 +848,7 @@
           <select id="trip-pattern-select">
 
             <option value="">-- &{'route.trip-pattern-select-pattern'} --</option>
-            
+
               {{#items}}<option value="{{attributes.id}}">{{attributes.name}}</option>{{/items}}
           </select>
         </p>
@@ -847,17 +858,17 @@
         </p>
 
         <p>
-          <button type="button" class="trippattern-duplicate-btn btn btn-primary btn-mini">&{'route.trip-pattern-duplicate-pattern'}</button> 
+          <button type="button" class="trippattern-duplicate-btn btn btn-primary btn-mini">&{'route.trip-pattern-duplicate-pattern'}</button>
         </p>
 
         <p>
-          <button type="button" class="trippattern-edit-btn btn btn-primary btn-mini">&{'route.trip-pattern-edit-pattern'}</button> 
+          <button type="button" class="trippattern-edit-btn btn btn-primary btn-mini">&{'route.trip-pattern-edit-pattern'}</button>
         </p>
 
-        <div id="trippattern-duplicate"></div>   
-        <div id="trippattern-create"></div>      
-        <div id="trippattern-stop-list"></div>     
-  </div>    
+        <div id="trippattern-duplicate"></div>
+        <div id="trippattern-create"></div>
+        <div id="trippattern-stop-list"></div>
+  </div>
 </script>
 
 <!-- The sidebar contents for the Trip Patterns step (in progress) -->
@@ -884,8 +895,8 @@
 
         <label class="checkbox">
 
-          <input name="trip-pattern-use-satellite" id="trip-pattern-use-satellite" type="checkbox" value="true" {{#useSatellite}}checked{{/useSatellite}} />   
-   
+          <input name="trip-pattern-use-satellite" id="trip-pattern-use-satellite" type="checkbox" value="true" {{#useSatellite}}checked{{/useSatellite}} />
+
           &{'route.trip-pattern-map-satellite'}
 
         </label>
@@ -940,14 +951,14 @@
   <script src="@{'/public/lib/jquery.serializeObject.min.js'}"></script>
 
 
-  
+
   #{script 'lib/leaflet.js' /}
   #{script 'lib/leaflet.draw.js' /}
   #{script 'lib/leaflet.label-src.js' /}
   #{script 'lib/leaflet.encoded-polyline.js' /}
   #{script 'lib/bootstrap-colorpicker.js' /}
   #{script 'lib/geolib.js' /}
-  
+
   #{script 'lib/fileuploader.js' /}
 
  <!-- #{script 'lib/jquery.handsontable.full.js' /} -->

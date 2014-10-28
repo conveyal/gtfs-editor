@@ -68,7 +68,7 @@ var GtfsEditor = GtfsEditor || {};
       });
 
         _.bindAll(this, 'sizeContent', 'onStopFilterChange', 'destroy', 'save', 'cancelFindDuplicateStops', 'findDuplicateStops', 'finishedFindDuplicateStops', 'addStopGroup', 'resetDuplicateStops', 'mergeStops', 'onSatelliteToggle');
-        
+
         $(window).resize(this.sizeContent);
     },
 
@@ -93,13 +93,13 @@ var GtfsEditor = GtfsEditor || {};
       this.$('.step-instructions').html(ich['stop-instructions-tpl']());
 
       // Base layer config is optional, default to Mapbox Streets
-      
-      var tileKey;   
+
+      var tileKey;
       if(G.session.useSatellite)
         tileKey = G.config.mapboxSatelliteKey;
       else
         tileKey = G.config.mapboxKey;
-        
+
 
       var url = 'http://{s}.tiles.mapbox.com/v3/' + tileKey + '/{z}/{x}/{y}.png',
           baseLayer = L.tileLayer(url, {
@@ -162,7 +162,7 @@ var GtfsEditor = GtfsEditor || {};
 
     sizeContent: function() {
         var newHeight = $(window).height() - (175) + "px";
-      
+
         $("#map").css("height", newHeight);
 
         if(this.map != undefined)
@@ -170,21 +170,21 @@ var GtfsEditor = GtfsEditor || {};
     },
 
     updateStops: function (mapCenter) {
-      // don't keep more than 500 markers on map at anytime. 
+      // don't keep more than 500 markers on map at anytime.
        if(this.collection.length > 750)
           this.collection.remove(this.collection.slice(0, 200));
-      
+
        var agencyId = null;
        if($('input[name="stopFilterRadio"]:checked').val() != 'all' )
           agencyId = this.model.get('agency').id;
-      
+
        if(G.config.showStandardStops && this.map.getZoom() >= 15) {
           if(mapCenter == null)
             mapCenter = this.map.getCenter();
 
         this.collection.fetch({remove: false, data: {agencyId: agencyId, lat: mapCenter.lat, lon: mapCenter.lng}});
       }
-        
+
 
       if(G.config.showMajorStops)
         this.collection.fetch({remove: false, data: {agencyId: agencyId, majorStops: true}});
@@ -195,7 +195,7 @@ var GtfsEditor = GtfsEditor || {};
     },
 
     findDuplicateStops: function() {
-  
+
       this.mergeStopLayerGroup.clearLayers();
 
 
@@ -208,7 +208,7 @@ var GtfsEditor = GtfsEditor || {};
       $('.stop-find-duplicates-btn').hide();
 
       /*this.duplicateStopsCollection = new G.Stops();
-      
+
 
       this.duplicateStopsCollection.on('reset', this.deduplicateStops);
 
@@ -238,7 +238,7 @@ var GtfsEditor = GtfsEditor || {};
 
     resetDuplicateStops: function() {
 
-      
+
       this.mergeStopLayerGroup.clearLayers();
 
     },
@@ -278,7 +278,7 @@ var GtfsEditor = GtfsEditor || {};
       this.map.addLayer(this.mergeStopLayerGroup);
 
       this.duplicateStopsCollection.each(function(stop) {
-        
+
         stopLatLngs.push({latitude: stop.get('location').lat, longitude: stop.get('location').lng, stopId: stop.id});
 
       });
@@ -292,7 +292,7 @@ var GtfsEditor = GtfsEditor || {};
             if(dist < 5 &&  stop1.stopId != stop2.stopId) {
               view.stopGroups.group(view.duplicateStopsCollection.get(stop1.stopId), view.duplicateStopsCollection.get(stop2.stopId));
             }
-              
+
         });
 
       });
@@ -356,7 +356,7 @@ var GtfsEditor = GtfsEditor || {};
       var latLng = evt.target.getLatLng();
       evt.target.dragging.disable();
 
-      
+
       evt.target.setIcon(this.stopIcons[evt.target.options.id]);
 
       this.collection.get(evt.target.options.id)
@@ -381,30 +381,30 @@ var GtfsEditor = GtfsEditor || {};
       this.stopLayers[model.id].setLatLng([model.get('location').lat,model.get('location').lng]);
 
       if (model.get('majorStop')) {
-  
+
         this.stopLayers[model.id].setIcon(this.agencyMajorStopIcon);
-        
+
         // It's a major stop now, are those visible?
         if ($('#major-stops-toggle').is(':not(:checked)')) {
           this.stopLayerGroup.removeLayer(this.stopLayers[model.id]);
         }
       } else {
-        
+
         this.stopLayers[model.id].setIcon(this.agencyMinorStopIcon);
       }
 
       var $popupContent;
-      
+
       if (model.get('agency').id == this.model.get('agency').id) {
 
         $popupContent = ich['stop-form-tpl'](model.toJSON());
 
         if(model.get('majorStop'))
-          this.stopIcons[model.id] = this.agencyMajorStopIcon;  
+          this.stopIcons[model.id] = this.agencyMajorStopIcon;
         else
-          this.stopIcons[model.id] = this.agencyMinorStopIcon;  
+          this.stopIcons[model.id] = this.agencyMinorStopIcon;
 
-      } 
+      }
       else {
         $popupContent = ich['stop-view-tpl'](model.toJSON());
         this.stopIcons[model.id] = this.otherStopIcon;
@@ -413,6 +413,10 @@ var GtfsEditor = GtfsEditor || {};
       $popupContent
         .find('#bikeParking option[value="' + model.get('bikeParking') + '"]')
         .attr('selected', true);
+
+     $popupContent
+       .find('#carParking option[value="' + model.get('carParking') + '"]')
+       .attr('selected', true);
 
       $popupContent
         .find('#wheelchairBoarding option[value="' + model.get('wheelchairBoarding') + '"]')
@@ -460,11 +464,11 @@ var GtfsEditor = GtfsEditor || {};
         $popupContent = ich['stop-form-tpl'](model.toJSON());
 
         if(model.get('majorStop'))
-          this.stopIcons[model.id] = this.agencyMajorStopIcon;  
+          this.stopIcons[model.id] = this.agencyMajorStopIcon;
         else
-          this.stopIcons[model.id] = this.agencyMinorStopIcon;  
+          this.stopIcons[model.id] = this.agencyMinorStopIcon;
 
-      } 
+      }
       else {
         $popupContent = ich['stop-view-tpl'](model.toJSON());
         this.stopIcons[model.id] = this.otherStopIcon;
@@ -500,7 +504,7 @@ var GtfsEditor = GtfsEditor || {};
         markerLayer.on('dblclick', function(evt) {
           evt.target.setIcon(this.selectedStopIcon);
           evt.target.dragging.enable();
-          
+
         }, this);
 
         // Save the location after you drag it around
@@ -550,7 +554,7 @@ var GtfsEditor = GtfsEditor || {};
   /*  onStopVisibilityChange: function(evt) {
       var $checkbox = $(evt.target);
 
-     
+
       if ($checkbox.attr('id') === 'major-stops-toggle') {
         if ($checkbox.is(':checked')) {
           this.showMajorStops();
@@ -572,7 +576,7 @@ var GtfsEditor = GtfsEditor || {};
        this.clearStops();
       this.updateStops();
 
-      
+
     },
 
     // Toggle marker visibility
