@@ -271,6 +271,8 @@ G.RouteTypes = Backbone.Collection.extend({
       useFrequency: null
     },
 
+    urlRoot: G.config.baseUrl + 'api/trippattern/',
+
     initialize: function() {
       this.on('change:patternStops', this.normalizeSequence, this);
 
@@ -279,19 +281,34 @@ G.RouteTypes = Backbone.Collection.extend({
       this.sortPatternStops();
     },
 
-    getPatternStop: function(stopId) {
+    /**
+     * Get all of the pattern stops for a particular stop.
+     * Generally there will only be one, but there can be more on a loop route.
+     * If you'd like only one stop, see getPatternStop(stopId, stopSequence)
+     */
+    getPatternStops: function(stopId) {
       return this.isPatternStop(stopId);
     },
 
     isPatternStop: function(stopId) {
-      var isPatternStop = false;
-      _.each(this.get('patternStops'), function(ps, i) {
-        if(ps.stop.id == stopId) {
-          isPatternStop = ps;
-        }
+      var patternStops = _.filter(this.get('patternStops'), function(ps, i) {
+        return ps.stop.id == stopId;
       });
-      return isPatternStop;
+      return patternStops.length > 0 ? patternStops : false;
     },
+
+    /**
+     * Get the pattern stop for this stop ID and stop sequence.
+     * If you don't have a stop sequence, see getPatternStops(stopId)
+     */
+     getPatternStop: function (stopId, stopSequence) {
+       var ret = _.find(this.get('patternStops'), function (ps) {
+         return ps.stop.id == stopId && ps.stopSequence == stopSequence;
+       });
+
+        // match the behavior of getPatternStop/isPatternStop
+       return ret === null ? false : ret;
+     },
 
     getPatternStopLabel: function(stopId) {
       var stopsSequences = [];
@@ -442,7 +459,8 @@ G.RouteTypes = Backbone.Collection.extend({
       sunday: null,
       startDate: null,
       endDate: null
-    }
+    },
+    urlRoot: G.config.baseUrl + 'api/calendar/'
     // days, start_date, end_date, exceptions[]
   });
 
@@ -470,6 +488,15 @@ G.Trip = Backbone.Model.extend({
     model: G.Trip,
     url: G.config.baseUrl + 'api/trip/',
 
+    comparator: function (trip) {
+      var sts = trip.get('stopTimes');
+      if (!_.isUndefined(sts) && sts != null && sts.length > 0) {
+        return sts[0].departureTime;
+      }
+      // 500 hours past midnight should put these trips at the end
+      // the longest train journey is Moscow to Pyongyang (210 h), per Wikipedia
+      return 500 * 60 * 60;
+    },
 
 
     initialize: function(opts) {

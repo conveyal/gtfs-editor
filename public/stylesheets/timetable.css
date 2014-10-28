@@ -1,0 +1,17 @@
+/* This is a hack to give the illusion of merged cell headers when that is not actually possible with the
+   current version of HandsOn Table. We allow the cell headers to overflow, but then set the width of the
+   text inside to prevent it from overflowing past the next column. Cell width is hardwired here and in
+   trip-pattern-schedule-view.js */
+.handsontable th { overflow: visible }
+.handsontable th > div { width: 140px; overflow: hidden; background-color: #eee }
+
+/* Show colons in times */
+.handsontable .minutes::before, .handsontable .seconds::before {
+  content: ':'
+}
+
+/* align times right and display in monospace font */
+.handsontable .time { text-align: right; font-family: mono }
+.handsontable .time-arr { color: #050 }
+.handsontable .time-dep { color: #005 }
+.handsontable .time-dep-dimmed { color: #aaa }

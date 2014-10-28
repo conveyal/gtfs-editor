@@ -3,14 +3,15 @@ var GtfsEditor = GtfsEditor || {};
 (function(G, $, ich) {
   G.TripInfoView = Backbone.View.extend({
     events: {
-      'click .create-trip': 'showCreateTrip', 
-      'click .copy-trip': 'showCopyTrip', 
+      'click .create-trip': 'showCreateTrip',
+      'click .copy-trip': 'showCopyTrip',
       'click .trip-create-cancel-btn': 'cancelTripCreate',
       'click #delete-trip-btn': 'deleteTrip',
       'click #calendar-create-btn': 'showCalendarCreateModal',
       'click #calendar-create-close': 'calendarCreateClose',
       'click #calendar-modify-btn': 'modifyCalendar',
       'click #timetable-download-btn' : 'downloadSchedule',
+      'click #timetable-edit-btn' : 'showTimetable',
       'change #tripPattern': 'onTripPatternChange',
       'change #trip': 'onTripChange',
       'change #trip-timetable #calendar': 'onTimetableCalendarSelectChange',
@@ -43,7 +44,7 @@ var GtfsEditor = GtfsEditor || {};
       this.model.tripPatterns.on('remove', this.onTripPatternsReset, this);
       this.model.tripPatterns.on('reset', this.onTripPatternsReset, this);
 
-      _.bindAll(this, 'onTripPatternChange', 'downloadSchedule', 'bindPopovers', 'onTripChange', 'onTripsLoaded', 'createCalendar', 'showCreateTrip', 'showCopyTrip', 'onTripCreate', 'onTripCopy', 'cancelTripCreate', 'deleteTrip', 'onSaveTrip', 'showCalendarCreateModal', 'onCalendarsReset', 'calendarCreateClose', 'onTimetableCalendarSelectChange', 'onFrequencyCalendarSelectChange', 'onLoadAgencyTrips', 'onScheduleTypeChange', 'initTimetable', 'updatePatternType');
+      _.bindAll(this, 'onTripPatternChange', 'downloadSchedule', 'bindPopovers', 'onTripChange', 'onTripsLoaded', 'createCalendar', 'showCreateTrip', 'showCopyTrip', 'onTripCreate', 'onTripCopy', 'cancelTripCreate', 'deleteTrip', 'onSaveTrip', 'showCalendarCreateModal', 'onCalendarsReset', 'calendarCreateClose', 'onTimetableCalendarSelectChange', 'onFrequencyCalendarSelectChange', 'onLoadAgencyTrips', 'onScheduleTypeChange', 'initTimetable', 'updatePatternType', 'showTimetable');
 
     },
 
@@ -61,7 +62,7 @@ var GtfsEditor = GtfsEditor || {};
     },
 
    render: function () {
-     
+
       // Get the markup from icanhaz
       var $tpl = ich['trip-info-tpl']();
 
@@ -80,7 +81,7 @@ var GtfsEditor = GtfsEditor || {};
       this.bindPopovers();
 
       this.onTripPatternsReset();
-  
+
       return this;
     },
 
@@ -91,7 +92,7 @@ var GtfsEditor = GtfsEditor || {};
       var selectedPatternId  = this.$('#tripPattern').val();
 
       var data = G.Utils.serializeForm($(evt.target));
-      
+
       data.serviceCalendar = data.frequencyServiceCalendar;
 
       data = _.omit(data, ['file', 'scheduleType', 'frequencyServiceCalendar', 'timetableServiceCalendar']);
@@ -167,7 +168,7 @@ var GtfsEditor = GtfsEditor || {};
     },
 
     cancelTripCreate: function() {
-    
+
       this.$('.create-trip').show();
       this.$('.copy-trip').show();
       this.$('#delete-trip-btn').show();
@@ -183,7 +184,7 @@ var GtfsEditor = GtfsEditor || {};
       var selectedTripId  = this.$('#trip').val();
 
       if (this.model.tripPatterns.get(selectedPatternId) != undefined && this.model.tripPatterns.get(selectedPatternId).trips.get(selectedTripId) != undefined && G.Utils.confirm(G.strings.tripInfoDeleteTripconfirm)) {
-        
+
         this.model.tripPatterns.get(selectedPatternId).trips.get(selectedTripId).destroy();
 
       }
@@ -207,15 +208,15 @@ var GtfsEditor = GtfsEditor || {};
       this.model.tripPatterns.get(selectedPatternId).trips.create(tripData, {
         wait: true,
         success: function(data) {
-            
+
             G.session.trip = data.id;
-        
+
         },
         error: function() {
           G.Utils.error('Failed to create trip.');
         }
       });
-     
+
     },
 
     onTripCopy: function(evt) {
@@ -243,7 +244,7 @@ var GtfsEditor = GtfsEditor || {};
         startTime: existingTrip.startTime,
         endTime: existingTrip.endTime,
         headway: existingTrip.headway,
-    
+
       };
 
       var view = this;
@@ -251,9 +252,9 @@ var GtfsEditor = GtfsEditor || {};
       this.model.tripPatterns.get(selectedPatternId).trips.create(tripData, {
         wait: true,
         success: function(data) {
-            
+
             G.session.trip = data.id;
-        
+
         },
         error: function() {
           G.Utils.error('Failed to create trip.');
@@ -293,12 +294,12 @@ var GtfsEditor = GtfsEditor || {};
 
           var useFrequency = this.model.tripPatterns.get(selectedPatternId).get('useFrequency');
 
-          if(useFrequency == null) 
+          if(useFrequency == null)
             useFrequency = false;
 
 
           if(useFrequency == false) {
-       
+
             this.model.tripPatterns.get(selectedPatternId).set('useFrequency', false);
 
             this.$('#scheduleTypeFrequency').prop("checked", false);
@@ -315,8 +316,8 @@ var GtfsEditor = GtfsEditor || {};
             this.$('#scheduleTypeTimetable').prop("checked", false);
 
             this.initFrequency();
- 
-          }    
+
+          }
         }
         else
           this.$('#trip-pattern-type').hide();
@@ -361,7 +362,7 @@ var GtfsEditor = GtfsEditor || {};
           data.serviceFrequencyString = this.convertTime(data.headway);
 
           this.$('#delete-trip-btn').removeClass("disabled");
-          this.$('#trip-details').html(ich['trip-details-tpl'](data));  
+          this.$('#trip-details').html(ich['trip-details-tpl'](data));
 
           this.onCalendarsReset();
 
@@ -446,13 +447,13 @@ var GtfsEditor = GtfsEditor || {};
       if(this.model.tripPatterns.get(selectedPatternId) != undefined) {
 
         var useFrequencyCurrent = this.model.tripPatterns.get(selectedPatternId).get('useFrequency');
-        
+
         if(useFrequencyCurrent != useFrequencyChange) {
 
 
           if (G.Utils.confirm(G.strings.tripInfoClearAllTripsConfirm)) {
 
-            if(useFrequencyChange) 
+            if(useFrequencyChange)
               this.model.tripPatterns.get(selectedPatternId).useFrequency();
             else
               this.model.tripPatterns.get(selectedPatternId).useTimetable();
@@ -461,17 +462,17 @@ var GtfsEditor = GtfsEditor || {};
 
           }
           else {
-            if(useFrequencyCurrent) 
+            if(useFrequencyCurrent)
               this.$('#scheduleTypeFrequency').prop("checked", true);
             else
               this.$('#scheduleTypeTimetable').prop("checked", true);
 
-              
+
 
           }
         }
       }
-    },  
+    },
 
     initFrequency : function() {
 
@@ -480,7 +481,7 @@ var GtfsEditor = GtfsEditor || {};
       this.$('#trip-timetable').hide();
 
       this.updateTrips();
-      
+
     },
 
     initTimetable : function() {
@@ -492,7 +493,13 @@ var GtfsEditor = GtfsEditor || {};
       this.onCalendarsReset();
 
       this.onTimetableCalendarSelectChange();
-    
+
+    },
+
+    showTimetable : function () {
+      window.location.href = G.config.baseUrl + 'timetable/' +
+      this.$('#tripPattern').val() + '/' +
+      this.$('#calendar').val();
     },
 
     editTimetableInPlace : function () {
@@ -528,7 +535,7 @@ var GtfsEditor = GtfsEditor || {};
       //       trip.push(stopTimeData);
 
       //     });
-          
+
       //     trips.push(trip);
 
       //   });
@@ -548,7 +555,7 @@ var GtfsEditor = GtfsEditor || {};
       //       else
       //         value = "--";
 
-          
+
       //       Handsontable.TextRenderer(instance, td, row, col, prop, value, cellProperties);
       //   };
 
@@ -563,7 +570,7 @@ var GtfsEditor = GtfsEditor || {};
       //       cells: function (row, col, prop) {
       //         if (col > 0) {
       //           return { type: {renderer: stopTimeRenderer}};
-      //         } 
+      //         }
       //       }
       //     });
 
@@ -576,7 +583,7 @@ var GtfsEditor = GtfsEditor || {};
       //     this.table.render();
       //   }
 
-        
+
       //   $('#timetable-data').show();
       // }
       // else {
@@ -585,7 +592,7 @@ var GtfsEditor = GtfsEditor || {};
     },
 
     onCalendarsReset: function(evt) {
-      
+
       var data = {
         items: this.calendars.models
       }
@@ -599,7 +606,7 @@ var GtfsEditor = GtfsEditor || {};
       if(this.model.tripPatterns.get(selectedPatternId) != undefined && selectedTripId != undefined) {
         if(this.model.tripPatterns.get(selectedPatternId).trips.get(selectedTripId).attributes.serviceCalendar != undefined)
           this.$('#calendar').val(this.model.tripPatterns.get(selectedPatternId).trips.get(selectedTripId).attributes.serviceCalendar.id);
-        else  
+        else
           this.$('#calendar').val(G.session.calendar);
       }
 
@@ -615,7 +622,7 @@ var GtfsEditor = GtfsEditor || {};
       if(selectedPatternId == null || selectedPatternId == "")
         return;
 
-      
+
       if(this.$('#trip-frequency #calendar').val() == "") {
 
         this.$('#calendar-modify-btn').addClass("disabled");
@@ -628,7 +635,7 @@ var GtfsEditor = GtfsEditor || {};
           this.$('#calendar-modify-btn').removeClass("disabled");
       }
 
-    }, 
+    },
 
     onTimetableCalendarSelectChange: function(evt) {
 
@@ -641,7 +648,7 @@ var GtfsEditor = GtfsEditor || {};
       if(selectedPatternId == null || selectedPatternId == "")
         return;
 
-      if(this.$('#trip-timetable #calendar').val() == "") 
+      if(this.$('#trip-timetable #calendar').val() == "")
         $('#csv-upload-download').hide();
       else {
 
@@ -653,12 +660,12 @@ var GtfsEditor = GtfsEditor || {};
                 button: $('#timetable-upload-btn')[0],
             multiple: false,
             onSubmit: function(id, fileName){ csvDataUploader.setParams({patternId: selectedPatternId, calendarId: selectedCalendarId });   }
-            });                             
+            });
       }
-    },  
+    },
 
     onTripPatternsReset: function() {
-  
+
       this.updateTripPatterns();
 
       this.onTripPatternChange();
@@ -684,11 +691,11 @@ var GtfsEditor = GtfsEditor || {};
     },
 
     onTripsLoaded: function(evt) {
-      
+
       var selectedPatternId  = this.$('#tripPattern').val();
 
       var data = [];
-      
+
       if(this.model.tripPatterns.get(selectedPatternId).trips != undefined && this.model.tripPatterns.get(selectedPatternId).trips.models != undefined) {
         data = {
           items: this.model.tripPatterns.get(selectedPatternId).trips.models
@@ -760,4 +767,3 @@ var GtfsEditor = GtfsEditor || {};
 
   });
 })(GtfsEditor, jQuery, ich);
-

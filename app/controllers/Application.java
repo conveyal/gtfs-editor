@@ -199,7 +199,9 @@ public class Application extends Controller {
                 
     }
     
-    
+    public static void timetable () {
+        render();
+    }
     
     public static void createGtfs(List<Long> agencySelect, Long calendarFrom, Long calendarTo) {
         

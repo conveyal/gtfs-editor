@@ -10,6 +10,8 @@ import java.io.StringWriter;
 import java.math.BigInteger;
 import java.util.*;
 
+import javax.persistence.Entity;
+
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.JsonGenerator;
@@ -721,9 +723,7 @@ public class Api extends Controller {
 
     // trip controllers
 
-    // **** route controllers ****
-
-    public static void getTrip(Long id, Long patternId, Long agencyId) {
+    public static void getTrip(Long id, Long patternId, Long calendarId, Long agencyId) {
         try {
             if(id != null)
             {
@@ -738,8 +738,15 @@ public class Api extends Controller {
                 if(agencyId != null) {
                     Agency agency = Agency.findById(agencyId);
                     renderJSON(Api.toJson(Trip.find("pattern.route.agency = ?", agency).fetch(), false));
-                }                    
-                if(patternId != null) {
+                }
+                
+                else if (patternId != null && calendarId != null) {
+                    TripPattern pattern = TripPattern.findById(patternId);
+                    ServiceCalendar calendar = ServiceCalendar.findById(calendarId);
+                    renderJSON(Api.toJson(Trip.find("byPatternAndServiceCalendar", pattern, calendar).fetch(), false));
+                }
+                
+                else if(patternId != null) {
                     TripPattern pattern = TripPattern.findById(patternId);
                     renderJSON(Api.toJson(Trip.find("pattern = ?", pattern).fetch(), false));
                 }
@@ -755,12 +762,74 @@ public class Api extends Controller {
 
     }
 
+    /**
+     * When trips come back over the wire, they contain stop times directly due to hierarchical serialization. 
+     */
+    public static class TripWithStopTimes extends Trip {
+        List<StopTimeWithDeletion> stopTimes;
+        
+        public Trip toTrip () {
+            Trip ret = new Trip();
+            ret.blockId = this.blockId;
+            ret.endTime = this.endTime;
+            ret.gtfsTripId = this.gtfsTripId;
+            ret.headway = this.headway;
+            ret.id = this.id;
+            ret.pattern = this.pattern;
+            ret.route = this.route;
+            ret.serviceCalendar = this.serviceCalendar;
+            ret.serviceCalendarDate = this.serviceCalendarDate;
+            ret.shape = this.shape;
+            ret.startTime = this.startTime;
+            ret.tripDescription = this.tripDescription;
+            ret.tripDirection = this.tripDirection;
+            ret.tripHeadsign = this.tripHeadsign;
+            ret.tripShortName = this.tripShortName;
+            ret.useFrequency = this.useFrequency;
+            ret.wheelchairBoarding = this.wheelchairBoarding;
+            return ret;
+        }
+    }
+    
+    /**
+     * When StopTimes come back, they may also have the field deleted, which if true indicate that this stop time has
+     * been deleted (i.e. trip no longer stops here).
+     */
+    public static class StopTimeWithDeletion extends StopTime {
+        public Boolean deleted;
+        
+        public StopTime toStopTime () {
+            StopTime ret = new StopTime();
+            ret.id = this.id;
+            ret.arrivalTime = this.arrivalTime;
+            ret.departureTime = this.departureTime;
+            ret.dropOffType = this.dropOffType;
+            ret.patternStop = this.patternStop;
+            ret.pickupType = this.pickupType;
+            ret.shapeDistTraveled = this.shapeDistTraveled;
+            ret.stop = this.stop;
+            ret.stopHeadsign = this.stopHeadsign;
+            ret.stopSequence = this.stopSequence;
+            ret.trip = this.trip;
+            return ret;
+        }
+    }
+    
     public static void createTrip() {
-        Trip trip;
+        TripWithStopTimes tripWithStopTimes = null;
+        Trip trip = null;
 
         try {
-            trip = mapper.readValue(params.get("body"), Trip.class);
+            try {
+                tripWithStopTimes = mapper.readValue(params.get("body"), TripWithStopTimes.class);
+            } catch (Exception e) {
+                trip = mapper.readValue(params.get("body"), Trip.class);
+            }
 
+            if (tripWithStopTimes != null) {
+                trip = tripWithStopTimes.toTrip();
+            }
+            
             if(Route.findById(trip.pattern.route.id) == null)
                 badRequest();
 
@@ -776,6 +845,13 @@ public class Api extends Controller {
                 trip.gtfsTripId = "TRIP_" + trip.id.toString();
                 trip.save();
             }
+            
+            if (tripWithStopTimes != null && tripWithStopTimes.stopTimes != null) {
+                for (StopTimeWithDeletion stopTime: tripWithStopTimes.stopTimes) {
+                    stopTime.trip = trip;
+                    stopTime.toStopTime().save();
+                }
+            }
 
             renderJSON(Api.toJson(trip, false));
         } catch (Exception e) {
@@ -783,13 +859,12 @@ public class Api extends Controller {
             badRequest();
         }
     }
-
-
+    
     public static void updateTrip() {
-        Trip trip;
-
+        TripWithStopTimes trip;
+        
         try {
-            trip = mapper.readValue(params.get("body"), Trip.class);
+            trip = mapper.readValue(params.get("body"), TripWithStopTimes.class);
 
             if(trip.id == null || Trip.findById(trip.id) == null)
                 badRequest();
@@ -804,8 +879,22 @@ public class Api extends Controller {
                 trip.gtfsTripId = "TRIP_" + trip.id.toString();
             }
 
-
-            Trip updatedTrip = Trip.em().merge(trip);
+             Trip updatedTrip = Trip.em().merge(trip.toTrip());
+             
+            // update the stop times
+            // TODO: how to detect deleted StopTimes (i.e. route no longer stops here)?
+            for (StopTimeWithDeletion stopTime : trip.stopTimes) {
+                if (Boolean.TRUE.equals(stopTime.deleted)) {
+                    StopTime.delete("id = ? AND trip = ?", stopTime.id, updatedTrip);
+                }
+                else {
+                    StopTime updatedStopTime = StopTime.em().merge(stopTime.toStopTime());
+                    // this was getting lost somehow
+                    updatedStopTime.trip = updatedTrip;
+                    updatedStopTime.save();
+                }
+            }
+            
             updatedTrip.save();
 
             renderJSON(Api.toJson(updatedTrip, false));

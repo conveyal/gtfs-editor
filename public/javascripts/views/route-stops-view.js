@@ -479,6 +479,10 @@ var GtfsEditor = GtfsEditor || {};
         .attr('selected', true);
 
       $popupContent
+          .find('#carParking option[value="' + model.get('carParking') + '"]')
+          .attr('selected', true);
+
+      $popupContent
         .find('#wheelchairBoarding option[value="' + model.get('wheelchairBoarding') + '"]')
         .attr('selected', true);
 

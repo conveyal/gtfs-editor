@@ -13,7 +13,7 @@ cf = play.Play.configuration
     <meta name="author" content="">
 
   	<style>
-  	
+
   		body .modal-wide {
   		    /* new custom width */
   		    max-width:1000px;
@@ -29,7 +29,7 @@ cf = play.Play.configuration
 
 
     #{get 'styles' /}
-    <!--   <link rel="stylesheet" media="screen" href="@{'/public/lib/bootstrap-2.1.1/css/bootstrap-responsive.min.css'}">--> 
+    <!--   <link rel="stylesheet" media="screen" href="@{'/public/lib/bootstrap-2.1.1/css/bootstrap-responsive.min.css'}">-->
 
     <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
     <!--[if lt IE 9]>
@@ -61,7 +61,7 @@ cf = play.Play.configuration
                 <a href="#" role="button" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-wrench"></i> ${session.agencyName} <b class="caret"></b></a>
                 <ul class="dropdown-menu" role="menu">
                   #{list items:agencies, as:'agency' }
-                    <li><a href="#" class="agency-select" data-agency="${agency.id}"> ${agency.name}</a></li>  
+                    <li><a href="#" class="agency-select" data-agency="${agency.id}"> ${agency.name}</a></li>
                   #{/list}
                 </ul>
               </li>
@@ -69,9 +69,9 @@ cf = play.Play.configuration
               <li class="dropdown">
                 <a href="#" role="button" class="dropdown-toggle" data-toggle="dropdown">&{'nav-bar.export'}<b class="caret"></b></a>
                 <ul class="dropdown-menu" role="menu">
-                  <li><a href="@{Application.exportGtfs}" class="manage-route-types">&{'export.gtfs.title'}</a></li>  
-                  <li><a href="@{Application.exportGis}" class="manage-route-types">&{'export.gis.title'}</a></li>  
-                  <!-- <li><a href="#export" class="manage-route-types">&{'export.kml.title'}</a></li> --> 
+                  <li><a href="@{Application.exportGtfs}" class="manage-route-types">&{'export.gtfs.title'}</a></li>
+                  <li><a href="@{Application.exportGis}" class="manage-route-types">&{'export.gis.title'}</a></li>
+                  <!-- <li><a href="#export" class="manage-route-types">&{'export.kml.title'}</a></li> -->
                   <!-- <li><a href="@{Application.manageStopTypes}" class="manage-stop-types">&{'manage.stop-types.title'}</a></li>  -->
                   <!-- <li><a href="@{Application.manageRouteTypes}" class="manage-users" data-lang="en">Manage Users</a></li> -->
                   <!-- <li><a href="@{Application.exportGis}" class="manage-agenices">&{'export.shapefile-stops.title'}</a></li>  -->
@@ -84,11 +84,11 @@ cf = play.Play.configuration
                 <li class="dropdown">
                   <a href="#" role="button" class="dropdown-toggle" data-toggle="dropdown">&{'nav-bar.admin'}<b class="caret"></b></a>
                   <ul class="dropdown-menu" role="menu">
-                    <li><a href="@{Application.manageRouteTypes}" class="manage-route-types">&{'manage.route-types.title'}</a></li>  
+                    <li><a href="@{Application.manageRouteTypes}" class="manage-route-types">&{'manage.route-types.title'}</a></li>
                     <!-- <li><a href="@{Application.manageStopTypes}" class="manage-stop-types">&{'manage.stop-types.title'}</a></li>  -->
                     <!-- <li><a href="@{Application.manageRouteTypes}" class="manage-users" data-lang="en">Manage Users</a></li> -->
-                    <li><a href="@{Application.manageAgencies}" class="manage-agenices">&{'manage.agencies.title'}</a></li> 
-                    <li><a href="@{Admin.accounts}" class="manage-accounts">&{'manage.accounts.title'}</a></li>                 
+                    <li><a href="@{Application.manageAgencies}" class="manage-agenices">&{'manage.agencies.title'}</a></li>
+                    <li><a href="@{Admin.accounts}" class="manage-accounts">&{'manage.accounts.title'}</a></li>
                     <li><a href="@{Application.importGtfs}" class="import-gtfs">&{'manage.import-gtfs.title'}</a></li>
                   </ul>
                 </li>
@@ -102,9 +102,9 @@ cf = play.Play.configuration
                   <i class="icon-globe"></i><b class="caret"></b>
                 </a>
                 <ul class="dropdown-menu" role="menu">
-                  <li><a href="#" class="lang-select" data-lang="cn">中国的</a></li>  
+                  <li><a href="#" class="lang-select" data-lang="cn">中国的</a></li>
                   <li><a href="#" class="lang-select" data-lang="en">English</a></li>
-                  <li><a href="#" class="lang-select" data-lang="es">Español</a></li>                 
+                  <li><a href="#" class="lang-select" data-lang="es">Español</a></li>
                 </ul>
               </li>
             </ul>
@@ -116,7 +116,7 @@ cf = play.Play.configuration
                 </a>
                 <ul class="dropdown-menu" role="menu">
                   <li><a href="@{Application.changePassword}">Change Password</a></li>
-                  <li><a href="@{Secure.logout}">&{'nav-bar.logout'}</a></li> 
+                  <li><a href="@{Secure.logout}">&{'nav-bar.logout'}</a></li>
                 </ul>
               </li>
             </ul>
@@ -140,9 +140,9 @@ cf = play.Play.configuration
     <script src="@{'/public/javascripts/lib/underscore-min.js'}"></script> <!--http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.2/underscore-min.js -->
     <script src="@{'/public/javascripts/lib/backbone-min.js'}"></script> <!-- http://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.0.0/backbone-min.js -->
     <script src="@{'/public/javascripts/lib/ICanHaz.min.js'}"></script> <!--http://cdnjs.cloudflare.com/ajax/libs/ICanHaz.js/0.10/ICanHaz.min.js -->
-    <script src="@{'/public/lib/bootstrap-2.3.1/js/bootstrap.min.js'}"></script>
+    <script src="@{'/public/lib/bootstrap-2.3.1/js/bootstrap.js'}"></script>
     <script src="@{'/public/lib/pnotify-1.2.0/jquery.pnotify.min.js'}"></script>
-  
+
     #{script 'config.js' /}
     #{script 'utils.js' /}
     #{get 'scripts' /}
@@ -154,7 +154,7 @@ cf = play.Play.configuration
         (function(G, $) {
 
           G.session = {
-  
+
             agencyId: ${session.agencyId},
             mapCenter: [${session.lat}, ${session.lon}],
             mapZoom: ${session.zoom},

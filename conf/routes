@@ -41,6 +41,8 @@ POST    /api/routetype/                         Api.createRouteType
 PUT     /api/routetype/{id}                     Api.updateRouteType
 DELETE  /api/routetype/{id}                     Api.deleteRouteType
 
+GET     /timetable/{patternId}/{calendar}       Application.timetable
+
 GET     /api/stop/?                             Api.getStop
 GET     /api/stop/{id}                          Api.getStop
 POST    /api/stop/                              Api.createStop

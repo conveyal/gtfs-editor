@@ -7,3 +7,4 @@ eclipse
 *.zip
 .settings/
 *~
+.project
