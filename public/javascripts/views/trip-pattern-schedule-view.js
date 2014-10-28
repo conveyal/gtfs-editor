@@ -300,6 +300,7 @@ var GtfsEditor = GtfsEditor || {};
       trip.set('pattern', this.pattern.toJSON());
       trip.set('serviceCalendar', this.calendar.toJSON());
       trip.set('route', this.pattern.get('route'));
+      trip.set('useFrequency', false);
       var stopTimes = [];
 
       // prepopulate stop times based on the pattern
