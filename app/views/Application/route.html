@@ -699,41 +699,43 @@
 
 <!-- The trippattern stop patterns details form that appears in the map popup. -->
 <script id="trippattern-stop-edit-form-tpl" type="text/html">
-  {{#data}}
-  <div class="panel panel-default">
-    <form class="trippattern-stop-edit">
-      <legend>
-        #
-        <select name="sequencePositionList" class="input-mini">
-          {{#sequenceList}}
-          <option value="{{sequence}}">{{sequence}}</option>
-          {{/sequenceList}}
-          </select-->
-          <a class="accordion-toggle" style="display: inline" data-toggle="collapse" data-parent="#trippattern-stop-edit-accordion"
-          data-target="#trippattern-stop-edit-{{ patternStop.stopSequence }}" href="#">
-                &{'route.trip-pattern-popup-pattern-stop'}
-              </a>
-      </legend>
+  <div class="trippattern-stop-edit-container">
+    {{#data}}
+      <div class="panel panel-default">
+        <form class="trippattern-stop-edit">
+          <legend>
+            #
+            <select name="sequencePositionList" class="input-mini">
+              {{#sequenceList}}
+              <option value="{{sequence}}">{{sequence}}</option>
+              {{/sequenceList}}
+              </select-->
+              <a class="accordion-toggle" style="display: inline" data-toggle="collapse" data-parent="#trippattern-stop-edit-accordion"
+              data-target="#trippattern-stop-edit-{{ patternStop.stopSequence }}" href="#">
+                    &{'route.trip-pattern-popup-pattern-stop'}
+                  </a>
+          </legend>
 
-      <input type="hidden" name="id" value="{{patternStop.stop.id}}">
-      <input type="hidden" name="stopSequence" value="{{patternStop.stopSequence}}">
+          <input type="hidden" name="id" value="{{patternStop.stop.id}}">
+          <input type="hidden" name="stopSequence" value="{{patternStop.stopSequence}}">
 
-      <p>
-        <label><strong>&{'route.route-info-tpl.agency'}</strong>: {{patternStop.stop.agency.name}}</label>
-        <label><strong>&{'route.stops-stop-name'}</strong>: {{patternStop.stop.stopName}}</label>
-      </p>
-      <p>
-        <input id="travel-time" name="travelTime" class="input" type="text" placeholder="&{'route.trip-pattern-travel-time'}" value="{{travelTime}}">
-        <input id="dwell-time" name="dwellTime" class="input" type="text" placeholder="&{'route.trip-pattern-dwell-time'}" value="{{dwellTime}}">
-      </p>
-      <p>
-        <button type="button" class="trippattern-stop-update-btn btn btn-primary">&{'shared.button.update'}</button>
-        <button type="button" class="trippattern-stop-remove-btn btn btn-danger">&{'shared.button.remove'}</button>
-        <button type="button" class="trippattern-stop-add-again-btn btn">&{'route.trip-pattern-add-stop-again'}</button>
-      </p>
-    </form>
+          <p>
+            <label><strong>&{'route.route-info-tpl.agency'}</strong>: {{patternStop.stop.agency.name}}</label>
+            <label><strong>&{'route.stops-stop-name'}</strong>: {{patternStop.stop.stopName}}</label>
+          </p>
+          <p>
+            <input id="travel-time" name="travelTime" class="input" type="text" placeholder="&{'route.trip-pattern-travel-time'}" value="{{travelTime}}">
+            <input id="dwell-time" name="dwellTime" class="input" type="text" placeholder="&{'route.trip-pattern-dwell-time'}" value="{{dwellTime}}">
+          </p>
+          <p>
+            <button type="button" class="trippattern-stop-update-btn btn btn-primary">&{'shared.button.update'}</button>
+            <button type="button" class="trippattern-stop-remove-btn btn btn-danger">&{'shared.button.remove'}</button>
+            <button type="button" class="trippattern-stop-add-again-btn btn">&{'route.trip-pattern-add-stop-again'}</button>
+          </p>
+        </form>
+      </div>
+    {{/data}}
   </div>
-  {{/data}}
 </script>
 
 

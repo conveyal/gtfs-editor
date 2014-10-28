@@ -102,6 +102,12 @@
   border: 1px solid #444;
 }
 
+/* don't let the edit trip pattern popup get too big */
+.trippattern-stop-edit-container {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
 /* Portrait tablet to landscape anda above */
 @media (min-width: 768px) {
   .route-context {
@@ -132,4 +138,3 @@
   }
 
 }
-
