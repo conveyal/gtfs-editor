@@ -24,6 +24,13 @@ public class Export extends Controller {
      */
 
     public static void fetchGtfs (List<Long> agencySelect, Long calendarFrom, Long calendarTo) {
+        // reasonable defaults: now to 2 months from now (more or less)
+        if (calendarFrom == null)
+            calendarFrom = new Date().getTime();
+        
+        if (calendarTo == null)
+            calendarTo = new Date().getTime() + 2 * 31 * 24 * 60 * 60 * 1000;
+        
         List<Agency> agencyObjects = new ArrayList<Agency>(); 
         
         if(agencySelect != null || agencySelect.size() > 0) {

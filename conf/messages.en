@@ -439,3 +439,5 @@ export.shapefile-stops.title=Export Stops Shapefile
 # /import/gtfs
 
 manage.import-gtfs.title=Import GTFS
+
+feed.feed-fetch-link=Feed download link

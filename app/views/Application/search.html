@@ -12,7 +12,9 @@
 </script>
 
 
-<h3>&{'search.title'} ${session.agencyName} </h3> 
+<h3>&{'search.title'} ${session.agencyName} </h3>
+
+<div class="well"><a href="${play.configuration['application.appBase']}/export/fetchgtfs?agencySelect=${session.agencyId}">&{'feed.feed-fetch-link'}</a></div>
 
 <table id="route-list-content" class="table table">
     <tr><th>&{'route.route-info-tpl.gtfs-id'}</th><th>&{'route.review-publicly-visible'}</th><th>&{'route.review-status'}</th><th>&{'route.route-info-tpl.short-name'}</th><th>&{'route.route-info-tpl.long-name'}</th><th>&{'route.route-info-tpl.route-type'}</th><th>&{'route.route-info-tpl.description'}</th><th></th></tr>
