@@ -29,7 +29,7 @@ public class Export extends Controller {
             calendarFrom = new Date().getTime();
         
         if (calendarTo == null)
-            calendarTo = new Date().getTime() + 2 * 31 * 24 * 60 * 60 * 1000;
+            calendarTo = new Date().getTime() + 2L * 31L * 24L * 60L * 60L * 1000L;
         
         List<Agency> agencyObjects = new ArrayList<Agency>(); 
         
