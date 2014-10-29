@@ -50,6 +50,36 @@ public class ServiceCalendar extends Model {
       return ServiceCalendar.findById(Long.parseLong(id));
     }
 
+    /**
+     * Get a description for an OBA GTFS service calendar 
+     */
+    public static String getNameForGtfsServiceCalendar(org.onebusaway.gtfs.model.ServiceCalendar cal) {
+        StringBuilder sb = new StringBuilder(14);
+        
+        if (cal.getMonday() == 1)
+            sb.append("Mo");
+        
+        if (cal.getTuesday() == 1)
+            sb.append("Tu");
+        
+        if (cal.getWednesday() == 1)
+            sb.append("We");
+        
+        if (cal.getThursday() == 1)
+            sb.append("Th");
+        
+        if (cal.getFriday() == 1)
+            sb.append("Fr");
+        
+        if (cal.getSaturday() == 1)
+            sb.append("Sa");
+        
+        if (cal.getSunday() == 1)
+            sb.append("Su");
+        
+        return sb.toString();
+    }
+    
     public String toString() {
 
     	String str = "";
@@ -83,8 +113,8 @@ public class ServiceCalendar extends Model {
     	Query idQuery = em.createNativeQuery("SELECT NEXTVAL('hibernate_sequence');");
 		BigInteger nextId = (BigInteger)idQuery.getSingleResult();
 		
-		em.createNativeQuery("INSERT INTO servicecalendar (id, gtfsserviceid, monday, tuesday, wednesday, thursday, friday, saturday, sunday, startdate, enddate, agency_id)" +
-	    	"  VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);")
+		em.createNativeQuery("INSERT INTO servicecalendar (id, gtfsserviceid, monday, tuesday, wednesday, thursday, friday, saturday, sunday, startdate, enddate, agency_id, description)" +
+	    	"  VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);")
 	      .setParameter(1,  nextId)
 	      .setParameter(2, gtfsServiceCalendar.getId())
 	      .setParameter(3, gtfsServiceCalendar.getMonday() == 1 ? true : false)
@@ -97,6 +127,7 @@ public class ServiceCalendar extends Model {
 	      .setParameter(10, gtfsServiceCalendar.getStartDate().getAsDate())
 	      .setParameter(11, gtfsServiceCalendar.getEndDate().getAsDate())
 	      .setParameter(12, agencyId)
+	      .setParameter(13, getNameForGtfsServiceCalendar(gtfsServiceCalendar))
 	      .executeUpdate();
 		
 		return nextId;
