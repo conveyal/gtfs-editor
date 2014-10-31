@@ -228,4 +228,70 @@ public class TripPatternReconciliationTest extends UnitTest {
             assertEquals((Integer) 7, stopTimes.get(7).stopSequence);
         }
     }
+    
+    @Test
+    public void testStopRemovalInMiddle () {
+       Stop[] stops = makeStops();
+        
+        // build a pattern with a trip and a few stoptimes
+        TripPattern tp = makePattern(stops);
+        createStopTimesForTripPattern(tp);
+        
+        // make sure the correct number of stop times were created
+        assertEquals(40, StopTime.count());
+        
+        // make a new pattern
+        TripPattern tp2 = makePattern(stops);
+        
+        assertEquals(8, tp.patternStops.size());
+        
+        // check that it worked
+        Collection<Trip> trips = Trip.find("pattern = ?", tp).fetch();
+        
+        for (Trip t : trips) {
+            List<StopTime> stopTimes = t.getStopTimes();
+            
+            assertEquals(8, stopTimes.size());
+            
+            sort(stopTimes, new StopTimeSequenceComparator());
+            
+            assertEquals(stops[14].id, stopTimes.get(7).stop.id);
+            // it was seven before
+            assertEquals((Integer) 7, stopTimes.get(7).stopSequence);
+        }
+        
+        // zap the third stop (which is stop 4)
+        TripPatternStop removed = tp2.patternStops.remove(2);
+        
+        // make sure we got the indices right (this is more a test of the test)
+        assertEquals(stops[4].id, removed.stop.id);
+        
+        tp.reconcilePatternStops(tp2);
+        
+        // make sure that stop times got deleted
+        assertEquals(35, StopTime.count());
+        
+        // check that the right stop times got deleted and that sequences were repacked
+        trips = Trip.find("pattern = ?", tp).fetch();
+        
+        for (Trip t : trips) {
+            List<StopTime> stopTimes = t.getStopTimes();
+            
+            assertEquals(7, stopTimes.size());
+            
+            sort(stopTimes, new StopTimeSequenceComparator());
+            
+            int previousStopSeq = -1;
+            
+            for (StopTime st : stopTimes) {
+                // is this the stop that was supposed to be deleted?
+                assertNotSame(stops[4].id, st.stop.id);
+                assertNotSame(removed.id, st.patternStop.id);
+                
+                // are stop sequences repacked correctly?
+                assertEquals(++previousStopSeq, (int) st.stopSequence);
+            }
+        }
+        
+    }
 }

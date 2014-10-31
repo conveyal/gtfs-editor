@@ -213,12 +213,10 @@ public class TripPattern extends Model {
                     }
                 }
 
-                else {
-                    // if we've reached where one trip has an extra stop, or if the stops at this position differ
-                    if (i == originalStopIds.length || originalStopIds[i] != newStopIds[i]) {
-                        // we have found the difference
-                        differenceLocation = i;
-                    }
+                // if we've reached where one trip has an extra stop, or if the stops at this position differ
+                else if (i == newStopIds.length - 1 || originalStopIds[i] != newStopIds[i]) {
+                    // we have found the difference
+                    differenceLocation = i;
                 }
             }
 
@@ -261,7 +259,9 @@ public class TripPattern extends Model {
                     }
                 }
                 
-                if (originalStopIds[i] != newStopIds[i]) {
+                // we've reacehd the end and the only difference is length (so the last stop is the different one)
+                // or we've found the difference
+                else if (i == originalStopIds.length -1 || originalStopIds[i] != newStopIds[i]) {
                     differenceLocation = i;
                 }
             }
