@@ -404,6 +404,7 @@ public class TripPattern extends Model {
                             st.stopSequence.equals(originalPatternStop.stopSequence)) {
                         // this is the moved stop
                         st.stopSequence = toLocation;
+                        StopTime.em().merge(st);
                     }
                     else {
                         // this is not the moved stop
