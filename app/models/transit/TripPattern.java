@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -318,109 +319,100 @@ public class TripPattern extends Model {
         
         /* TRANSPOSITIONS */
         else if (originalStopIds.length == newStopIds.length) {
-            // we have a transposition, find it
-            int fromLocation = -1;
-            int toLocation = -1;
-            long affectedStopId = -1;
+            // Imagine the trip patterns pictured below (where . is a stop, and lines indicate the same stop)
+            // the original trip pattern is on top, the new below
+            // . . . . . . . .
+            // | |  \ \ \  | |
+            // * * * * * * * *
+            // also imagine that the two that are unmarked are the same
+            // (the limitations of ascii art, this is prettier on my whiteboard)
+            // There are three regions: the beginning and end, where stopSequences are the same, and the middle, where they are not
+            // The same is true of trips where stops were moved backwards
             
-            for (int i = 0; i < newStopIds.length; i++) {
-                if (fromLocation == -1 && toLocation == -1) {
-                    // we have not yet found the difference
-                    if (newStopIds[i] != originalStopIds[i]) {
-                        // well, now we have
-                        // check if this is an insert (destination) or a delete (origin)
-                        if (newStopIds[i + 1] == originalStopIds[i]) {
-                            // insertion
-                            toLocation = i;
-                            affectedStopId = newStopIds[i];
-                        }
-                        
-                        else if (newStopIds[i] == originalStopIds[i + 1]) {
-                            // deletion
-                            fromLocation = i;
-                            affectedStopId = originalStopIds[i];
-                        }
-                        
-                        else {
-                            throw new IllegalStateException("Difference does not match signature of simple transposition");
-                        }
-                    }
-                }
+            // find the left bound of the changed region
+            int firstDifferentIndex = 0;
+            while (true) {
+                // we've found the first index where they differ
+                if (originalStopIds[firstDifferentIndex] != newStopIds[firstDifferentIndex])
+                    break;
                 
-                else if (fromLocation != -1 && toLocation == -1) {
-                    // note that we cannot just check if the new stop ID is the affected stop ID, because the
-                    // affected stop may appear in the trip more than once
-                    
-                    // we know where the stop was moved from, but not to
-                    if (newStopIds[i] == originalStopIds[i + 1]) {
-                        continue;
-                    }
-                    
-                    else {
-                        if (newStopIds[i] == affectedStopId) {
-                            toLocation = i;
-                        }
-                        else {
-                            throw new IllegalStateException("Difference affected multiple stops when finding to location");
-                        }
-                    }
-                }
+                firstDifferentIndex++;
                 
-                else if (toLocation != -1 && fromLocation == -1) {
-                    // we know where to but not where from
-                    if (newStopIds[i] == originalStopIds[i - 1]){
-                        continue;
-                    }
-                    else {
-                        if (newStopIds[i] == affectedStopId) {
-                            fromLocation = i;
-                        }
-                        else {
-                            throw new IllegalStateException("Difference affected multiple stops when finding from location");
-                        }
-                    }
-                }
+                if (firstDifferentIndex == originalStopIds.length)
+                    // trip patterns do not differ at all, nothing to do
+                    return;
             }
             
-            if (fromLocation == -1 && toLocation == -1) {
-                // trip pattern did not change, so our work here is done
-                return;
+            // find the right bound of the changed region
+            int lastDifferentIndex = originalStopIds.length - 1;
+            while (true) {
+                if (originalStopIds[lastDifferentIndex] != newStopIds[lastDifferentIndex])
+                    break;
+                
+                lastDifferentIndex--;
             }
             
-            TripPatternStop originalPatternStop = this.patternStops.get(fromLocation);
+            // TODO: write a unit test for this
+            if (firstDifferentIndex == lastDifferentIndex) {
+                throw new IllegalStateException("stop substitutions are not supported, region of difference must have length > 1");
+            }
             
+            // figure out whether a stop was moved left or right
+            // note that if the stop was only moved one position, it's impossible to tell, and also doesn't matter,
+            // because the requisite operations are equivalent
+            long movedStopId;
+            int movedStopSeq;
+            
+            // TODO: ensure that this is all that happened (i.e. verify stop ID map inside changed region)
+            if (originalStopIds[firstDifferentIndex] == newStopIds[lastDifferentIndex]) {
+                movedStopId = originalStopIds[firstDifferentIndex];
+                movedStopSeq = this.patternStops.get(firstDifferentIndex).stopSequence;
+            }
+
+            else if (newStopIds[firstDifferentIndex] == originalStopIds[lastDifferentIndex]) {
+                // stop was moved left
+                movedStopId = originalStopIds[lastDifferentIndex];
+                movedStopSeq = this.patternStops.get(lastDifferentIndex).stopSequence;
+            }
+            
+            else {
+                throw new IllegalStateException("not a simple, single move!");
+            }
+
+
             for (Object t : Trip.find("pattern = ?", this).fetch()) {
                 Trip trip = (Trip) t;
-                
-                Iterator<TripPatternStop> pse = tripPattern.patternStops.listIterator();
-                TripPatternStop current;
-                
-                // sort the stop times by stop sequence
+
                 List<StopTime> stopTimes = trip.getStopTimes();
+
+                // sort
                 sort(stopTimes, new StopTimeSequenceComparator());
-                
+
+                Iterator<TripPatternStop> psi = tripPattern.patternStops.iterator();
+
+                TripPatternStop current;
+
                 for (StopTime st : stopTimes) {
-                    if (st.stop.id.equals(originalPatternStop.stop.id) &&
-                            st.stopSequence.equals(originalPatternStop.stopSequence)) {
-                        // this is the moved stop
-                        st.stopSequence = toLocation;
+                    if (st.stop.id == movedStopId && st.stopSequence == movedStopSeq) {
+                        // we are dealing with the moved stop
+                        st.stopSequence = tripPattern.patternStops.get(lastDifferentIndex).stopSequence;
                         StopTime.em().merge(st);
                     }
+
                     else {
-                        // this is not the moved stop
-                        current = pse.next();
-                        
-                        
-                        // skip skipped stops, also the destination pattern stop
-                        while (!current.stop.id.equals(st.stop.id) || current.stopSequence.equals(toLocation))
-                            current = pse.next();
-                        
+                        // we are not dealing with the moved stop
+                        current = psi.next();
+
+                        while (!current.stop.id.equals(st.stop.id))
+                            current = psi.next();
+
                         st.stopSequence = current.stopSequence;
                         StopTime.em().merge(st);
                     }
                 }
-            }
+            }                
         }
+
         
         /* OTHER STUFF IS NOT SUPPORTED */
         else {
