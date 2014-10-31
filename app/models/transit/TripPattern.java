@@ -213,11 +213,13 @@ public class TripPattern extends Model {
                     }
                 }
 
-                if (originalStopIds[i] != newStopIds[i]) {
-                    // we have found the difference
-                    differenceLocation = i;
+                else {
+                    // if we've reached where one trip has an extra stop, or if the stops at this position differ
+                    if (i == originalStopIds.length || originalStopIds[i] != newStopIds[i]) {
+                        // we have found the difference
+                        differenceLocation = i;
+                    }
                 }
-
             }
 
             // repack stop times
