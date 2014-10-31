@@ -12,6 +12,8 @@ import java.util.*;
 
 import javax.persistence.Entity;
 
+import static java.util.Collections.sort;
+
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.JsonGenerator;
@@ -504,7 +506,42 @@ public class Api extends Controller {
             badRequest();
         }
     }
-
+    
+    /**
+     * Sort a list of patternstops by stop_sequence
+     */
+    public static class PatternStopSequenceComparator implements Comparator<TripPatternStop> {
+        public int compare(TripPatternStop o1, TripPatternStop o2) {
+            
+            // nulls last
+            if (o1 == null && o2 == null)
+                return 0;
+            if (o1 == null)
+                return 1;
+            if (o2 == null)
+                return -1;
+            
+            return o1.stopSequence - o2.stopSequence;
+        }
+    }
+    
+    /**
+     * Sort a list of StopTimes by StopSequence
+     */
+    public static class StopTimeSequenceComparator implements Comparator<StopTime> {
+        public int compare(StopTime o1, StopTime o2) {
+            
+            // nulls last
+            if (o1 == null && o2 == null)
+                return 0;
+            if (o1 == null)
+                return 1;
+            if (o2 == null)
+                return -1;
+            
+            return o1.stopSequence - o2.stopSequence;
+        }
+    }
 
     public static void updateTripPattern() {
 
@@ -539,6 +576,259 @@ public class Api extends Controller {
                 // need to remove old shapes...
             }
 
+            // update the trip pattern stops
+            // see extensive discussion in ticket #102
+            // basically, we assume only one stop has changed---either it's been removed, added or moved
+            // this is consistent with the use of Backbone.save in the UI, and
+            // also with the principle of least magic possible
+            // of course, we check to ensure that that is the case and fail if it's not
+            // this lets us easily detect what has happened simply by length
+            
+            long[] originalStopIds = new long[originalTripPattern.patternStops.size()];
+            long[] newStopIds = new long[tripPattern.patternStops.size()];
+            
+            // fill the arrays
+            sort(originalTripPattern.patternStops, new PatternStopSequenceComparator());
+            
+            for (int i = 0; i < originalStopIds.length; i++) {
+                originalStopIds[i] = originalTripPattern.patternStops.get(i).stop.id;
+            }
+            
+            sort(tripPattern.patternStops, new PatternStopSequenceComparator());
+            
+            
+            for (int i = 0; i < newStopIds.length; i++) {
+                newStopIds[i] = tripPattern.patternStops.get(i).stop.id;
+                // while we're at it, repack the patternstops so stop sequences monotonically increment by 1
+                tripPattern.patternStops.get(i).stopSequence = i;
+            }
+            
+            /* ADDITIONS */
+            if (originalStopIds.length == newStopIds.length - 1) {
+                // we have an addition; find it
+
+                int differenceLocation = -1;
+                for (int i = 0; i < newStopIds.length; i++) {
+                    if (differenceLocation != -1) {
+                        // we've already found the addition
+                        if (i < originalStopIds.length && originalStopIds[i] != newStopIds[i + 1]) {
+                            // there's another difference, which we weren't expecting
+                            badRequest();
+                            return;
+                        }
+                    }
+
+                    if (originalStopIds[i] != newStopIds[i]) {
+                        // we have found the difference
+                        differenceLocation = i;
+                    }
+
+                }
+
+                // repack stop times
+                // this is super-easy; we don't need to remove or add anything, as we don't create stop times for
+                // the new stop. We would have no way of knowing which trips stop at the new stop, or at what time.
+                // Stop times can be manually created in the timetable editor.
+
+                for (Object t : Trip.find("pattern = ?", originalTripPattern).fetch()) {
+                    Trip trip = (Trip) t;
+                    
+                    Iterator<TripPatternStop> pse = tripPattern.patternStops.listIterator();
+                    TripPatternStop current;
+                    
+                    // sort the stop times by stop sequence
+                    List<StopTime> stopTimes = trip.getStopTimes();
+                    sort(stopTimes, new StopTimeSequenceComparator());
+                    
+                    for (StopTime st : stopTimes) {
+                        current = pse.next();
+                        
+                        while (!current.stop.id.equals(st.stop.id))
+                            current = pse.next();
+                        
+                        st.stopSequence = current.stopSequence;
+                        StopTime.em().merge(st);
+                    }
+                }                
+            }
+            
+            /* DELETIONS */
+            else if (originalStopIds.length == newStopIds.length + 1) {
+                // we have an deletion; find it
+                int differenceLocation = -1;
+                for (int i = 0; i < originalStopIds.length; i++) {
+                    if (differenceLocation != -1) {
+                        if (originalStopIds[i] != newStopIds[i - 1]) {
+                            // there is another difference, which we were not expecting
+                            badRequest();
+                            return;
+                        }
+                    }
+                    
+                    if (originalStopIds[i] != newStopIds[i]) {
+                        differenceLocation = i;
+                    }
+                }
+                
+                // renumber the stop sequences
+                int i = 0;
+                for (TripPatternStop ps : tripPattern.patternStops) {
+                    ps.stopSequence = i++;
+                    TripPatternStop.em().merge(ps);
+                }
+                
+                // repack stop times and remove stop times for removed pattern stop
+                // this will NPE if the original trip pattern had a null stop sequence, but that's not supposed to happen
+                int removedStopSeq = originalTripPattern.patternStops.get(differenceLocation).stopSequence;
+                long removedStopId = originalStopIds[differenceLocation];
+                
+                for (Object t : Trip.find("pattern = ?", originalTripPattern).fetch()) {
+                    Trip trip = (Trip) t;
+                    
+                    // sort the stop times by stop sequence
+                    List<StopTime> stopTimes = trip.getStopTimes();
+                    sort(stopTimes, new StopTimeSequenceComparator());
+
+                    // remove the stop time we want to remove
+                    StopTime toRemove = null;
+                    
+                    // something to get patternStops
+                    Iterator<TripPatternStop> pse = tripPattern.patternStops.listIterator();
+                    
+                    TripPatternStop current;
+                    
+                    for (StopTime st : stopTimes) {
+                        if (st.stop.id.equals(removedStopId) && st.stopSequence.equals(removedStopSeq)) {
+                            toRemove = st;
+                            continue;
+                        }
+                        
+                        // ensure this happens at least once per iteration, in case the same stop occurs twice in a row
+                        // that is bad but does happen
+                        current = pse.next();
+                        
+                        // skip skipped patternstops
+                        // not every trip has to stop at every stop in a pattern
+                        while (!current.stop.id.equals(st.stop.id))
+                            current = pse.next();
+                        
+                        st.stopSequence = current.stopSequence;
+                        StopTime.em().merge(st);
+                    }
+                    
+                    toRemove.delete();
+                }
+            }
+            
+            /* TRANSPOSITIONS */
+            else if (originalStopIds.length == newStopIds.length) {
+                // we have a transposition, find it
+                int fromLocation = -1;
+                int toLocation = -1;
+                long affectedStopId = -1;
+                
+                for (int i = 0; i < newStopIds.length; i++) {
+                    if (fromLocation == -1 && toLocation == -1) {
+                        // we have not yet found the difference
+                        if (newStopIds[i] != originalStopIds[i]) {
+                            // well, now we have
+                            // check if this is an insert (destination) or a delete (origin)
+                            if (newStopIds[i + 1] == originalStopIds[i]) {
+                                // insertion
+                                toLocation = i;
+                                affectedStopId = newStopIds[i];
+                            }
+                            
+                            else if (newStopIds[i] == originalStopIds[i + 1]) {
+                                // deletion
+                                fromLocation = i;
+                                affectedStopId = originalStopIds[i];
+                            }
+                            
+                            else {
+                                badRequest();
+                                return;
+                            }
+                        }
+                    }
+                    
+                    else if (fromLocation != -1 && toLocation == -1) {
+                        // note that we cannot just check if the new stop ID is the affected stop ID, because the
+                        // affected stop may appear in the trip more than once
+                        
+                        // we know where the stop was moved from, but not to
+                        if (newStopIds[i] == originalStopIds[i + 1]) {
+                            continue;
+                        }
+                        
+                        else {
+                            if (newStopIds[i] == affectedStopId) {
+                                toLocation = i;
+                            }
+                            else {
+                                badRequest();
+                                return;
+                            }
+                        }
+                    }
+                    
+                    else if (toLocation != -1 && fromLocation == -1) {
+                        // we know where to but not where from
+                        if (newStopIds[i] == originalStopIds[i - 1]){
+                            continue;
+                        }
+                        else {
+                            if (newStopIds[i] == affectedStopId) {
+                                fromLocation = i;
+                            }
+                            else {
+                                badRequest();
+                                return;
+                            }
+                        }
+                    }
+                }
+                
+                TripPatternStop originalPatternStop = originalTripPattern.patternStops.get(fromLocation);
+                
+                for (Object t : Trip.find("pattern = ?", originalTripPattern).fetch()) {
+                    Trip trip = (Trip) t;
+                    
+                    Iterator<TripPatternStop> pse = tripPattern.patternStops.listIterator();
+                    TripPatternStop current;
+                    
+                    // sort the stop times by stop sequence
+                    List<StopTime> stopTimes = trip.getStopTimes();
+                    sort(stopTimes, new StopTimeSequenceComparator());
+                    
+                    for (StopTime st : stopTimes) {
+                        if (st.stop.id.equals(originalPatternStop.stop.id) &&
+                                st.stopSequence.equals(originalPatternStop.stopSequence)) {
+                            // this is the moved stop
+                            st.stopSequence = toLocation;
+                        }
+                        else {
+                            // this is not the moved stop
+                            current = pse.next();
+                            
+                            
+                            // skip skipped stops, also the destination pattern stop
+                            while (!current.stop.id.equals(st.stop.id) || current.stopSequence.equals(toLocation))
+                                current = pse.next();
+                            
+                            st.stopSequence = current.stopSequence;
+                            StopTime.em().merge(st);
+                        }
+                    }
+                }
+            }
+            
+            /* OTHER STUFF IS NOT SUPPORTED */
+            else {
+                badRequest();
+                return;
+            }
+
             TripPattern updatedTripPattern = TripPattern.em().merge(tripPattern);
             updatedTripPattern.save();
             
@@ -549,6 +839,7 @@ public class Api extends Controller {
             
             List<TripPatternStop> patternStops = TripPatternStop.find("pattern = ?", tripPattern).fetch();
             
+            // handle pattern stop deletion
             for(TripPatternStop patternStop : patternStops) {
                 if(!patternStopIds.contains(patternStop.id))
                     patternStop.delete();
