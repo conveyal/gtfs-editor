@@ -8,3 +8,5 @@ eclipse
 .settings/
 *~
 .project
+test-result
+dropAndRecreateDatabase.sh
