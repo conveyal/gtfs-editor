@@ -240,6 +240,27 @@ var GtfsEditor = GtfsEditor || {};
                 stopTime: st
               });
             } else {
+              if (st == null) {
+                // find the appropriate pattern stop
+                var ps = _.find(this.pattern.get('patternStops'), function (ps) {
+                  return ps.stop.id == stopId && ps.stopSequence == stopSeq;
+                });
+
+                st = this.makeStopTime(ps);
+
+                // find the index of the previous stop
+                var largestIndex = -1;
+                _.each(trip.get('stopTimes'), function (eachSt, idx) {
+                  if (eachSt.stopSequence < st.stopSequence && idx > largestIndex) {
+                    largestIndex = idx;
+                  }
+                });
+
+                // insert
+                trip.get('stopTimes').splice(largestIndex + 1, 0, st);
+                trip.set('stopTimes', trip.get('stopTimes'));
+              }
+
               if (arr) {
                 st.arrivalTime = parseTime(val);
               } else {
@@ -319,11 +340,9 @@ var GtfsEditor = GtfsEditor || {};
       // TODO: midnight is a bad initial time. what is a good intial time?
       var currentTime = 0;
 
+      var instance = this;
       _.each(this.pattern.get('patternStops'), function (patternStop) {
-        var st = {};
-        st.stop = patternStop.stop;
-        st.patternStop = patternStop;
-        st.stopSequence = patternStop.stopSequence;
+        var st = instance.makeStopTime(patternStop);
 
         currentTime += patternStop.defaultTravelTime;
         st.arrivalTime = currentTime;
@@ -342,6 +361,17 @@ var GtfsEditor = GtfsEditor || {};
 
       // trigger redraw, show the new trip
       this.$container.handsontable('render');
+    },
+
+    /** Make a stop time from a pattern stop */
+    makeStopTime: function (patternStop) {
+      var st = {};
+
+      st.stop = patternStop.stop;
+      st.patternStop = patternStop;
+      st.stopSequence = patternStop.stopSequence;
+
+      return st;
     },
 
     render: function() {
