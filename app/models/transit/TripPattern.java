@@ -243,7 +243,7 @@ public class TripPattern extends Model {
                         current = pse.next();
                     
                     st.stopSequence = current.stopSequence;
-                    StopTime.em().merge(st);
+                    StopTime.em().merge(st).save();
                 }
             }                
         }
@@ -271,7 +271,7 @@ public class TripPattern extends Model {
             int i = 1;
             for (TripPatternStop ps : tripPattern.patternStops) {
                 ps.stopSequence = i++;
-                TripPatternStop.em().merge(ps);
+                TripPatternStop.em().merge(ps).save();
             }
             
             // repack stop times and remove stop times for removed pattern stop
@@ -310,7 +310,7 @@ public class TripPattern extends Model {
                         current = pse.next();
                     
                     st.stopSequence = current.stopSequence;
-                    StopTime.em().merge(st);
+                    StopTime.em().merge(st).save();
                 }
                 
                 toRemove.delete();
@@ -399,7 +399,7 @@ public class TripPattern extends Model {
                     if (st.stop.id.equals(movedStopId) && st.stopSequence.equals(movedStopSeq)) {
                         // we are dealing with the moved stop
                         st.stopSequence = newStopSeq;
-                        StopTime.em().merge(st);
+                        StopTime.em().merge(st).save();
                     }
 
                     else {
@@ -412,7 +412,7 @@ public class TripPattern extends Model {
                             current = psi.next();
 
                         st.stopSequence = current.stopSequence;
-                        StopTime.em().merge(st);
+                        StopTime.em().merge(st).save();
                     }
                 }
             }                
