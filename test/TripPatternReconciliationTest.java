@@ -22,6 +22,10 @@ import models.transit.TripPatternStop;
 
 /**
  * Test that reconciling trip patterns does the right thing with stop times, etc.
+ * 
+ * When running this test, note that the Play test runner tends to time out and you have to open the test results
+ * test-result/TripPatternReconciliationTest.(passed|failed).html
+ * 
  * @author mattwigway
  *
  */
@@ -637,16 +641,17 @@ public class TripPatternReconciliationTest extends UnitTest {
             int expectedStopSequence = 0;
             
             for (StopTime st : stopTimes) {
-                if (expectedStopSequence == 6) {
-                    // this is the moved stop
-                    assertEquals(toMove.stop.id, st.stop.id);
+                if (expectedStopSequence == 1) {
+                    // this is before the moved stop
+                    assertEquals(stops[2].id, st.stop.id);
                 }
-                else if (expectedStopSequence == 2) {
-                    assertEquals(stops[4].id, st.stop.id);
+                else if (expectedStopSequence == 3) {
+                    // this is the moved stop
+                    assertEquals(stops[8].id, st.stop.id);
                 }
                 else if (expectedStopSequence == 4) {
-                    // this should be the former stop 5
-                    assertEquals(stops[10].id, st.stop.id);
+                    // this should be the former stop 3
+                    assertEquals(stops[6].id, st.stop.id);
                 }
                 else if (expectedStopSequence == 7) {
                     // this should still be the last stop from before
@@ -658,8 +663,8 @@ public class TripPatternReconciliationTest extends UnitTest {
         }
     }
     
-    //@Test
-    public void testTranspositionWhenAStopIsSkipped () {
+    @Test
+    public void testTranspositionLeftWhenAStopIsSkipped () {
         Stop[] stops = makeStops();
         
         // build a pattern with a trip and a few stoptimes, but skipping stop 10
@@ -695,7 +700,10 @@ public class TripPatternReconciliationTest extends UnitTest {
         toMove.stopSequence = 4;
         tp2.patternStops.add(4, toMove);
         
+        assertEquals(stops[12].id, toMove.stop.id);
+        
         // fix stop sequences (generally this would be done in javascript on the client)
+        // note that this leaves stop sequences non-consecutive, which is a supported case
         for (int i = 5; i < tp2.patternStops.size(); i++) {
             tp2.patternStops.get(i).stopSequence++;
         }
@@ -718,15 +726,12 @@ public class TripPatternReconciliationTest extends UnitTest {
            
                 // is this the stop that was originally skipped?
                 assertNotSame(stops[10].id, st.stop.id);
-                assertNotSame(5, st.stopSequence);
+                assertNotSame(6, st.stopSequence);
                 
                 // skip the stop sequence that was skipped
                 // it was stop sequence 5 but then we moved a stop before it
                 if (expectedStopSeq == 6)
                     expectedStopSeq++;
-                
-                // are stop sequences repacked correctly?
-                assertEquals(expectedStopSeq++, (int) st.stopSequence);
                 
                 // is the moved stop moved?
                 if (expectedStopSeq == 4) 
@@ -746,7 +751,8 @@ public class TripPatternReconciliationTest extends UnitTest {
                     // beginning
                     assertEquals(stops[0].id, st.stop.id);
                 
-                
+                // are stop sequences repacked correctly?
+                assertEquals(expectedStopSeq++, (int) st.stopSequence);
             }
         }
     }

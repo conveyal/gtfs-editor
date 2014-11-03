@@ -362,17 +362,20 @@ public class TripPattern extends Model {
             // because the requisite operations are equivalent
             long movedStopId;
             int movedStopSeq;
+            int newStopSeq;
             
             // TODO: ensure that this is all that happened (i.e. verify stop ID map inside changed region)
             if (originalStopIds[firstDifferentIndex] == newStopIds[lastDifferentIndex]) {
                 movedStopId = originalStopIds[firstDifferentIndex];
                 movedStopSeq = this.patternStops.get(firstDifferentIndex).stopSequence;
+                newStopSeq = tripPattern.patternStops.get(lastDifferentIndex).stopSequence;
             }
 
             else if (newStopIds[firstDifferentIndex] == originalStopIds[lastDifferentIndex]) {
                 // stop was moved left
                 movedStopId = originalStopIds[lastDifferentIndex];
                 movedStopSeq = this.patternStops.get(lastDifferentIndex).stopSequence;
+                newStopSeq = tripPattern.patternStops.get(firstDifferentIndex).stopSequence;
             }
             
             else {
@@ -393,9 +396,9 @@ public class TripPattern extends Model {
                 TripPatternStop current;
 
                 for (StopTime st : stopTimes) {
-                    if (st.stop.id == movedStopId && st.stopSequence == movedStopSeq) {
+                    if (st.stop.id.equals(movedStopId) && st.stopSequence.equals(movedStopSeq)) {
                         // we are dealing with the moved stop
-                        st.stopSequence = tripPattern.patternStops.get(lastDifferentIndex).stopSequence;
+                        st.stopSequence = newStopSeq;
                         StopTime.em().merge(st);
                     }
 
@@ -403,7 +406,9 @@ public class TripPattern extends Model {
                         // we are not dealing with the moved stop
                         current = psi.next();
 
-                        while (!current.stop.id.equals(st.stop.id))
+                        while (!current.stop.id.equals(st.stop.id) ||
+                                // skip the moved stop, in case the same stop appears twice
+                                (current.stop.id.equals(movedStopId) && current.stopSequence.equals(newStopSeq)))
                             current = psi.next();
 
                         st.stopSequence = current.stopSequence;
