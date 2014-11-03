@@ -17,7 +17,13 @@ var GtfsEditor = GtfsEditor || {};
     },
     toString: function() {
       var st = this.get('stopTime');
-      return String(this.get('arr') ? st.arrivalTime : st.departureTime);
+
+      if (st === null)
+        return 'does-not-stop';
+
+      var time = this.get('arr') ? st.arrivalTime : st.departureTime
+
+      return String(time !== null ? time : 'no-time');
     }
   })
 
@@ -68,7 +74,9 @@ var GtfsEditor = GtfsEditor || {};
   var StopTimeEditor = Handsontable.editors.TextEditor.prototype.extend();
 
   StopTimeEditor.prototype.setValue = function(time) {
-    if (time === null || time == 'null') {
+    if (time == 'does-not-stop') {
+      value = '-';
+    } else if (time == 'no-time') {
       value = '';
     } else {
 
@@ -242,11 +250,11 @@ var GtfsEditor = GtfsEditor || {};
             } else {
               if (st == null) {
                 // find the appropriate pattern stop
-                var ps = _.find(this.pattern.get('patternStops'), function (ps) {
+                var ps = _.find(instance.pattern.get('patternStops'), function (ps) {
                   return ps.stop.id == stopId && ps.stopSequence == stopSeq;
                 });
 
-                st = this.makeStopTime(ps);
+                st = instance.makeStopTime(ps);
 
                 // find the index of the previous stop
                 var largestIndex = -1;
@@ -370,6 +378,8 @@ var GtfsEditor = GtfsEditor || {};
       st.stop = patternStop.stop;
       st.patternStop = patternStop;
       st.stopSequence = patternStop.stopSequence;
+
+      st.arrivalTime = st.departureTime = null;
 
       return st;
     },
