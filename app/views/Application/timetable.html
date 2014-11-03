@@ -19,10 +19,31 @@
 <div id="timetable-container"></div>
 
 <script id="timetable-tpl" type="text/html">
+  <div class="modal hide fade" id="#offset-modal">
+    <div class="modal-header">&{'timetable.offset'}</div>
+    <form id="offset-form" class="form-inline">
+      <div class="modal-body">
+        <div class="form-group">
+          <label style="position: absolute; left: -1000px" for="#offset-amount">&{'timetable.offset-amount'}</label>
+          <input type="text" id="offset-amount" placeholder="&{'timetable.offset-amount'}" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <div class="form-group">
+          <input type="submit" class="btn btn-primary" value="&{'timetable.offset'}"/>
+        </div>
+      </div>
+    </form>
+  </div>
+
   <p>
     <div class="btn-group">
-      <button role="button" class="btn btn-default save"> &{'timetable.save-changes'}</button>
-      <button role="button" class="btn btn-default new-trip"> &{'timetable.new-trip'}</button>
+      <button role="button" class="btn btn-default save">
+        <i class="icon-file"></i>&nbsp;&nbsp;&{'timetable.save-changes'}
+      </button>
+      <button role="button" class="btn btn-default new-trip">
+        <i class="icon-plus-sign"></i>&nbsp;&nbsp;&{'timetable.new-trip'}
+      </button>
     </div>
   </p>
   <div id="timetable"></div>

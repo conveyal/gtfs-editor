@@ -377,6 +377,79 @@ var GtfsEditor = GtfsEditor || {};
       this.$container.handsontable('render');
     },
 
+    offsetTimes: function (time) {
+      time = String(time);
+      var negative = false;
+      if (time[0] == '-') {
+        negative = true;
+        time = time.slice(1);
+      }
+
+      // note that we can't use parseTime here, because it assumes we're talking hours if we don't specify
+      var offset;
+      // allow ; or . instead of :
+      time.replace(';', ':').replace('.', ':');
+      if (/[0-9]+/.test(time))
+        // assume offset is minutes
+        offset = Number(time) * 60;
+
+      else if (/([0-9]+)(:[0-5][0-9]){1,2}/.test(time)) {
+        var spt = time.split(':');
+
+        // seconds
+        offset = Number(spt.slice(-1, 1));
+        // minutes
+        if (spt.length >= 2)
+          offset += Number(spt.slice(-2, 1)) * 60;
+
+        // hours, if present
+        if (spt.length == 3)
+          offset += Number(spt.slice(-3, 1)) * 60 * 60;
+      }
+      // ignore other formats
+      else return;
+
+      if (negative)
+        offset *= -1;
+
+      var coords = this.$container.handsontable('getSelected');
+
+      // get the affected trips
+      // [1] and [3] are the first and last selected rows. Suppose only one row is selected, [3] - [1] will be
+      // zero, so we add one to get the number of rows to select
+      var trips = this.collection.slice(coords[1], coords[3] - coords[1] + 1);
+
+      trips.each(function (trip) {
+        // find the affected stoptimes
+        var fromCell = coords[0] - 4;
+        var toCell = coords[2] - 4;
+        var from = Math.floor(fromCell / 2);
+        var to = Math.floor(toCell / 2);
+        var len = to - from + 1;
+        var patternStops = instance.pattern.get('patternStops');
+        patternStops = _.sortBy(patternStops, 'stopSequence').slice(from, len);
+
+        _.each(patternStops, function (ps, idx) {
+          // get the stoptime
+          var st = _.find(trip.get('stopTimes'), function (st) {
+            return st.stop.id == ps.stop.id && st.stopSequence == ps.stopSequence;
+          });
+
+          if (st === null)
+            return;
+
+          // if we're not looking at the first stoptime, and/or the first cell is even, update arrival time
+          // if the first cell is odd and this is the first stoptime, we're only updating the departureTime.
+          if (idx !== 0 || fromCell % 2 === 0)
+            st.arrivalTime += offset;
+
+          // same idea at the end. if the tocell is odd or we're in the middle, update both arrival and departure times
+          if (idx != len - 1 || toCell % 2 == 1)
+            st.departureTime += offset;
+        });
+      });
+    },
+
     /** Make a stop time from a pattern stop */
     makeStopTime: function (patternStop) {
       var st = {};
@@ -441,6 +514,18 @@ var GtfsEditor = GtfsEditor || {};
       // add the event handlers
       this.$('.save').click(this.saveAll);
       this.$('.new-trip').click(this.newTrip);
+      this.$('#offset-form').submit(function (e) {
+        instance.offsetTimes($('#offset-amount').val());
+        instance.$('#modal-form').hide();
+      });
+
+      $(document).keydown(function (e) {
+        if (e.key == 'o' && e.ctrlKey && e.altKey) {
+          e.preventDefault();
+          instance.$('#modal-form').show();
+          instance.$('#offset-amount').focus();
+        }
+      });
 
       return this;
     }
