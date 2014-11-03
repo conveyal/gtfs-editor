@@ -59,8 +59,12 @@ public class TripPatternReconciliationTest extends UnitTest {
         return ret;
     }
     
-    /** Make a dummy pattern */
     private TripPattern makePattern (Stop[] stops) {
+        return makePattern(stops, false);
+    }
+    
+    /** Make a dummy pattern */
+    private TripPattern makePattern (Stop[] stops, boolean loop) {
         TripPattern tp = new TripPattern();
         
         List<TripPatternStop> pss = new ArrayList<TripPatternStop>(8);
@@ -71,6 +75,11 @@ public class TripPatternReconciliationTest extends UnitTest {
         int j = 0;
         for (int i = 0; i < 15; i += 2) {
             TripPatternStop ps = new TripPatternStop(tp, stops[i], j++, 120);
+            pss.add(ps);
+        }
+        
+        if (loop) {
+            TripPatternStop ps = new TripPatternStop(tp, stops[0], j++, 120);
             pss.add(ps);
         }
         
@@ -753,6 +762,197 @@ public class TripPatternReconciliationTest extends UnitTest {
                 
                 // are stop sequences repacked correctly?
                 assertEquals(expectedStopSeq++, (int) st.stopSequence);
+            }
+        }
+    }
+    
+    @Test
+    public void testStopRemovalOnLoopRoute () {
+        Stop[] stops = makeStops();
+        
+        // build a loop pattern with a trip and a few stoptimes
+        TripPattern tp = makePattern(stops, true);
+        createStopTimesForTripPattern(tp);
+        
+        // make sure the correct number of stop times were created
+        assertEquals(45, StopTime.count());
+        
+        // make a new pattern
+        TripPattern tp2 = makePattern(stops, true);
+        
+        assertEquals(9, tp.patternStops.size());
+        assertEquals(9, tp2.patternStops.size());
+        
+        // check that it worked
+        Collection<Trip> trips = Trip.find("pattern = ?", tp).fetch();
+        
+        for (Trip t : trips) {
+            List<StopTime> stopTimes = t.getStopTimes();
+            
+            assertEquals(9, stopTimes.size());
+            
+            sort(stopTimes, new StopTimeSequenceComparator());
+            
+            assertEquals(stops[0].id, stopTimes.get(0).stop.id);
+            assertEquals(stops[0].id, stopTimes.get(8).stop.id);
+        }
+        
+        // remove the loop stop
+        TripPatternStop toMove = tp2.patternStops.remove(0);
+        assertEquals(stops[0].id, toMove.stop.id);
+        
+        // fix stop sequences (generally this would be done in javascript on the client)
+        // note that this leaves stop sequences non-consecutive, which is a supported case
+        for (int i = 5; i < tp2.patternStops.size(); i++) {
+            tp2.patternStops.get(i).stopSequence++;
+        }
+        
+        tp.reconcilePatternStops(tp2);
+        
+        // some stop times should have been removed
+        assertEquals(40, StopTime.count());
+        
+        for (Trip t : trips) {
+            List<StopTime> stopTimes = t.getStopTimes();
+            
+            assertEquals(8, stopTimes.size());
+            
+            sort(stopTimes, new StopTimeSequenceComparator());
+            
+            int expectedStopSeq = 0;
+            
+            for (StopTime st : stopTimes) {
+                if (expectedStopSeq == 7) {
+                    assertEquals(stops[0].id, st.stop.id);
+                }
+                else {
+                    // even numbered stops, except the (removed) 0th one.
+                    assertEquals(stops[expectedStopSeq * 2 + 2].id, st.stop.id);
+                }
+                
+                assertEquals(expectedStopSeq ++, (int) st.stopSequence);
+            }
+        }
+    }
+    
+    @Test
+    public void testMakePatternLoopRoute () {
+        Stop[] stops = makeStops();
+        
+        // build a pattern with a trip and a few stoptimes
+        TripPattern tp = makePattern(stops, false);
+        createStopTimesForTripPattern(tp);
+        
+        // make sure the correct number of stop times were created
+        assertEquals(40, StopTime.count());
+        
+        // make a loop pattern
+        TripPattern tp2 = makePattern(stops, true);
+        
+        assertEquals(8, tp.patternStops.size());
+        assertEquals(9, tp2.patternStops.size());
+        
+        // check that it worked
+        Collection<Trip> trips = Trip.find("pattern = ?", tp).fetch();
+        
+        for (Trip t : trips) {
+            List<StopTime> stopTimes = t.getStopTimes();
+            
+            assertEquals(8, stopTimes.size());
+        }
+        
+        tp.reconcilePatternStops(tp2);
+        
+        // stop times should be same
+        assertEquals(40, StopTime.count());
+        
+        for (Trip t : trips) {
+            List<StopTime> stopTimes = t.getStopTimes();
+            
+            assertEquals(8, stopTimes.size());
+            
+            sort(stopTimes, new StopTimeSequenceComparator());
+            
+            int expectedStopSeq = 0;
+
+            for (StopTime st : stopTimes) {
+                // even numbered stops
+                assertEquals(stops[expectedStopSeq * 2].id, st.stop.id);
+                assertEquals(expectedStopSeq ++, (int) st.stopSequence);
+            }
+        }
+    }
+    
+    @Test
+    public void testMoveLoopStop () {
+        Stop[] stops = makeStops();
+        
+        // build a loop pattern with a trip and a few stoptimes
+        TripPattern tp = makePattern(stops, true);
+        createStopTimesForTripPattern(tp);
+        
+        // make sure the correct number of stop times were created
+        assertEquals(45, StopTime.count());
+        
+        // make a new pattern
+        TripPattern tp2 = makePattern(stops, true);
+        
+        assertEquals(9, tp.patternStops.size());
+        assertEquals(9, tp2.patternStops.size());
+        
+        // check that it worked
+        Collection<Trip> trips = Trip.find("pattern = ?", tp).fetch();
+        
+        for (Trip t : trips) {
+            List<StopTime> stopTimes = t.getStopTimes();
+            
+            assertEquals(9, stopTimes.size());
+            
+            sort(stopTimes, new StopTimeSequenceComparator());
+            
+            assertEquals(stops[0].id, stopTimes.get(0).stop.id);
+            assertEquals(stops[0].id, stopTimes.get(8).stop.id);
+        }
+        
+        // move the loop stop
+        TripPatternStop toMove = tp2.patternStops.remove(8);
+        assertEquals(stops[0].id, toMove.stop.id);
+        toMove.stopSequence = 3;
+        tp2.patternStops.add(3, toMove);
+        
+        for (int i = 4; i < 9; i++) {
+            tp2.patternStops.get(i).stopSequence++;
+        }
+        
+        // fix stop sequences (generally this would be done in javascript on the client)
+        // note that this leaves stop sequences non-consecutive, which is a supported case
+        for (int i = 5; i < tp2.patternStops.size(); i++) {
+            tp2.patternStops.get(i).stopSequence++;
+        }
+        
+        tp.reconcilePatternStops(tp2);
+
+        for (Trip t : trips) {
+            List<StopTime> stopTimes = t.getStopTimes();
+            
+            assertEquals(9, stopTimes.size());
+            
+            sort(stopTimes, new StopTimeSequenceComparator());
+            
+            int expectedStopSeq = 0;
+            
+            for (StopTime st : stopTimes) {
+                if (expectedStopSeq == 3) {
+                    assertEquals(stops[0].id, st.stop.id);
+                }
+                else if (expectedStopSeq < 3) {
+                    assertEquals(stops[expectedStopSeq * 2].id, st.stop.id);
+                }
+                else {
+                    assertEquals(stops[expectedStopSeq * 2 - 2].id, st.stop.id);                    
+                }
+                
+                assertEquals(expectedStopSeq ++, (int) st.stopSequence);
             }
         }
     }
