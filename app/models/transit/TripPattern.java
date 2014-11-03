@@ -395,11 +395,19 @@ public class TripPattern extends Model {
 
                 TripPatternStop current;
 
+                // record if there were stop times
+                // if there were, invalidate the trip. 
+                boolean hadStopTimes = false;
+                
                 for (StopTime st : stopTimes) {
+                    if (st.arrivalTime != null || st.departureTime != null)
+                        hadStopTimes = true;
+                    
                     if (st.stop.id.equals(movedStopId) && st.stopSequence.equals(movedStopSeq)) {
                         // we are dealing with the moved stop
                         st.stopSequence = newStopSeq;
-                        StopTime.em().merge(st).save();
+                        StopTime updated = StopTime.em().merge(st);
+                        updated.save();
                     }
 
                     else {
@@ -412,9 +420,17 @@ public class TripPattern extends Model {
                             current = psi.next();
 
                         st.stopSequence = current.stopSequence;
-                        StopTime.em().merge(st).save();
+                        StopTime updated = StopTime.em().merge(st);
+                        updated.save();
                     }
                 }
+                
+                if (hadStopTimes) {
+                    trip.invalid = true;
+                    trip.save();
+                }
+                
+                trip.refresh();
             }                
         }
 

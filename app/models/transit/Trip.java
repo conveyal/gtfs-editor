@@ -59,6 +59,7 @@ public class Trip extends Model {
     public Integer endTime;
     
     public Integer headway;
+    public Boolean invalid;
   
     
     public static BigInteger nativeInsert(EntityManager em, org.onebusaway.gtfs.model.Trip gtfsTrip, BigInteger routeId, BigInteger shapeId, BigInteger serviceCalendarId, BigInteger serviceCalendarDateId)
