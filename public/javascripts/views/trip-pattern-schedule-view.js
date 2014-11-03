@@ -13,7 +13,8 @@ var GtfsEditor = GtfsEditor || {};
     defaults: {
       stopTime: null,
       // is this the arrival time cell, or the departure time cell?
-      arr: null
+      arr: null,
+      trip: null
     },
     toString: function() {
       var st = this.get('stopTime');
@@ -53,10 +54,11 @@ var GtfsEditor = GtfsEditor || {};
 
          // TODO: template
          text =
-           '<div class="time ' + (arr ? 'time-arr' : 'time-dep') +
+           '<div class="time ' + (arr ? 'time-arr ' : 'time-dep ') +
            // dim departure times that are the same as their arrival times
            // TODO: only in two-time mode
-           (!arr && st.departureTime == st.arrivalTime ? 'time-dep-dimmed' : '') + '">' +
+           (!arr && st.departureTime == st.arrivalTime ? 'time-dep-dimmed ' : '') +
+           (value.get('trip').get('invalid') === true ? 'trip-invalid' : '') + '">' +
            '<span class="hours">' + hours + '</span>' +
            '<span class="minutes">' + (mins < 10 ? '0' + mins : mins) + '</span>' +
            '<span class="seconds">' + (secs < 10 ? '0' + secs : secs) + '</span>' +
@@ -245,7 +247,8 @@ var GtfsEditor = GtfsEditor || {};
             if (_.isUndefined(val)) {
               return new StopTimeCell({
                 arr: arr,
-                stopTime: st
+                stopTime: st,
+                trip: trip
               });
             } else {
               if (st == null) {

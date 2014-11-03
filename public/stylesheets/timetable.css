@@ -15,3 +15,4 @@
 .handsontable .time-arr { color: #050 }
 .handsontable .time-dep { color: #005 }
 .handsontable .time-dep-dimmed { color: #aaa }
+.handsontable .trip-invalid { background-color: #fdd }
