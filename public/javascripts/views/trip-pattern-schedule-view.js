@@ -326,7 +326,10 @@ var GtfsEditor = GtfsEditor || {};
       this.collection.each(function(trip) {
         if (trip.modified) {
           deferreds.push(
-            trip.save().done(function() {
+            // we assume that, if it's been modified, it is now valid
+            // the invalid flag just indicates that something has occurred that requires human intervention
+            // but we don't clear the flag until the save is successful
+            trip.save({invalid: false}, {wait: true}).done(function() {
               trip.modified = false;
             })
           );
