@@ -72,7 +72,7 @@ public class TripPatternReconciliationTest extends UnitTest {
         // build up some pattern stops
         // stop at every other stop
         // (that seemed like a good idea at the time, but in retrospect I should have stopped at every stop)
-        int j = 0;
+        int j = 1;
         for (int i = 0; i < 15; i += 2) {
             TripPatternStop ps = new TripPatternStop(tp, stops[i], j++, 120);
             pss.add(ps);
@@ -108,7 +108,7 @@ public class TripPatternReconciliationTest extends UnitTest {
             trip.save();
 
             for (TripPatternStop ps : tp.patternStops) {
-                if (skipStop && ps.stopSequence.equals(5)) // stop 10
+                if (skipStop && ps.stopSequence.equals(6)) // stop 10
                     continue;
                 
                 StopTime st = new StopTime();
@@ -151,8 +151,7 @@ public class TripPatternReconciliationTest extends UnitTest {
             sort(stopTimes, new StopTimeSequenceComparator());
             
             assertEquals(stops[14].id, stopTimes.get(7).stop.id);
-            // it was seven before
-            assertEquals((Integer) 7, stopTimes.get(7).stopSequence);
+            assertEquals((Integer) 8, stopTimes.get(7).stopSequence);
         }
         
         // add a pattern stop
@@ -192,8 +191,8 @@ public class TripPatternReconciliationTest extends UnitTest {
             
             // it's still the seventh stoptime, since there is no 4.
             assertEquals(stops[14].id, stopTimes.get(7).stop.id);
-            // it was seven before
-            assertEquals((Integer) 8, stopTimes.get(7).stopSequence);
+            // it was eight before
+            assertEquals((Integer) 9, stopTimes.get(7).stopSequence);
         }
     }
     
@@ -224,8 +223,7 @@ public class TripPatternReconciliationTest extends UnitTest {
             sort(stopTimes, new StopTimeSequenceComparator());
             
             assertEquals(stops[14].id, stopTimes.get(7).stop.id);
-            // it was seven before
-            assertEquals((Integer) 7, stopTimes.get(7).stopSequence);
+            assertEquals((Integer) 8, stopTimes.get(7).stopSequence);
         }
         
         // add a pattern stop at the end
@@ -245,8 +243,8 @@ public class TripPatternReconciliationTest extends UnitTest {
             sort(stopTimes, new StopTimeSequenceComparator());
             
             assertEquals(stops[14].id, stopTimes.get(7).stop.id);
-            // it was seven before
-            assertEquals((Integer) 7, stopTimes.get(7).stopSequence);
+            // it was 8 before
+            assertEquals((Integer) 8, stopTimes.get(7).stopSequence);
         }
     }
     
@@ -277,8 +275,7 @@ public class TripPatternReconciliationTest extends UnitTest {
             sort(stopTimes, new StopTimeSequenceComparator());
             
             assertEquals(stops[14].id, stopTimes.get(7).stop.id);
-            // it was seven before
-            assertEquals((Integer) 7, stopTimes.get(7).stopSequence);
+            assertEquals((Integer) 8, stopTimes.get(7).stopSequence);
         }
         
         // zap the third stop (which is stop 4)
@@ -302,7 +299,7 @@ public class TripPatternReconciliationTest extends UnitTest {
             
             sort(stopTimes, new StopTimeSequenceComparator());
             
-            int previousStopSeq = -1;
+            int previousStopSeq = 0;
             
             for (StopTime st : stopTimes) {
                 // is this the stop that was supposed to be deleted?
@@ -342,8 +339,7 @@ public class TripPatternReconciliationTest extends UnitTest {
             sort(stopTimes, new StopTimeSequenceComparator());
             
             assertEquals(stops[14].id, stopTimes.get(7).stop.id);
-            // it was seven before
-            assertEquals((Integer) 7, stopTimes.get(7).stopSequence);
+            assertEquals((Integer) 8, stopTimes.get(7).stopSequence);
         }
         
         // zap the last stop (which is stop 14)
@@ -367,7 +363,7 @@ public class TripPatternReconciliationTest extends UnitTest {
             
             sort(stopTimes, new StopTimeSequenceComparator());
             
-            int previousStopSeq = -1;
+            int previousStopSeq = 0;
             
             for (StopTime st : stopTimes) {
                 // is this the stop that was supposed to be deleted?
@@ -407,14 +403,14 @@ public class TripPatternReconciliationTest extends UnitTest {
             sort(stopTimes, new StopTimeSequenceComparator());
             
             assertEquals(stops[14].id, stopTimes.get(7).stop.id);
-            assertEquals((Integer) 7, stopTimes.get(7).stopSequence);
+            assertEquals((Integer) 8, stopTimes.get(7).stopSequence);
         }
         
         // move one stop
         TripPatternStop toMove = tp2.patternStops.remove(4);
-        toMove.stopSequence = 6;
+        toMove.stopSequence = 7;
         tp2.patternStops.add(6, toMove);
-        tp2.patternStops.get(7).stopSequence = 7;
+        tp2.patternStops.get(7).stopSequence = 8;
         
         tp.reconcilePatternStops(tp2);
         
@@ -428,21 +424,21 @@ public class TripPatternReconciliationTest extends UnitTest {
             
             sort(stopTimes, new StopTimeSequenceComparator());
             
-            int expectedStopSequence = 0;
+            int expectedStopSequence = 1;
             
             for (StopTime st : stopTimes) {
-                if (expectedStopSequence == 6) {
+                if (expectedStopSequence == 7) {
                     // this is the moved stop
                     assertEquals(toMove.stop.id, st.stop.id);
                 }
-                else if (expectedStopSequence == 2) {
+                else if (expectedStopSequence == 3) {
                     assertEquals(stops[4].id, st.stop.id);
                 }
-                else if (expectedStopSequence == 4) {
-                    // this should be the former stop 5
+                else if (expectedStopSequence == 5) {
+                    // this should be the former stop 6
                     assertEquals(stops[10].id, st.stop.id);
                 }
-                else if (expectedStopSequence == 7) {
+                else if (expectedStopSequence == 8) {
                     // this should still be the last stop from before
                     assertEquals(stops[14].id, st.stop.id);
                 }
@@ -480,7 +476,7 @@ public class TripPatternReconciliationTest extends UnitTest {
             
             for (StopTime st : stopTimes) {
                 assertNotSame(stops[10].id, st.stop.id);
-                assertNotSame(5, st.stopSequence);
+                assertNotSame(6, st.stopSequence);
             }
         }
         
@@ -505,7 +501,7 @@ public class TripPatternReconciliationTest extends UnitTest {
             
             sort(stopTimes, new StopTimeSequenceComparator());
             
-            int expectedStopSeq = 0;
+            int expectedStopSeq = 1;
             
             for (StopTime st : stopTimes) {
                 // is this the stop that was supposed to be deleted?
@@ -514,10 +510,10 @@ public class TripPatternReconciliationTest extends UnitTest {
                 
                 // is this the stop that was originally skipped?
                 assertNotSame(stops[10].id, st.stop.id);
-                assertNotSame(5, st.stopSequence);
+                assertNotSame(6, st.stopSequence);
                 
                 // skip the stop sequence that was skipped
-                if (expectedStopSeq == 5)
+                if (expectedStopSeq == 6)
                     expectedStopSeq++;
                 
                 // are stop sequences repacked correctly?
@@ -554,7 +550,7 @@ public class TripPatternReconciliationTest extends UnitTest {
             
             for (StopTime st : stopTimes) {
                 assertNotSame(stops[10].id, st.stop.id);
-                assertNotSame(5, st.stopSequence);
+                assertNotSame(6, st.stopSequence);
             }
         }
         
@@ -576,16 +572,16 @@ public class TripPatternReconciliationTest extends UnitTest {
             
             sort(stopTimes, new StopTimeSequenceComparator());
             
-            int expectedStopSeq = 0;
+            int expectedStopSeq = 1;
             
             for (StopTime st : stopTimes) {
            
                 // is this the stop that was originally skipped?
                 assertNotSame(stops[10].id, st.stop.id);
-                assertNotSame(5, st.stopSequence);
+                assertNotSame(6, st.stopSequence);
                 
                 // skip the stop sequence that was skipped
-                if (expectedStopSeq == 5)
+                if (expectedStopSeq == 6)
                     expectedStopSeq++;
                 
                 // are stop sequences repacked correctly?
@@ -622,7 +618,7 @@ public class TripPatternReconciliationTest extends UnitTest {
             sort(stopTimes, new StopTimeSequenceComparator());
             
             assertEquals(stops[14].id, stopTimes.get(7).stop.id);
-            assertEquals((Integer) 7, stopTimes.get(7).stopSequence);
+            assertEquals((Integer) 8, stopTimes.get(7).stopSequence);
         }
         
         // move one stop
@@ -647,22 +643,22 @@ public class TripPatternReconciliationTest extends UnitTest {
             
             sort(stopTimes, new StopTimeSequenceComparator());
             
-            int expectedStopSequence = 0;
+            int expectedStopSequence = 1;
             
             for (StopTime st : stopTimes) {
-                if (expectedStopSequence == 1) {
+                if (expectedStopSequence == 2) {
                     // this is before the moved stop
                     assertEquals(stops[2].id, st.stop.id);
                 }
-                else if (expectedStopSequence == 3) {
+                else if (expectedStopSequence == 4) {
                     // this is the moved stop
                     assertEquals(stops[8].id, st.stop.id);
                 }
-                else if (expectedStopSequence == 4) {
+                else if (expectedStopSequence == 5) {
                     // this should be the former stop 3
                     assertEquals(stops[6].id, st.stop.id);
                 }
-                else if (expectedStopSequence == 7) {
+                else if (expectedStopSequence == 8) {
                     // this should still be the last stop from before
                     assertEquals(stops[14].id, st.stop.id);
                 }
@@ -700,7 +696,7 @@ public class TripPatternReconciliationTest extends UnitTest {
             
             for (StopTime st : stopTimes) {
                 assertNotSame(stops[10].id, st.stop.id);
-                assertNotSame(5, st.stopSequence);
+                assertNotSame(6, st.stopSequence);
             }
         }
         
@@ -729,34 +725,34 @@ public class TripPatternReconciliationTest extends UnitTest {
             
             sort(stopTimes, new StopTimeSequenceComparator());
             
-            int expectedStopSeq = 0;
+            int expectedStopSeq = 1;
             
             for (StopTime st : stopTimes) {
            
                 // is this the stop that was originally skipped?
                 assertNotSame(stops[10].id, st.stop.id);
-                assertNotSame(6, st.stopSequence);
+                assertNotSame(7, st.stopSequence);
                 
                 // skip the stop sequence that was skipped
-                // it was stop sequence 5 but then we moved a stop before it
-                if (expectedStopSeq == 6)
+                // it was stop sequence 6 but then we moved a stop before it
+                if (expectedStopSeq == 7)
                     expectedStopSeq++;
                 
                 // is the moved stop moved?
-                if (expectedStopSeq == 4) 
+                if (expectedStopSeq == 5) 
                     // the stop that was formerly 6
                     assertEquals(stops[12].id, st.stop.id);
                 
-                if (expectedStopSeq == 7)
+                if (expectedStopSeq == 8)
                     // after from
                     assertEquals(stops[14].id, st.stop.id);
                 
-                if (expectedStopSeq == 5)
+                if (expectedStopSeq == 6)
                     // between to and from
                     // the stop formerly known as the fourth stop
                     assertEquals(stops[8].id, st.stop.id);
                 
-                if (expectedStopSeq == 0)
+                if (expectedStopSeq == 1)
                     // beginning
                     assertEquals(stops[0].id, st.stop.id);
                 
@@ -819,15 +815,16 @@ public class TripPatternReconciliationTest extends UnitTest {
             
             sort(stopTimes, new StopTimeSequenceComparator());
             
-            int expectedStopSeq = 0;
+            int expectedStopSeq = 1;
             
             for (StopTime st : stopTimes) {
-                if (expectedStopSeq == 7) {
+                if (expectedStopSeq == 8) {
                     assertEquals(stops[0].id, st.stop.id);
                 }
                 else {
                     // even numbered stops, except the (removed) 0th one.
-                    assertEquals(stops[expectedStopSeq * 2 + 2].id, st.stop.id);
+                    // stop sequences 1-based and stop indices 0-based, so no need to do plus 2
+                    assertEquals(stops[expectedStopSeq * 2].id, st.stop.id);
                 }
                 
                 assertEquals(expectedStopSeq ++, (int) st.stopSequence);
@@ -873,11 +870,11 @@ public class TripPatternReconciliationTest extends UnitTest {
             
             sort(stopTimes, new StopTimeSequenceComparator());
             
-            int expectedStopSeq = 0;
+            int expectedStopSeq = 1;
 
             for (StopTime st : stopTimes) {
-                // even numbered stops
-                assertEquals(stops[expectedStopSeq * 2].id, st.stop.id);
+                // even numbered stops, accounting for one-based vs zero based
+                assertEquals(stops[expectedStopSeq * 2 - 2].id, st.stop.id);
                 assertEquals(expectedStopSeq ++, (int) st.stopSequence);
             }
         }
@@ -917,16 +914,10 @@ public class TripPatternReconciliationTest extends UnitTest {
         // move the loop stop
         TripPatternStop toMove = tp2.patternStops.remove(8);
         assertEquals(stops[0].id, toMove.stop.id);
-        toMove.stopSequence = 3;
+        toMove.stopSequence = 4; // 1-based
         tp2.patternStops.add(3, toMove);
         
         for (int i = 4; i < 9; i++) {
-            tp2.patternStops.get(i).stopSequence++;
-        }
-        
-        // fix stop sequences (generally this would be done in javascript on the client)
-        // note that this leaves stop sequences non-consecutive, which is a supported case
-        for (int i = 5; i < tp2.patternStops.size(); i++) {
             tp2.patternStops.get(i).stopSequence++;
         }
         
@@ -939,17 +930,17 @@ public class TripPatternReconciliationTest extends UnitTest {
             
             sort(stopTimes, new StopTimeSequenceComparator());
             
-            int expectedStopSeq = 0;
+            int expectedStopSeq = 1;
             
             for (StopTime st : stopTimes) {
-                if (expectedStopSeq == 3) {
+                if (expectedStopSeq == 4) {
                     assertEquals(stops[0].id, st.stop.id);
                 }
-                else if (expectedStopSeq < 3) {
-                    assertEquals(stops[expectedStopSeq * 2].id, st.stop.id);
+                else if (expectedStopSeq < 4) {
+                    assertEquals(stops[expectedStopSeq * 2 - 2].id, st.stop.id);
                 }
                 else {
-                    assertEquals(stops[expectedStopSeq * 2 - 2].id, st.stop.id);                    
+                    assertEquals(stops[expectedStopSeq * 2 - 4].id, st.stop.id);                    
                 }
                 
                 assertEquals(expectedStopSeq ++, (int) st.stopSequence);

@@ -197,7 +197,7 @@ public class TripPattern extends Model {
             newStopIds[i] = tripPattern.patternStops.get(i).stop.id;
             // while we're at it, repack the patternstops so stop sequences monotonically increment by 1
             // we can't just use the function in tripPattern to do this, because it relies on stops having already been persisted to the database
-            tripPattern.patternStops.get(i).stopSequence = i;
+            tripPattern.patternStops.get(i).stopSequence = i + 1;
         }
         
         /* ADDITIONS */
@@ -268,7 +268,7 @@ public class TripPattern extends Model {
             }
             
             // renumber the stop sequences
-            int i = 0;
+            int i = 1;
             for (TripPatternStop ps : tripPattern.patternStops) {
                 ps.stopSequence = i++;
                 TripPatternStop.em().merge(ps);
