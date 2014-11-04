@@ -645,6 +645,30 @@
         </div>
       </div>
 
+      <div class="control-group">
+        <div class="controls">
+            <select class="input-medium" id="pickupType" name="pickupType">
+                <option value="SCHEDULED">&{'shared.attribute.scheduled'}</option>
+                <option value="NONE">&{'shared.attribute.none'}</option>
+                <option value="AGENCY">&{'shared.attribute.agency'}</option>
+                <option value="DRIVER">&{'shared.attribute.driver'}</option>
+            </select>
+            <label for="pickupType" class="control-label">&{'route.stops-pickup-type'}</label>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <div class="controls">
+            <select class="input-medium" id="dropOffType" name="dropOffType">
+                <option value="SCHEDULED">&{'shared.attribute.scheduled'}</option>
+                <option value="NONE">&{'shared.attribute.none'}</option>
+                <option value="AGENCY">&{'shared.attribute.agency'}</option>
+                <option value="DRIVER">&{'shared.attribute.driver'}</option>
+            </select>
+            <label for="dropoffType" class="control-label">&{'route.stops-drop-off-type'}</label>
+        </div>
+      </div>
+
 
       <label class="checkbox">
         <input type="checkbox" name="majorStop"{{#majorStop}} checked="checked"{{/majorStop}}>&{'route.stops-major-stop'}

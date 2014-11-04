@@ -100,6 +100,10 @@ shared.attribute.unknown=Unknown
 shared.attribute.available=Available
 shared.attribute.unavailable=Unavailable
 
+shared.attribute.scheduled=Regularly scheduled
+shared.attribute.none=Not available
+shared.attribute.agency=Must phone agency
+shared.attribute.driver=Must coordinate with driver
 
 shared.explore-search-routes=Explore/Search Routes
 shared.new-route=New Route
@@ -185,6 +189,9 @@ route.stops-major-stop=Major Stop
 route.stops-bike-parking=Bike Parking
 route.stops-car-parking=Car Parking
 route.stops-wheelchair-boarding=Wheelchair Boarding
+
+route.stops-pickup-type=Pickup type
+route.stops-drop-off-type=Drop off type
 
 route.stops-delete-stop-confirm=Are you sure you want to delete this stop?
 

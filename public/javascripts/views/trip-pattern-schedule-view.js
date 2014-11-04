@@ -384,6 +384,8 @@ var GtfsEditor = GtfsEditor || {};
       st.stop = patternStop.stop;
       st.patternStop = patternStop;
       st.stopSequence = patternStop.stopSequence;
+      st.pickupType = patternStop.stop.pickupType;
+      st.dropOffType = patternStop.stop.dropOffType;
 
       st.arrivalTime = st.departureTime = null;
 

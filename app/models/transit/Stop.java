@@ -58,6 +58,12 @@ public class Stop extends Model {
 
     @Enumerated(EnumType.STRING)
     public AttributeAvailabilityType wheelchairBoarding;
+    
+    @Enumerated(EnumType.STRING)
+    public StopTimePickupDropOffType pickupType;
+    
+    @Enumerated(EnumType.STRING)
+    public StopTimePickupDropOffType dropOffType;
 
     public String parentStation;
     
@@ -118,6 +124,8 @@ public class Stop extends Model {
         this.stopUrl = stop.getUrl();
         this.locationType = stop.getLocationType() == 1 ? LocationType.STATION : LocationType.STOP;
         this.parentStation = stop.getParentStation();
+        this.pickupType = StopTimePickupDropOffType.SCHEDULED;
+        this.dropOffType = StopTimePickupDropOffType.SCHEDULED;
 
         this.location  =  geometryFactory.createPoint(new Coordinate(stop.getLat(),stop.getLon()));
     }
@@ -129,6 +137,8 @@ public class Stop extends Model {
         this.stopDesc = stopDesc;
         this.stopUrl = stopUrl;
         this.locationType = LocationType.STOP;
+        this.pickupType = StopTimePickupDropOffType.SCHEDULED;
+        this.dropOffType = StopTimePickupDropOffType.SCHEDULED;
 
         GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
 
@@ -141,8 +151,8 @@ public class Stop extends Model {
         Query idQuery = em.createNativeQuery("SELECT NEXTVAL('hibernate_sequence');");
         BigInteger nextId = (BigInteger)idQuery.getSingleResult();
 
-        em.createNativeQuery("INSERT INTO stop (id, locationtype, parentstation, stopcode, stopdesc, gtfsstopid, stopname, stopurl, zoneid, location, agency_id)" +
-            "  VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ST_GeomFromText( ? , 4326), ?);")
+        em.createNativeQuery("INSERT INTO stop (id, locationtype, parentstation, stopcode, stopdesc, gtfsstopid, stopname, stopurl, zoneid, location, agency_id, pickuptype, dropofftype)" +
+            "  VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ST_GeomFromText( ? , 4326), ?, ?, ?);")
           .setParameter(1,  nextId)
           .setParameter(2,  gtfsStop.getLocationType() == 1 ? LocationType.STATION.name() : LocationType.STOP.name())
           .setParameter(3,  gtfsStop.getParentStation())
@@ -154,6 +164,8 @@ public class Stop extends Model {
           .setParameter(9,  gtfsStop.getZoneId())
           .setParameter(10,  "POINT(" + gtfsStop.getLon() + " " + gtfsStop.getLat() + ")")
           .setParameter(11, agencyId)
+          .setParameter(12, StopTimePickupDropOffType.SCHEDULED.toString())
+          .setParameter(13, StopTimePickupDropOffType.SCHEDULED.toString())
           .executeUpdate();
 
         return nextId;
