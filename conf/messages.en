@@ -351,6 +351,7 @@ route.review.status.approved=Approved
 # /timetable
 timetable.save-changes=Save changes
 timetable.new-trip=New trip
+timetable.back-to-route=Return to route view
 
 # /search
 

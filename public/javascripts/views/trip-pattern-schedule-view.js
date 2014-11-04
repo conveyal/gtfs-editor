@@ -394,7 +394,7 @@ var GtfsEditor = GtfsEditor || {};
 
     render: function() {
       // render the template
-      this.$el.html(ich['timetable-tpl']());
+      this.$el.html(ich['timetable-tpl'](this.pattern.toJSON()));
 
       // figure out what columns we're rendering
       var columns = [this.attr('modified'), this.attr('tripId'), this.attr('blockId'), this.attr('tripHeadsign')];
