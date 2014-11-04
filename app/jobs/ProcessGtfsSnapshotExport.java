@@ -352,11 +352,17 @@ public class ProcessGtfsSnapshotExport extends Job {
 									
 								
 								st.setDepartureTime(cumulativeTime);
-								
+																
 								st.setTrip(t);
 								st.setStop(stopList.get(stopTime.stop.id));
 								st.setStopSequence(stopTime.stopSequence);
-					
+								
+								// set pickup dropoff type from the stop
+								if (stopTime.stop.pickupType != null)
+								    st.setPickupType(stopTime.stop.pickupType.toGtfsValue());
+								
+								if (stopTime.stop.dropOffType != null)
+								    st.setDropOffType(stopTime.stop.dropOffType.toGtfsValue());
 											
 								store.saveEntity(st);
 							}
@@ -422,6 +428,13 @@ public class ProcessGtfsSnapshotExport extends Job {
 								st.setTrip(t);
 								st.setStop(stopList.get(stopTime.stop.id));
 								st.setStopSequence(stopTime.stopSequence);
+								
+                                                                // set pickup dropoff type from the stoptime
+                                                                if (stopTime.pickupType != null)
+                                                                    st.setPickupType(stopTime.pickupType.toGtfsValue());
+                                                                
+                                                                if (stopTime.dropOffType != null)
+                                                                    st.setDropOffType(stopTime.dropOffType.toGtfsValue());
 					
 											
 								store.saveEntity(st);
