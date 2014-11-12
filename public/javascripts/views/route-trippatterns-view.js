@@ -938,7 +938,7 @@ var GtfsEditor = GtfsEditor || {};
       this.model.tripPatterns.get(selectedPatternId).save();
 
 
-      view.map.closePopup();
+      this.map.closePopup();
 
       //.addStop({stop: data.id, defaultTravelTime: this.calcTime(travelTimeString), defaultDwellTime: this.calcTime(dwellTimeString)});
 
