@@ -465,6 +465,7 @@ public class Api extends Controller {
             if(id != null)
             {
                 TripPattern tripPattern = TripPattern.findById(id);
+                sort(tripPattern.patternStops);
                 if(tripPattern != null)
                     renderJSON(Api.toJson(tripPattern, false));
                 else
@@ -477,10 +478,22 @@ public class Api extends Controller {
             	if(r == null)
             		badRequest();
             	
-            	renderJSON(Api.toJson(TripPattern.find("route = ?", r).fetch(), false));
+            	List<TripPattern> ret = TripPattern.find("route = ?", r).fetch();
+            	
+            	for (TripPattern pat : ret) {
+            	    sort(pat.patternStops);
+            	}
+            	
+            	renderJSON(Api.toJson(ret, false));
             }
-            else
-                renderJSON(Api.toJson(TripPattern.all().fetch(), false));
+            else {
+                List<TripPattern> ret = TripPattern.all().fetch();
+            
+                for (TripPattern pat : ret) {
+                    sort(pat.patternStops);
+                }
+                renderJSON(Api.toJson(ret, false));
+            }
             
         } catch (Exception e) {
             e.printStackTrace();
