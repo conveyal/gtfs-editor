@@ -11,7 +11,6 @@ var GtfsEditor = GtfsEditor || {};
       'click #calendar-create-close': 'calendarCreateClose',
       'click #calendar-modify-btn': 'modifyCalendar',
       'click #timetable-download-btn' : 'downloadSchedule',
-      'click #timetable-edit-btn' : 'showTimetable',
       'change #tripPattern': 'onTripPatternChange',
       'change #trip': 'onTripChange',
       'change #trip-timetable #calendar': 'onTimetableCalendarSelectChange',
@@ -44,7 +43,7 @@ var GtfsEditor = GtfsEditor || {};
       this.model.tripPatterns.on('remove', this.onTripPatternsReset, this);
       this.model.tripPatterns.on('reset', this.onTripPatternsReset, this);
 
-      _.bindAll(this, 'onTripPatternChange', 'downloadSchedule', 'bindPopovers', 'onTripChange', 'onTripsLoaded', 'createCalendar', 'showCreateTrip', 'showCopyTrip', 'onTripCreate', 'onTripCopy', 'cancelTripCreate', 'deleteTrip', 'onSaveTrip', 'showCalendarCreateModal', 'onCalendarsReset', 'calendarCreateClose', 'onTimetableCalendarSelectChange', 'onFrequencyCalendarSelectChange', 'onLoadAgencyTrips', 'onScheduleTypeChange', 'initTimetable', 'updatePatternType', 'showTimetable');
+      _.bindAll(this, 'onTripPatternChange', 'downloadSchedule', 'bindPopovers', 'onTripChange', 'onTripsLoaded', 'createCalendar', 'showCreateTrip', 'showCopyTrip', 'onTripCreate', 'onTripCopy', 'cancelTripCreate', 'deleteTrip', 'onSaveTrip', 'showCalendarCreateModal', 'onCalendarsReset', 'calendarCreateClose', 'onTimetableCalendarSelectChange', 'onFrequencyCalendarSelectChange', 'onLoadAgencyTrips', 'onScheduleTypeChange', 'initTimetable', 'updatePatternType', 'updateTimetableLink');
 
     },
 
@@ -496,10 +495,12 @@ var GtfsEditor = GtfsEditor || {};
 
     },
 
-    showTimetable : function () {
-      window.location.href = G.config.baseUrl + 'timetable/' +
-      this.$('#tripPattern').val() + '/' +
-      this.$('#calendar').val();
+    updateTimetableLink : function () {
+      this.$('#timetable-edit-btn').attr('href',
+        G.config.baseUrl + 'timetable/' +
+        this.$('#tripPattern').val() + '/' +
+        this.$('#calendar').val()
+      );
     },
 
     editTimetableInPlace : function () {
@@ -662,6 +663,8 @@ var GtfsEditor = GtfsEditor || {};
             onSubmit: function(id, fileName){ csvDataUploader.setParams({patternId: selectedPatternId, calendarId: selectedCalendarId });   }
             });
       }
+
+      this.updateTimetableLink();
     },
 
     onTripPatternsReset: function() {
@@ -679,6 +682,8 @@ var GtfsEditor = GtfsEditor || {};
       G.session.trip = -1;
 
       this.updatePatternType();
+
+      this.updateTimetableLink();
 
     },
 
