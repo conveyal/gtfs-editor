@@ -3,13 +3,12 @@
 var GtfsEditor = GtfsEditor || {};
 
 (function (G, $, ich) {
-  // parse the url
-  var Router = Backbone.Router.extend({
-    routes: {
-      'timetable/:tripPattern/:calendar' : 'showTimetable'
-    },
+  $(document).ready(function() {
+      // figure out the trippattern and calendar
+      var match = /timetable\/([0-9]+)\/([0-9]+)/.exec(window.location.href);
+      var tripPattern = match[1];
+      var calendar = match[2];
 
-    showTimetable: function(tripPattern, calendar) {
       // grab the data
       var trips = new G.Trips();
 
@@ -30,10 +29,5 @@ var GtfsEditor = GtfsEditor || {};
           calendar: cal
         }).render();
       })
-    }
-  });
-
-  new Router();
-
-  Backbone.history.start({pushState: true});
+    });
 })(GtfsEditor, jQuery, ich);
