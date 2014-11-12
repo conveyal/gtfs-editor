@@ -550,12 +550,20 @@ public class Api extends Controller {
                 // need to remove old shapes...
             }
             
-            TripPattern updatedTripPattern = TripPattern.em().merge(tripPattern);
             
             // update stop times
-            originalTripPattern.reconcilePatternStops(updatedTripPattern);
+            originalTripPattern.reconcilePatternStops(tripPattern);
             
+            TripPattern updatedTripPattern = TripPattern.em().merge(tripPattern);
             updatedTripPattern.save();
+            
+            // save updated stop times
+            for (Object trip : Trip.find("pattern = ?", updatedTripPattern).fetch()) {
+                for (StopTime st : ((Trip) trip).getStopTimes()) {
+                    st.save();
+                }
+            }
+
             Set<Long> patternStopIds = new HashSet<Long>();
             for(TripPatternStop patternStop : updatedTripPattern.patternStops) {
                 patternStopIds.add(patternStop.id);
