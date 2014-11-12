@@ -3,6 +3,7 @@ package controllers;
 import play.*;
 import play.mvc.*;
 import play.data.binding.As;
+import play.db.jpa.JPA;
 import utils.GeoUtils;
 
 import java.io.IOException;
@@ -508,93 +509,77 @@ public class Api extends Controller {
     }
 
     public static void updateTripPattern() {
-
         TripPattern tripPattern;
-
         try {
             tripPattern = mapper.readValue(params.get("body"), TripPattern.class);
-
+            
             if(tripPattern.id == null)
                 badRequest();
             
             TripPattern originalTripPattern = TripPattern.findById(tripPattern.id);
             
             if(originalTripPattern == null)
-            	badRequest();
+                badRequest();
             
             if(tripPattern.encodedShape != null) {
-	            if(originalTripPattern.shape != null) {
-	            	originalTripPattern.shape.updateShapeFromEncoded(tripPattern.encodedShape);
-	            	tripPattern.shape = originalTripPattern.shape; 
-	            }
-	            else {
-	                TripShape ts = TripShape.createFromEncoded(tripPattern.encodedShape);
-	                
-	                tripPattern.shape = ts;
-	            }
-	            
+                if(originalTripPattern.shape != null) {
+                    originalTripPattern.shape.updateShapeFromEncoded(tripPattern.encodedShape);
+                    tripPattern.shape = originalTripPattern.shape;
+                }
+                else {
+                    TripShape ts = TripShape.createFromEncoded(tripPattern.encodedShape);
+                    tripPattern.shape = ts;
+                }
             }
+            
             else {
                 tripPattern.shape = null;
-
                 // need to remove old shapes...
             }
-
-            // reconcile the trip pattern stops, updating stop times as needed
-            originalTripPattern.reconcilePatternStops(tripPattern);
-
-            TripPattern updatedTripPattern = TripPattern.em().merge(tripPattern);
-            updatedTripPattern.save();
             
-            // TODO: does this leave patternstops around for stops that have had their stop sequences changed?
-            // perhaps it would be best to just remove all old pattern stops and recreate them all?
+            TripPattern updatedTripPattern = TripPattern.em().merge(tripPattern);
+            
+            // update stop times
+            originalTripPattern.reconcilePatternStops(updatedTripPattern);
+            
+            updatedTripPattern.save();
             Set<Long> patternStopIds = new HashSet<Long>();
             for(TripPatternStop patternStop : updatedTripPattern.patternStops) {
                 patternStopIds.add(patternStop.id);
             }
             
             List<TripPatternStop> patternStops = TripPatternStop.find("pattern = ?", tripPattern).fetch();
-            
-            // handle pattern stop deletion
             for(TripPatternStop patternStop : patternStops) {
                 if(!patternStopIds.contains(patternStop.id))
                     patternStop.delete();
             }
             
             if(tripPattern.shape != null) {
-	            
-	            MathTransform mt = GeoUtils.getTransform(new Coordinate(tripPattern.shape.shape.getCoordinateN(0).y, tripPattern.shape.shape.getCoordinateN(0).x));
-	            GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
-	            
-	            Coordinate[] mCoords =  tripPattern.shape.shape.getCoordinates();
-	            ArrayList<Coordinate> coords = new ArrayList<Coordinate>(); 
-	            
-	            for(Coordinate mCoord : mCoords) {
-	            	coords.add(new Coordinate(mCoord.x, mCoord.y));
-	            }
-            	
-	            Coordinate[] coordArray = coords.toArray(new Coordinate[coords.size()]);
-	            
-	            LineString ls = (LineString) JTS.transform(geometryFactory.createLineString(coordArray), mt);
-	            LocationIndexedLine indexLine = new LocationIndexedLine(ls);
-	            
-	            Logger.info("length: " + ls.getLength());
-	            
-	            patternStops = TripPatternStop.find("pattern = ?", tripPattern).fetch();
-	            
-	            for(TripPatternStop patternStop : patternStops) {
-	            	
-	            	
-	            	Point p = (Point) JTS.transform(patternStop.stop.locationPoint(), mt);
-	            	
-	            	LinearLocation l = indexLine.project(p.getCoordinate());
-	            	patternStop.defaultDistance = LengthLocationMap.getLength(ls, l);
-	            	patternStop.save();
-	            }
+                MathTransform mt = GeoUtils.getTransform(new Coordinate(tripPattern.shape.shape.getCoordinateN(0).y, tripPattern.shape.shape.getCoordinateN(0).x));
+                GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
+                Coordinate[] mCoords = tripPattern.shape.shape.getCoordinates();
+                ArrayList<Coordinate> coords = new ArrayList<Coordinate>();
+                for(Coordinate mCoord : mCoords) {
+                    coords.add(new Coordinate(mCoord.x, mCoord.y));
+                }
+                Coordinate[] coordArray = coords.toArray(new Coordinate[coords.size()]);
+                LineString ls = (LineString) JTS.transform(geometryFactory.createLineString(coordArray), mt);
+                LocationIndexedLine indexLine = new LocationIndexedLine(ls);
+                Logger.info("length: " + ls.getLength());
+                patternStops = TripPatternStop.find("pattern = ?", tripPattern).fetch();
+                for(TripPatternStop patternStop : patternStops) {
+                    Point p = (Point) JTS.transform(patternStop.stop.locationPoint(), mt);
+                    LinearLocation l = indexLine.project(p.getCoordinate());
+                    patternStop.defaultDistance = LengthLocationMap.getLength(ls, l);
+                    patternStop.save();
+                }
             }
             
+            // make sure that things are persisted; avoid DB race conditions
+            // once upon a time, there was a bug in this code that only manifested itself once the entity manager
+            // had been flushed, either here or by GC.
+            JPA.em().flush();
             
-
             renderJSON(Api.toJson(updatedTripPattern, false));
         } catch (Exception e) {
             e.printStackTrace();
