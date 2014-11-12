@@ -29,6 +29,7 @@ import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.codehaus.jackson.annotate.JsonManagedReference;
+import org.geotools.ows.bindings.UpdateSequenceTypeBinding;
 import org.hibernate.annotations.Type;
 
 import play.Logger;
@@ -363,12 +364,14 @@ public class TripPattern extends Model {
             long movedStopId;
             int movedStopSeq;
             int newStopSeq;
+            TripPatternStop newPattStop;
             
             // TODO: ensure that this is all that happened (i.e. verify stop ID map inside changed region)
             if (originalStopIds[firstDifferentIndex] == newStopIds[lastDifferentIndex]) {
                 movedStopId = originalStopIds[firstDifferentIndex];
                 movedStopSeq = this.patternStops.get(firstDifferentIndex).stopSequence;
                 newStopSeq = tripPattern.patternStops.get(lastDifferentIndex).stopSequence;
+                newPattStop = tripPattern.patternStops.get(lastDifferentIndex);
             }
 
             else if (newStopIds[firstDifferentIndex] == originalStopIds[lastDifferentIndex]) {
@@ -376,6 +379,7 @@ public class TripPattern extends Model {
                 movedStopId = originalStopIds[lastDifferentIndex];
                 movedStopSeq = this.patternStops.get(lastDifferentIndex).stopSequence;
                 newStopSeq = tripPattern.patternStops.get(firstDifferentIndex).stopSequence;
+                newPattStop = tripPattern.patternStops.get(firstDifferentIndex);
             }
             
             else {
@@ -407,7 +411,7 @@ public class TripPattern extends Model {
                         // we are dealing with the moved stop
                         st.stopSequence = newStopSeq;
                         StopTime updated = StopTime.em().merge(st);
-                        updated.save();
+                        updated.patternStop = newPattStop;
                     }
 
                     else {
@@ -421,7 +425,7 @@ public class TripPattern extends Model {
 
                         st.stopSequence = current.stopSequence;
                         StopTime updated = StopTime.em().merge(st);
-                        updated.save();
+                        updated.patternStop = current;
                     }
                 }
                 
