@@ -513,12 +513,13 @@ var GtfsEditor = GtfsEditor || {};
       if (e.keyCode == keyCodes.offset) {
         this.getInput('Offset amount', function(input) {
           instance.offsetTimes(sel, input);
+          instance.collection.trigger('change');
         });
 
       // i: insert new trip
       // basically, duplicate this trip or these trips, with the entered offset
       } else if (e.keyCode == keyCodes.insert) {
-        this.getInput('Offset amount', function (input) {
+        this.getInput('New trip offset', function (input) {
           var offset = instance.parseOffset(input);
 
           if (offset === null)
@@ -562,7 +563,7 @@ var GtfsEditor = GtfsEditor || {};
       $('.minibuffer .prompt').text(prompt);
 
       $('.minibuffer input').val('')
-      .keyup(function(e) {
+      .keydown(function(e) {
         if (e.keyCode == 13) {
           // return was pressed
           e.stopImmediatePropagation();
@@ -580,7 +581,8 @@ var GtfsEditor = GtfsEditor || {};
     // close the minibuffer
     closeMinibuffer: function () {
       // don't call the callback again
-      $('.minibuffer input').off('keypress');
+      // IE9 leaves the blinking cursor after the input box is gone, banish it
+      $('.minibuffer input').off('keydown').blur();
       $('.minibuffer').addClass('hidden');
 
       // allow user to type again
