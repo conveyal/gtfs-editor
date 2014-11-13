@@ -6,6 +6,16 @@ var GtfsEditor = GtfsEditor || {};
 
 (function(G, $, ich) {
   /**
+   * the keyboard shortcuts for the editor
+   * defined here to to allow for easy conversion to non-English mneuomics
+   * These are e.keyCode for a keydown event.
+   */
+  var keyCodes = {
+    // o: offset times
+    offset: 79
+  };
+
+  /**
    * A model representing a cell in the table. We need a toString because Handsontable calls toString before
    * calling the editor setValue method, so the string needs to be something useful.
    */
@@ -31,44 +41,43 @@ var GtfsEditor = GtfsEditor || {};
   /**
    * A renderer that displays the time as a time rather than seconds since midnight.
    */
-   var stopTimeRenderer = function(instance, td, row, col, prop, value, cellProperties) {
-     // TODO: 12h time
-     // TODO: single-time view
-     // time is seconds since midnight
-     var text;
-     if (value.get('stopTime') === null) {
-       text = '<span class="time no-stop">-</span>';
-     } else {
+  var stopTimeRenderer = function(instance, td, row, col, prop, value, cellProperties) {
+    // TODO: 12h time
+    // TODO: single-time view
+    // time is seconds since midnight
+    var text;
+    if (value.get('stopTime') === null) {
+      text = '<span class="time no-stop">-</span>';
+    } else {
 
-       var arr = value.get('arr');
-       var st = value.get('stopTime');
-       var time = arr ? st.arrivalTime : st.departureTime;
+      var arr = value.get('arr');
+      var st = value.get('stopTime');
+      var time = arr ? st.arrivalTime : st.departureTime;
 
-       if (time === null) {
-         // time is to be interpolated by consumer
-         text = '';
-       } else {
-         var secs = time % 60;
-         var mins = (time - secs) % (60 * 60) / 60;
-         var hours = (time - secs - mins * 60) / (60 * 60);
+      if (time === null) {
+        // time is to be interpolated by consumer
+        text = '';
+      } else {
+        var secs = time % 60;
+        var mins = (time - secs) % (60 * 60) / 60;
+        var hours = (time - secs - mins * 60) / (60 * 60);
 
-         // TODO: template
-         text =
-           '<div class="time ' + (arr ? 'time-arr ' : 'time-dep ') +
-           // dim departure times that are the same as their arrival times
-           // TODO: only in two-time mode
-           (!arr && st.departureTime == st.arrivalTime ? 'time-dep-dimmed ' : '') +
-           (value.get('trip').get('invalid') === true ? 'trip-invalid' : '') + '">' +
-           '<span class="hours">' + hours + '</span>' +
-           '<span class="minutes">' + (mins < 10 ? '0' + mins : mins) + '</span>' +
-           '<span class="seconds">' + (secs < 10 ? '0' + secs : secs) + '</span>' +
-           '</div>';
-       }
-     }
+        // TODO: template
+        text =
+          '<div class="time ' + (arr ? 'time-arr ' : 'time-dep ') +
+          // dim departure times that are the same as their arrival times
+          // TODO: only in two-time mode
+          (!arr && st.departureTime == st.arrivalTime ? 'time-dep-dimmed ' : '') +
+          (value.get('trip').get('invalid') === true ? 'trip-invalid' : '') + '">' +
+          '<span class="hours">' + hours + '</span>' +
+          '<span class="minutes">' + (mins < 10 ? '0' + mins : mins) + '</span>' +
+          '<span class="seconds">' + (secs < 10 ? '0' + secs : secs) + '</span>' +
+          '</div>';
+      }
+    }
 
-     Handsontable.renderers.HtmlRenderer(instance, td, row, col, prop, text, cellProperties);
-   };
-
+    Handsontable.renderers.HtmlRenderer(instance, td, row, col, prop, text, cellProperties);
+  };
 
   /**
    * Edit a time
@@ -94,7 +103,6 @@ var GtfsEditor = GtfsEditor || {};
     Handsontable.editors.TextEditor.prototype.setValue.apply(this, [value]);
     $(this.TEXTAREA).addClass('time');
   };
-
 
   // select everything, since folks are usually overwriting
   StopTimeEditor.prototype.focus = function() {
@@ -212,17 +220,17 @@ var GtfsEditor = GtfsEditor || {};
 
       // Handsontable needs the collection to have a splice method
       // inspired by code at http://handsontable.com/demo/backbone.html
-    this.collection.splice = function (idx, size) {
-      var toRemove = this.toArray().slice(idx, size + 1);
-      this.remove(toRemove);
-      // collections are not ordered, since this one has a comparator; thus it doesn't matter if we insert stuff in the middle
-      // backbone will just move it around anyhow, and handsontable doesn't seem to care if things don't end up where it put them
-      this.add(arguments.slice(2));
-      return toRemove;
-    };
+      this.collection.splice = function(idx, size) {
+        var toRemove = this.toArray().slice(idx, size + 1);
+        this.remove(toRemove);
+        // collections are not ordered, since this one has a comparator; thus it doesn't matter if we insert stuff in the middle
+        // backbone will just move it around anyhow, and handsontable doesn't seem to care if things don't end up where it put them
+        this.add(arguments.slice(2));
+        return toRemove;
+      };
 
       // event handlers
-      _.bindAll(this, 'saveAll', 'newTrip');
+      _.bindAll(this, 'saveAll', 'newTrip', 'handleKeyDown');
     },
 
     // combination of getAttr and setAttr for handsontable
@@ -253,7 +261,7 @@ var GtfsEditor = GtfsEditor || {};
             } else {
               if (st == null) {
                 // find the appropriate pattern stop
-                var ps = _.find(instance.pattern.get('patternStops'), function (ps) {
+                var ps = _.find(instance.pattern.get('patternStops'), function(ps) {
                   return ps.stop.id == stopId && ps.stopSequence == stopSeq;
                 });
 
@@ -261,7 +269,7 @@ var GtfsEditor = GtfsEditor || {};
 
                 // find the index of the previous stop
                 var largestIndex = -1;
-                _.each(trip.get('stopTimes'), function (eachSt, idx) {
+                _.each(trip.get('stopTimes'), function(eachSt, idx) {
                   if (eachSt.stopSequence < st.stopSequence && idx > largestIndex) {
                     largestIndex = idx;
                   }
@@ -329,20 +337,24 @@ var GtfsEditor = GtfsEditor || {};
             // we assume that, if it's been modified, it is now valid
             // the invalid flag just indicates that something has occurred that requires human intervention
             // but we don't clear the flag until the save is successful
-            trip.save({invalid: false}, {wait: true}).done(function() {
+            trip.save({
+              invalid: false
+            }, {
+              wait: true
+            }).done(function() {
               trip.modified = false;
             })
           );
         }
       });
 
-      $.when.apply($, deferreds).always(function () {
+      $.when.apply($, deferreds).always(function() {
         instance.$container.handsontable('render');
       });
     },
 
     // create a new trip based on the pattern
-    newTrip: function () {
+    newTrip: function() {
       var trip = new G.Trip();
       trip.set('pattern', this.pattern.toJSON());
       trip.set('serviceCalendar', this.calendar.toJSON());
@@ -355,7 +367,7 @@ var GtfsEditor = GtfsEditor || {};
       var currentTime = 0;
 
       var instance = this;
-      _.each(this.pattern.get('patternStops'), function (patternStop) {
+      _.each(this.pattern.get('patternStops'), function(patternStop) {
         var st = instance.makeStopTime(patternStop);
 
         currentTime += patternStop.defaultTravelTime;
@@ -377,7 +389,9 @@ var GtfsEditor = GtfsEditor || {};
       this.$container.handsontable('render');
     },
 
-    offsetTimes: function (time) {
+    offsetTimes: function(coords, time) {
+      var instance = this;
+
       time = String(time);
       var negative = false;
       if (time[0] == '-') {
@@ -389,22 +403,22 @@ var GtfsEditor = GtfsEditor || {};
       var offset;
       // allow ; or . instead of :
       time.replace(';', ':').replace('.', ':');
-      if (/[0-9]+/.test(time))
-        // assume offset is minutes
+      if (/^-?[0-9]+$/.test(time))
+      // assume offset is minutes
         offset = Number(time) * 60;
 
       else if (/([0-9]+)(:[0-5][0-9]){1,2}/.test(time)) {
         var spt = time.split(':');
 
         // seconds
-        offset = Number(spt.slice(-1, 1));
+        offset = Number(spt.slice(-1));
         // minutes
         if (spt.length >= 2)
-          offset += Number(spt.slice(-2, 1)) * 60;
+          offset += Number(spt.slice(-2, -1)) * 60;
 
         // hours, if present
         if (spt.length == 3)
-          offset += Number(spt.slice(-3, 1)) * 60 * 60;
+          offset += Number(spt.slice(-3, -2)) * 60 * 60;
       }
       // ignore other formats
       else return;
@@ -412,26 +426,22 @@ var GtfsEditor = GtfsEditor || {};
       if (negative)
         offset *= -1;
 
-      var coords = this.$container.handsontable('getSelected');
-
       // get the affected trips
-      // [1] and [3] are the first and last selected rows. Suppose only one row is selected, [3] - [1] will be
-      // zero, so we add one to get the number of rows to select
-      var trips = this.collection.slice(coords[1], coords[3] - coords[1] + 1);
+      // [0] and [2] are the first and last selected rows. Javascript's slice excludes the end, so we add one.
+      var trips = this.collection.slice(coords[0], coords[2] + 1);
 
-      trips.each(function (trip) {
+      _.each(trips, function(trip) {
         // find the affected stoptimes
-        var fromCell = coords[0] - 4;
-        var toCell = coords[2] - 4;
+        var fromCell = coords[1] - 4;
+        var toCell = coords[3] - 4;
         var from = Math.floor(fromCell / 2);
-        var to = Math.floor(toCell / 2);
-        var len = to - from + 1;
+        var to = Math.floor(toCell / 2) + 1;
         var patternStops = instance.pattern.get('patternStops');
-        patternStops = _.sortBy(patternStops, 'stopSequence').slice(from, len);
+        patternStops = _.sortBy(patternStops, 'stopSequence').slice(from, to);
 
-        _.each(patternStops, function (ps, idx) {
+        _.each(patternStops, function(ps, idx) {
           // get the stoptime
-          var st = _.find(trip.get('stopTimes'), function (st) {
+          var st = _.find(trip.get('stopTimes'), function(st) {
             return st.stop.id == ps.stop.id && st.stopSequence == ps.stopSequence;
           });
 
@@ -444,14 +454,16 @@ var GtfsEditor = GtfsEditor || {};
             st.arrivalTime += offset;
 
           // same idea at the end. if the tocell is odd or we're in the middle, update both arrival and departure times
-          if (idx != len - 1 || toCell % 2 == 1)
+          if (idx != patternStops.length - 1 || toCell % 2 == 1)
             st.departureTime += offset;
         });
+
+        trip.modified = true;
       });
     },
 
     /** Make a stop time from a pattern stop */
-    makeStopTime: function (patternStop) {
+    makeStopTime: function(patternStop) {
       var st = {};
 
       st.stop = patternStop.stop;
@@ -461,6 +473,61 @@ var GtfsEditor = GtfsEditor || {};
       st.arrivalTime = st.departureTime = null;
 
       return st;
+    },
+
+    /* handle a key press in the time editing area */
+    handleKeyDown: function(e) {
+      console.log(e, sel);
+
+      // figure out what's selected
+      var ht = this.$container.handsontable('getInstance');
+      var sel = ht.getSelected();
+      var instance = this;
+
+      // if we never set this to false, we got a reserved key and will not pass the event
+      var commandFound = true;
+
+      // o: offset times
+      // basically, duplicate this trip
+      if (e.keyCode == keyCodes.offset) {
+        this.getInput('Offset amount', function(input) {
+          instance.offsetTimes(sel, input);
+        });
+      } else {
+        // not a command, pass through
+        commandFound = false;
+      }
+
+      if (commandFound)
+        e.stopImmediatePropagation();
+
+      // trigger re-render of updated times
+      this.$container.handsontable('render');
+
+    },
+
+    // get user input for a command that requires it, using the minibuffer
+    getInput: function(prompt, callback) {
+      callback(window.prompt(prompt));
+
+      // TODO: get this minibuffer stuff working without messing up handsontable
+      /*
+      $('.minibuffer').removeClass('hidden');
+
+      $('.minibuffer .prompt').text(prompt);
+      $('.minibuffer input').val('').keypress(function(e) {
+        if (e.keyCode == 13) {
+          // return was pressed
+          e.preventDefault();
+            // don't call the callback again
+          $('.minibuffer input').off('keypress');
+          $('.minibuffer').addClass('hidden');
+          callback($('.minibuffer input').val());
+        }
+      });
+
+      $('.minibuffer input').focus().click();
+      */
     },
 
     render: function() {
@@ -508,23 +575,16 @@ var GtfsEditor = GtfsEditor || {};
         contextMenu: false,
         columns: columns,
         colHeaders: headers,
-        colWidths: colWidths
+        colWidths: colWidths,
+        beforeKeyDown: this.handleKeyDown
       });
 
       // add the event handlers
       this.$('.save').click(this.saveAll);
       this.$('.new-trip').click(this.newTrip);
-      this.$('#offset-form').submit(function (e) {
+      this.$('#offset-form').submit(function(e) {
         instance.offsetTimes($('#offset-amount').val());
         instance.$('#modal-form').hide();
-      });
-
-      $(document).keydown(function (e) {
-        if (e.key == 'o' && e.ctrlKey && e.altKey) {
-          e.preventDefault();
-          instance.$('#modal-form').show();
-          instance.$('#offset-amount').focus();
-        }
       });
 
       return this;

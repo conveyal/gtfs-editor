@@ -16,3 +16,7 @@
 .handsontable .time-dep { color: #005 }
 .handsontable .time-dep-dimmed { color: #aaa }
 .handsontable .trip-invalid { background-color: #fdd }
+
+.sr-only { position: absolute; left: -10000px; width: 1px; height: 1px }
+
+.minibuffer { position: fixed; bottom: 0px }
