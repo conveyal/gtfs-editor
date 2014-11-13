@@ -895,7 +895,6 @@ public class Api extends Controller {
              Trip updatedTrip = Trip.em().merge(trip.toTrip());
              
             // update the stop times
-            // TODO: how to detect deleted StopTimes (i.e. route no longer stops here)?
             for (StopTimeWithDeletion stopTime : trip.stopTimes) {
                 if (Boolean.TRUE.equals(stopTime.deleted)) {
                     StopTime.delete("id = ? AND trip = ?", stopTime.id, updatedTrip);

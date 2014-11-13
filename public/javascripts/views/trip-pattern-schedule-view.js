@@ -116,7 +116,7 @@ var GtfsEditor = GtfsEditor || {};
     // get rid of the m on am, pm, and mm (post midnight)
     // we replace semicolons with colons, to allow folks to enter 3;32;21 pm, to be easier on the fingers
     // than having to type shift each time
-    time = time.toLowerCase().replace(/([apm])(m?)/, '$1').replace(';', ':').replace(/\W/g, '');
+    time = time.toLowerCase().replace(/([apm])(m?)/, '$1').replace(';', ':').replace(/\s/g, '');
 
     if (time === '')
       return null;
@@ -148,7 +148,6 @@ var GtfsEditor = GtfsEditor || {};
       minutes = Number(components[1]);
       seconds = components.length >= 3 ? Number(components[2]) : 0;
     } else {
-
       // no colons, infer things positionally
       if (rawTime.length >= 5) {
         // we have seconds
@@ -241,7 +240,7 @@ var GtfsEditor = GtfsEditor || {};
             // note that this makes an assumption about stop_sequence: when a stop is ommitted,
             // its sequence number is omitted as well
             var st = _.find(trip.get('stopTimes'), function(st) {
-              return st.stop.id == stopId && st.stopSequence == stopSeq;
+              return st.stop.id == stopId && st.stopSequence == stopSeq && st.deleted !== true;
             });
 
             if (_.isUndefined(val)) {
@@ -272,10 +271,15 @@ var GtfsEditor = GtfsEditor || {};
                 trip.set('stopTimes', trip.get('stopTimes'));
               }
 
-              if (arr) {
-                st.arrivalTime = parseTime(val);
+              var ptime = parseTime(val);
+
+              if (ptime === false) {
+                // trip does not stop here
+                st.deleted = true;
+              } else if (arr) {
+                st.arrivalTime = ptime;
               } else {
-                st.departureTime = parseTime(val);
+                st.departureTime = ptime;
               }
 
               // keep track of modifications
