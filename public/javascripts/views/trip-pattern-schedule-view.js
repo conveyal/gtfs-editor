@@ -12,7 +12,9 @@ var GtfsEditor = GtfsEditor || {};
    */
   var keyCodes = {
     // o: offset times
-    offset: 79
+    offset: 79,
+    // insert new trip (really, duplicate this trip . . .)
+    insert: 73
   };
 
   /**
@@ -393,9 +395,10 @@ var GtfsEditor = GtfsEditor || {};
       this.$container.handsontable('render');
     },
 
-    offsetTimes: function(coords, time) {
-      var instance = this;
-
+    /**
+     * Parse a user-entered offset for a trip, and return seconds to offset.
+     */
+    parseOffset: function (time) {
       time = String(time);
       var negative = false;
       if (time[0] == '-') {
@@ -403,7 +406,6 @@ var GtfsEditor = GtfsEditor || {};
         time = time.slice(1);
       }
 
-      // note that we can't use parseTime here, because it assumes we're talking hours if we don't specify
       var offset;
       // allow ; or . instead of :
       time.replace(';', ':').replace('.', ':');
@@ -411,24 +413,30 @@ var GtfsEditor = GtfsEditor || {};
       // assume offset is minutes
         offset = Number(time) * 60;
 
-      else if (/([0-9]+)(:[0-5][0-9]){1,2}/.test(time)) {
-        var spt = time.split(':');
+      else if (validTimeFormat.test(time)) {
+        offset = parseTime(time);
 
-        // seconds
-        offset = Number(spt.slice(-1));
-        // minutes
-        if (spt.length >= 2)
-          offset += Number(spt.slice(-2, -1)) * 60;
-
-        // hours, if present
-        if (spt.length == 3)
-          offset += Number(spt.slice(-3, -2)) * 60 * 60;
+        // false generally indicates a skipped stop
+        // but that doesn't make sense in the context of an offset
+        if (offset === false)
+          return null;
       }
       // ignore other formats
-      else return;
+      else return null;
 
       if (negative)
         offset *= -1;
+
+      return offset;
+    },
+
+    offsetTimes: function(coords, time) {
+      var instance = this;
+
+      var offset = this.parseOffset(time);
+
+      if (offset === null)
+        return;
 
       // get the affected trips
       // [0] and [2] are the first and last selected rows. Javascript's slice excludes the end, so we add one.
@@ -464,6 +472,8 @@ var GtfsEditor = GtfsEditor || {};
 
         trip.modified = true;
       });
+
+      this.$container.handsontable('render');
     },
 
     /** Make a stop time from a pattern stop */
@@ -494,11 +504,36 @@ var GtfsEditor = GtfsEditor || {};
       var commandFound = true;
 
       // o: offset times
-      // basically, duplicate this trip
       if (e.keyCode == keyCodes.offset) {
         this.getInput('Offset amount', function(input) {
           instance.offsetTimes(sel, input);
         });
+
+      // i: insert new trip
+      // basically, duplicate this trip or these trips, with the entered offset
+      } else if (e.keyCode == keyCodes.insert) {
+        this.getInput('Offset amount', function (input) {
+          var offset = instance.parseOffset(input);
+
+          if (offset === null)
+            return;
+
+          var templateTrips = instance.collection.slice(sel[0], sel[2] + 1);
+          _.each(templateTrips, function (templateTrip) {
+            var newTrip = templateTrip.clone();
+            newTrip.modified = true;
+
+            _.each(newTrip.get('stopTimes'), function (st) {
+              st.arrivalTime += offset;
+              st.departureTime += offset;
+            });
+
+            instance.collection.add(newTrip);
+          });
+
+          instance.$container.handsontable('render');
+        });
+
       } else {
         // not a command, pass through
         commandFound = false;
@@ -506,10 +541,6 @@ var GtfsEditor = GtfsEditor || {};
 
       if (commandFound)
         e.stopImmediatePropagation();
-
-      // trigger re-render of updated times
-      this.$container.handsontable('render');
-
     },
 
     // get user input for a command that requires it, using the minibuffer

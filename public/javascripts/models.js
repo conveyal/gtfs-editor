@@ -480,6 +480,27 @@ G.Trip = Backbone.Model.extend({
       endTime: null,
       headway: null,
       useFrequency: null
+    },
+
+    clone: function () {
+      var ret = new G.Trip(this.toJSON());
+
+      // wipe out the IDs
+      ret.set('id', null);
+      ret.set('gtfsTripId', null);
+      ret.set('blockId', null);
+
+      // clone the stop times
+      var stopTimes = _.map(this.get('stopTimes'), function (st) {
+        // clone
+        st = _.extend({}, st);
+        st.id = null;
+        return st;
+      });
+
+      ret.set('stopTimes', stopTimes);
+
+      return ret;
     }
    });
 
