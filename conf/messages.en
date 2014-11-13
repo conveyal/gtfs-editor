@@ -353,7 +353,9 @@ timetable.save-changes=Save changes
 timetable.new-trip=New trip
 timetable.back-to-route=Return to route view
 timetable.offset=Offset
-timetable.offset-amount=Offset amount (mm, mm:ss, or hh:mm:ss)
+timetable.shortcuts=Keyboard shortcuts
+timetable.ok=OK, got it!
+timetable.help=Help
 
 # /search
 
