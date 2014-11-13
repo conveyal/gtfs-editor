@@ -352,6 +352,8 @@ route.review.status.approved=Approved
 timetable.save-changes=Save changes
 timetable.new-trip=New trip
 timetable.back-to-route=Return to route view
+timetable.offset=Offset
+timetable.offset-amount=Offset amount (mm, mm:ss, or hh:mm:ss)
 
 # /search
 
