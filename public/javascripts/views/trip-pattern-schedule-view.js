@@ -506,6 +506,10 @@ var GtfsEditor = GtfsEditor || {};
       var sel = ht.getSelected();
       var instance = this;
 
+      // keyboard shortcuts only apply in the times section
+      if (sel[1] < 4)
+        return;
+
       // if we never set this to false, we got a reserved key and will not pass the event
       var commandFound = true;
 
