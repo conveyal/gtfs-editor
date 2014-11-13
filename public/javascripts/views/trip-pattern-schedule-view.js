@@ -231,7 +231,7 @@ var GtfsEditor = GtfsEditor || {};
       };
 
       // event handlers
-      _.bindAll(this, 'saveAll', 'newTrip', 'handleKeyDown');
+      _.bindAll(this, 'saveAll', 'newTrip', 'handleKeyDown', 'closeMinibuffer');
     },
 
     // combination of getAttr and setAttr for handsontable
@@ -495,6 +495,12 @@ var GtfsEditor = GtfsEditor || {};
     handleKeyDown: function(e) {
       console.log(e, sel);
 
+      // if the minibuffer is open, don't allow any input whatsoever
+      if (this.allInputPrevented) {
+        e.stopImmediatePropagation();
+        return;
+      }
+
       // figure out what's selected
       var ht = this.$container.handsontable('getInstance');
       var sel = ht.getSelected();
@@ -541,30 +547,44 @@ var GtfsEditor = GtfsEditor || {};
 
       if (commandFound)
         e.stopImmediatePropagation();
+        e.preventDefault();
     },
 
     // get user input for a command that requires it, using the minibuffer
     getInput: function(prompt, callback) {
-      callback(window.prompt(prompt));
+      var instance = this;
 
-      // TODO: get this minibuffer stuff working without messing up handsontable
-      /*
+      // don't allow keystrokes to bubble to form
+      this.allInputPrevented = true;
+
       $('.minibuffer').removeClass('hidden');
 
       $('.minibuffer .prompt').text(prompt);
-      $('.minibuffer input').val('').keypress(function(e) {
+
+      $('.minibuffer input').val('')
+      .keyup(function(e) {
         if (e.keyCode == 13) {
           // return was pressed
-          e.preventDefault();
-            // don't call the callback again
-          $('.minibuffer input').off('keypress');
-          $('.minibuffer').addClass('hidden');
+          e.stopImmediatePropagation();
+          instance.closeMinibuffer();
           callback($('.minibuffer input').val());
+        } else if (e.keyCode == 27) {
+          // esc was pressed
+          e.stopImmediatePropagation();
+          instance.closeMinibuffer();
         }
-      });
+      })
+      .focus();
+    },
 
-      $('.minibuffer input').focus().click();
-      */
+    // close the minibuffer
+    closeMinibuffer: function () {
+      // don't call the callback again
+      $('.minibuffer input').off('keypress');
+      $('.minibuffer').addClass('hidden');
+
+      // allow user to type again
+      this.allInputPrevented = false;
     },
 
     render: function() {
@@ -623,6 +643,7 @@ var GtfsEditor = GtfsEditor || {};
         instance.offsetTimes($('#offset-amount').val());
         instance.$('#modal-form').hide();
       });
+      this.$('.minibuffer-bg').click(this.closeMinibuffer);
 
       return this;
     }
