@@ -11,11 +11,14 @@
 }
 
 /* align times right and display in monospace font */
-.handsontable .time { text-align: right; font-family: mono }
+.handsontable .time { text-align: right; font-family: mono; font-size: 10pt; letter-spacing: 0 }
 .handsontable .time-arr { color: #050 }
 .handsontable .time-dep { color: #005 }
 .handsontable .time-dep-dimmed { color: #aaa }
 .handsontable .trip-invalid { background-color: #fdd }
+.handsontable .trip-deleted { text-decoration: line-through;
+  /* 7pt + letter spacing of .30 em - 1em yields letters of approximately the same width as 10pt */
+  font-style: italic; font-weight: lighter; color: #aaa; font-size: 7pt; letter-spacing: .30em }
 
 .sr-only { position: absolute; left: -10000px; width: 1px; height: 1px }
 

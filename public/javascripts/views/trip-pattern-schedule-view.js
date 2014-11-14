@@ -14,7 +14,11 @@ var GtfsEditor = GtfsEditor || {};
     // o: offset times
     offset: 79,
     // insert new trip (really, duplicate this trip . . .)
-    insert: 73
+    insert: 73,
+    // delete trip (also requires shift key, as coded in the function)
+    deleteTrip: 46,
+    // also backspace, for laptop users with no delete key...
+    deleteTripAlternate: 8
   };
 
   /**
@@ -70,7 +74,8 @@ var GtfsEditor = GtfsEditor || {};
           // dim departure times that are the same as their arrival times
           // TODO: only in two-time mode
           (!arr && st.departureTime == st.arrivalTime ? 'time-dep-dimmed ' : '') +
-          (value.get('trip').get('invalid') === true ? 'trip-invalid' : '') + '">' +
+          (value.get('trip').get('invalid') === true ? 'trip-invalid ' : '') +
+          (value.get('trip').deleted === true ? 'trip-deleted' : '') + '">' +
           '<span class="hours">' + hours + '</span>' +
           '<span class="minutes">' + (mins < 10 ? '0' + mins : mins) + '</span>' +
           '<span class="seconds">' + (secs < 10 ? '0' + secs : secs) + '</span>' +
@@ -336,7 +341,7 @@ var GtfsEditor = GtfsEditor || {};
       var deferreds = [];
 
       this.collection.each(function(trip) {
-        if (trip.modified) {
+        if (trip.modified && !trip.deleted) {
           deferreds.push(
             // we assume that, if it's been modified, it is now valid
             // the invalid flag just indicates that something has occurred that requires human intervention
@@ -351,6 +356,19 @@ var GtfsEditor = GtfsEditor || {};
           );
         }
       });
+
+      // issues are created if we delete trips whilst iterating over them, so we save the ones to be deleted and
+      // delete them manually.
+      // we delete trips after saving the ones that are to be saved, so that if the server responds really fast
+      // the collection cannot be changed by having models deleted whilst the loop above is still running
+      var deletedTrips = this.collection.filter(function (trip) {
+        return trip.deleted;
+      });
+      var tripsDeleted = deletedTrips.length > 0;
+      while (deletedTrips.length > 0) {
+        var trip = deletedTrips.pop();
+        deferreds.push(trip.destroy({wait: true}));
+      }
 
       $.when.apply($, deferreds).always(function() {
         instance.$container.handsontable('render');
@@ -559,15 +577,30 @@ var GtfsEditor = GtfsEditor || {};
 
           instance.$container.handsontable('render');
         });
+        // two key codes because the default config allows shift-del or shift-backspace
+      } else if ((e.keyCode == keyCodes.deleteTrip || e.keyCode == keyCodes.deleteTripAlternate) && e.shiftKey) {
+        var trips = this.collection.slice(sel[0], sel[2] + 1);
 
+        // we don't actually delete the trip yet, we just mark it as deleted
+        // that way the user can revert if necessary
+        // the trip will actually be deleted if and when the user saves it or all trips
+        _.each(trips, function (trip) {
+          // we set this directly on the trip object because it's not an attribute of the trip, but rather a state
+          // variable that stays on the client side
+          // so it's not a mistake that we're not using set()
+          trip.modified = trip.deleted = true;
+        });
+
+        this.$container.handsontable('render');
       } else {
         // not a command, pass through
         commandFound = false;
       }
 
-      if (commandFound)
+      if (commandFound) {
         e.stopImmediatePropagation();
         e.preventDefault();
+      }
     },
 
     // get user input for a command that requires it, using the minibuffer
