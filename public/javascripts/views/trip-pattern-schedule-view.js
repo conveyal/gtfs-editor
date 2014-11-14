@@ -234,7 +234,7 @@ var GtfsEditor = GtfsEditor || {};
       };
 
       // event handlers
-      _.bindAll(this, 'saveAll', 'newTrip', 'handleKeyDown', 'closeMinibuffer', 'sort');
+      _.bindAll(this, 'saveAll', 'newTrip', 'handleKeyDown', 'closeMinibuffer', 'sort', 'autofill');
     },
 
     // combination of getAttr and setAttr for handsontable
@@ -641,6 +641,120 @@ var GtfsEditor = GtfsEditor || {};
       this.allInputPrevented = false;
     },
 
+    /** Find a stop time given a trip and a pattern stop, or null if no such stop time exists */
+    findStopTimeByPatternStop: function (trip, patternStop) {
+      return _.find(trip.stopTimes || trip.get('stopTimes'), function (st) {
+        return st.stop.id == patternStop.stop.id && st.stopSequence == patternStop.stopSequence;
+      });
+    },
+
+    /** handle horizontal autofill, fill in times from pattern */
+    autofill: function (start, end, data) {
+      // figure out which direction the autofill was in
+      var direction, horizontal;
+      var sel = this.$container.handsontable('getSelected');
+
+      if (sel[0] == start.row) {
+        horizontal = true;
+        direction = start.col > sel[1] ? 'east' : 'west';
+      }
+      else {
+        horizontal = false;
+        direction = start.row > sel[0] ? 'south' : 'north';
+      }
+
+      // horizontal: autofilling times
+      if (horizontal) {
+        if (start.col <= 4 || end.col < 4)
+          // doesn't make sense to horizontally autofill anything except times
+          return false;
+
+        var fromCol = start.col - 4;
+        var toCol = end.col - 4;
+
+        var initialPatternStop = Math.floor(fromCol / 2);
+        var finalPatternStop = Math.floor(toCol / 2);
+
+        var trips;
+
+        if (end.row > start.row)
+          trips = this.collection.slice(start.row, end.row + 1);
+        else
+          trips = this.collection.slice(end.row, start.row + 1);
+
+        var instance = this;
+
+        if (direction == 'east') {
+          // update the relevant stop times
+          _.each(trips, function (trip) {
+            var patternStops = instance.pattern.get('patternStops');
+
+            // Get the pattern stop to the left of the first filled stop time
+            // this could be the same as the pattern stop of the first filled
+            var filledPatternStop = patternStops[(fromCol % 2) == 0 ? initialPatternStop - 1 : initialPatternStop];
+            // can't autofill from a skipped or interpolated stop, don't autofill this trip
+            var filledStopTime = instance.findStopTimeByPatternStop(trip, filledPatternStop);
+
+            if (filledStopTime === null || _.isUndefined(filledStopTime))
+              return;
+
+            // fromCol % 2 == 0: first filled cell is arrival time, so we are filling from the previous stops'
+            // departure time
+            if ((fromCol % 2) === 0 && filledStopTime.departureTime === null)
+              return;
+
+            // fromCol % 2 == 1: first filled cell is departure time, so we are filling from the arrival time
+            if ((fromCol % 2) == 1 && filledStopTime.arrivalTime === null)
+              return;
+
+            for (var i = initialPatternStop; i <= finalPatternStop; i++) {
+              var ps = patternStops[i];
+              var st = instance.findStopTimeByPatternStop(trip, ps);
+
+              // edge condition at start if filling only departure
+              if ((fromCol % 2) == 1 && i == initialPatternStop) {
+                st.departureTime = st.arrivalTime + ps.defaultDwellTime;
+                continue;
+              }
+
+              var wasStopTimeCreated = false;
+
+              // previously skipped, fill it in now
+              // note that this cannot happen if we are filling the second half of a stop time
+              // at the start, due to conditions above. So there is no race condition with the block above
+              if (st == null) {
+                st = instance.makeStopTime(ps);
+                trip.get('stopTimes').push(st);
+                // shouldn't matter, but it's nice to keep this sorted
+                trip.set('stopTimes', _.sortBy(trip.get('stopTimes'), 'stopSequence'));
+                wasStopTimeCreated = true;
+              }
+
+              var previousPs = patternStops[i - 1];
+              var previousSt = instance.findStopTimeByPatternStop(trip, previousPs);
+
+              // previousSt will always be defined, because we will have just made it if it didn't exist before
+
+              st.arrivalTime = previousSt.departureTime + ps.defaultTravelTime;
+
+              // edge condition at end: we may be only filling the arrival time
+              // but if we created the stop time, we should fill them both, since GTFS requires both an arrival
+              // and departure time if either is specified
+              if (i != finalPatternStop || i == finalPatternStop && ((toCol % 2) == 1 || wasStopTimeCreated))
+                st.departureTime = st.arrivalTime + ps.defaultDwellTime;
+
+              trip.set('stopTimes', trip.get('stopTimes'));
+              trip.modified = true;
+            }
+          });
+        }
+      }
+
+      instance.$container.handsontable('render');
+      // block the default autofill action
+      return false;
+    },
+
     render: function() {
       // render the template
       this.$el.html(ich['timetable-tpl'](this.pattern.toJSON()));
@@ -687,7 +801,10 @@ var GtfsEditor = GtfsEditor || {};
         columns: columns,
         colHeaders: headers,
         colWidths: colWidths,
-        beforeKeyDown: this.handleKeyDown
+        beforeKeyDown: this.handleKeyDown,
+        beforeAutofill: this.autofill,
+        // It's somewhat confusing what vertical autofill would do, so we don't support it
+        fillHandle: true
       });
 
       // add the event handlers
