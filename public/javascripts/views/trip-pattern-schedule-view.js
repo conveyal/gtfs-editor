@@ -473,16 +473,17 @@ var GtfsEditor = GtfsEditor || {};
             return st.stop.id == ps.stop.id && st.stopSequence == ps.stopSequence;
           });
 
-          if (st === null)
+          if (st === null || _.isUndefined(st))
             return;
 
           // if we're not looking at the first stoptime, and/or the first cell is even, update arrival time
           // if the first cell is odd and this is the first stoptime, we're only updating the departureTime.
-          if (idx !== 0 || fromCell % 2 === 0)
+          // but don't update interpolated times, leave them interpolated
+          if ((idx !== 0 || fromCell % 2 === 0) && st.arrivalTime != null)
             st.arrivalTime += offset;
 
           // same idea at the end. if the tocell is odd or we're in the middle, update both arrival and departure times
-          if (idx != patternStops.length - 1 || toCell % 2 == 1)
+          if ((idx != patternStops.length - 1 || toCell % 2 == 1) && st.departureTime != null)
             st.departureTime += offset;
         });
 
@@ -559,8 +560,10 @@ var GtfsEditor = GtfsEditor || {};
             newTrip.modified = true;
 
             _.each(newTrip.get('stopTimes'), function (st) {
-              st.arrivalTime += offset;
-              st.departureTime += offset;
+              if (st.arrivalTime != null)
+                st.arrivalTime += offset;
+              if (st.departureTime != null)
+                st.departureTime += offset;
             });
 
             newTrips.push(newTrip);
