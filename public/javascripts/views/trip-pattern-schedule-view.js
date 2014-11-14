@@ -732,6 +732,11 @@ var GtfsEditor = GtfsEditor || {};
                 wasStopTimeCreated = true;
               }
 
+              if (st.deleted)
+                // undelete
+                // how meta
+                delete st.deleted;
+
               var previousPs = patternStops[i - 1];
               var previousSt = instance.findStopTimeByPatternStop(trip, previousPs);
 
@@ -805,6 +810,9 @@ var GtfsEditor = GtfsEditor || {};
                 trip.set('stopTimes', _.sortBy(trip.get('stopTimes'), 'stopSequence'));
                 wasStopTimeCreated = true;
               }
+
+              if (st.deleted)
+                delete st.deleted;
 
               var nextPs = patternStops[i + 1];
               var nextSt = instance.findStopTimeByPatternStop(trip, nextPs);
