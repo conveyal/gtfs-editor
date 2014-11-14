@@ -906,8 +906,18 @@ var GtfsEditor = GtfsEditor || {};
         colWidths: colWidths,
         beforeKeyDown: this.handleKeyDown,
         beforeAutofill: this.autofill,
-        // It's somewhat confusing what vertical autofill would do, so we don't support it
-        fillHandle: true
+        fillHandle: true,
+        // we do this so that autofill will not create extra rows (issue 127)
+        maxRows: this.collection.length
+      });
+
+      // autofill will create extra rows. to prevent this, we set maxRows, but we have to update it
+      // when trips are added or removed.
+      this.collection.on("add remove", function () {
+        var i = instance.$container.handsontable('getInstance');
+        var s = i.getSettings();
+        s.maxRows = instance.collection.length;
+        i.updateSettings(s);
       });
 
       // add the event handlers
