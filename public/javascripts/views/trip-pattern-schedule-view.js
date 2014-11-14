@@ -202,6 +202,16 @@ var GtfsEditor = GtfsEditor || {};
       this.calendar = attr.calendar;
       this.pattern = attr.pattern;
 
+      // we don't want the collection to be automatically sorted, as it causes things to move around unexpectedly whilst
+      // editing.
+      var UnsortedTripPatterns = G.TripPatterns.extend({
+        comparator: null
+      });
+
+      // the collection will be already sorted, so will display correctly. Disable any further sorting;
+      // things moving around during editing unexpectedly is extremely confusing
+      this.collection = new UnsortedTripPatterns(this.collection.toArray());
+
       // consistency check
       var tripPatternId = null;
       var serviceCalendarId = null;
@@ -224,9 +234,7 @@ var GtfsEditor = GtfsEditor || {};
       this.collection.splice = function(idx, size) {
         var toRemove = this.toArray().slice(idx, size + 1);
         this.remove(toRemove);
-        // collections are not ordered, since this one has a comparator; thus it doesn't matter if we insert stuff in the middle
-        // backbone will just move it around anyhow, and handsontable doesn't seem to care if things don't end up where it put them
-        this.add(arguments.slice(2));
+        this.add(arguments.slice(2), {at: idx});
         return toRemove;
       };
 
@@ -526,6 +534,8 @@ var GtfsEditor = GtfsEditor || {};
         this.getInput('New trip offset', function (input) {
           var offset = instance.parseOffset(input);
 
+          var newTrips = [];
+
           if (offset === null)
             return;
 
@@ -539,8 +549,17 @@ var GtfsEditor = GtfsEditor || {};
               st.departureTime += offset;
             });
 
-            instance.collection.add(newTrip);
+            newTrips.push(newTrip);
           });
+
+          // put the trips directly after the selected trips if the offset is positive
+          // otherwise, put them directly before
+          // this can still result in out-of-order schedules, but is more intuitive; imagine you offsetted trips in such
+          // a way as to interleave them with other trips; the new trips could wind up spread all over the schedule.
+          if (offset >= 0)
+            instance.collection.add(newTrips, {at: sel[2] + 1});
+          else
+            instance.collection.add(newTrips, {at: sel[0]});
 
           instance.$container.handsontable('render');
         });
