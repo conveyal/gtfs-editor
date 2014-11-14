@@ -665,15 +665,11 @@ var GtfsEditor = GtfsEditor || {};
 
       // horizontal: autofilling times
       if (horizontal) {
-        if (start.col <= 4 || end.col < 4)
-          // doesn't make sense to horizontally autofill anything except times
+        if (start.col < 4 || end.col < 4 || start.col == 4 && direction == 'east')
+          // doesn't make sense to horizontally autofill anything except times, and you can't fill from the first time
+          // we don't have to worry about someone autofilling from a stop past the last stop, as there are no cells there
+          // but there are cells before the first stop.
           return false;
-
-        var fromCol = start.col - 4;
-        var toCol = end.col - 4;
-
-        var initialPatternStop = Math.floor(fromCol / 2);
-        var finalPatternStop = Math.floor(toCol / 2);
 
         var trips;
 
@@ -685,6 +681,12 @@ var GtfsEditor = GtfsEditor || {};
         var instance = this;
 
         if (direction == 'east') {
+          var fromCol = start.col - 4;
+          var toCol = end.col - 4;
+
+          var initialPatternStop = Math.floor(fromCol / 2);
+          var finalPatternStop = Math.floor(toCol / 2);
+
           // update the relevant stop times
           _.each(trips, function (trip) {
             var patternStops = instance.pattern.get('patternStops');
@@ -747,7 +749,82 @@ var GtfsEditor = GtfsEditor || {};
               trip.modified = true;
             }
           });
+        } else {
+          // direction is west
+          // so basically do everything we did for east, but backward
+          // update the relevant stop times
+
+          // note that these are intentionally backwards
+          var fromCol = end.col - 4;
+          var toCol = start.col - 4;
+
+          var initialPatternStop = Math.floor(fromCol / 2);
+          var finalPatternStop = Math.floor(toCol / 2);
+
+          _.each(trips, function (trip) {
+            var patternStops = instance.pattern.get('patternStops');
+
+            // Get the pattern stop to the right of the first filled stop time
+            // this could be the same as the pattern stop of the first filled
+            var filledPatternStop = patternStops[(fromCol % 2) == 0 ? initialPatternStop : initialPatternStop + 1];
+            // can't autofill from a skipped or interpolated stop, don't autofill this trip
+            var filledStopTime = instance.findStopTimeByPatternStop(trip, filledPatternStop);
+
+            if (filledStopTime === null || _.isUndefined(filledStopTime))
+              return;
+
+            // fromCol % 2 == 0: first filled cell is arrival time, so we are filling from this stops'
+            // departure time
+            if ((fromCol % 2) === 0 && filledStopTime.departureTime === null)
+              return;
+
+            // fromCol % 2 == 1: first filled cell is departure time, so we are filling from the next stop's arrival time
+            if ((fromCol % 2) == 1 && filledStopTime.arrivalTime === null)
+              return;
+
+            // loop backwards over pattern stops, filling as we go
+            for (var i = initialPatternStop; i >= finalPatternStop; i--) {
+              var ps = patternStops[i];
+              var st = instance.findStopTimeByPatternStop(trip, ps);
+
+              // edge condition at start if filling only arrival
+              if ((fromCol % 2) == 0 && i == initialPatternStop) {
+                st.arrivalTime = st.departureTime - ps.defaultDwellTime;
+                continue;
+              }
+
+              var wasStopTimeCreated = false;
+
+              // previously skipped, fill it in now
+              // note that this cannot happen if we are filling the second half of a stop time
+              // at the start, due to conditions above. So there is no race condition with the block above
+              if (st == null) {
+                st = instance.makeStopTime(ps);
+                trip.get('stopTimes').push(st);
+                // shouldn't matter, but it's nice to keep this sorted
+                trip.set('stopTimes', _.sortBy(trip.get('stopTimes'), 'stopSequence'));
+                wasStopTimeCreated = true;
+              }
+
+              var nextPs = patternStops[i + 1];
+              var nextSt = instance.findStopTimeByPatternStop(trip, nextPs);
+
+              // nextSt will always be defined, because we will have just made it if it didn't exist before
+
+              st.departureTime = nextSt.arrivalTime - nextPs.defaultTravelTime;
+
+              // edge condition at end: we may be only filling the departure time
+              // but if we created the stop time, we should fill them both, since GTFS requires both an arrival
+              // and departure time if either is specified
+              if (i != finalPatternStop || i == finalPatternStop && ((toCol % 2) == 0 || wasStopTimeCreated))
+                st.arrivalTime = st.departureTime - ps.defaultDwellTime;
+
+              trip.set('stopTimes', trip.get('stopTimes'));
+              trip.modified = true;
+            }
+          });
         }
+
         instance.$container.handsontable('render');
 
         // block the default autofill action
