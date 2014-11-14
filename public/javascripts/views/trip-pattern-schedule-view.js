@@ -263,7 +263,7 @@ var GtfsEditor = GtfsEditor || {};
                 trip: trip
               });
             } else {
-              if (st == null) {
+              if (st === null || _.isUndefined(st)) {
                 // find the appropriate pattern stop
                 var ps = _.find(instance.pattern.get('patternStops'), function(ps) {
                   return ps.stop.id == stopId && ps.stopSequence == stopSeq;
@@ -289,6 +289,12 @@ var GtfsEditor = GtfsEditor || {};
               if (ptime === false) {
                 // trip does not stop here
                 st.deleted = true;
+              } else if (ptime === null) {
+                // interpolated stop
+                // it's illegal per gtfs to only interpolate arrival_time or departure_time
+                // if one is interpolated they must both be
+                // enforce this on edit
+                st.arrivalTime = st.departureTime = null;
               } else if (arr) {
                 st.arrivalTime = ptime;
               } else {
