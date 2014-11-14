@@ -748,11 +748,20 @@ var GtfsEditor = GtfsEditor || {};
             }
           });
         }
-      }
+        instance.$container.handsontable('render');
 
-      instance.$container.handsontable('render');
-      // block the default autofill action
-      return false;
+        // block the default autofill action
+        return false;
+      } else {
+        // vertical autofill
+
+        // are we in a column where this is possible, i.e. headsign and block?
+        if (sel[1] >= 2 && sel[3] <= 3)
+          // use the default handsontable autofill
+          return true;
+        else
+          return false;
+      }
     },
 
     render: function() {
