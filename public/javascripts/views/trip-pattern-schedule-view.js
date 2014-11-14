@@ -535,15 +535,14 @@ var GtfsEditor = GtfsEditor || {};
       var sel = ht.getSelected();
       var instance = this;
 
-      // keyboard shortcuts only apply in the times section
-      if (sel[1] < 4)
-        return;
-
-      // if we never set this to false, we got a reserved key and will not pass the event
+      // if we never set this to false, we have a reserved key and will not pass the event
       var commandFound = true;
 
       // o: offset times
       if (e.keyCode == keyCodes.offset) {
+        if (_.isUndefined(sel) || sel[1] < 4)
+          return;
+
         this.getInput('Offset amount', function(input) {
           instance.offsetTimes(sel, input);
           instance.collection.trigger('change');
@@ -552,6 +551,9 @@ var GtfsEditor = GtfsEditor || {};
       // i: insert new trip
       // basically, duplicate this trip or these trips, with the entered offset
       } else if (e.keyCode == keyCodes.insert) {
+        if (_.isUndefined(sel) || sel[1] < 4)
+          return;
+
         this.getInput('New trip offset', function (input) {
           var offset = instance.parseOffset(input);
 
@@ -588,6 +590,10 @@ var GtfsEditor = GtfsEditor || {};
         });
         // two key codes because the default config allows shift-del or shift-backspace
       } else if ((e.keyCode == keyCodes.deleteTrip || e.keyCode == keyCodes.deleteTripAlternate) && e.shiftKey) {
+        // this keyboard shortcut can be used in any cell, including headsign etc., so don't run the lines below
+        //if (_.isUndefined(sel) || sel[1] < 4)
+        //  return;
+
         var trips = this.collection.slice(sel[0], sel[2] + 1);
 
         // we don't actually delete the trip yet, we just mark it as deleted
