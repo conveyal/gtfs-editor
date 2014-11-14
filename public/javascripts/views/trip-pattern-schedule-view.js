@@ -202,16 +202,6 @@ var GtfsEditor = GtfsEditor || {};
       this.calendar = attr.calendar;
       this.pattern = attr.pattern;
 
-      // we don't want the collection to be automatically sorted, as it causes things to move around unexpectedly whilst
-      // editing.
-      var UnsortedTripPatterns = G.TripPatterns.extend({
-        comparator: null
-      });
-
-      // the collection will be already sorted, so will display correctly. Disable any further sorting;
-      // things moving around during editing unexpectedly is extremely confusing
-      this.collection = new UnsortedTripPatterns(this.collection.toArray());
-
       // consistency check
       var tripPatternId = null;
       var serviceCalendarId = null;
@@ -239,7 +229,7 @@ var GtfsEditor = GtfsEditor || {};
       };
 
       // event handlers
-      _.bindAll(this, 'saveAll', 'newTrip', 'handleKeyDown', 'closeMinibuffer');
+      _.bindAll(this, 'saveAll', 'newTrip', 'handleKeyDown', 'closeMinibuffer', 'sort');
     },
 
     // combination of getAttr and setAttr for handsontable
@@ -397,7 +387,7 @@ var GtfsEditor = GtfsEditor || {};
       // flag so it gets saved
       trip.modified = true;
 
-      this.collection.add(trip);
+      this.collection.add(trip, {at: 0, sort: false});
 
       // trigger redraw, show the new trip
       this.$container.handsontable('render');
@@ -484,6 +474,12 @@ var GtfsEditor = GtfsEditor || {};
       this.$container.handsontable('render');
     },
 
+    /** sort the trips by first stop time, nulls first */
+    sort: function () {
+      this.collection.sort();
+      this.$container.handsontable('render');
+    },
+
     /** Make a stop time from a pattern stop */
     makeStopTime: function(patternStop) {
       var st = {};
@@ -557,9 +553,9 @@ var GtfsEditor = GtfsEditor || {};
           // this can still result in out-of-order schedules, but is more intuitive; imagine you offsetted trips in such
           // a way as to interleave them with other trips; the new trips could wind up spread all over the schedule.
           if (offset >= 0)
-            instance.collection.add(newTrips, {at: sel[2] + 1});
+            instance.collection.add(newTrips, {at: sel[2] + 1, sort: false});
           else
-            instance.collection.add(newTrips, {at: sel[0]});
+            instance.collection.add(newTrips, {at: sel[0], sort: false});
 
           instance.$container.handsontable('render');
         });
@@ -664,10 +660,7 @@ var GtfsEditor = GtfsEditor || {};
       // add the event handlers
       this.$('.save').click(this.saveAll);
       this.$('.new-trip').click(this.newTrip);
-      this.$('#offset-form').submit(function(e) {
-        instance.offsetTimes($('#offset-amount').val());
-        instance.$('#modal-form').hide();
-      });
+      this.$('.sort-trips').click(this.sort);
       this.$('.minibuffer-bg').click(this.closeMinibuffer);
 
       return this;

@@ -356,6 +356,7 @@ timetable.offset=Offset
 timetable.shortcuts=Keyboard shortcuts
 timetable.ok=OK, got it!
 timetable.help=Help
+timetable.sort=Sort schedule
 
 # /search
 
