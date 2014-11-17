@@ -145,9 +145,9 @@ var GtfsEditor = GtfsEditor || {};
     // everything lower case
     // no whitespace
     // get rid of the m on am, pm, and mm (post midnight)
-    // we replace semicolons with colons, to allow folks to enter 3;32;21 pm, to be easier on the fingers
-    // than having to type shift each time
-    time = time.toLowerCase().replace(/([apm])(m?)/, '$1').replace(';', ':').replace(/\s/g, '');
+    // we replace semicolons and periods with colons, to allow folks to enter 3;32;21 pm or 3.32.21 pm,
+    // to be easier on the fingers than having to type shift each time
+    time = time.toLowerCase().replace(/([apm])(m?)/, '$1').replace(/[;\.]/g, ':').replace(/\s/g, '');
 
     if (time === '')
       return null;
@@ -448,7 +448,7 @@ var GtfsEditor = GtfsEditor || {};
 
       var offset;
       // allow ; or . instead of :
-      time.replace(';', ':').replace('.', ':');
+      time.replace(/[;\.]/g, ':');
       if (/^-?[0-9]+$/.test(time))
       // assume offset is minutes
         offset = Number(time) * 60;
