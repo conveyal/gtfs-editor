@@ -32,17 +32,39 @@ var GtfsEditor = GtfsEditor || {};
       arr: null,
       trip: null
     },
+
+    // this is what is displayed in the editor and what is copied
     toString: function() {
       var st = this.get('stopTime');
 
       if (st === null)
-        return 'does-not-stop';
+        return '-';
 
       var time = this.get('arr') ? st.arrivalTime : st.departureTime
 
-      return String(time !== null ? time : 'no-time');
+      if (time === null)
+        return '';
+
+      var sp = splitTime(time);
+      return sp[0] + ':' + sp[1] + ':' + sp[2];
     }
-  })
+  });
+
+  // return [hours, minutes, seconds]  as strings (zero-padded if necessary)
+  var splitTime = function (time) {
+    if (time === null)
+      return null;
+
+    var secs = time % 60;
+    secs = secs < 10 ? '0' + String(secs) : String(secs);
+
+    var mins = (time - secs) % (60 * 60) / 60;
+    mins = mins < 10 ? '0' + String(mins) : String(mins);
+
+    var hours = String((time - secs - mins * 60) / (60 * 60));
+
+    return [hours, mins, secs];
+  };
 
   /**
    * A renderer that displays the time as a time rather than seconds since midnight.
@@ -59,14 +81,15 @@ var GtfsEditor = GtfsEditor || {};
       var arr = value.get('arr');
       var st = value.get('stopTime');
       var time = arr ? st.arrivalTime : st.departureTime;
+      var spTime = splitTime(time);
 
-      if (time === null) {
+      if (spTime === null) {
         // time is to be interpolated by consumer
         text = '';
       } else {
-        var secs = time % 60;
-        var mins = (time - secs) % (60 * 60) / 60;
-        var hours = (time - secs - mins * 60) / (60 * 60);
+        var hours = spTime[0];
+        var mins = spTime[1];
+        var secs = spTime[2];
 
         // TODO: template
         text =
@@ -77,8 +100,8 @@ var GtfsEditor = GtfsEditor || {};
           (value.get('trip').get('invalid') === true ? 'trip-invalid ' : '') +
           (value.get('trip').deleted === true ? 'trip-deleted' : '') + '">' +
           '<span class="hours">' + hours + '</span>' +
-          '<span class="minutes">' + (mins < 10 ? '0' + mins : mins) + '</span>' +
-          '<span class="seconds">' + (secs < 10 ? '0' + secs : secs) + '</span>' +
+          '<span class="minutes">' + mins + '</span>' +
+          '<span class="seconds">' + secs + '</span>' +
           '</div>';
       }
     }
@@ -97,14 +120,7 @@ var GtfsEditor = GtfsEditor || {};
     } else if (time == 'no-time') {
       value = '';
     } else {
-
-      time = Number(time);
-
-      var secs = time % 60;
-      var mins = (time - secs) % (60 * 60) / 60;
-      var hours = (time - secs - mins * 60) / (60 * 60);
-
-      var value = hours + ':' + (mins < 10 ? '0' + mins : mins) + ':' + (secs < 10 ? '0' + secs : secs);
+      value = time;
     }
 
     Handsontable.editors.TextEditor.prototype.setValue.apply(this, [value]);
@@ -204,6 +220,8 @@ var GtfsEditor = GtfsEditor || {};
 
   G.TripPatternScheduleView = Backbone.View.extend({
     initialize: function(attr) {
+      var instance = this;
+
       this.calendar = attr.calendar;
       this.pattern = attr.pattern;
 
