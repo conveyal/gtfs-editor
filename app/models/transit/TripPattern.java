@@ -244,6 +244,7 @@ public class TripPattern extends Model {
                         current = pse.next();
                     
                     st.stopSequence = current.stopSequence;
+                    st.patternStop = current;
                     StopTime.em().merge(st).save();
                 }
             }                
@@ -311,6 +312,7 @@ public class TripPattern extends Model {
                         current = pse.next();
                     
                     st.stopSequence = current.stopSequence;
+                    st.patternStop = current;
                     StopTime.em().merge(st).save();
                 }
                 
