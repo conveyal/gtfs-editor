@@ -126,10 +126,29 @@ public class Application extends Controller {
         render();
     }
 
-    public static void search() {
-       
-        Long agencyId = Long.parseLong(session.get("agencyId"));
-        Agency selectedAgency = Agency.findById(agencyId);
+    /**
+     * Helper to go to the search page for a particular agency (never called from the router directly).
+     * @param agencyId
+     */
+    public static void search(Long agencyId) {
+        Agency selectedAgency;
+        
+        if (agencyId == null) {
+            agencyId = Long.parseLong(session.get("agencyId"));      
+            selectedAgency = Agency.findById(agencyId);            
+        }
+        else {
+            session.put("agencyId", agencyId);
+            
+            selectedAgency = Agency.findById(agencyId);
+            
+            session.put("agencyId", agencyId);
+            session.put("agencyName", selectedAgency.name);
+            session.put("lat", selectedAgency.defaultLat);
+            session.put("lon", selectedAgency.defaultLon);
+            session.put("zoom", 12);
+        }
+        
         List<Route> routes = Route.find("agency = ? order by routeShortName", selectedAgency).fetch();
         render(routes);
     }
