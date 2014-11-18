@@ -13,7 +13,6 @@ GET     /get_token								Secure.get_token
 
 GET     /export/gtfs                      		Application.exportGtfs
 GET     /export/creategtfs                      Application.createGtfs
-GET     /export/fetchgtfs                       Export.fetchGtfs
 
 GET     /export/gis                      		Application.exportGis
 GET     /export/creategis                      Application.createGis
@@ -78,4 +77,3 @@ GET     /public/                                staticDir:public
 
 # Catch all
 *       /{controller}/{action}                  {controller}.{action}
-
