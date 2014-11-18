@@ -11,6 +11,20 @@ application.appBase=
 # this allows injection admin accounts -- only use for testing/dev purposes, otherwise set to false
 application.allowBootstrapAdminCreate=false
 
+# OAuth, for integration with gtfs-data-manager
+# Is OAuth enabled? If set to false, manager will not be able to connect to editor
+# If you set this to true, be sure to change the client_id and secret below!
+application.oauthEnabled=false
+
+# how long (in milliseconds) are OAuth keys good for?
+# 604,800,000 milliseconds is one week
+application.oauthKeyTimeout=604800000
+
+# What are the client IDs and secrets for manager?
+# For security purposes, be sure to change these for each deployment, and make them longer.
+application.managerId=abc
+application.managerSecret=123
+
 application.name=gtfs-editor
 
 # Application mode
@@ -228,4 +242,3 @@ mail.smtp=mock
 %test.db.url=jdbc:h2:mem:play;MODE=MYSQL;LOCK_MODE=0
 %test.jpa.ddl=create
 %test.mail.smtp=mock
-
