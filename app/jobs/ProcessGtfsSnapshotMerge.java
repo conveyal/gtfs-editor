@@ -15,6 +15,7 @@ import javax.persistence.Query;
 
 import org.apache.commons.lang.StringUtils;
 import org.onebusaway.gtfs.impl.GtfsDaoImpl;
+import org.onebusaway.gtfs.impl.GtfsRelationalDaoImpl;
 import org.onebusaway.gtfs.serialization.GtfsReader;
 
 import com.mchange.v2.c3p0.impl.DbAuth;
@@ -51,7 +52,6 @@ public class ProcessGtfsSnapshotMerge extends Job {
 	private Map<String, BigInteger> routeIdMap = new HashMap<String, BigInteger>();
 	private Map<String, BigInteger> stopIdMap = new HashMap<String, BigInteger>();
 	private Map<String, BigInteger> tripShapeIdMap = new HashMap<String, BigInteger>();
-	private Map<String, BigInteger> tripIdMap = new HashMap<String, BigInteger>();
 	private	Map<String, BigInteger> serviceIdMap = new HashMap<String, BigInteger>();
 	private Map<String, BigInteger> serviceDateIdMap = new HashMap<String, BigInteger>();
 	
@@ -85,7 +85,7 @@ public class ProcessGtfsSnapshotMerge extends Job {
 		}
 		
 		GtfsReader reader = new GtfsReader();
-    	GtfsDaoImpl store = new GtfsDaoImpl();
+    	GtfsRelationalDaoImpl store = new GtfsRelationalDaoImpl();
     	
     	Long agencyCount = new Long(0);
     	Long routeCount = new Long(0);
@@ -302,8 +302,8 @@ public class ProcessGtfsSnapshotMerge extends Job {
 	        
 	        Logger.info("GtfsImporter: importing trips...");
 	        
-	        GtfsSnapshotMergeTask tripsTask = new GtfsSnapshotMergeTask(snapshotMerge);
-	        tripsTask.startTask();
+	        GtfsSnapshotMergeTask tripsStopTimesTask = new GtfsSnapshotMergeTask(snapshotMerge);
+	        tripsStopTimesTask.startTask();
 	    	
 	        for (org.onebusaway.gtfs.model.Trip gtfsTrip : store.getAllTrips()) {
 	        	
@@ -318,46 +318,38 @@ public class ProcessGtfsSnapshotMerge extends Job {
 	        	BigInteger serviceDateId = serviceDateIdMap.containsKey(gtfsTrip.getServiceId().toString()) ? serviceDateIdMap.get(gtfsTrip.getServiceId().toString()) : null;
 	        	
 	        	BigInteger tripId = Trip.nativeInsert(snapshotMerge.em(), gtfsTrip, routeId, shapeId, serviceId, serviceDateId);
-	        	        	
-	        	tripIdMap.put(gtfsTrip.getId().toString(), tripId);
-	        	
+	        	        		        	
 	        	tripCount++;
+	        	
+	        	// we renumber the stop sequences to be one-based, so that patterns are one-based.
+	        	int currentStopSequence = 1;
+	        	
+	                for (org.onebusaway.gtfs.model.StopTime gtfsStopTime : store.getStopTimesForTrip(gtfsTrip)) {
+	                        
+	                        BigInteger stopId = stopIdMap.get(gtfsStopTime.getStop().getId().toString());
+	                        
+	                        gtfsStopTime.setStopSequence(currentStopSequence);
+	                        
+	                        StopTime.nativeInsert(snapshotMerge.em(), gtfsStopTime, tripId, stopId);
+	                        
+	                        StopSequence stopSequence = new StopSequence(stopId, currentStopSequence++);
+	                        
+	                        if(!tripStopTimeMap.containsKey(tripId))
+	                                tripStopTimeMap.put(tripId, new ArrayList<StopSequence>());
+	                        
+	                        tripStopTimeMap.get(tripId).add(stopSequence);
+	                        
+	                        stopTimeCount++;
+	                }
 	        
 	        }
 	    
 	        
 	        Logger.info("Trips loaded: " + tripCount); 
 	        
-	        tripsTask.completeTask("Imported " + tripCount.toString() + " trips.", GtfsSnapshotMergeTaskStatus.SUCCESS);
-	        
-	        
-	        Logger.info("GtfsImporter: importing stopTimes...");
-	    	
-	        GtfsSnapshotMergeTask stopTimesTask = new GtfsSnapshotMergeTask(snapshotMerge);
-	        stopTimesTask.startTask();
-	   
-	        for (org.onebusaway.gtfs.model.StopTime gtfsStopTime : store.getAllStopTimes()) {
-	        	
-	        	BigInteger stopId = stopIdMap.get(gtfsStopTime.getStop().getId().toString());
-	        	BigInteger tripId = tripIdMap.get(gtfsStopTime.getTrip().getId().toString());
-	        	
-	        	BigInteger stopTimeId = StopTime.nativeInsert(snapshotMerge.em(), gtfsStopTime, tripId, stopId);
-	        	
-	        	StopSequence stopSequence = new StopSequence(stopId, gtfsStopTime.getStopSequence());
-	        	
-	        	if(!tripStopTimeMap.containsKey(tripId))
-	        		tripStopTimeMap.put(tripId, new ArrayList<StopSequence>());
-	        	
-	        	tripStopTimeMap.get(tripId).add(stopSequence);
-	        	
-	        	stopTimeCount++;
-	        }
-	        
-	      
-	        Logger.info("StopTimes loaded: " + stopTimeCount.toString());
-	        
-	        stopTimesTask.completeTask("Imported " + stopTimeCount.toString() + " stop times.", GtfsSnapshotMergeTaskStatus.SUCCESS);
-	        
+	        tripsStopTimesTask.completeTask("Imported " + tripCount.toString() + " trips and " + stopTimeCount.toString() + " stop times.",
+	                GtfsSnapshotMergeTaskStatus.SUCCESS);
+	        	        
 	        String mergeDescription = new String("Imported GTFS file: " + agencyCount + " agencies; " + routeCount + " routes;" + stopCount + " stops; " +  stopTimeCount + " stopTimes; " + tripCount + " trips;" + shapePointCount + " shapePoints");
 	        
 	        snapshotMerge.complete(mergeDescription);
