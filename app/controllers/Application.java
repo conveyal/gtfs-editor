@@ -133,8 +133,8 @@ public class Application extends Controller {
         String token = null;
         if (request.params.get("oauth_token") != null)
             token = request.params.get("oauth_token");
-        else if (request.headers.get("Authorization") != null) {
-            String header = request.headers.get("Authorization").toString();
+        else if (request.headers.get("authorization") != null) {
+            String header = request.headers.get("authorization").value();
             if (header.startsWith("Bearer "))
                 token = header.replace("Bearer ", "");
         }
