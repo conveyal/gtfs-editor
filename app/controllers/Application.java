@@ -274,29 +274,63 @@ public class Application extends Controller {
         ok();
     }
     
-    public static void exportGtfs() {
+    public static void timetable () {
+        render();
+    }
     
+    public static void exportGtfs() {
+        
         List<Agency> agencyObjects = Agency.findAll();
 
         render();
                 
     }
     
-    public static void timetable () {
-        render();
-    }
-    
     /**
-     * Build a GTFS file for any logged-in user.
-     * FetchGTFS requires no auth, but is presumably blocked by the frontend proxy server. CreateGTFS requires
-     * auth, so can be left unblocked.
+     * Build a GTFS file with the specified agency ID.
      * 
      * @param agencySelect
      * @param calendarFrom
      * @param calendarTo
      */
     public static void createGtfs(List<Long> agencySelect, Long calendarFrom, Long calendarTo) {
-        Integrations.fetchGtfs(agencySelect, calendarFrom, calendarTo);
+        // reasonable defaults: now to 2 months from now (more or less)
+        if (calendarFrom == null)
+            calendarFrom = new Date().getTime();
+        
+        if (calendarTo == null)
+            calendarTo = new Date().getTime() + 2L * 31L * 24L * 60L * 60L * 1000L;
+        
+        List<Agency> agencyObjects = new ArrayList<Agency>(); 
+        
+        if(agencySelect != null && agencySelect.size() > 0) {
+
+            for(Long agencyId : agencySelect) {
+                
+                Agency a = Agency.findById(agencyId);
+                if(a != null)
+                        agencyObjects.add(a);
+            
+            }
+        }
+        else 
+            agencyObjects = Agency.findAll();
+
+    
+        GtfsSnapshotExportCalendars calendarEnum;
+        calendarEnum = GtfsSnapshotExportCalendars.CURRENT_AND_FUTURE;
+        
+        Date calendarFromDate = new Date(calendarFrom);
+        Date calendarToDate = new Date(calendarTo);
+        
+        GtfsSnapshotExport snapshotExport = new GtfsSnapshotExport(agencyObjects, calendarEnum, calendarFromDate, calendarToDate, "");
+        
+        ProcessGtfsSnapshotExport exportJob = new ProcessGtfsSnapshotExport(snapshotExport.id);
+        
+        // running as a sync task for now -- needs to be async for processing larger feeds.
+        exportJob.doJob(); 
+        
+        redirect(Play.configuration.getProperty("application.appBase") + "/public/data/"  + snapshotExport.getZipFilename());
     }
     
     public static void exportGis(List<Long> agencySelect) {
