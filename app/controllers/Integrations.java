@@ -11,8 +11,12 @@ import models.transit.Agency;
 import play.Play;
 import play.mvc.Controller;
 
-// not authenticated, see comment below
-public class Export extends Controller {
+/**
+ * Integrations with GTFS Data Manager.
+ * @author mattwigway
+ *
+ */
+public class Integrations extends Controller {
     /**
      * Build a GTFS file for anyone, authenticated or otherwise.
      * FetchGTFS requires no auth, but is presumably blocked by the frontend proxy server. CreateGTFS requires
@@ -62,4 +66,8 @@ public class Export extends Controller {
         
         redirect(Play.configuration.getProperty("application.appBase") + "/public/data/"  + snapshotExport.getZipFilename());
     }
+    
+    /**
+     * Get all of the agencies in this editor instance.
+     */
 }

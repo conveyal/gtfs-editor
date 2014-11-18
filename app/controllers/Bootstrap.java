@@ -4,20 +4,26 @@ import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Date;
+import java.util.ListIterator;
+import java.util.NoSuchElementException;
+import java.util.Set;
 
 import org.geotools.geometry.jts.JTS;
 import org.opengis.referencing.operation.TransformException;
 
 import com.vividsolutions.jts.geom.Coordinate;
 
+import static java.util.Collections.sort;
 import controllers.Secure.Security;
 import models.Account;
 import models.transit.Agency;
 import models.transit.GtfsRouteType;
 import models.transit.Route;
 import models.transit.Stop;
+import models.transit.StopTime;
 import models.transit.Trip;
 import models.transit.TripPattern;
 import models.transit.TripPatternStop;
@@ -155,11 +161,40 @@ public class Bootstrap extends Controller {
     		Collections.sort(tpStops);
     		
     		Integer stopSequence = 1;
-    		
+    		    		
     		for(TripPatternStop tpStop : tpStops ) {
     			tpStop.stopSequence = stopSequence;
     			tpStop.save();
     			stopSequence++;
+    		}
+    		
+    		List<Trip> trips = Trip.find("pattern = ?", tp).fetch();
+    		for (Trip trip : trips) {
+    		    // make sure that trip and pattern are compatible
+    		    List<StopTime> sts = trip.getStopTimes();
+    		    
+                    ListIterator<TripPatternStop> psi = tpStops.listIterator();
+    		    
+    		    TripPatternStop current;
+    		    for (StopTime st : trip.getStopTimes()) {
+    		        // always advance at least one stop, to handle patterns with repeated stops, which is
+    		        // sadly common in data out there.
+    		        // Advance more than one stop if stop ID doesn't match, which implies a skipped stop.
+    		        do {
+    		            try {
+                                current = psi.next();
+    		            } catch (NoSuchElementException e) {
+    		                Logger.error("Trip %s is incompatible with pattern %s!", trip, tp);
+    		                error();
+    		                return;
+    		            }
+    		        } while (!st.stop.id.equals(current.stop.id));
+    		        
+    		        st.stopSequence = current.stopSequence;
+    		        // it would be nice to be able to rely on st.patternStop, but it gets lost on import. recreate it.
+    		        st.patternStop = current;
+    		        st.save();
+    		    }
     		}
     	}
     	

@@ -2,7 +2,10 @@ package controllers;
 
 import play.*;
 import play.i18n.Lang;
+import play.i18n.Messages;
 import play.mvc.*;
+import play.mvc.Http.Request;
+import play.mvc.Scope.Session;
 import utils.tags.TimeExtensions;
 
 import java.io.File;
@@ -45,6 +48,15 @@ import models.transit.TripPatternStop;
 
 @With(Secure.class)
 public class Application extends Controller {
+    /**
+     * Map OAuth keys to the dates they were created, so that old sessions can be expired.
+     */
+    public static HashMap<String, Long> oauthKeys = new HashMap<String, Long>();
+    
+    /**
+     * Map OAuth keys to the agencies they have access to. If a key does not appear in this list it has access to all agencies.
+     */
+    public static HashMap<String, List<Long>> oauthAgencies = new HashMap<String, List<Long>>();
 
     @Before
     static void initSession() throws Throwable {
@@ -68,12 +80,27 @@ public class Application extends Controller {
             
             renderArgs.put("agencies", agencies);
         }
+    	else if (checkOAuth(request, session)) {
+    	    renderArgs.put("user", Messages.get("secure.anonymous"));
+    	    
+    	    String token = getToken(request, session);
+    	    
+    	    if (oauthAgencies.containsKey(token)) {
+    	        List<Long> agencyIds = oauthAgencies.get(token);
+    	        for (Long id : agencyIds) {
+    	            agencies.add((Agency) Agency.findById(id));
+    	        }
+    	    }
+    	    else {
+    	        agencies = Agency.find("order by name").fetch();
+    	    }
+    	}
         else {
 
         	if(Account.count() == 0)
         		Bootstrap.index();
         	else
-        		Secure.login();
+        	    Secure.login();
         }
 
         if(session.get("agencyId") == null) {
@@ -89,6 +116,43 @@ public class Application extends Controller {
         } 
     }
 
+    /**
+     * Check if a user has access via OAuth.
+     * @param session
+     * @return
+     */
+    public static boolean checkOAuth(Request request, Session session) {
+        if (!"true".equals(Play.configuration.getProperty("application.oauthEnabled")))
+            return false;
+        
+        String token = getToken(request, session);
+        
+        if (token == null)
+            return false;
+        
+        // check if the token is valid
+        long now = new Date().getTime();
+        long timeout = Long.parseLong(Play.configuration.getProperty("application.oauthKeyTimeout"));
+        return oauthKeys.containsKey(token) && oauthKeys.get(token) + timeout > now;           
+    }
+
+    /**
+     * Get the OAuth token from the request/session.
+     * Note that we support OAuth tokens in Authorization headers, or in the session, or in the GET param oauth_token.
+     */
+    public static String getToken (Request request, Session session) {
+        if (session != null && session.get("oauth_token") != null)
+            return session.get("oauth_token");
+        else if (request.params.get("oauth_token") != null)
+            return request.params.get("oauth_token");
+        else if (request.headers.get("Authorization") != null) {
+            String header = request.headers.get("Authorization").toString();
+            if (header.startsWith("Bearer "))
+                return header.replace("Bearer ", "");
+        }
+        return null;
+    }
+    
     public static void changePassword(String currentPassword, String newPassword) {
         
         if(Security.isConnected())
@@ -232,7 +296,7 @@ public class Application extends Controller {
      * @param calendarTo
      */
     public static void createGtfs(List<Long> agencySelect, Long calendarFrom, Long calendarTo) {
-        Export.fetchGtfs(agencySelect, calendarFrom, calendarTo);
+        Integrations.fetchGtfs(agencySelect, calendarFrom, calendarTo);
     }
     
     public static void exportGis(List<Long> agencySelect) {

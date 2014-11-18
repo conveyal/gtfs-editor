@@ -3,18 +3,25 @@ package controllers;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Date;
+import java.util.UUID;
+
 import play.Play;
 import play.mvc.*;
+import play.mvc.Http.Request;
 import play.data.validation.*;
 import play.libs.*;
 import play.utils.*;
 
 public class Secure extends Controller {
 
-    @Before(unless={"login", "authenticate", "logout"})
+    @Before(unless={"login", "authenticate", "logout", "get_token"})
     static void checkAccess() throws Throwable {
-        // Authent
-        if(!session.contains("username")) {
+        // Authent, or OAuth
+        if (request.params.get("oauth_token") != null)
+            // persist the token
+            session.put("oauth_token", request.params.get("oauth_token"));
+        
+        if(!session.contains("username") && !Application.checkOAuth(request, session)) {
             flash.put("url", "GET".equals(request.method) ? request.url : Play.ctxPath + "/"); // seems a good default
             login();
         }
@@ -103,6 +110,25 @@ public class Secure extends Controller {
         flash.success("secure.logout");
         login();
     }
+    
+    // Get an OAuth token, possibly with particular agencies
+    public static void get_token (@Required String client_id, @Required String client_secret, List<Long> agency) {
+        // check if the client secret and client ID are correct, and if OAuth is enabled
+        if (!"true".equals(Play.configuration.getProperty("application.oauthEnabled"))) {
+            badRequest();
+            return;
+        } else if (client_id.equals(Play.configuration.getProperty("application.managerId")) &&
+                client_secret.equals(Play.configuration.getProperty("application.managerSecret"))) {
+            // create an OAuth key
+            String token = UUID.randomUUID().toString().replace("-", "").substring(0, 16);
+            Application.oauthKeys.put(token, new Date().getTime());
+            
+            if (agency != null)
+                Application.oauthAgencies.put(token, agency);
+            
+            renderText(token);
+        }
+    }
 
     // ~~~ Utils
 
@@ -161,7 +187,7 @@ public class Secure extends Controller {
         }
 
         /**
-         * Indicate if a user is currently connected
+         * Indicate if a (non-anonymous) user is currently connected
          * @return  true if the user is connected
          */
         static boolean isConnected() {

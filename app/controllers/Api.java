@@ -20,7 +20,7 @@ import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
-import  org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.geotools.geometry.jts.JTS;
 import org.opengis.referencing.operation.MathTransform;
 
@@ -53,7 +53,7 @@ public class Api extends Controller {
 	@Before
 	static void initSession() throws Throwable {
 		 
-		if(!Security.isConnected())
+		if(!Security.isConnected() && !Application.checkOAuth(request, session))
 			Secure.login();
 		
 	}
@@ -84,7 +84,8 @@ public class Api extends Controller {
                     notFound();
             }
             else {
-                renderJSON(Api.toJson(Agency.find("order by name").fetch(), false));
+                List<Agency> a = Agency.find("order by name").fetch();
+                renderJSON(Api.toJson(a, false));
             }
         } catch (Exception e) {
             e.printStackTrace();

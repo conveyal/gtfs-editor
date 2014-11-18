@@ -8,6 +8,8 @@ secure.remember=Remember me
 secure.signin=Sign in
 secure.error=Unknown username or password.
 secure.logout=You have been logged out.
+# for OAuth'ed users coming from Data Manager
+secure.anonymous=Anonymous user
 
 
 application.name=Transit Database
