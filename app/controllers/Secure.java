@@ -19,7 +19,8 @@ public class Secure extends Controller {
     @Before(unless={"login", "authenticate", "logout", "get_token"})
     static void checkAccess() throws Throwable {
         // Authent, or OAuth
-        if (request.params.get("oauth_token") != null)
+        // don't persist an OAuth key if the user is authenticated
+        if (request.params.get("oauth_token") != null && !session.contains("username"))
             // persist the token
             session.put("oauth_token", request.params.get("oauth_token"));
         
