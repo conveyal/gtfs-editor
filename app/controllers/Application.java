@@ -48,16 +48,6 @@ import models.transit.TripPatternStop;
 
 @With(Secure.class)
 public class Application extends Controller {
-    /**
-     * Map OAuth keys to the dates they were created, so that old sessions can be expired.
-     */
-    public static HashMap<String, Long> oauthKeys = new HashMap<String, Long>();
-    
-    /**
-     * Map OAuth keys to the agencies they have access to. If a key does not appear in this list it has access to all agencies.
-     */
-    public static HashMap<String, List<Long>> oauthAgencies = new HashMap<String, List<Long>>();
-
     @Before
     static void initSession() throws Throwable {
 
@@ -83,17 +73,16 @@ public class Application extends Controller {
     	else if (checkOAuth(request, session)) {
     	    renderArgs.put("user", Messages.get("secure.anonymous"));
     	    
-    	    String token = getToken(request, session);
+    	    OAuthToken token = getToken(request, session);
     	    
-    	    if (oauthAgencies.containsKey(token)) {
-    	        List<Long> agencyIds = oauthAgencies.get(token);
-    	        for (Long id : agencyIds) {
-    	            agencies.add((Agency) Agency.findById(id));
-    	        }
+    	    if (token.agency != null) {
+    	        agencies.add(token.agency); 
     	    }
     	    else {
     	        agencies = Agency.find("order by name").fetch();
     	    }
+    	    
+    	    renderArgs.put("agencies", agencies);
     	}
         else {
 
@@ -125,7 +114,7 @@ public class Application extends Controller {
         if (!"true".equals(Play.configuration.getProperty("application.oauthEnabled")))
             return false;
         
-        String token = getToken(request, session);
+        OAuthToken token = getToken(request, session);
         
         if (token == null)
             return false;
@@ -133,24 +122,31 @@ public class Application extends Controller {
         // check if the token is valid
         long now = new Date().getTime();
         long timeout = Long.parseLong(Play.configuration.getProperty("application.oauthKeyTimeout"));
-        return oauthKeys.containsKey(token) && oauthKeys.get(token) + timeout > now;           
+        return token.creationDate + timeout > now;           
     }
 
     /**
      * Get the OAuth token from the request/session.
      * Note that we support OAuth tokens in Authorization headers, or in the session, or in the GET param oauth_token.
      */
-    public static String getToken (Request request, Session session) {
-        if (session != null && session.get("oauth_token") != null)
-            return session.get("oauth_token");
-        else if (request.params.get("oauth_token") != null)
-            return request.params.get("oauth_token");
+    public static OAuthToken getToken (Request request, Session session) {
+        String token = null;
+        if (request.params.get("oauth_token") != null)
+            token = request.params.get("oauth_token");
         else if (request.headers.get("Authorization") != null) {
             String header = request.headers.get("Authorization").toString();
             if (header.startsWith("Bearer "))
-                return header.replace("Bearer ", "");
+                token = header.replace("Bearer ", "");
         }
-        return null;
+        // fall back on the session as a last resort, since it may be stale
+        else if (session != null && session.get("oauth_token") != null)
+            token = session.get("oauth_token");
+        
+        if (token == null)
+            return null;
+        
+        else
+            return OAuthToken.find("token = ?", token).first();
     }
     
     public static void changePassword(String currentPassword, String newPassword) {

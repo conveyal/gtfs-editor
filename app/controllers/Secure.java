@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Date;
 import java.util.UUID;
 
+import models.OAuthToken;
+import models.transit.Agency;
 import play.Play;
 import play.mvc.*;
 import play.mvc.Http.Request;
@@ -112,21 +114,24 @@ public class Secure extends Controller {
     }
     
     // Get an OAuth token, possibly with particular agencies
-    public static void get_token (@Required String client_id, @Required String client_secret, List<Long> agency) {
+    public static void get_token (@Required String client_id, @Required String client_secret, Long agency) {
         // check if the client secret and client ID are correct, and if OAuth is enabled
         if (!"true".equals(Play.configuration.getProperty("application.oauthEnabled"))) {
             badRequest();
-            return;
         } else if (client_id.equals(Play.configuration.getProperty("application.managerId")) &&
                 client_secret.equals(Play.configuration.getProperty("application.managerSecret"))) {
             // create an OAuth key
-            String token = UUID.randomUUID().toString().replace("-", "").substring(0, 16);
-            Application.oauthKeys.put(token, new Date().getTime());
+            OAuthToken token = new OAuthToken();
+            token.token = UUID.randomUUID().toString().replace("-", "").substring(0, 16);
+            token.creationDate = new Date().getTime();
             
-            if (agency != null)
-                Application.oauthAgencies.put(token, agency);
+            if (agency != null) {
+                token.agency = Agency.findById(agency);
+            }
             
-            renderText(token);
+            token.save();
+            
+            renderText(token.token);
         }
     }
 
