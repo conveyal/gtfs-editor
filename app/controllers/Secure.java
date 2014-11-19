@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import models.OAuthToken;
 import models.transit.Agency;
+import play.Logger;
 import play.Play;
 import play.mvc.*;
 import play.mvc.Http.Request;
@@ -133,6 +134,10 @@ public class Secure extends Controller {
             token.save();
             
             renderText(token.token);
+        }
+        else {
+            Logger.info("Invalid client ID or secret");
+            badRequest();
         }
     }
 
