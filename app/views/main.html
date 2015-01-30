@@ -59,7 +59,7 @@ cf = play.Play.configuration
 
               <li class="dropdown">
                 <a href="#" role="button" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-wrench"></i> ${session.agencyName} <b class="caret"></b></a>
-                <ul class="dropdown-menu scrollable-menu" role="menu">
+                <ul class="dropdown-menu" role="menu">
                   #{list items:agencies, as:'agency' }
                     <li><a href="#" class="agency-select" data-agency="${agency.id}"> ${agency.name}</a></li>
                   #{/list}
@@ -96,11 +96,16 @@ cf = play.Play.configuration
 
             </ul>
 
+            <ul class="nav pull-right">
+              <li>
+                <a href="@{'/public/docs/user_guide.pdf'}" target="_blank" role="button">
+                  <i class="icon-question-sign"></i>
+                </a>
+              <li>
+            </ul>
+
 			     <ul class="nav pull-right">
               <li class="dropdown">
-                <a href="#" role="button" class="dropdown-toggle" data-toggle="dropdown">
-                  <i class="icon-globe"></i><b class="caret"></b>
-                </a>
                 <a href="#" role="button" class="dropdown-toggle" data-toggle="dropdown">
                   <i class="icon-globe"></i><b class="caret"></b>
                 </a>
@@ -114,8 +119,8 @@ cf = play.Play.configuration
 
             <ul class="nav pull-right">
               <li class="dropdown">
-                <a href="@{'/public/docs/user_guide.pdf'}" target="_blank" role="button">
-                  <i class="icon-question-sign"></i>
+                <a href="#" role="button" class="dropdown-toggle" data-toggle="dropdown">
+                  <i class="icon-user"></i>&{'nav-bar.user-greeting', user}<b class="caret"></b>
                 </a>
                 <ul class="dropdown-menu" role="menu">
                   <li><a href="@{Application.changePassword}">Change Password</a></li>
