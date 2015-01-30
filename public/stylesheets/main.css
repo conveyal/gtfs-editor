@@ -13,3 +13,9 @@ body {
   right: 25%;
   z-index: 10000;
 }
+
+.scrollable-menu {
+  height: auto;
+  max-height: 400px;
+  overflow-x: hidden;
+}
