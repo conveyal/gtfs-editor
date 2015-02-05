@@ -880,7 +880,12 @@ var GtfsEditor = GtfsEditor || {};
 
       var stop = this.options.stops.get(data.id);
 
-      this.model.tripPatterns.get(selectedPatternId).addStop({stop: stop, defaultTravelTime: this.calcTime(travelTimeString), defaultDwellTime: this.calcTime(dwellTimeString)});
+      this.model.tripPatterns.get(selectedPatternId).addStop({
+        stop: stop,
+        defaultTravelTime: this.calcTime(travelTimeString),
+        defaultDwellTime: this.calcTime(dwellTimeString),
+        timepoint: this.$('#timepoint').is(':checked')
+      });
       this.model.tripPatterns.get(selectedPatternId).save();
 
       this.clearStops();
@@ -933,6 +938,7 @@ var GtfsEditor = GtfsEditor || {};
 
       ps.defaultDwellTime = this.calcTime(form.find('input[name="dwellTime"]').val());
       ps.defaultTravelTime = this.calcTime(form.find('input[name="travelTime"]').val());
+      ps.timepoint = form.find('input[name="timepoint"]').is(':checked');
 
       this.model.tripPatterns.get(selectedPatternId).moveStopTo(ps.stopSequence -1,newSequence -1);
       this.onTripPatternChange();

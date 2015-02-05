@@ -716,6 +716,10 @@
     <p>
       <input id="travel-time" name="travelTime" class="input" type="text" placeholder="&{'route.trip-pattern-travel-time'}" value="{{travelTime}}">
       <input id="dwell-time" name="dwellTime" class="input" type="text" placeholder="&{'route.trip-pattern-dwell-time'}" value="{{dwellTime}}">
+      <label>
+        <input id="timepoint" name="timepoint" class="input" type="checkbox" />
+        &{'route.trip-pattern.timepoint'}
+      </label>
     </p>
     <p>
       <button type="submit" class="btn btn-primary trippattern-stop-add-btn">&{'shared.button.add'}</button>
@@ -749,6 +753,10 @@
           <p>
             <input id="travel-time" name="travelTime" class="input" type="text" placeholder="&{'route.trip-pattern-travel-time'}" value="{{travelTime}}">
             <input id="dwell-time" name="dwellTime" class="input" type="text" placeholder="&{'route.trip-pattern-dwell-time'}" value="{{dwellTime}}">
+            <label>
+              <input id="timepoint" name="timepoint" class="input" type="checkbox" {{#patternStop.timepoint}}checked{{/patternStop.timepoint}} />
+              &{'route.trip-pattern.timepoint'}
+            </label>
           </p>
           <p>
             <button type="button" class="trippattern-stop-update-btn btn btn-primary">&{'shared.button.update'}</button>

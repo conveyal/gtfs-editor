@@ -43,7 +43,13 @@ public class TripPatternStop extends Model implements Comparable<TripPatternStop
 
 	public Integer defaultTravelTime;
 	public Integer defaultDwellTime;
-
+	
+	/** 
+	 * Is this stop a timepoint?
+	 * 
+	 * If null, no timepoint information will be exported for this stop.
+	 */
+	public Boolean timepoint;
 
 	public TripPatternStop()
 	{
