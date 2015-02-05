@@ -1,20 +1,23 @@
 package models.transit;
 
-
-
 import java.math.BigInteger;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.ManyToOne;
 import javax.persistence.Query;
+import javax.persistence.Transient;
 
 import com.mysql.jdbc.log.Log;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -22,13 +25,13 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.PrecisionModel;
 
-import org.codehaus.groovy.tools.shell.util.Logger;
 import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.hibernate.annotations.Type;
 
+import play.Logger;
 import play.db.jpa.Model;
 
 @JsonIgnoreProperties({"entityId", "persistent"})
@@ -247,4 +250,36 @@ public class Stop extends Model {
 
         return patterns;
     }
+
+	public com.conveyal.gtfs.model.Stop toGtfs() {
+		com.conveyal.gtfs.model.Stop ret = new com.conveyal.gtfs.model.Stop();
+		ret.stop_id = getGtfsId();
+		ret.stop_code = stopCode;
+		ret.stop_desc = stopDesc;
+		// we can't use this.location directly, because Hibernate masks that field with the getter...
+		Hashtable<String, Double> loc = getLocation();
+		ret.stop_lat = loc.get("lat");
+		ret.stop_lon = loc.get("lng");
+		
+		if (stopName != null && !stopName.isEmpty())
+			ret.stop_name = stopName;
+		else
+			ret.stop_name = id.toString();
+		
+		try {
+			ret.stop_url = new URL(stopUrl);
+		} catch (MalformedURLException e) {
+			Logger.warn("Unable to coerce stop URL {} to URL", stopUrl);
+			ret.stop_url = null;
+		}
+		
+		return ret;
+	}
+
+	public String getGtfsId() {
+		if(gtfsStopId != null && !gtfsStopId.isEmpty())
+			return gtfsStopId;
+		else
+			return "STOP_" + id.toString();
+	}
 }

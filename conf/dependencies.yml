@@ -12,6 +12,7 @@ require:
     - org.geotools -> gt-geojson 8.0-M4
     - org.codehaus.jackson -> jackson-core-asl 1.9.5
     - org.codehaus.jackson -> jackson-mapper-asl 1.9.5
+    - org.opentripplanner -> otp 1.0.0-SNAPSHOT
     
     
 repositories:
@@ -25,3 +26,9 @@ repositories:
         root: "http://download.osgeo.org/webdav/geotools/"
         contains:
             - org.geotools -> *
+
+    - conveyal:
+        type: iBiblio
+        root: "http://maven.conveyal.com/"
+        contains:
+            - org.opentripplanner -> *

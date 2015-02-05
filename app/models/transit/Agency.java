@@ -1,5 +1,7 @@
 package models.transit;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Set;
 
 import javax.persistence.Entity;
@@ -11,6 +13,7 @@ import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.hibernate.annotations.Type;
 
+import play.Logger;
 import play.db.jpa.Model;
 
 @JsonIgnoreProperties({"entityId", "persistent"})
@@ -62,4 +65,25 @@ public class Agency extends Model {
         this.phone = phone;
     }
 
+	public com.conveyal.gtfs.model.Agency toGtfs() {
+		com.conveyal.gtfs.model.Agency ret = new com.conveyal.gtfs.model.Agency();
+		
+		String gtfsAgencyId = id.toString();
+		if(this.gtfsAgencyId != null && !this.gtfsAgencyId.isEmpty())
+			gtfsAgencyId = this.gtfsAgencyId;
+		
+		ret.agency_id = gtfsAgencyId;
+		ret.agency_name = name;
+		try {
+			ret.agency_url = new URL(url);
+		} catch (MalformedURLException e) {
+			Logger.warn("Unable to coerce {} to URL", url);
+			ret.agency_url = null;
+		}
+		ret.agency_timezone = timezone;
+		ret.agency_lang = lang;
+		ret.agency_phone = phone;
+		
+		return ret;
+	}
 }

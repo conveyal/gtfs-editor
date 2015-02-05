@@ -16,8 +16,10 @@ import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.hibernate.annotations.Type;
 
-import play.db.jpa.Model;
+import com.conveyal.gtfs.model.Calendar;
+import com.conveyal.gtfs.model.Service;
 
+import play.db.jpa.Model;
 import models.gtfs.GtfsSnapshot;
 
 @JsonIgnoreProperties({"entityId", "persistent"})
@@ -132,5 +134,28 @@ public class ServiceCalendar extends Model {
 		
 		return nextId;
     }
+
+    /**
+     * Convert this service to a GTFS service calendar.
+     * @param startDate int, in GTFS format: YYYYMMDD
+     * @param endDate int, again in GTFS format 
+     */
+	public Service toGtfs(int startDate, int endDate) {
+		Service ret = new Service(getId().toString());
+		ret.calendar = new Calendar();
+		ret.calendar.service = ret;
+		ret.calendar.start_date = startDate;
+		ret.calendar.end_date = endDate;
+		ret.calendar.sunday     = sunday    ? 1 : 0;
+		ret.calendar.monday     = monday    ? 1 : 0;
+		ret.calendar.tuesday    = tuesday   ? 1 : 0;
+		ret.calendar.wednesday  = wednesday ? 1 : 0;
+		ret.calendar.thursday   = thursday  ? 1 : 0;
+		ret.calendar.friday     = friday    ? 1 : 0;
+		ret.calendar.saturday   = saturday  ? 1 : 0;
+		
+		// TODO: calendar dates
+		return ret;
+	}
     
 }

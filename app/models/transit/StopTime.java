@@ -111,7 +111,24 @@ public class StopTime extends Model {
         
         return nextId;
     }
-    
+
+	public com.conveyal.gtfs.model.StopTime toGtfs() {
+	    com.conveyal.gtfs.model.StopTime st = new com.conveyal.gtfs.model.StopTime();
+	    st.trip_id = trip.getGtfsId();
+	    st.stop_id = stop.getGtfsId();
+	    st.arrival_time = arrivalTime != null ? arrivalTime : st.INT_MISSING;
+	    st.departure_time = departureTime != null ? departureTime : st.INT_MISSING;
+	    st.pickup_type = pickupType != null ? pickupType.toGtfsValue() : 0;
+	    st.drop_off_type = dropOffType != null ? dropOffType.toGtfsValue() : 0;
+	    st.shape_dist_traveled = shapeDistTraveled;
+	    st.stop_sequence = stopSequence;
+	    
+	    if (patternStop != null && patternStop.timepoint != null)
+	    	st.timepoint = patternStop.timepoint ? 1 : 0;
+	    
+	    return st;
+	}
+
     /*public String getDepartureTimeString()
     {
     	long dateMs = departureTime * 1000;

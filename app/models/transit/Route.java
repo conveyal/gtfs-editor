@@ -1,6 +1,8 @@
 package models.transit;
 
 import java.math.BigInteger;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -21,6 +23,7 @@ import org.hibernate.annotations.Type;
 
 import com.vividsolutions.jts.geom.MultiLineString;
 
+import play.Logger;
 import play.db.jpa.Model;
 
 @JsonIgnoreProperties({"entityId", "persistent"})
@@ -215,5 +218,33 @@ public class Route extends Model {
 
         return nextId;
     }
+
+	public com.conveyal.gtfs.model.Route toGtfs(com.conveyal.gtfs.model.Agency a) {
+		com.conveyal.gtfs.model.Route ret = new com.conveyal.gtfs.model.Route();
+		ret.agency = a;
+		ret.route_color = routeColor;
+		ret.route_desc = routeDesc;
+		ret.route_id = getGtfsId();
+		ret.route_long_name = routeLongName;
+		ret.route_short_name = routeShortName;
+		ret.route_text_color = routeTextColor;
+		// TODO also handle HVT types here
+		ret.route_type = mapGtfsRouteType(routeType);
+		try {
+			ret.route_url = new URL(routeUrl);
+		} catch (MalformedURLException e) {
+			Logger.warn("Cannot coerce route URL {} to URL", routeUrl);
+			ret.route_url = null;
+		}
+		
+		return ret;
+	}
+
+	public String getGtfsId() {
+		if(gtfsRouteId != null && !gtfsRouteId.isEmpty())
+			return gtfsRouteId;
+		else
+			return id.toString();
+	}
 
 }

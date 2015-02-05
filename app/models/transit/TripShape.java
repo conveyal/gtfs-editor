@@ -12,6 +12,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.ManyToOne;
 import javax.persistence.Query;
 
+import com.conveyal.gtfs.model.Shape;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
@@ -26,7 +27,7 @@ import utils.PolylineEncoder;
 
 @Entity
 public class TripShape extends Model {
-	
+	/** unused during export */
     public String gtfsShapeId;
     public String description;
     
@@ -123,5 +124,24 @@ public class TripShape extends Model {
         
         return nextId;
     }
+
+	public Shape[] toGtfs() {
+		Coordinate[] coords = this.shape.getCoordinates();
+		Shape[] ret = new Shape[coords.length];
+		
+		for (int i = 0; i < coords.length; i++) {
+			// TODO: shape_dist_traveled
+			ret[i] = new Shape(getGtfsId(), coords[i].y, coords[i].x, i, Double.NaN);
+		}
+		
+		return ret;
+	}
+
+	public String getGtfsId() {
+		if (gtfsShapeId != null && !gtfsShapeId.isEmpty())
+			return gtfsShapeId;
+		else
+			return id.toString();
+	}
    
 }
