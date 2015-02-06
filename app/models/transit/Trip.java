@@ -10,6 +10,7 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.ManyToOne;
 import javax.persistence.Query;
+import javax.persistence.Transient;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
@@ -153,6 +154,8 @@ Query q;
     	return stopTimes;
     }
 
+    @Transient
+    @JsonIgnore
     public String getGtfsId () {
 		if (gtfsTripId != null && !gtfsTripId.isEmpty())
 			return gtfsTripId;

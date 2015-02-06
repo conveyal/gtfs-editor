@@ -11,8 +11,10 @@ import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.ManyToOne;
 import javax.persistence.Query;
+import javax.persistence.Transient;
 
 import com.conveyal.gtfs.model.Shape;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
@@ -137,6 +139,8 @@ public class TripShape extends Model {
 		return ret;
 	}
 
+	@Transient
+	@JsonIgnore
 	public String getGtfsId() {
 		if (gtfsShapeId != null && !gtfsShapeId.isEmpty())
 			return gtfsShapeId;

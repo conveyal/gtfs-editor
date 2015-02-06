@@ -12,6 +12,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Entity;
 import javax.persistence.Query;
 import javax.persistence.Column;
+import javax.persistence.Transient;
 
 import models.gis.GisRoute;
 import models.gis.GisUpload;
@@ -21,6 +22,7 @@ import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.hibernate.annotations.Type;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.vividsolutions.jts.geom.MultiLineString;
 
 import play.Logger;
@@ -240,6 +242,8 @@ public class Route extends Model {
 		return ret;
 	}
 
+	@Transient
+	@JsonIgnore
 	public String getGtfsId() {
 		if(gtfsRouteId != null && !gtfsRouteId.isEmpty())
 			return gtfsRouteId;

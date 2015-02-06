@@ -276,6 +276,8 @@ public class Stop extends Model {
 		return ret;
 	}
 
+	@Transient
+	@JsonIgnore
 	public String getGtfsId() {
 		if(gtfsStopId != null && !gtfsStopId.isEmpty())
 			return gtfsStopId;
