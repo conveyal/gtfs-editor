@@ -545,8 +545,51 @@ G.Trip = Backbone.Model.extend({
 
       this.fetchTrips(deleteTripModels)
     }
+  });
 
+  /** Represents an exception to the schedule */
+  G.ScheduleException = Backbone.Model.extend({
+    defaults: {
+      agency: null,
+      exemplar: null,
+      dates: [],
+      customSchedule: []
+    },
 
+    /** add a javascript date object to the effective dates of this */
+    addDate: function (date) {
+      var dates = this.get('dates');
+
+      var foundDate = false;
+
+      _.each(dates, function (rawDate) {
+        var exDate = new Date(rawDate);
+        if (exDate.getUTCDate() == date.getUTCDate() && exDate.getUTCMonth() == date.getUTCMonth() &&
+          exDate.getUTCFullYear() == date.getUTCFullYear())
+          foundDate = true;
+      });
+
+      if (!foundDate) {
+        dates.push(date.getTime());
+        this.set('dates', dates);
+      }
+    },
+
+    removeDate: function (year, month, dayOfMonth) {
+      var dates = _.filter(this.get('dates'), function (epoch) {
+        var date = new Date(epoch);
+        return date.getUTCFullYear() != year || date.getUTCMonth() != month || date.getUTCDate() != dayOfMonth;
+      });
+
+      this.set('dates', dates);
+    },
+
+    urlRoot: G.config.baseUrl + 'api/scheduleexception/'
+  });
+
+  G.ScheduleExceptions = Backbone.Collection.extend({
+    model: G.ScheduleException,
+    url: G.config.baseUrl + 'api/scheduleexception/'
   });
 
 })(GtfsEditor, jQuery);

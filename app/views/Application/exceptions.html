@@ -1,0 +1,90 @@
+#{extends 'main.html' /}
+#{set title:'GTFS Editor | Schedule Exceptions' /}
+
+#{set 'styles'}
+  #{stylesheet 'main.css' /}
+#{/set}
+
+#{set 'scripts'}
+  #{script 'lib/moment.js' /}
+  #{script 'lib/bootstrap-datepicker.js' /}
+
+  #{script 'models.js' /}
+  #{script 'pages/exceptions.js' /}
+#{/set}
+
+
+<div class="row-fluid">
+  <div class="span9">
+    <div id="exceptions"></div>
+  </div>
+</div>
+
+<!-- the list of exceptions -->
+<script id="exception-list-tpl" type="text/html">
+  <ul>
+    {{#exceptions}}
+      <li><a href="#edit/{{id}}">{{name}}</a></li>
+    {{/exceptions}}
+  </ul>
+
+  <a href="#new" class="btn btn-default">&{'exception.new'}</button>
+</script>
+
+<!-- the exception editor -->
+<script id="exception-edit-tpl" type="text/html">
+  <div class="form-group">
+    <label for="exception-name">&{'exception.name'}</label>
+    <input class="form-control" type="text" id="exception-name" value="{{name}}" />
+  </div>
+
+  <label for="exception-date">&{'exception.dates'}</label>
+  <div class="form-inline">
+      <div class="input-append date" id="exception-date">
+        <input size="96" type="text" />
+        <span class="add-on"><i class="icon-th"></i></span>
+      </div>
+
+      <button class="btn btn-default add-date"><i class="icon-plus"></i> &{'exception.add-date'}</button>
+  </div>
+
+  <div id="exception-date-list"></div>
+
+  <div class="form-group">
+    <label for="exception-exemplar">&{'exception.exemplar'}</label>
+    <select id="exception-exemplar" class="form-control">
+      <option value="MONDAY">&{'shared.monday'}</option>
+      <option value="TUESDAY">&{'shared.tuesday'}</option>
+      <option value="WEDNESDAY">&{'shared.wednesday'}</option>
+      <option value="THURSDAY">&{'shared.thursday'}</option>
+      <option value="FRIDAY">&{'shared.friday'}</option>
+      <option value="SATURDAY">&{'shared.saturday'}</option>
+      <option value="SUNDAY">&{'shared.sunday'}</option>
+      <option value="NO_SERVICE">&{'exception.no_service'}</option>
+      <option value="CUSTOM">&{'exception.custom'}</option>
+    </select>
+
+    <div class="form-group hidden" id="custom-schedule-container">
+      <label for="custom-schedule">&{'exception.custom-schedule'}</label>
+      {{#calendars}}
+        <label>
+          <input type="checkbox" name="custom-schedule" value="{{id}}" />
+          {{description}}
+        </label>
+      {{/calendars}}
+    </div>
+  </div>
+
+  <button class="btn btn-default save">&{'shared.button.save'}</button>
+</script>
+
+<script id="exception-date-list-tpl" type="text/html">
+  <ul>
+    {{#dates}}
+      <li data-month="{{month}}" data-year="{{year}}" data-date="{{date}}">
+        {{renderedDate}}
+        <a href="#" class="remove-date" role="button" title="&{'exception.remove-date'}">&times;</a>
+      </li>
+    {{/dates}}
+  </ul>
+</script>

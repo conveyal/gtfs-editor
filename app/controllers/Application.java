@@ -757,6 +757,9 @@ public class Application extends Controller {
 	   	ok();
     }
     
-    
+    /** schedule exceptions page */
+    public static void exceptions () {
+    	render();
+    }
 
 }

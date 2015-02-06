@@ -109,7 +109,18 @@ shared.attribute.driver=Must coordinate with driver
 
 shared.explore-search-routes=Explore/Search Routes
 shared.new-route=New Route
+shared.schedule-exceptions=Manage Schedule Exceptions
 
+# /exceptions
+exception.add-date=Add date
+exception.remove-date=Remove date
+exception.name=Exception name
+exception.no_service=No service
+exception.custom=Custom schedule
+exception.dates=On these dates
+exception.exemplar=run the following schedule
+exception.custom-schedule=run the following calendars
+exception.new=New exception
 
 # /index
 

@@ -68,6 +68,12 @@ POST    /api/trip/                          	Api.createTrip
 PUT     /api/trip/{id}                     		Api.updateTrip
 DELETE  /api/trip/{id}                      	Api.deleteTrip
 
+GET     /api/scheduleexception/?              Api.getScheduleException
+GET     /api/scheduleexception/{exceptionId}  Api.getScheduleException
+POST    /api/scheduleexception/?              Api.createScheduleException
+PUT     /api/scheduleexception/{id}           Api.updateScheduleException
+DELETE  /api/scheduleexception/{id}           Api.deleteScheduleException
+
 
 # Ignore favicon requests
 GET     /favicon.ico                            404

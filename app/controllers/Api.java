@@ -38,6 +38,7 @@ import models.*;
 import models.transit.Agency;
 import models.transit.Route;
 import models.transit.RouteType;
+import models.transit.ScheduleException;
 import models.transit.ServiceCalendar;
 import models.transit.Stop;
 import models.transit.StopTime;
@@ -610,13 +611,17 @@ public class Api extends Controller {
     }
 
     public static void deleteTripPattern(Long id) {
-        if(id == null)
+        if(id == null) {
             badRequest();
+            return;
+        }
 
         TripPattern tripPattern = TripPattern.findById(id);
 
-        if(tripPattern == null)
+        if(tripPattern == null) {
             badRequest();
+            return;
+        }
 
         tripPattern.delete();
        	
@@ -678,8 +683,10 @@ public class Api extends Controller {
         try {
             cal = mapper.readValue(params.get("body"), ServiceCalendar.class);
 
-            if(Agency.findById(cal.agency.id) == null)
+            if(Agency.findById(cal.agency.id) == null) {
                 badRequest();
+                return;
+            }
 
             cal.save();
 
@@ -704,8 +711,10 @@ public class Api extends Controller {
         try {
         	cal = mapper.readValue(params.get("body"), ServiceCalendar.class);
 
-            if(cal.id == null || ServiceCalendar.findById(cal.id) == null)
+            if(cal.id == null || ServiceCalendar.findById(cal.id) == null) {
                 badRequest();
+                return;
+            }
 
             // check if gtfsAgencyId is specified, if not create from DB id
             if(cal.gtfsServiceId == null)
@@ -933,5 +942,77 @@ public class Api extends Controller {
         ok();
     }
 
-
+    // ************ schedule exception controllers ***************
+    
+    /** Get all of the schedule exceptions for an agency */
+    public static void getScheduleException (Long exceptionId, Long agencyId) {
+    	try {
+    		if (agencyId != null) {
+    			Agency agency = Agency.findById(agencyId);
+    			List<ScheduleException> exceptions = ScheduleException.find("agency = ?", agency).fetch();
+    	
+    			renderJSON(Api.toJson(exceptions, true));
+    		}
+    		else {
+    			ScheduleException e = ScheduleException.findById(exceptionId);
+    			if (e == null) {
+    				notFound();
+    				return;
+    			}
+    			
+    			renderJSON(Api.toJson(e, false));    				
+    		}
+    	} catch (Exception e) {
+    		e.printStackTrace();
+    		badRequest();
+    	}
+    }
+    
+    public static void createScheduleException () {
+    	try {
+			ScheduleException ex = mapper.readValue(params.get("body"), ScheduleException.class);
+			
+			if (Agency.findById(ex.agency.id) == null) {
+				badRequest();
+				return;
+			}
+			
+			ex.save();
+			
+			renderJSON(Api.toJson(ex, false));			
+		} catch (Exception e) {
+			e.printStackTrace();
+			badRequest();
+		}    	
+    }
+    
+    public static void updateScheduleException () {
+    	try {
+			ScheduleException ex = mapper.readValue(params.get("body"), ScheduleException.class);
+			
+			if (ex.id == null || ScheduleException.findById(ex.id) == null) {
+				badRequest();
+				return;
+			}
+			
+			ScheduleException updated = ScheduleException.em().merge(ex);
+			updated.save();
+			
+			renderJSON(Api.toJson(updated, false));
+    	} catch (Exception e) {
+    		e.printStackTrace();
+    		badRequest();
+    	}
+    }
+    
+    public static void deleteScheduleException () {
+    	try {
+			ScheduleException ex = mapper.readValue(params.get("body"), ScheduleException.class);			
+			ScheduleException.<ScheduleException>findById(ex.id).delete();
+			ok();
+    	} catch (Exception e) {
+    		e.printStackTrace();
+    		badRequest();
+    	}
+    }
 }
