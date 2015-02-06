@@ -167,7 +167,7 @@ Query q;
 		ret.route = route;
 		ret.trip_id = getGtfsId();
 		ret.service = service;
-		ret.shape_id = shape.getGtfsId();
+		ret.shape_id = shape == null ? null : shape.getGtfsId();
 		ret.trip_headsign = tripHeadsign;
 		ret.trip_short_name = tripShortName;
 		ret.direction_id = tripDirection == tripDirection.A ? 0 : 1;

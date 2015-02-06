@@ -120,7 +120,7 @@ public class StopTime extends Model {
 	    st.departure_time = departureTime != null ? departureTime : st.INT_MISSING;
 	    st.pickup_type = pickupType != null ? pickupType.toGtfsValue() : 0;
 	    st.drop_off_type = dropOffType != null ? dropOffType.toGtfsValue() : 0;
-	    st.shape_dist_traveled = shapeDistTraveled;
+	    st.shape_dist_traveled = shapeDistTraveled == null ? Double.NaN : shapeDistTraveled;
 	    st.stop_sequence = stopSequence;
 	    
 	    if (patternStop != null && patternStop.timepoint != null)
