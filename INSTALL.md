@@ -1,7 +1,7 @@
 Installation Instructions
 =========================
 
-The following instructions assume installation on an Ubuntu server with sudo permissions. These steps assume Ubuntu 12.04.5 LTS, if using different version of Ubuntu the available versions of software may change requiring slight modifications to these steps. 
+The following instructions assume installation on an Ubuntu server with sudo permissions. These steps assume Ubuntu 12.04.5 LTS, if using different version of Ubuntu the available versions of software may change requiring slight modifications to these steps.
 
 Install database
 
@@ -9,7 +9,7 @@ Install database
 	sudo apt-get install postgresql-9.1-postgis
 
 (for Ubuntu 14.04 LTS, install `postgresql-9.3` and `postgresql-9.3-postgis-2.1` instead)
-	
+
 Install zip and git utilities (if not already installed)
 
 	sudo apt-get install zip
@@ -34,7 +34,7 @@ Unzip play framework
 Create database as the postgres user
 
 	sudo su postgres
-	createdb gtfs-editor 
+	createdb gtfs-editor
 
 	psql gtfs-editor < /usr/share/postgresql/9.1/contrib/postgis-1.5/postgis.sql
 
@@ -58,7 +58,7 @@ Change lines referencing local ip4/ip6 access to “trust”:
 	host    all             all    ::1/128           trust
 
 
-Restart database 
+Restart database
 
 	sudo /etc/init.d/postgresql restart
 
@@ -71,13 +71,17 @@ Download gtfs-editor software
 
 
 Configure gtfs-editor application.conf
-	
+
 	cp conf/application.conf.template conf/application.conf
+
+Install dependencies
+
+ [path to play1.2.5]/play dependencies
 
 
 Run application
 
-	[path to play1.2.5]/play run 
+	[path to play1.2.5]/play run
 
 
 Request site via web browser
@@ -85,10 +89,8 @@ Request site via web browser
 http://localhost:9000/
 
 
-Follow setup instructions 
+Follow setup instructions
 
-Troubleshooting: 
+Troubleshooting:
 
 1) Ensure that you have access to port 9000 and that it is allowed through any firewall or routing configuration. For example, Amazon AWS won’t allow access by unless explicitly granted for port 9000.
-
-

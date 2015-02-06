@@ -13,6 +13,7 @@ require:
     - org.codehaus.jackson -> jackson-core-asl 1.9.5
     - org.codehaus.jackson -> jackson-mapper-asl 1.9.5
     - org.opentripplanner -> otp 1.0.0-SNAPSHOT
+    - net.sf.opencsv -> opencsv 2.0
     
     
 repositories:
