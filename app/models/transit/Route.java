@@ -19,10 +19,10 @@ import models.gis.GisUpload;
 import models.transit.RouteType;
 
 import org.codehaus.jackson.annotate.JsonCreator;
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.hibernate.annotations.Type;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.vividsolutions.jts.geom.MultiLineString;
 
 import play.Logger;

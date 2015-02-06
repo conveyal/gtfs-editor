@@ -14,13 +14,13 @@ import javax.persistence.Query;
 import javax.persistence.Transient;
 
 import com.conveyal.gtfs.model.Shape;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.PrecisionModel;
 
 import org.apache.commons.lang.StringUtils;
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.hibernate.annotations.Type;
 
 import play.db.jpa.Model;
