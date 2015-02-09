@@ -44,7 +44,7 @@ public class ScheduleException extends Model {
 	/** The name of this exception, for instance "Presidents' Day" or "Early Subway Shutdowns" */
 	public String name;
 	
-	/** The dates of this service exception */
+	/** The dates of this service exception, stored in GMT */
 	@ElementCollection
 	public List<Date> dates;
 	

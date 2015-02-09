@@ -7,12 +7,14 @@ import java.io.File;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.zip.ZipFile;
 
 import javax.persistence.EntityManager;
@@ -20,6 +22,7 @@ import javax.persistence.Query;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
 import org.mapdb.Fun.Tuple2;
 import org.onebusaway.gtfs.impl.GtfsDaoImpl;
@@ -29,12 +32,16 @@ import org.onebusaway.gtfs.serialization.GtfsReader;
 import org.onebusaway.gtfs.serialization.GtfsWriter;
 
 import com.conveyal.gtfs.GTFSFeed;
+import com.conveyal.gtfs.model.CalendarDate;
 import com.conveyal.gtfs.model.Frequency;
 import com.conveyal.gtfs.model.Service;
 import com.conveyal.gtfs.model.Shape;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import com.mchange.v2.c3p0.impl.DbAuth;
 import com.vividsolutions.jts.geom.Coordinate;
 
+import models.gtfs.GtfsCalendarDate;
 import models.gtfs.GtfsSnapshotExport;
 import models.gtfs.GtfsSnapshotExportStatus;
 import models.gtfs.GtfsSnapshotMerge;
@@ -43,6 +50,7 @@ import models.gtfs.GtfsSnapshotMergeTaskStatus;
 import models.transit.Agency;
 import models.transit.AttributeAvailabilityType;
 import models.transit.Route;
+import models.transit.ScheduleException;
 import models.transit.ServiceCalendar;
 import models.transit.ServiceCalendarDate;
 import models.transit.ServiceCalendarDateType;
@@ -93,18 +101,99 @@ public class ProcessGtfsSnapshotExport extends Job {
 			TLongSet shapeList = new TLongHashSet();
 		
 			
-			for(Agency agency : snapshotExport.agencies)
-			{
+			for (Agency agency : snapshotExport.agencies) {
 				// export agencies
 				com.conveyal.gtfs.model.Agency gtfsAgency = agency.toGtfs();
 				feed.agency.put(gtfsAgency.agency_id, gtfsAgency);
 				
-				// export calendars
+				// export calendars and calendar dates
 				List<ServiceCalendar> calendars = ServiceCalendar.find("agency = ?", agency).fetch();
 				
+				List<ScheduleException> exceptions = ScheduleException.find("agency = ?", agency).fetch();
+				
+				// build up a map of calendars to calendar dates
+				Multimap<ServiceCalendar, CalendarDate> calendarDates = HashMultimap.create();
+				int dateFrom = toGtfsDate(snapshotExport.calendarFrom);
+				int dateTo = toGtfsDate(snapshotExport.calendarTo);
+				
+				for (ScheduleException e : exceptions) {
+					// figure out the service calendars
+					List<ServiceCalendar> runningCalendarList;
+					
+					switch (e.exemplar) {
+					case MONDAY:
+						runningCalendarList = ServiceCalendar.find("agency = ? AND monday = TRUE", agency).fetch();
+						break;
+					case TUESDAY:
+						runningCalendarList = ServiceCalendar.find("agency = ? AND tuesday = TRUE", agency).fetch();
+						break;
+					case WEDNESDAY:
+						runningCalendarList = ServiceCalendar.find("agency = ? AND wednesday = TRUE", agency).fetch();
+						break;
+					case THURSDAY:
+						runningCalendarList = ServiceCalendar.find("agency = ? AND thursday = TRUE", agency).fetch();
+						break;
+					case FRIDAY:
+						runningCalendarList = ServiceCalendar.find("agency = ? AND friday = TRUE", agency).fetch();
+						break;
+					case SATURDAY:
+						runningCalendarList = ServiceCalendar.find("agency = ? AND saturday = TRUE", agency).fetch();
+						break;
+					case SUNDAY:
+						runningCalendarList = ServiceCalendar.find("agency = ? AND sunday = TRUE", agency).fetch();
+						break;
+					case CUSTOM:
+						runningCalendarList = e.customSchedule;
+						break;
+					case NO_SERVICE:
+						runningCalendarList = new ArrayList<ServiceCalendar>(0);
+						break;
+					default:
+						throw new IllegalStateException("Unrecognized service exception type.");
+					}
+					
+					Set<ServiceCalendar> runningCalendars = new HashSet<ServiceCalendar>(runningCalendarList);
+					
+					// make service exceptions for each and every calendar
+					for (ServiceCalendar cal : calendars) {
+						for (Date exceptionDate : e.dates) {
+							int gtfsDate = toGtfsDate(exceptionDate);
+							
+							// don't worry about exceptions outside the time window
+							if (gtfsDate < dateFrom || gtfsDate > dateTo)
+								continue;
+							
+									
+							LocalDate xd = new LocalDate(exceptionDate.getTime(), DateTimeZone.UTC);
+							
+							CalendarDate d = new CalendarDate();
+							d.date = xd;
+							d.exception_type = runningCalendars.contains(cal) ? 1 : 2;
+							
+							// add it to the service exceptions by date map
+							calendarDates.put(cal, d);							
+						}
+					}
+				}
+				
 				for(ServiceCalendar calendar : calendars) {
-					Service service = calendar.toGtfs(toGtfsDate(snapshotExport.calendarFrom), toGtfsDate(snapshotExport.calendarTo));
+					Service service = calendar.toGtfs(dateFrom, dateTo);
+					
+					// export calendar dates relevant to this calendar
+					Collection<CalendarDate> dates = calendarDates.get(calendar);
+					
+					for (CalendarDate date : dates) {
+						date.service = service;
+						
+						// TODO ensure this can't happen upstream
+						if (service.calendar_dates.containsKey(date.date))
+							throw new IllegalStateException("Duplicate calendar dates detected for date " + date);
+						
+						service.calendar_dates.put(date.date, date);
+					}
+					
 					feed.services.put(service.service_id, service);
+
 										
 					List<Trip> trips = Trip.find("serviceCalendar = ?", calendar).fetch();
 					

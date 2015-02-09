@@ -157,5 +157,19 @@ public class ServiceCalendar extends Model {
 		// TODO: calendar dates
 		return ret;
 	}
+	
+	// equals and hashcode use DB ID; they are used to put service calendar dates into a HashMultimap in ProcessGtfsSnapshotExport
+	public int hashCode () {
+		return (int) (long) id;
+	}
     
+	public boolean equals(Object o) {
+		if (o instanceof ServiceCalendar) {
+			ServiceCalendar c = (ServiceCalendar) o;
+			
+			return id.equals(c.id);
+		}
+		
+		return false;
+	}
 }
