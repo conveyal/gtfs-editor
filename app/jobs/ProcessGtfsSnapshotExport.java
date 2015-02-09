@@ -162,7 +162,6 @@ public class ProcessGtfsSnapshotExport extends Job {
 							// don't worry about exceptions outside the time window
 							if (gtfsDate < dateFrom || gtfsDate > dateTo)
 								continue;
-							
 									
 							LocalDate xd = new LocalDate(exceptionDate.getTime(), DateTimeZone.UTC);
 							
@@ -306,12 +305,16 @@ public class ProcessGtfsSnapshotExport extends Job {
 		}
 	}
 
+	public static int toGtfsDate(LocalDate date) {
+		return date.getYear() * 10000 +
+				date.getMonthOfYear() * 100 +
+				date.getDayOfMonth();
+	}
+	
 	public static int toGtfsDate(Date date) {
-		LocalDate d = new LocalDate(date.getTime());
-		return
-				d.getYear() * 10000 +
-				d.getMonthOfYear() * 100 +
-				d.getDayOfMonth();				
+		// Everything is stored in UTC
+		LocalDate d = new LocalDate(date.getTime(), DateTimeZone.UTC);
+		return toGtfsDate(d);			
 	}
 }
 
