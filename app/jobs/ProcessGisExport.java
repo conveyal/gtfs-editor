@@ -25,6 +25,7 @@ import org.geotools.data.FeatureSource;
 import org.geotools.data.FileDataStore;
 import org.geotools.data.FileDataStoreFinder;
 import org.geotools.data.Transaction;
+import org.geotools.data.collection.ListFeatureCollection;
 import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.data.shapefile.ShapefileDataStoreFactory;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -81,8 +82,6 @@ import models.transit.StopTime;
 import models.transit.TripPattern;
 import models.transit.TripShape;
 import models.transit.Trip;
-
-
 import play.Logger;
 import play.Play;
 import play.jobs.Job;
@@ -163,12 +162,17 @@ public class ProcessGisExport extends Job {
                     "agency:String"     
             );
         	
-        	SimpleFeatureCollection collection = FeatureCollections.newCollection();
+        	SimpleFeatureCollection collection;
+        	
+        	SimpleFeatureType collectionType;
 
             SimpleFeatureBuilder featureBuilder = null;
             
+            List<SimpleFeature> features = new ArrayList<SimpleFeature>();
+            
             if(gisExport.type.equals(GisUploadType.STOPS))
             {
+            	collectionType = STOP_TYPE;
             	dataStore.createSchema(STOP_TYPE);
             	featureBuilder = new SimpleFeatureBuilder(STOP_TYPE);
             	
@@ -183,11 +187,12 @@ public class ProcessGisExport extends Job {
                     featureBuilder.add(s.gtfsStopId);
                     featureBuilder.add(s.agency.name);
                     SimpleFeature feature = featureBuilder.buildFeature(null);
-                    collection.add(feature);	
+                    features.add(feature);	
             	}
             }
             else if(gisExport.type.equals(GisUploadType.ROUTES))
             {
+            	collectionType = ROUTE_TYPE;
             	dataStore.createSchema(ROUTE_TYPE);
             	featureBuilder = new SimpleFeatureBuilder(ROUTE_TYPE);
             	
@@ -229,13 +234,15 @@ public class ProcessGisExport extends Job {
 	                    featureBuilder.add(r.routeTextColor);
 	                    featureBuilder.add(r.agency.name);
 	                    SimpleFeature feature = featureBuilder.buildFeature(null);
-	                    collection.add(feature);	
+	                    features.add(feature);	
                 	}
             	}
             }
             else
             	throw new Exception("Unknown export type.");
 
+        	collection = new ListFeatureCollection(collectionType, features);
+            
             Transaction transaction = new DefaultTransaction("create");
 
             String typeName = dataStore.getTypeNames()[0];
