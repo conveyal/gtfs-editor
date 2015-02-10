@@ -113,8 +113,13 @@ public class Route extends Model {
          {
         	 pattern.delete();
          }
-    	
-    	return super.delete();
+         
+         List<Trip> trips = Trip.find("route = ? AND NOT pattern.route = ?", this, this).fetch();
+         
+         if (trips.size() > 0)
+        	 Logger.error("Found %s trips on this route that are not on a pattern of this route", trips.size());
+         
+         return super.delete();
     }
 
     // slightly tricky as we can't match 1:1 against GTFS and TDM route types -- we'll pick or create a type.

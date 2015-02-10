@@ -18,6 +18,9 @@ import org.onebusaway.gtfs.impl.GtfsDaoImpl;
 import org.onebusaway.gtfs.impl.GtfsRelationalDaoImpl;
 import org.onebusaway.gtfs.serialization.GtfsReader;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 import com.mchange.v2.c3p0.impl.DbAuth;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
@@ -59,8 +62,9 @@ public class ProcessGtfsSnapshotMerge extends Job {
 	private Map<BigInteger, ArrayList<StopSequence>> tripStopTimeMap = new HashMap<BigInteger, ArrayList<StopSequence>>();
 	
 	private Map<BigInteger, ArrayList<StopSequence>> tripPatternStopMap = new HashMap<BigInteger, ArrayList<StopSequence>>();
-	private Map<BigInteger,  ArrayList<BigInteger>> tripPatternFirstStopMap = new HashMap<BigInteger, ArrayList<BigInteger>>();
-
+	private Multimap<BigInteger, BigInteger> routeTripPatternMap = HashMultimap.create();
+	private Map<BigInteger, BigInteger> tripRouteIdMap = Maps.newHashMap();
+	
 	private Map<String, List<org.onebusaway.gtfs.model.ShapePoint>> shapePointIdMap = new HashMap<String, List<org.onebusaway.gtfs.model.ShapePoint>>();
 	
 	public ProcessGtfsSnapshotMerge(Long gtfsSnapshotMergeId)
@@ -318,6 +322,8 @@ public class ProcessGtfsSnapshotMerge extends Job {
 	        	BigInteger serviceDateId = serviceDateIdMap.containsKey(gtfsTrip.getServiceId().toString()) ? serviceDateIdMap.get(gtfsTrip.getServiceId().toString()) : null;
 	        	
 	        	BigInteger tripId = Trip.nativeInsert(snapshotMerge.em(), gtfsTrip, routeId, shapeId, serviceId, serviceDateId);
+	        	
+	        	tripRouteIdMap.put(tripId, routeId);
 	        	        		        	
 	        	tripCount++;
 	        	
@@ -383,12 +389,9 @@ public class ProcessGtfsSnapshotMerge extends Job {
 		}
 	}
 
-	private void addTripPatternToLookup(BigInteger patternId, ArrayList<StopSequence> stopTimes)
+	private void addTripPatternToLookup(BigInteger patternId, ArrayList<StopSequence> stopTimes, BigInteger routeId)
 	{
-		if(!tripPatternFirstStopMap.containsKey(stopTimes.get(0).stopId))
-			tripPatternFirstStopMap.put(stopTimes.get(0).stopId, new ArrayList<BigInteger>());
-		
-		tripPatternFirstStopMap.get(stopTimes.get(0).stopId).add(patternId);
+		routeTripPatternMap.put(routeId, patternId);
 		tripPatternStopMap.put(patternId, stopTimes);
 	}
 			
@@ -401,26 +404,26 @@ public class ProcessGtfsSnapshotMerge extends Job {
 			
 			Collections.sort(stopTimes);
 			
-			BigInteger patternId = findExistingPattern(stopTimes);
+			BigInteger patternId = findExistingPattern(stopTimes, tripRouteIdMap.get(tripId));
 			
 			if(patternId == null)
 			{
 				patternId = TripPattern.createFromTrip(em, tripId);
-				addTripPatternToLookup(patternId, stopTimes);
+				addTripPatternToLookup(patternId, stopTimes, tripRouteIdMap.get(tripId));
 			}		
 		
 			Trip.em().createNativeQuery("UPDATE trip SET pattern_id = ? WHERE id = ?").setParameter(1, patternId).setParameter(2,  tripId).executeUpdate();
 		}
 	}
 	
-	private BigInteger findExistingPattern(ArrayList<StopSequence> stopTimes)
+	private BigInteger findExistingPattern(ArrayList<StopSequence> stopTimes, BigInteger routeId)
 	{		
-		ArrayList<BigInteger> candidatePatterns = tripPatternFirstStopMap.get(stopTimes.get(0).stopId);
+		Collection<BigInteger> candidatePatterns = routeTripPatternMap.get(routeId);
 		
 		if(candidatePatterns == null)
 			return null;
 		
-		for(BigInteger candidate : candidatePatterns)
+		PATTERNS: for(BigInteger candidate : candidatePatterns)
 		{
 			ArrayList<StopSequence> patternStops = tripPatternStopMap.get(candidate);
 			
@@ -430,8 +433,9 @@ public class ProcessGtfsSnapshotMerge extends Job {
 			int index = 0;
 			for(StopSequence patternStop : patternStops)
 			{
-				if(!patternStop.stopId.equals(stopTimes.get(index).stopId));
-					continue;
+				if(!patternStop.stopId.equals(stopTimes.get(index++).stopId))
+					// this is not the pattern
+					continue PATTERNS;
 			}
 			
 			return candidate;
