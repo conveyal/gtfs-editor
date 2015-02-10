@@ -460,15 +460,32 @@ G.RouteTypes = Backbone.Collection.extend({
       startDate: null,
       endDate: null
     },
-    urlRoot: G.config.baseUrl + 'api/calendar/'
+    urlRoot: G.config.baseUrl + 'api/calendar/',
     // days, start_date, end_date, exceptions[]
+
+    getRoutesText: function () {
+      var routes = this.get('routes');
+      if (routes.length > 5) {
+        routes = routes.slice(0, 5);
+        routes.push('...');
+      }
+
+      return routes.join(', ');
+    }
   });
 
 
   G.Calendars = Backbone.Collection.extend({
     type: 'Calendars',
     model: G.Calendar,
-    url: G.config.baseUrl + 'api/calendar/'
+    url: G.config.baseUrl + 'api/calendar/',
+
+    /** get text labels for the routes in each calendar */
+    getRoutesText: function () {
+      this.each(function (model) {
+        model.set('routesText', model.getRoutesText());
+      });
+    }
   });
 
 G.Trip = Backbone.Model.extend({
@@ -552,13 +569,16 @@ G.Trip = Backbone.Model.extend({
     defaults: {
       agency: null,
       exemplar: null,
-      dates: [],
-      customSchedule: []
+      dates: null,
+      customSchedule: null
     },
 
     /** add a javascript date object to the effective dates of this */
     addDate: function (date) {
       var dates = this.get('dates');
+
+      if (dates == null)
+        dates = [];
 
       var foundDate = false;
 

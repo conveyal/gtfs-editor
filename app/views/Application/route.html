@@ -297,7 +297,9 @@
           <select required name="frequencyServiceCalendar" id="calendar" class="input" title="&{'route.trip-info-tpl.service-calendar'}" data-content="&{'route.trip-info-tpl.service-calendar-content'}">
             <option value="">-- &{'route.trip-info-tpl.select-calendar'} --</option>
 
-            {{#items}}<option value="{{attributes.id}}">{{attributes.description}}</option>{{/items}}
+            {{#items}}
+              <option value="{{id}}">{{description}} ({{numberOfTrips}} &{'shared.trips'}, &{'shared.routes'}: {{routesText}})</option>
+            {{/items}}
 
           </select>
         </p>
@@ -320,7 +322,9 @@
           <select  name="timetableServiceCalendar" id="calendar" class="input" title="&{'route.trip-info-tpl.service-calendar'}" data-content="&{'route.trip-info-tpl.service-calendar-content'}">
             <option value="">-- &{'route.trip-info-tpl.select-calendar'} --</option>
 
-            {{#items}}<option value="{{attributes.id}}">{{attributes.description}}</option>{{/items}}
+            {{#items}}
+              <option value="{{id}}">{{description}} ({{numberOfTrips}} &{'shared.trips'}, &{'shared.routes'}: {{routesText}})</option>
+            {{/items}}
 
           </select>
         </p>

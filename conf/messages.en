@@ -40,6 +40,9 @@ shared.friday=Friday
 shared.saturday=Saturday
 shared.sunday=Sunday
 
+shared.trips=trips
+shared.routes=routes
+
 shared.route-type.tram=Tram
 shared.route-type.subway=Subway
 shared.route-type.rail=Rail
@@ -121,6 +124,7 @@ exception.dates=On these dates
 exception.exemplar=run the following schedule
 exception.custom-schedule=run the following calendars
 exception.new=New exception
+exception.enter-date=Please enter at least one date for this exception
 
 # /index
 

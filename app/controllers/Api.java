@@ -1005,10 +1005,9 @@ public class Api extends Controller {
     	}
     }
     
-    public static void deleteScheduleException () {
+    public static void deleteScheduleException (Long id) {
     	try {
-			ScheduleException ex = mapper.readValue(params.get("body"), ScheduleException.class);			
-			ScheduleException.<ScheduleException>findById(ex.id).delete();
+			ScheduleException.<ScheduleException>findById(id).delete();
 			ok();
     	} catch (Exception e) {
     		e.printStackTrace();

@@ -24,11 +24,14 @@
 <script id="exception-list-tpl" type="text/html">
   <ul>
     {{#exceptions}}
-      <li><a href="#edit/{{id}}">{{name}}</a></li>
+      <li>
+        <a href="#edit/{{id}}">{{name}} ({{datesText}})</a>
+        <a href="#" data-id="{{id}}" class="remove-exception" role="button" title="&{'exception.remove'}">&times;</a>
+      </li>
     {{/exceptions}}
   </ul>
 
-  <a href="#new" class="btn btn-default">&{'exception.new'}</button>
+  <a href="#new" class="btn btn-default">&{'exception.new'}</a>
 </script>
 
 <!-- the exception editor -->
@@ -47,6 +50,8 @@
 
       <button class="btn btn-default add-date"><i class="icon-plus"></i> &{'exception.add-date'}</button>
   </div>
+
+  <div id="enter-date" class="text-error hidden">&{'exception.enter-date'}</div>
 
   <div id="exception-date-list"></div>
 
@@ -67,15 +72,18 @@
     <div class="form-group hidden" id="custom-schedule-container">
       <label for="custom-schedule">&{'exception.custom-schedule'}</label>
       {{#calendars}}
-        <label>
-          <input type="checkbox" name="custom-schedule" value="{{id}}" />
-          {{description}}
-        </label>
+        {{#numberOfTrips}}
+          <label>
+            <input type="checkbox" name="custom-schedule" value="{{id}}" />
+            {{description}} ({{numberOfTrips}} &{'shared.trips'}, &{'shared.routes'}: {{routesText}})
+          </label>
+        {{/numberOfTrips}}
       {{/calendars}}
     </div>
   </div>
 
-  <button class="btn btn-default save">&{'shared.button.save'}</button>
+  <a href="#" class="btn btn-default save">&{'shared.button.save'}</a>
+  <a href="#" class="btn btn-default">&{'shared.button.cancel'}</a>
 </script>
 
 <script id="exception-date-list-tpl" type="text/html">

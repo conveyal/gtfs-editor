@@ -2,7 +2,10 @@ package models.transit;
 
 
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -42,6 +45,38 @@ public class ServiceCalendar extends Model {
     public Date startDate;
     public Date endDate;
     
+    // give the UI a little information about the content of this calendar
+    public long getNumberOfTrips () {
+    	return Trip.count("serviceCalendar = ?", this);
+    }
+    
+    public Collection<String> getRoutes () {
+    	List<String> ret = new ArrayList<String>();
+    	
+    	// we're using a JPA native query here because looping over all trips for an agency is too slow
+    	Query q = Trip.em().createQuery("SELECT DISTINCT t.route FROM Trip t WHERE serviceCalendar_id = ?");
+    	q.setParameter(1, this.id);
+    	List<Route> routes = q.getResultList();
+    	
+    	for (Route route : routes) {
+    		String name = route.routeShortName;
+    		
+    		if (name == null || name.isEmpty())
+    			name = route.routeLongName;
+    		
+    		ret.add(name);
+    	}
+    	
+    	return ret;
+    }
+    
+    // these are computed properties that we can't actually set, but
+    // unfortunately this seems to be the only way to explicitly ignore only
+    // these properties on deserialization.
+    // https://github.com/FasterXML/jackson-databind/issues/95
+    public void setNumberOfTrips (long trips) {}
+    public void setRoutes (Collection<String> routes) {}
+    
 	@JsonCreator
     public static ServiceCalendar factory(long id) {
       return ServiceCalendar.findById(id);
@@ -79,7 +114,12 @@ public class ServiceCalendar extends Model {
         if (cal.getSunday() == 1)
             sb.append("Su");
         
-        return sb.toString();
+        String ret = sb.toString();
+        
+        if (ret.equals(""))
+        	return cal.getServiceId().getId();
+        else
+        	return ret;
     }
     
     public String toString() {

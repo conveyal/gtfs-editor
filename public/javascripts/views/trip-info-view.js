@@ -594,8 +594,10 @@ var GtfsEditor = GtfsEditor || {};
 
     onCalendarsReset: function(evt) {
 
+      this.calendars.getRoutesText();
+
       var data = {
-        items: this.calendars.models
+        items: this.calendars.toJSON()
       }
 
       var selectedPatternId  = this.$('#tripPattern').val();
