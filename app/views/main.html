@@ -97,10 +97,14 @@ cf = play.Play.configuration
             </ul>
 
             <ul class="nav pull-right">
-              <li>
-                <a href="@{'/public/docs/user_guide.pdf'}" target="_blank" role="button">
+              <li class="dropdown">
+                <a href="#" role="button" class="dropdown-toggle" data-toggle="dropdown">
                   <i class="icon-question-sign"></i>
                 </a>
+                <ul class="dropdown-menu" role="menu">
+                  <li><a href="@{'/public/docs/user_guide.pdf'}" target="_blank" role="button">User Guide</a></li>
+                  <li><a href="/documentation/editor/video" target="_blank" role="button">Video Tutorial</a></li>
+                </ul>
               <li>
             </ul>
 
