@@ -226,19 +226,10 @@ var GtfsEditor = GtfsEditor || {};
       this.pattern = attr.pattern;
 
       // consistency check
-      var tripPatternId = null;
-      var serviceCalendarId = null;
-      var first = true;
       this.collection.each(function(trip) {
-        if (first) {
-          tripPatternId = trip.get('pattern').id;
-          serviceCalendarId = trip.get('serviceCalendar').id;
-          first = false;
-        } else {
-          if (trip.get('pattern').id != tripPatternId ||
-            trip.get('serviceCalendar').id != serviceCalendarId) {
-            throw new Error("Trip pattern or service calendars differ between trips");
-          }
+        if (trip.get('pattern').id != instance.pattern.id ||
+          trip.get('serviceCalendar').id != instance.calendar.id) {
+          throw new Error("Trip pattern or service calendars differ between trips");
         }
       });
 
@@ -251,8 +242,16 @@ var GtfsEditor = GtfsEditor || {};
         return toRemove;
       };
 
+      // grab the service calendars, for 'copy to this schedule' functionality
+      this.calendars = new G.Calendars();
+      this.calendars.fetch({data: {patternId: this.pattern.id}})
+        .done(function () {
+          instance.calendars.remove(instance.calendars.get(instance.calendar.id));
+          instance.$('.calendars').html(ich['calendar-select-tpl']({calendars: instance.calendars.toJSON()}));
+        });
+
       // event handlers
-      _.bindAll(this, 'saveAll', 'newTrip', 'handleKeyDown', 'closeMinibuffer', 'sort', 'autofill');
+      _.bindAll(this, 'saveAll', 'newTrip', 'handleKeyDown', 'closeMinibuffer', 'sort', 'autofill', 'copyTimetable', 'showHideCopyControls');
     },
 
     // combination of getAttr and setAttr for handsontable
@@ -882,6 +881,39 @@ var GtfsEditor = GtfsEditor || {};
       }
     },
 
+    copyTimetable: function () {
+      if (this.collection.length > 0)
+        return;
+
+      var instance = this;
+      var calid = this.$('.calendars option:selected').val();
+      var cal = this.calendars.get(calid);
+
+      // get trips from the new calendar
+      var newTrips = new G.Trips();
+
+      newTrips.fetch({data: {patternId: this.pattern.id, calendarId: calid}})
+        .done(function () {
+          // add all the new trips
+          newTrips.each(function (trip) {
+            var newTrip = trip.clone();
+            newTrip.set('serviceCalendar', instance.calendar.toJSON());
+            newTrip.modified = true;
+            instance.collection.add(newTrip);
+          });
+
+          instance.$container.handsontable('render');
+        });
+    },
+
+    /** if there are no trips, show the copy controls to copy the timetable from another calendar */
+    showHideCopyControls: function() {
+      if (this.collection.length === 0)
+        this.$('.copy-trips-controls').removeClass('hidden');
+      else
+        this.$('.copy-trips-controls').addClass('hidden');
+    },
+
     render: function() {
       // render the template
       this.$el.html(ich['timetable-tpl'](this.pattern.toJSON()));
@@ -949,6 +981,12 @@ var GtfsEditor = GtfsEditor || {};
       this.$('.new-trip').click(this.newTrip);
       this.$('.sort-trips').click(this.sort);
       this.$('.minibuffer-bg').click(this.closeMinibuffer);
+      this.$('.copy-timetable').click(this.copyTimetable);
+
+      this.collection.on('add', this.showHideCopyControls);
+      this.collection.on('remove', this.showHideCopyControls);
+      this.collection.on('reset', this.showHideCopyControls);
+      this.showHideCopyControls();
 
       return this;
     }

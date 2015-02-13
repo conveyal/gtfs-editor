@@ -48,6 +48,12 @@
   </p>
   <div id="timetable"></div>
 
+  <div class="form-inline copy-trips-controls hidden">
+    <label for="copy-from">&{'timetable.copy-from-calendar'}</label>
+    <select class="calendars" id="copy-from" class="form-control"></select>
+    <button role="button" class="btn btn-default copy-timetable">&{'timetable.copy'}</button>
+  </div>
+
   <!-- the minibuffer, used for prompting for user input -->
   <div class="minibuffer hidden">
     <div class="minibuffer-bg"></div>
@@ -57,4 +63,10 @@
       <input type="text" id="minibuffer-input" />
     </div>
   </div>
+</script>
+
+<script id="calendar-select-tpl" type="text/html">
+  {{#calendars}}
+    <option value="{{id}}">{{ description }} ({{ routeTrips }} &{'shared.trips'})</option>
+  {{/calendars}}
 </script>

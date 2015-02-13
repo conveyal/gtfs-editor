@@ -376,6 +376,8 @@ timetable.shortcuts=Keyboard shortcuts
 timetable.ok=OK, got it!
 timetable.help=Help
 timetable.sort=Sort schedule
+timetable.copy-from-calendar=Copy trips from other calendar
+timetable.copy=Copy
 
 # /search
 

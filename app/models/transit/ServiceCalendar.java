@@ -212,4 +212,19 @@ public class ServiceCalendar extends Model {
 		
 		return false;
 	}
+	
+	/**
+	 * Used to represent a service calendar and its service on a particular route.
+	 */
+	public static class ServiceCalendarForPattern {
+		public String description;
+		public long id;
+		public long routeTrips;
+		
+		public ServiceCalendarForPattern(ServiceCalendar cal, TripPattern patt) {
+			this.description = cal.description;
+			this.id = cal.id;
+			this.routeTrips = Trip.count("serviceCalendar = ? AND pattern = ?", cal, patt);
+		}
+	}
 }

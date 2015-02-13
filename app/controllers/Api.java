@@ -12,6 +12,7 @@ import java.math.BigInteger;
 import java.util.*;
 
 import javax.persistence.Entity;
+import javax.persistence.Query;
 
 import static java.util.Collections.sort;
 
@@ -23,7 +24,9 @@ import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.geotools.geometry.jts.JTS;
 import org.opengis.referencing.operation.MathTransform;
+import org.python.google.common.collect.Collections2;
 
+import com.google.common.base.Function;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
@@ -40,6 +43,7 @@ import models.transit.Route;
 import models.transit.RouteType;
 import models.transit.ScheduleException;
 import models.transit.ServiceCalendar;
+import models.transit.ServiceCalendar.ServiceCalendarForPattern;
 import models.transit.Stop;
 import models.transit.StopTime;
 import models.transit.Trip;
@@ -652,24 +656,35 @@ public class Api extends Controller {
     
     // **** calendar controllers ****
 
-    public static void getCalendar(Long id, Long agencyId) {
-        try {
-            if(id != null) {
-            	ServiceCalendar cal = ServiceCalendar.findById(id);
-                if(cal != null)
-                    renderJSON(Api.toJson(cal, false));
-                else
-                    notFound();
-            }
-            else {
-                if(agencyId != null) {
-
-                    Agency agency = Agency.findById(agencyId);
-                    renderJSON(Api.toJson(ServiceCalendar.find("agency = ?", agency).fetch(), false));
-                }
-                else
-                    renderJSON(Api.toJson(ServiceCalendar.all().fetch(), false));
-            }
+    public static void getCalendar(Long id, Long agencyId, Long patternId) {
+    	try {
+    		if(id != null) {
+    			ServiceCalendar cal = ServiceCalendar.findById(id);
+    			if(cal != null)
+    				renderJSON(Api.toJson(cal, false));
+    			else
+    				notFound();
+    		}
+    		else if(agencyId != null) {
+    			Agency agency = Agency.findById(agencyId);
+    			renderJSON(Api.toJson(ServiceCalendar.find("agency = ?", agency).fetch(), false));
+    		}
+    		else if (patternId != null) {
+    			TripPattern p = TripPattern.findById(patternId);
+    			Query q = ServiceCalendar.em().createQuery("SELECT DISTINCT t.serviceCalendar FROM Trip t WHERE pattern_id = ?");
+    			q.setParameter(1, p.id);
+    			List<ServiceCalendar> c = q.getResultList();
+    			
+    			ServiceCalendarForPattern[] ret = new ServiceCalendarForPattern[c.size()];
+    			for (int i = 0; i < ret.length; i++) {
+    				ret[i] = new ServiceCalendarForPattern(c.get(i), p);
+    			}
+    			
+    			renderJSON(Api.toJson(ret, false));
+    		}
+    		else {
+    			renderJSON(Api.toJson(ServiceCalendar.all().fetch(), false));
+    		}
         } catch (Exception e) {
             e.printStackTrace();
             badRequest();
