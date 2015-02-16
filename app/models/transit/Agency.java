@@ -47,13 +47,13 @@ public class Agency extends Model {
       return Agency.findById(Long.parseLong(id));
     }
     
-    public Agency(org.onebusaway.gtfs.model.Agency agency) {
-        this.gtfsAgencyId = agency.getId();
-        this.name = agency.getName();
-        this.url = agency.getUrl();
-        this.timezone = agency.getTimezone();
-        this.lang = agency.getLang();
-        this.phone = agency.getPhone();
+    public Agency(com.conveyal.gtfs.model.Agency agency) {
+        this.gtfsAgencyId = agency.agency_id;
+        this.name = agency.agency_name;
+        this.url = agency.agency_url != null ? agency.agency_url.toString() : null;
+        this.timezone = agency.agency_timezone;
+        this.lang = agency.agency_lang;
+        this.phone = agency.agency_phone;
     }
     
     public Agency(String gtfsAgencyId, String name, String url, String timezone, String lang, String phone) {

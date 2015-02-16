@@ -64,84 +64,64 @@ public class Trip extends Model {
     
     public Integer headway;
     public Boolean invalid;
+    
+    public Trip () {}
   
     
-    public static BigInteger nativeInsert(EntityManager em, org.onebusaway.gtfs.model.Trip gtfsTrip, BigInteger routeId, BigInteger shapeId, BigInteger serviceCalendarId, BigInteger serviceCalendarDateId)
+    public Trip(com.conveyal.gtfs.model.Trip trip, Route route, TripShape shape, TripPattern pattern, ServiceCalendar serviceCalendar) {
+    	gtfsTripId = trip.trip_id;
+    	tripHeadsign = trip.trip_headsign;
+    	tripShortName = trip.trip_short_name;
+    	tripDirection = trip.direction_id == 0 ? TripDirection.A : TripDirection.B;
+    	blockId = trip.block_id;
+    	this.route = route;
+    	this.shape = shape;
+    	this.pattern = pattern;
+    	this.serviceCalendar = serviceCalendar;
+    	
+    	if (trip.wheelchair_accessible == 1)
+    		this.wheelchairBoarding = AttributeAvailabilityType.AVAILABLE;
+    	else if (trip.wheelchair_accessible == 2)
+    		this.wheelchairBoarding = AttributeAvailabilityType.UNAVAILABLE;
+    	else
+    		this.wheelchairBoarding = AttributeAvailabilityType.UNKNOWN;
+    	
+    	useFrequency = false;
+	}
+
+	public static BigInteger nativeInsert(EntityManager em, com.conveyal.gtfs.model.Trip gtfsTrip, long routeId, Long shapeId, long serviceCalendarId, long pattId)
     
     {
 		Query idQuery = em.createNativeQuery("SELECT NEXTVAL('hibernate_sequence');");
 		BigInteger nextId = (BigInteger)idQuery.getSingleResult();
 				
-		TripDirection dir;
+		TripDirection dir = gtfsTrip.direction_id == 1 ? TripDirection.A : TripDirection.B;
+			
+		Query q;
 		
-		// annoying... OBA gtfs reader should return an int!
-		try {
-			if(Integer.parseInt(gtfsTrip.getDirectionId()) == 1 )
-				dir = TripDirection.B;
-			else
-				dir = TripDirection.A;
-		}
-		catch (Exception e) {
-			dir = TripDirection.A;
-		}
+		if(shapeId != null)
+			q = em.createNativeQuery("INSERT INTO trip (id, gtfstripid, tripheadsign, tripshortname, tripdirection, blockid, route_id, servicecalendar_id, useFrequency, pattern_id, shape_id)" +
+	    	"  VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
+	    else
+	    	q = em.createNativeQuery("INSERT INTO trip (id, gtfstripid, tripheadsign, tripshortname, tripdirection, blockid, route_id, servicecalendar_id, useFrequency, pattern_id)" +
+			    	"  VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
+	    	
+	      q.setParameter(1,  nextId)
+	      .setParameter(2,  gtfsTrip.trip_id)
+	      .setParameter(3,  gtfsTrip.trip_headsign)
+	      .setParameter(4,  gtfsTrip.trip_short_name)
+	      .setParameter(5,  dir.name())
+	      .setParameter(6,  gtfsTrip.block_id)
+	      .setParameter(7,  routeId)
+	      .setParameter(8,  serviceCalendarId)
+	      .setParameter(9,  false)
+	      .setParameter(10, pattId);
+	      
+		if(shapeId != null)
+	      q.setParameter(11,  shapeId);
 		
-		if(serviceCalendarId != null)
-		{
-			
-			Query q;
-			
-			if(shapeId != null)
-				q = em.createNativeQuery("INSERT INTO trip (id, gtfstripid, tripheadsign, tripshortname, tripdirection, blockid, route_id, servicecalendar_id, useFrequency, shape_id)" +
-		    	"  VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
-		    else
-		    	q = em.createNativeQuery("INSERT INTO trip (id, gtfstripid, tripheadsign, tripshortname, tripdirection, blockid, route_id, servicecalendar_id, useFrequency)" +
-				    	"  VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?);");
-		    	
-		      q.setParameter(1,  nextId)
-		      .setParameter(2,  gtfsTrip.getId().toString())
-		      .setParameter(3,  gtfsTrip.getTripHeadsign())
-		      .setParameter(4,  gtfsTrip.getRouteShortName())
-		      .setParameter(5,  dir.name())
-		      .setParameter(6,  gtfsTrip.getBlockId())
-		      .setParameter(7,  routeId)
-		      .setParameter(8,  serviceCalendarId)
-		      .setParameter(9,  false);
-		      
-			if(shapeId != null)
-		      q.setParameter(10,  shapeId);
-			
-		      
-		      q.executeUpdate();
-		}
-		else if(serviceCalendarDateId != null)
-		{
-Query q;
-			
-			if(shapeId != null)
-				q = em.createNativeQuery("INSERT INTO trip (id, gtfstripid, tripheadsign, tripshortname, tripdirection, blockid, route_id, servicecalendar_id, shape_id)" +
-		    	"  VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?);");
-		    else
-		    	q = em.createNativeQuery("INSERT INTO trip (id, gtfstripid, tripheadsign, tripshortname, tripdirection, blockid, route_id, servicecalendar_id)" +
-				    	"  VALUES(?, ?, ?, ?, ?, ?, ?, ?);");
-		    	
-		      q.setParameter(1,  nextId)
-		      .setParameter(2,  gtfsTrip.getId().toString())
-		      .setParameter(3,  gtfsTrip.getTripHeadsign())
-		      .setParameter(4,  gtfsTrip.getRouteShortName())
-		      .setParameter(5,  dir)
-		      .setParameter(6,  gtfsTrip.getBlockId())
-		      .setParameter(7,  routeId)
-		      .setParameter(8,  serviceCalendarDateId);
-		      
-		      if(shapeId != null)
-		        q.setParameter(9,  shapeId);
-		      	      
-		      q.executeUpdate();
-		}
-		else
-		{
-			Logger.error("Missing vaild serivce id for trip " + gtfsTrip.getId().toString());
-		}
+	      
+	      q.executeUpdate();
 			
 	    
 		return nextId;

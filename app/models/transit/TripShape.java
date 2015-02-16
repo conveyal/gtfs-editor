@@ -2,8 +2,11 @@ package models.transit;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
@@ -42,6 +45,34 @@ public class TripShape extends Model {
     @Type(type = "org.hibernatespatial.GeometryUserType") 
     public LineString simpleShape;
     
+    /**
+     * Create a new trip shape from a GTFS shape.
+     *
+     * @param shape
+     */
+    public TripShape(Collection<Shape> shapes, String shapeId, GeometryFactory geometryFactory) {
+    	// we make the assumption that the map has a defined sort order, because it's coming from a GTFSFeed, and it does.
+    	// however, we check our assumption
+    	
+    	if (shapes.size() < 2)
+    		throw new InvalidShapeException("Must have at least two points in a shape!");
+    	
+    	Coordinate[] coords = new Coordinate[shapes.size()];
+    	
+    	int last = Integer.MIN_VALUE;
+    	int i = 0;
+    	for (Shape shape : shapes) {
+    		if (last > shape.shape_pt_sequence)
+    			throw new RuntimeException("Shape points out of sequence, this implies a bug.");
+    		
+    		last = shape.shape_pt_sequence;
+    		
+    		coords[i++] = new Coordinate(shape.shape_pt_lon, shape.shape_pt_lat);
+    	}
+    	
+    	this.shape = geometryFactory.createLineString(coords);
+    	this.gtfsShapeId = shapeId;
+    }
 
     public void updateShapeFromEncoded(String encoded) {
         
@@ -145,5 +176,10 @@ public class TripShape extends Model {
 		else
 			return id.toString();
 	}
-   
+	
+	public static class InvalidShapeException extends IllegalArgumentException {
+		public InvalidShapeException(String msg) {
+			super(msg);
+		}
+	}   
 }

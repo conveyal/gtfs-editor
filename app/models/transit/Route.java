@@ -81,17 +81,18 @@ public class Route extends Model {
       return Route.findById(Long.parseLong(id));
     }
 
-    public Route(org.onebusaway.gtfs.model.Route route,  Agency agency) {	
-        this.gtfsRouteId = route.getId().toString();
-        this.routeShortName = route.getShortName();
-        this.routeLongName = route.getLongName();
-        this.routeDesc = route.getDesc();
+    public Route(com.conveyal.gtfs.model.Route route,  Agency agency) {	
+        this.gtfsRouteId = route.route_id;
+        this.routeShortName = route.route_short_name;
+        this.routeLongName = route.route_long_name;
+        this.routeDesc = route.route_desc;
         
-        this.routeType = mapGtfsRouteType(route.getType());
+        this.routeType = mapGtfsRouteType(route.route_type);
         
         
-        this.routeUrl = route.getUrl();
-        this.routeColor = route.getColor();
+        this.routeUrl = route.route_url != null ? route.route_url.toString() : null;
+        this.routeColor = route.route_color;
+        this.routeTextColor = route.route_text_color;
 
         this.agency = agency;
     }

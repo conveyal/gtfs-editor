@@ -18,6 +18,7 @@ import javax.persistence.Query;
 import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.hibernate.annotations.Type;
+import org.joda.time.LocalDate;
 
 import com.conveyal.gtfs.model.Calendar;
 import com.conveyal.gtfs.model.Service;
@@ -45,7 +46,52 @@ public class ServiceCalendar extends Model {
     public Date startDate;
     public Date endDate;
     
-    // give the UI a little information about the content of this calendar
+    public ServiceCalendar() {};
+    
+    public ServiceCalendar(Calendar calendar) {
+    	this.gtfsServiceId = calendar.service.service_id;
+    	this.monday = calendar.monday == 1;
+    	this.tuesday = calendar.tuesday == 1;
+    	this.wednesday = calendar.wednesday == 1;
+    	this.thursday = calendar.thursday == 1;
+    	this.friday = calendar.friday == 1;
+    	this.saturday = calendar.saturday == 1;
+    	this.sunday = calendar.sunday == 1;
+    	this.startDate = fromGtfs(calendar.start_date);
+    	this.endDate = fromGtfs(calendar.end_date);
+    	inferName();
+    }
+    
+    public ServiceCalendar clone () {
+    	ServiceCalendar r = new ServiceCalendar();
+    	r.agency = agency;
+    	r.description = description;
+    	r.gtfsServiceId = gtfsServiceId;
+    	r.monday = monday;
+    	r.tuesday = tuesday;
+    	r.wednesday = wednesday;
+    	r.thursday = thursday;
+    	r.friday = friday;
+    	r.saturday = saturday;
+    	r.sunday = sunday;
+    	r.startDate = startDate;
+    	r.endDate = endDate;
+  
+    	return r;
+    }
+
+    // TODO: time zones
+	private static Date fromGtfs(int date) {
+		int day = date % 100;
+		date -= day;
+		int month = (date % 10000) / 100;
+		date -= month * 100;
+		int year = date / 10000;
+		
+		return new LocalDate(year, month, day).toDate();
+	}
+
+	// give the UI a little information about the content of this calendar
     public long getNumberOfTrips () {
     	return Trip.count("serviceCalendar = ?", this);
     }
@@ -88,38 +134,36 @@ public class ServiceCalendar extends Model {
     }
 
     /**
-     * Get a description for an OBA GTFS service calendar 
+     * Infer the name of this calendar 
      */
-    public static String getNameForGtfsServiceCalendar(org.onebusaway.gtfs.model.ServiceCalendar cal) {
+    public void inferName () {
         StringBuilder sb = new StringBuilder(14);
         
-        if (cal.getMonday() == 1)
+        if (monday)
             sb.append("Mo");
         
-        if (cal.getTuesday() == 1)
+        if (tuesday)
             sb.append("Tu");
         
-        if (cal.getWednesday() == 1)
+        if (wednesday)
             sb.append("We");
         
-        if (cal.getThursday() == 1)
+        if (thursday)
             sb.append("Th");
         
-        if (cal.getFriday() == 1)
+        if (friday)
             sb.append("Fr");
         
-        if (cal.getSaturday() == 1)
+        if (saturday)
             sb.append("Sa");
         
-        if (cal.getSunday() == 1)
+        if (sunday)
             sb.append("Su");
         
-        String ret = sb.toString();
+        this.description = sb.toString();
         
-        if (ret.equals(""))
-        	return cal.getServiceId().getId();
-        else
-        	return ret;
+        if (this.description.equals("") && this.gtfsServiceId != null)
+        	this.description = gtfsServiceId;
     }
     
     public String toString() {
@@ -150,6 +194,7 @@ public class ServiceCalendar extends Model {
     	return str;
     }
 
+    /*
     public static BigInteger nativeInsert(EntityManager em, org.onebusaway.gtfs.model.ServiceCalendar gtfsServiceCalendar, BigInteger agencyId)
     {
     	Query idQuery = em.createNativeQuery("SELECT NEXTVAL('hibernate_sequence');");
@@ -174,6 +219,7 @@ public class ServiceCalendar extends Model {
 		
 		return nextId;
     }
+    */
 
     /**
      * Convert this service to a GTFS service calendar.

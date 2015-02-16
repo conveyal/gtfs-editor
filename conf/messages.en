@@ -114,6 +114,14 @@ shared.explore-search-routes=Explore/Search Routes
 shared.new-route=New Route
 shared.schedule-exceptions=Manage Schedule Exceptions
 
+# GTFS entity names
+# The name of a trip pattern on a route with a route_long_name
+# The params are route_long_name, final stop name, number of stops
+gtfs.named-route-pattern=%s to %s (%s stops)
+
+# Same but without route_long_name
+gtfs.unnamed-route-pattern=to %s ({%s stops)
+
 # /exceptions
 exception.add-date=Add date
 exception.remove-date=Remove date

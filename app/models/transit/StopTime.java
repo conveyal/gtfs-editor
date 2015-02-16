@@ -51,21 +51,23 @@ public class StopTime extends Model {
     	
     }
     
-    public StopTime(org.onebusaway.gtfs.model.StopTime stopTime, Trip trip, Stop stop) {
+    public StopTime(com.conveyal.gtfs.model.StopTime stopTime, int stopSequence, Trip trip, Stop stop, TripPatternStop tps) {
         
-    	this.arrivalTime = stopTime.getArrivalTime();
-    	this.departureTime = stopTime.getDepartureTime();
-    	this.stopSequence = stopTime.getStopSequence();
-    	this.stopHeadsign = stopTime.getStopHeadsign();
-    	this.pickupType = mapGtfsPickupDropOffType(stopTime.getPickupType());
-    	this.dropOffType = mapGtfsPickupDropOffType(stopTime.getDropOffType());
-    	this.shapeDistTraveled = stopTime.getShapeDistTraveled();
+    	this.arrivalTime = stopTime.arrival_time;
+    	this.departureTime = stopTime.departure_time;
+    	this.stopSequence = stopSequence;
+    	this.stopHeadsign = stopTime.stop_headsign;
+    	this.pickupType = mapGtfsPickupDropOffType(stopTime.pickup_type);
+    	this.dropOffType = mapGtfsPickupDropOffType(stopTime.drop_off_type);
+    	this.shapeDistTraveled = stopTime.shape_dist_traveled;
     	
     	this.trip = trip;
     	this.stop = stop;
+    	this.patternStop = tps;
     } 
-    
-    public static void replaceStop(Stop newStop, Stop oldStop) {
+
+
+	public static void replaceStop(Stop newStop, Stop oldStop) {
     	
     	 StopTime.em().createNativeQuery("UPDATE stoptime SET stop_id = ? WHERE stop_id = ?;")
     	          .setParameter(1, newStop.id)
@@ -90,23 +92,24 @@ public class StopTime extends Model {
     	}
     }
     
-    public static BigInteger nativeInsert(EntityManager em, org.onebusaway.gtfs.model.StopTime gtfsStopTime, BigInteger trip_id, BigInteger stop_id)
+    public static BigInteger nativeInsert(EntityManager em, com.conveyal.gtfs.model.StopTime gtfsStopTime, long trip_id, long stop_id, long patternStop_id)
     {
     	Query idQuery = em.createNativeQuery("SELECT NEXTVAL('hibernate_sequence');");
     	BigInteger nextId = (BigInteger)idQuery.getSingleResult();
     	
-        em.createNativeQuery("INSERT INTO stoptime (id, arrivaltime, departuretime, stopsequence, stopheadsign, pickuptype, dropofftype, shapedisttraveled, trip_id, stop_id)" +
-        	"  VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?);")
+        em.createNativeQuery("INSERT INTO stoptime (id, arrivaltime, departuretime, stopsequence, stopheadsign, pickuptype, dropofftype, shapedisttraveled, trip_id, stop_id, patternstop_id)" +
+        	"  VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);")
           .setParameter(1, nextId)
-          .setParameter(2, gtfsStopTime.getArrivalTime())
-          .setParameter(3, gtfsStopTime.getDepartureTime())
-          .setParameter(4, gtfsStopTime.getStopSequence())
-          .setParameter(5, gtfsStopTime.getStopHeadsign())
-          .setParameter(6, mapGtfsPickupDropOffType(gtfsStopTime.getPickupType()).name())
-          .setParameter(7, mapGtfsPickupDropOffType(gtfsStopTime.getDropOffType()).name())
-          .setParameter(8, gtfsStopTime.getShapeDistTraveled())
+          .setParameter(2, gtfsStopTime.arrival_time)
+          .setParameter(3, gtfsStopTime.departure_time)
+          .setParameter(4, gtfsStopTime.stop_sequence)
+          .setParameter(5, gtfsStopTime.stop_headsign)
+          .setParameter(6, mapGtfsPickupDropOffType(gtfsStopTime.pickup_type).name())
+          .setParameter(7, mapGtfsPickupDropOffType(gtfsStopTime.drop_off_type).name())
+          .setParameter(8, gtfsStopTime.shape_dist_traveled)
           .setParameter(9, trip_id)
           .setParameter(10, stop_id)
+          .setParameter(11, patternStop_id)
           .executeUpdate();
         
         return nextId;

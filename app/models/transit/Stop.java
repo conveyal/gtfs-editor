@@ -117,20 +117,20 @@ public class Stop extends Model {
         return geometryFactory.createPoint(new Coordinate(loc.get("lng"), loc.get("lat")));
     }
 
-    public Stop(org.onebusaway.gtfs.model.Stop stop, GeometryFactory geometryFactory) {
+    public Stop(com.conveyal.gtfs.model.Stop stop, GeometryFactory geometryFactory) {
 
-        this.gtfsStopId = stop.getId().toString();
-        this.stopCode = stop.getCode();
-        this.stopName = stop.getName();
-        this.stopDesc = stop.getDesc();
-        this.zoneId = stop.getZoneId();
-        this.stopUrl = stop.getUrl();
-        this.locationType = stop.getLocationType() == 1 ? LocationType.STATION : LocationType.STOP;
-        this.parentStation = stop.getParentStation();
+        this.gtfsStopId = stop.stop_id;
+        this.stopCode = stop.stop_code;
+        this.stopName = stop.stop_name;
+        this.stopDesc = stop.stop_desc;
+        this.zoneId = stop.zone_id;
+        this.stopUrl = stop.stop_url != null ? stop.stop_url.toString() : null;
+        this.locationType = stop.location_type == 1 ? LocationType.STATION : LocationType.STOP;
+        this.parentStation = stop.parent_station;
         this.pickupType = StopTimePickupDropOffType.SCHEDULED;
         this.dropOffType = StopTimePickupDropOffType.SCHEDULED;
 
-        this.location  =  geometryFactory.createPoint(new Coordinate(stop.getLat(),stop.getLon()));
+        this.location  =  geometryFactory.createPoint(new Coordinate(stop.stop_lat,stop.stop_lon));
     }
 
     public Stop(Agency agency,String stopName,  String stopCode,  String stopUrl, String stopDesc, Double lat, Double lon) {
