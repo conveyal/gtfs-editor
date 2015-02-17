@@ -1,31 +1,24 @@
 package models.transit;
 
 
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.List;
 
-import javax.persistence.Entity;
-import javax.persistence.EntityManager;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.ManyToOne;
-import javax.persistence.Query;
-import javax.persistence.Transient;
+import models.Model;
 
-import org.codehaus.jackson.annotate.JsonIgnore;
-import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.hibernate.annotations.Type;
 
 import com.conveyal.gtfs.model.Frequency;
 import com.conveyal.gtfs.model.Service;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import play.Logger;
-import play.db.jpa.Model;
-import models.gtfs.GtfsSnapshot;
 
-@JsonIgnoreProperties({"entityId", "persistent"})
-@Entity
-public class Trip extends Model {
+
+public class Trip extends Model implements Serializable {
+	public static final long serialVersionUID = 1;
 
     public String gtfsTripId;
     public String tripHeadsign;
@@ -33,28 +26,18 @@ public class Trip extends Model {
 
     public String tripDescription;
     
-    @Enumerated(EnumType.STRING)
     public TripDirection tripDirection;
     
     public String blockId;
     
-    @ManyToOne
-    public Route route;
+    public String routeId;
     
-    @JsonIgnore
-    @ManyToOne
-    public TripShape shape;
+    public String shapeId;
     
-    @ManyToOne
-    public TripPattern pattern;
+    public String patternId;
  
-    @ManyToOne
-    public ServiceCalendar serviceCalendar;
+    public String calendarId;
     
-    @ManyToOne
-    public ServiceCalendarDate serviceCalendarDate;
-    
-    @Enumerated(EnumType.STRING)
     public AttributeAvailabilityType wheelchairBoarding;
     
     public Boolean useFrequency;
@@ -65,6 +48,8 @@ public class Trip extends Model {
     public Integer headway;
     public Boolean invalid;
     
+    public List<StopTime> stopTimes;
+    
     public Trip () {}
   
     
@@ -74,10 +59,10 @@ public class Trip extends Model {
     	tripShortName = trip.trip_short_name;
     	tripDirection = trip.direction_id == 0 ? TripDirection.A : TripDirection.B;
     	blockId = trip.block_id;
-    	this.route = route;
-    	this.shape = shape;
-    	this.pattern = pattern;
-    	this.serviceCalendar = serviceCalendar;
+    	this.routeId = route.id;
+    	this.shapeId = shape.id;
+    	this.patternId = pattern.id;
+    	this.calendarId = serviceCalendar.id;
     	
     	if (trip.wheelchair_accessible == 1)
     		this.wheelchairBoarding = AttributeAvailabilityType.AVAILABLE;
@@ -89,52 +74,6 @@ public class Trip extends Model {
     	useFrequency = false;
 	}
 
-	public static BigInteger nativeInsert(EntityManager em, com.conveyal.gtfs.model.Trip gtfsTrip, long routeId, Long shapeId, long serviceCalendarId, long pattId)
-    
-    {
-		Query idQuery = em.createNativeQuery("SELECT NEXTVAL('hibernate_sequence');");
-		BigInteger nextId = (BigInteger)idQuery.getSingleResult();
-				
-		TripDirection dir = gtfsTrip.direction_id == 1 ? TripDirection.A : TripDirection.B;
-			
-		Query q;
-		
-		if(shapeId != null)
-			q = em.createNativeQuery("INSERT INTO trip (id, gtfstripid, tripheadsign, tripshortname, tripdirection, blockid, route_id, servicecalendar_id, useFrequency, pattern_id, shape_id)" +
-	    	"  VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
-	    else
-	    	q = em.createNativeQuery("INSERT INTO trip (id, gtfstripid, tripheadsign, tripshortname, tripdirection, blockid, route_id, servicecalendar_id, useFrequency, pattern_id)" +
-			    	"  VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
-	    	
-	      q.setParameter(1,  nextId)
-	      .setParameter(2,  gtfsTrip.trip_id)
-	      .setParameter(3,  gtfsTrip.trip_headsign)
-	      .setParameter(4,  gtfsTrip.trip_short_name)
-	      .setParameter(5,  dir.name())
-	      .setParameter(6,  gtfsTrip.block_id)
-	      .setParameter(7,  routeId)
-	      .setParameter(8,  serviceCalendarId)
-	      .setParameter(9,  false)
-	      .setParameter(10, pattId);
-	      
-		if(shapeId != null)
-	      q.setParameter(11,  shapeId);
-		
-	      
-	      q.executeUpdate();
-			
-	    
-		return nextId;
-    }
-  
-    public ArrayList<StopTime> getStopTimes()
-    {
-    	ArrayList<StopTime> stopTimes = new ArrayList(StopTime.find("trip = ? ORDER BY stopSequence", this).fetch());
-    	
-    	return stopTimes;
-    }
-
-    @Transient
     @JsonIgnore
     public String getGtfsId () {
 		if (gtfsTripId != null && !gtfsTripId.isEmpty())

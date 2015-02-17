@@ -1,19 +1,14 @@
 package models.transit;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
-import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
+import models.Model;
 
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
+import org.joda.time.LocalDate;
 
-import play.db.jpa.Model;
 
 /**
  * Represents an exception to the schedule, which could be "On January 18th, run a Sunday schedule"
@@ -27,29 +22,25 @@ import play.db.jpa.Model;
  * @author mattwigway
  */
 
-@JsonIgnoreProperties({"entityId", "persistent"})
-@Entity
-public class ScheduleException extends Model {
+public class ScheduleException extends Model implements Serializable {
+	public static final long serialVersionUID = 1;
+	
 	/** The agency whose service this schedule exception describes */
-	@ManyToOne
 	public Agency agency;
 	
 	/**
 	 * If non-null, run service that would ordinarily run on this day of the week.
 	 * Takes precedence over any custom schedule.
 	 */
-	@Enumerated(EnumType.STRING)
 	public ExemplarServiceDescriptor exemplar;
 	
 	/** The name of this exception, for instance "Presidents' Day" or "Early Subway Shutdowns" */
 	public String name;
 	
-	/** The dates of this service exception, stored in GMT */
-	@ElementCollection
-	public List<Date> dates;
+	/** The dates of this service exception */
+	public List<LocalDate> dates;
 	
 	/** A custom schedule. Only used if like == null */
-	@ManyToMany
 	public List<ServiceCalendar> customSchedule;
 	
 	/**

@@ -201,7 +201,7 @@ public class Secure extends Controller {
          * Indicate if a (non-anonymous) user is currently connected
          * @return  true if the user is connected
          */
-        static boolean isConnected() {
+        public static boolean isConnected() {
             return session.contains("username");
         }
 

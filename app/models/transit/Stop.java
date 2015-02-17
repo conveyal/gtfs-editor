@@ -8,35 +8,25 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
-import javax.persistence.Access;
-import javax.persistence.AccessType;
-import javax.persistence.Entity;
-import javax.persistence.EntityManager;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.ManyToOne;
-import javax.persistence.Query;
-import javax.persistence.Transient;
+import org.mapdb.Fun.Tuple2;
 
+import models.Model;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.mysql.jdbc.log.Log;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.PrecisionModel;
 
-import org.codehaus.jackson.annotate.JsonCreator;
-import org.codehaus.jackson.annotate.JsonIgnore;
-import org.codehaus.jackson.annotate.JsonIgnoreProperties;
-import org.codehaus.jackson.annotate.JsonProperty;
-import org.hibernate.annotations.Type;
-
 import play.Logger;
-import play.db.jpa.Model;
 
-@JsonIgnoreProperties({"entityId", "persistent"})
-@Entity
-public class Stop extends Model {
+/** does not extend model because has tuple key */
+public class Stop implements Serializable {
+	public static final long serialVersionUID = 1;
 
     public String gtfsStopId;
     public String stopCode;
@@ -44,47 +34,32 @@ public class Stop extends Model {
     public String stopDesc;
     public String zoneId;
     public String stopUrl;
+    
+    /** Agency ID, Stop ID */
+    public Tuple2<String, String> id;
 
     public String stopIconUrl;
 
-    @ManyToOne
     public Agency agency;
 
-    @Enumerated(EnumType.STRING)
     public LocationType locationType;
 
-    @Enumerated(EnumType.STRING)
     public AttributeAvailabilityType bikeParking;
     
-    @Enumerated(EnumType.STRING)
     public AttributeAvailabilityType carParking;
 
-    @Enumerated(EnumType.STRING)
     public AttributeAvailabilityType wheelchairBoarding;
     
-    @Enumerated(EnumType.STRING)
     public StopTimePickupDropOffType pickupType;
     
-    @Enumerated(EnumType.STRING)
     public StopTimePickupDropOffType dropOffType;
 
     public String parentStation;
     
     // Major stop is a custom field; it has no corralary in the GTFS.
     public Boolean majorStop;
-
-    @JsonCreator
-    public static Stop factory(long id) {
-      return Stop.findById(id);
-    }
-
-    @JsonCreator
-    public static Stop factory(String id) {
-      return Stop.findById(Long.parseLong(id));
-    }
     
     @JsonIgnore
-    @Type(type = "org.hibernatespatial.GeometryUserType")
     public Point location;
 
     @JsonProperty("location")
@@ -93,16 +68,6 @@ public class Stop extends Model {
         loc.put("lat", this.location.getY());
         loc.put("lng", this.location.getX());
         return loc;
-    }
-    
-    public void merge(Stop mergedStop) {
-   
-    	// find replace references to mergedStop 
-    	StopTime.replaceStop(this, mergedStop);
-    	TripPatternStop.replaceStop(this, mergedStop);
-    	
-    	mergedStop.delete();
-    	
     }
 
     public void setLocation(Hashtable<String, Double> loc) {
@@ -117,7 +82,7 @@ public class Stop extends Model {
         return geometryFactory.createPoint(new Coordinate(loc.get("lng"), loc.get("lat")));
     }
 
-    public Stop(com.conveyal.gtfs.model.Stop stop, GeometryFactory geometryFactory) {
+    public Stop(com.conveyal.gtfs.model.Stop stop, GeometryFactory geometryFactory, Agency agency) {
 
         this.gtfsStopId = stop.stop_id;
         this.stopCode = stop.stop_code;
@@ -130,10 +95,12 @@ public class Stop extends Model {
         this.pickupType = StopTimePickupDropOffType.SCHEDULED;
         this.dropOffType = StopTimePickupDropOffType.SCHEDULED;
 
+        this.id = new Tuple2(agency.id, stop.stop_id);
+        
         this.location  =  geometryFactory.createPoint(new Coordinate(stop.stop_lat,stop.stop_lon));
     }
 
-    public Stop(Agency agency,String stopName,  String stopCode,  String stopUrl, String stopDesc, Double lat, Double lon) {
+    public Stop(Agency agency, String stopName,  String stopCode,  String stopUrl, String stopDesc, Double lat, Double lon) {
         this.agency = agency;
         this.stopCode = stopCode;
         this.stopName = stopName;
@@ -142,113 +109,11 @@ public class Stop extends Model {
         this.locationType = LocationType.STOP;
         this.pickupType = StopTimePickupDropOffType.SCHEDULED;
         this.dropOffType = StopTimePickupDropOffType.SCHEDULED;
+        this.id = new Tuple2(agency.id, UUID.randomUUID().toString());
 
         GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
 
         this.location = geometryFactory.createPoint(new Coordinate(lon, lat));;
-    }
-
-
-    public static BigInteger nativeInsert(EntityManager em, org.onebusaway.gtfs.model.Stop gtfsStop, BigInteger agencyId)
-    {
-        Query idQuery = em.createNativeQuery("SELECT NEXTVAL('hibernate_sequence');");
-        BigInteger nextId = (BigInteger)idQuery.getSingleResult();
-
-        em.createNativeQuery("INSERT INTO stop (id, locationtype, parentstation, stopcode, stopdesc, gtfsstopid, stopname, stopurl, zoneid, location, agency_id, pickuptype, dropofftype)" +
-            "  VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ST_GeomFromText( ? , 4326), ?, ?, ?);")
-          .setParameter(1,  nextId)
-          .setParameter(2,  gtfsStop.getLocationType() == 1 ? LocationType.STATION.name() : LocationType.STOP.name())
-          .setParameter(3,  gtfsStop.getParentStation())
-          .setParameter(4,  gtfsStop.getCode())
-          .setParameter(5,  gtfsStop.getDesc())
-          .setParameter(6,  gtfsStop.getId().toString())
-          .setParameter(7,  gtfsStop.getName())
-          .setParameter(8,  gtfsStop.getUrl())
-          .setParameter(9,  gtfsStop.getZoneId())
-          .setParameter(10,  "POINT(" + gtfsStop.getLon() + " " + gtfsStop.getLat() + ")")
-          .setParameter(11, agencyId)
-          .setParameter(12, StopTimePickupDropOffType.SCHEDULED.toString())
-          .setParameter(13, StopTimePickupDropOffType.SCHEDULED.toString())
-          .executeUpdate();
-
-        return nextId;
-    }
-    
-    public static Point findCentroid(BigInteger agencyId)
-    {
-    	List<Object[]> result = Stop.em().createNativeQuery("SELECT st_x(calc.center), st_y(calc.center) from (SELECT ST_Centroid(ST_Extent(location)) as center FROM stop WHERE agency_id = ?) calc ;")
-          .setParameter(1,  agencyId)
-          .getResultList();
-
-    	Object[] cols = result.get(0);
-        GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
-        
-        return geometryFactory.createPoint(new Coordinate((Double)cols[0], (Double)cols[1]));
-    }
-    
-    public static List<List<Stop>> findDuplicateStops(BigInteger agencyId) {
-    	
-    	// !!! need to autodetect proper SRID for UTM Zone
-    	Query q = Stop.em().createNativeQuery("SELECT s1_id, s2_id, dist FROM " + 
-    			"(SELECT s1.id as s1_id, s2.id as s2_id, st_distance(transform(s1.location, 32614), transform(s2.location, 32614)) as dist " + 
-    			"FROM stop as s1, stop as s2 WHERE s1.agency_id = s2.agency_id and s1.agency_id = ? and s1.id != s2.id) AS calcdist WHERE dist < 15;");
-    	
-    	q.setParameter(1, agencyId);
-    	
-    	List<Object[]> pairsResults = q.getResultList();
-    	
-    	ArrayList<List<Stop>> stopPairs = new ArrayList<List<Stop>>();
-    	
-    	for(Object[] cols : pairsResults) {
-    		Stop s1 =  Stop.findById(((BigInteger)cols[0]).longValue());
-    		Stop s2 =  Stop.findById(((BigInteger)cols[1]).longValue());
-    		
-    		if(s1 != null && s2 != null) {
-    			List<Stop> pair = new ArrayList<Stop>();
-    			pair.add(s1);
-    			pair.add(s2);
-    			stopPairs.add(pair);
-    		}
-    	}
-    	
-    	return stopPairs;
-    }
-
-    public Set<Route> routesServed()
-    {
-        List<TripPatternStop> stops = TripPatternStop.find("stop = ?", this).fetch();
-        HashSet<Route> routes = new HashSet<Route>();
-
-        for(TripPatternStop patternStop : stops)
-        {
-            if(patternStop.pattern == null)
-                continue;
-
-            if(patternStop.pattern.longest != null && patternStop.pattern.longest == true)
-                routes.add(patternStop.pattern.route);
-        }
-
-        return routes;
-    }
-
-    public Set<TripPattern> tripPatternsServed(Boolean weekday, Boolean saturday, Boolean sunday)
-    {
-        List<TripPatternStop> stops = TripPatternStop.find("stop = ?", this).fetch();
-        HashSet<TripPattern> patterns = new HashSet<TripPattern>();
-
-        for(TripPatternStop patternStop : stops)
-        {
-            if(patternStop.pattern == null)
-                continue;
-
-            if(patternStop.pattern.longest == true)
-            {
-                if((weekday && patternStop.pattern.weekday) || (saturday && patternStop.pattern.saturday) || (sunday && patternStop.pattern.sunday))
-                    patterns.add(patternStop.pattern);
-            }
-        }
-
-        return patterns;
     }
 
 	public com.conveyal.gtfs.model.Stop toGtfs() {
@@ -276,12 +141,11 @@ public class Stop extends Model {
 		return ret;
 	}
 
-	@Transient
 	@JsonIgnore
 	public String getGtfsId() {
 		if(gtfsStopId != null && !gtfsStopId.isEmpty())
 			return gtfsStopId;
 		else
-			return "STOP_" + id.toString();
+			return "STOP_" + id;
 	}
 }

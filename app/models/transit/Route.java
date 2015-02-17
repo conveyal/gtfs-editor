@@ -1,21 +1,12 @@
 package models.transit;
 
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.ManyToOne;
-import javax.persistence.Entity;
-import javax.persistence.Query;
-import javax.persistence.Column;
-import javax.persistence.Transient;
-
-import models.gis.GisRoute;
-import models.gis.GisUpload;
+import models.Model;
 import models.transit.RouteType;
 
 import org.codehaus.jackson.annotate.JsonCreator;
@@ -26,21 +17,16 @@ import org.hibernate.annotations.Type;
 import com.vividsolutions.jts.geom.MultiLineString;
 
 import play.Logger;
-import play.db.jpa.Model;
 
-@JsonIgnoreProperties({"entityId", "persistent"})
-@Entity
-public class Route extends Model {
-
+public class Route extends Model implements Serializable {
+	public static final long serialVersionUID = 1;
+	
 	public String gtfsRouteId;
     public String routeShortName;
     public String routeLongName;
  
-
-    @Column(length = 8000,columnDefinition="TEXT")
     public String routeDesc;
 
-    @ManyToOne
     public RouteType routeType;
 
     public String routeUrl;
@@ -50,7 +36,6 @@ public class Route extends Model {
     // Custom Fields
     public String comments;
 
-    @Enumerated(EnumType.STRING)
     public StatusType status;
     
     public Boolean publiclyVisible;
@@ -59,19 +44,15 @@ public class Route extends Model {
     public Boolean saturday;
     public Boolean sunday;
 
-    @ManyToOne
-    public Agency agency;
+    public String agencyId;
 
-    @ManyToOne
-    public GisRoute gisRoute;
+    //public GisRoute gisRoute;
 
-    @ManyToOne
-    public GisUpload gisUpload;
+    //public GisUpload gisUpload;
     
-    @Enumerated(EnumType.STRING)
     public AttributeAvailabilityType wheelchairBoarding;
 
-    @JsonCreator
+    /*@JsonCreator
     public static Route factory(long id) {
       return Route.findById(id);
     }
@@ -79,7 +60,7 @@ public class Route extends Model {
     @JsonCreator
     public static Route factory(String id) {
       return Route.findById(Long.parseLong(id));
-    }
+    }*/
 
     public Route(com.conveyal.gtfs.model.Route route,  Agency agency) {	
         this.gtfsRouteId = route.route_id;
@@ -94,7 +75,7 @@ public class Route extends Model {
         this.routeColor = route.route_color;
         this.routeTextColor = route.route_text_color;
 
-        this.agency = agency;
+        this.agencyId = agency.id;
     }
 
 
@@ -104,23 +85,7 @@ public class Route extends Model {
         this.routeType = routeType;
         this.routeDesc = routeDescription;
 
-        this.agency = agency;
-    }
-    
-    public Route delete() {
-    	
-    	 List<TripPattern> patterns = TripPattern.find("route = ?", this).fetch();
-         for(TripPattern pattern : patterns)
-         {
-        	 pattern.delete();
-         }
-         
-         List<Trip> trips = Trip.find("route = ? AND NOT pattern.route = ?", this, this).fetch();
-         
-         if (trips.size() > 0)
-        	 Logger.error("Found %s trips on this route that are not on a pattern of this route", trips.size());
-         
-         return super.delete();
+        this.agencyId = agency.id;
     }
 
     // slightly tricky as we can't match 1:1 against GTFS and TDM route types -- we'll pick or create a type.
@@ -204,29 +169,6 @@ public class Route extends Model {
 
     	}
     }
-
-    public static BigInteger nativeInsert(EntityManager em, org.onebusaway.gtfs.model.Route gtfsRoute, BigInteger agencyId)
-    {
-    	Query idQuery = em().createNativeQuery("SELECT NEXTVAL('hibernate_sequence');");
-    	BigInteger nextId = (BigInteger)idQuery.getSingleResult();
-
-        em.createNativeQuery("INSERT INTO route (id, routecolor, routedesc, gtfsrouteid, routelongname, routeshortname, routetextcolor, routetype_id, routeurl, agency_id)" +
-        	"  VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?);")
-          .setParameter(1,  nextId)
-          .setParameter(2,  gtfsRoute.getColor())
-          .setParameter(3,  gtfsRoute.getDesc())
-          .setParameter(4,  gtfsRoute.getId().toString())
-          .setParameter(5,  gtfsRoute.getLongName())
-          .setParameter(6,  gtfsRoute.getShortName())
-          .setParameter(7,  gtfsRoute.getTextColor())
-          .setParameter(8,  mapGtfsRouteType(gtfsRoute.getType()).id)
-          .setParameter(9,  gtfsRoute.getUrl())
-          .setParameter(10, agencyId)
-          .executeUpdate();
-
-        return nextId;
-    }
-
 	public com.conveyal.gtfs.model.Route toGtfs(com.conveyal.gtfs.model.Agency a) {
 		com.conveyal.gtfs.model.Route ret = new com.conveyal.gtfs.model.Route();
 		ret.agency = a;
@@ -248,13 +190,12 @@ public class Route extends Model {
 		return ret;
 	}
 
-	@Transient
 	@JsonIgnore
 	public String getGtfsId() {
 		if(gtfsRouteId != null && !gtfsRouteId.isEmpty())
 			return gtfsRouteId;
 		else
-			return id.toString();
+			return id;
 	}
 
 }

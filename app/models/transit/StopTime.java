@@ -1,5 +1,6 @@
 package models.transit;
 
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -18,40 +19,36 @@ import org.hibernate.annotations.Type;
 import play.db.jpa.Model;
 import models.gtfs.GtfsSnapshot;
 
-@Entity
-@JsonIgnoreProperties({ "persistent", "entityId" })
-public class StopTime extends Model {
+/**
+ * Represents a stop time. This is not a model, as it is stored directly as a list in Trip.
+ * @author mattwigway
+ *
+ */
+public class StopTime implements Serializable {
+	public static final long serialVersionUID = 1;
 	
-    public Integer arrivalTime;
-    public Integer departureTime;
+    public int arrivalTime;
+    public int departureTime;
  
-    public Integer stopSequence;
+    public int stopSequence;
     public String stopHeadsign;
     
-    @ManyToOne
-    public TripPatternStop patternStop;
+    /* reference to trip pattern stop is implied based on position, no stop sequence needed */
     
-    @Enumerated(EnumType.STRING)
     public StopTimePickupDropOffType pickupType;
     
-    @Enumerated(EnumType.STRING)
     public StopTimePickupDropOffType dropOffType;
     
-    public Double shapeDistTraveled;
+    public double shapeDistTraveled;
     
-    @JsonBackReference
-    @ManyToOne
-    public Trip trip;
-    
-    @ManyToOne
-    public Stop stop;
+    public String stopId;
     
     public StopTime()
     {
     	
     }
     
-    public StopTime(com.conveyal.gtfs.model.StopTime stopTime, int stopSequence, Trip trip, Stop stop, TripPatternStop tps) {
+    public StopTime(com.conveyal.gtfs.model.StopTime stopTime, int stopSequence, String stopId) {
         
     	this.arrivalTime = stopTime.arrival_time;
     	this.departureTime = stopTime.departure_time;
@@ -61,20 +58,9 @@ public class StopTime extends Model {
     	this.dropOffType = mapGtfsPickupDropOffType(stopTime.drop_off_type);
     	this.shapeDistTraveled = stopTime.shape_dist_traveled;
     	
-    	this.trip = trip;
-    	this.stop = stop;
-    	this.patternStop = tps;
+    	this.stopId = stopId;
     } 
 
-
-	public static void replaceStop(Stop newStop, Stop oldStop) {
-    	
-    	 StopTime.em().createNativeQuery("UPDATE stoptime SET stop_id = ? WHERE stop_id = ?;")
-    	          .setParameter(1, newStop.id)
-    	          .setParameter(2, oldStop.id)
-    	          .executeUpdate();
-    }
-    
     public static StopTimePickupDropOffType mapGtfsPickupDropOffType(Integer pickupDropOffType)
     {
     	switch(pickupDropOffType)
@@ -91,30 +77,8 @@ public class StopTime extends Model {
 			return null;
     	}
     }
-    
-    public static BigInteger nativeInsert(EntityManager em, com.conveyal.gtfs.model.StopTime gtfsStopTime, long trip_id, long stop_id, long patternStop_id)
-    {
-    	Query idQuery = em.createNativeQuery("SELECT NEXTVAL('hibernate_sequence');");
-    	BigInteger nextId = (BigInteger)idQuery.getSingleResult();
-    	
-        em.createNativeQuery("INSERT INTO stoptime (id, arrivaltime, departuretime, stopsequence, stopheadsign, pickuptype, dropofftype, shapedisttraveled, trip_id, stop_id, patternstop_id)" +
-        	"  VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);")
-          .setParameter(1, nextId)
-          .setParameter(2, gtfsStopTime.arrival_time)
-          .setParameter(3, gtfsStopTime.departure_time)
-          .setParameter(4, gtfsStopTime.stop_sequence)
-          .setParameter(5, gtfsStopTime.stop_headsign)
-          .setParameter(6, mapGtfsPickupDropOffType(gtfsStopTime.pickup_type).name())
-          .setParameter(7, mapGtfsPickupDropOffType(gtfsStopTime.drop_off_type).name())
-          .setParameter(8, gtfsStopTime.shape_dist_traveled)
-          .setParameter(9, trip_id)
-          .setParameter(10, stop_id)
-          .setParameter(11, patternStop_id)
-          .executeUpdate();
-        
-        return nextId;
-    }
 
+    // TODO fix
 	public com.conveyal.gtfs.model.StopTime toGtfs() {
 	    com.conveyal.gtfs.model.StopTime st = new com.conveyal.gtfs.model.StopTime();
 	    st.trip_id = trip.getGtfsId();
@@ -131,24 +95,4 @@ public class StopTime extends Model {
 	    
 	    return st;
 	}
-
-    /*public String getDepartureTimeString()
-    {
-    	long dateMs = departureTime * 1000;
-    	Date departure = new Date(dateMs);
-    	SimpleDateFormat df = new SimpleDateFormat("hh:mm:ss a");
-    	return df.format(departure);
-    	
-    	
-    }
-    
-    public String getSimpleDepartureTimeString()
-    {
-    	long dateMs = departureTime * 1000;
-    	Date departure = new Date(dateMs);
-    	SimpleDateFormat df = new SimpleDateFormat("h:mma");
-    	return df.format(departure);
-    	
-    	
-    }*/
 }

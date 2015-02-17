@@ -3,6 +3,7 @@ package models.transit;
 
 import static java.util.Collections.sort;
 
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -11,50 +12,25 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EntityManager;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.OrderColumn;
-import javax.persistence.Query;
+import models.Model;
 
-import org.codehaus.jackson.annotate.JsonCreator;
-import org.codehaus.jackson.annotate.JsonIgnore;
-import org.codehaus.jackson.annotate.JsonIgnoreProperties;
-import org.codehaus.jackson.annotate.JsonManagedReference;
 import org.geotools.ows.bindings.UpdateSequenceTypeBinding;
 import org.hibernate.annotations.Type;
 
 import play.Logger;
-import play.db.jpa.Model;
-import models.gtfs.GtfsSnapshot;
 
-@JsonIgnoreProperties({"entityId", "persistent"})
-@Entity
-public class TripPattern extends Model {
+public class TripPattern extends Model implements Serializable {
+	public static final long serialVersionUID = 1;
 
     public String name;
     public String headsign;
 
-    @Column(length = 8000,columnDefinition="TEXT")
     public String encodedShape;
     
-    @JsonIgnore
-    @ManyToOne
     public TripShape shape;
 
-    @ManyToOne
     public Route route;
 
-    @JsonManagedReference
-    @OneToMany(cascade = CascadeType.ALL)
     public List<TripPatternStop> patternStops;
 
     public Boolean longest;
@@ -70,16 +46,6 @@ public class TripPattern extends Model {
 
     public Integer headway;
 
-    @JsonCreator
-    public static TripPattern factory(long id) {
-      return TripPattern.findById(id);
-    }
-
-    @JsonCreator
-    public static TripPattern factory(String id) {
-      return TripPattern.findById(Long.parseLong(id));
-    }
-
     public TripPattern()
     {
 
@@ -93,46 +59,6 @@ public class TripPattern extends Model {
     	this.route = route;
     }
     
-    public TripPattern delete() {
-    	
-    	this.patternStops = new ArrayList<TripPatternStop>();
-    	this.save();
-        
-        List<TripPatternStop> patternStops = TripPatternStop.find("pattern = ?", this).fetch();
-        for(TripPatternStop patternStop : patternStops)
-        {
-            patternStop.delete();
-        }
-        
-        List<StopTime> stopTimes = StopTime.find("trip.pattern = ?", this).fetch();
-        for(StopTime stopTime : stopTimes)
-        {
-            stopTime.delete();
-        }
-
-        List<Trip> trips = Trip.find("pattern = ?", this).fetch();
-        
-        for(Trip trip : trips)
-        {
-            trip.delete();
-        }
-        
-        return super.delete();
-    }
-    
-    public void resequenceTripStops()
-    {
-        List<TripPatternStop> stops = TripPatternStop.find("pattern = ? order by stopSequence", this).fetch();
-
-        Integer sequence = 0;
-        for(TripPatternStop stop : stops)
-        {
-                stop.stopSequence = sequence;
-                stop.save();
-
-                sequence++;
-        }
-    }
     
     /**
      * Sort a list of patternstops by stop_sequence
@@ -180,6 +106,8 @@ public class TripPattern extends Model {
      * this lets us easily detect what has happened simply by length
      * @param tripPattern the trip pattern containing the new patternstops
      */
+    // TODO: update to use MapDB
+    /*
     public void reconcilePatternStops(TripPattern tripPattern) {        
         long[] originalStopIds = new long[this.patternStops.size()];
         long[] newStopIds = new long[tripPattern.patternStops.size()];
@@ -201,7 +129,7 @@ public class TripPattern extends Model {
             tripPattern.patternStops.get(i).stopSequence = i + 1;
         }
         
-        /* ADDITIONS */
+        // ADDITIONS
         if (originalStopIds.length == newStopIds.length - 1) {
             // we have an addition; find it
 
@@ -250,7 +178,7 @@ public class TripPattern extends Model {
             }                
         }
         
-        /* DELETIONS */
+        // DELETIONS
         else if (originalStopIds.length == newStopIds.length + 1) {
             // we have an deletion; find it
             int differenceLocation = -1;
@@ -320,7 +248,7 @@ public class TripPattern extends Model {
             }
         }
         
-        /* TRANSPOSITIONS */
+        // TRANSPOSITIONS
         else if (originalStopIds.length == newStopIds.length) {
             // Imagine the trip patterns pictured below (where . is a stop, and lines indicate the same stop)
             // the original trip pattern is on top, the new below
@@ -441,103 +369,10 @@ public class TripPattern extends Model {
         }
 
         
-        /* OTHER STUFF IS NOT SUPPORTED */
+        // OTHER STUFF IS NOT SUPPORTED
         else {
             throw new IllegalStateException("Changes to trip pattern stops must be made one at a time");
         }
     }
-
-    public static BigInteger createFromTrip(EntityManager em, BigInteger tripId)
-    {
-    	Trip trip = Trip.findById(tripId.longValue());
-
-    	Query idQuery = em.createNativeQuery("SELECT NEXTVAL('hibernate_sequence');");
-		BigInteger tripPatternId = (BigInteger)idQuery.getSingleResult();
-
-		Query q;
-
-		if(trip.shape != null)
-			q = em.createNativeQuery("INSERT INTO trippattern (id, name, route_id, headsign, shape_id)" +
-	    	"  VALUES(?, ?, ?, ?, ?);");
-		else
-			q = em.createNativeQuery("INSERT INTO trippattern (id, name, route_id, headsign)" +
-			    	"  VALUES(?, ?, ?, ?);");
-
-	      q.setParameter(1,  tripPatternId.longValue())
-	      .setParameter(2,  trip.route.routeShortName + "(" + trip.tripHeadsign + ")")
-	      .setParameter(3,  trip.route.id)
-	      .setParameter(4,  trip.tripHeadsign);
-
-	      if(trip.shape != null)
-	       q.setParameter(5,  trip.shape.id);
-
-	      q.executeUpdate();
-
-
-    	ArrayList<StopTime> stopTimes = trip.getStopTimes();
-
-    	Integer previousDepartureTime = 0;
-    	Double previousDistance = new Double(0);
-
-    	Boolean firstStop = true;
-    	
-    	String firstStopName = null;
-    	String lastStopName = null;
-
-    	for(StopTime stopTime : stopTimes)
-    	{
-    		BigInteger tripPatternStopId = (BigInteger)idQuery.getSingleResult();
-
-    		q = em.createNativeQuery("INSERT INTO trippatternstop (id, pattern_id, stop_id, stopsequence, defaultdwelltime, defaultdistance, defaulttraveltime)" +
-	    	"  VALUES(?, ?, ?, ?, ?, ?, ?);");
-
-    		q.setParameter(1,  tripPatternStopId.longValue());
-    		q.setParameter(2,  tripPatternId.longValue());
-    		q.setParameter(3,  stopTime.stop.id);
-    		q.setParameter(4,  stopTime.stopSequence);
-    		q.setParameter(5,  stopTime.departureTime - stopTime.arrivalTime);
-
-    		if(firstStop)
-    		{
-    			previousDepartureTime = stopTime.departureTime;
-
-    			q.setParameter(6,  new Double(0));
-    			q.setParameter(7,  0);
-
-    			firstStop = false;
-    			
-    			firstStopName = stopTime.stop.stopName;
-    		}
-    		else
-    		{
-    			q.setParameter(6,  stopTime.shapeDistTraveled - previousDistance);
-    			q.setParameter(7,  stopTime.arrivalTime - previousDepartureTime);
-    	
-
-    			previousDepartureTime = stopTime.departureTime;
-    			previousDistance = stopTime.shapeDistTraveled;
-    		}
-    		
-    		lastStopName = stopTime.stop.stopName;
-
-    		q.executeUpdate();
-    		
-    		q = em.createNativeQuery("INSERT INTO trippattern_trippatternstop (trippattern_id, patternstops_id) VALUES (?, ?);");
-    		
-    		q.setParameter(1,  tripPatternId.longValue());
-    		q.setParameter(2,  tripPatternStopId.longValue());
-    		
-    		q.executeUpdate();
-    		
-    				
-    				
-    	}
-    	
-    	trip.route.routeLongName = firstStopName + " - " + lastStopName;
-    	trip.route.save();
-
-    	Logger.info("Adding trip pattern: " + trip.route.routeShortName + " (" + trip.tripHeadsign + ")");
-
-    	return tripPatternId;
-    }
+    */
 }

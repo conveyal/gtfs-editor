@@ -63,10 +63,10 @@ public class Api extends Controller {
 		
 	}
 	
-    private static ObjectMapper mapper = new ObjectMapper();
+    public static ObjectMapper mapper = new ObjectMapper();
     private static JsonFactory jf = new JsonFactory();
 
-    private static String toJson(Object pojo, boolean prettyPrint)
+    public static String toJson(Object pojo, boolean prettyPrint)
             throws JsonMappingException, JsonGenerationException, IOException {
                 StringWriter sw = new StringWriter();
                 JsonGenerator jg = jf.createJsonGenerator(sw);
@@ -78,84 +78,6 @@ public class Api extends Controller {
             }
 
     // **** agency controllers ****
-
-    public static void getAgency(Long id) {
-        try {
-            if(id != null) {
-                Agency agency = Agency.findById(id);
-                if(agency != null)
-                    renderJSON(Api.toJson(agency, false));
-                else
-                    notFound();
-            }
-            else {
-                List<Agency> a = Agency.find("order by name").fetch();
-                renderJSON(Api.toJson(a, false));
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            badRequest();
-        }
-
-    }
-
-    public static void createAgency() {
-        Agency agency;
-
-        try {
-            agency = mapper.readValue(params.get("body"), Agency.class);
-            agency.save();
-
-            // check if gtfsAgencyId is specified, if not create from DB id
-            if(agency.gtfsAgencyId == null) {
-                agency.gtfsAgencyId = "AGENCY_" + agency.id.toString();
-                agency.save();
-            }
-
-            renderJSON(Api.toJson(agency, false));
-        } catch (Exception e) {
-            e.printStackTrace();
-            badRequest();
-        }
-    }
-
-
-    public static void updateAgency() {
-        Agency agency;
-
-        try {
-            agency = mapper.readValue(params.get("body"), Agency.class);
-
-            if(agency.id == null || Agency.findById(agency.id) == null)
-                badRequest();
-            
-            // check if gtfsAgencyId is specified, if not create from DB id
-            if(agency.gtfsAgencyId == null)
-            	agency.gtfsAgencyId = "AGENCY_" + agency.id.toString();
-
-            Agency updatedAgency = Agency.em().merge(agency);
-            updatedAgency.save();
-
-            renderJSON(Api.toJson(updatedAgency, false));
-        } catch (Exception e) {
-            e.printStackTrace();
-            badRequest();
-        }
-    }
-
-    public static void deleteAgency(Long id) {
-        if(id == null)
-            badRequest();
-
-        Agency agency = Agency.findById(id);
-
-        if(agency == null)
-            badRequest();
-
-        agency.delete();
-
-        ok();
-    }
 
  // **** route controllers ****
 

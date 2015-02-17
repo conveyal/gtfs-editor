@@ -1,5 +1,6 @@
 package models.transit;
 
+import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Set;
@@ -9,16 +10,16 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 
+import models.Model;
+
 import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.hibernate.annotations.Type;
 
 import play.Logger;
-import play.db.jpa.Model;
 
-@JsonIgnoreProperties({"entityId", "persistent"})
-@Entity
-public class Agency extends Model {
+public class Agency extends Model implements Serializable {
+	public static final long serialVersionUID = 1;
 	
 	public String gtfsAgencyId;
     public String name;
@@ -34,9 +35,9 @@ public class Agency extends Model {
     public Double defaultLat;
     public Double defaultLon;
     
-    @ManyToOne
-    public RouteType defaultRouteType;
+    public String routeTypeId;
 
+    /*
     @JsonCreator
     public static Agency factory(long id) {
       return Agency.findById(id);
@@ -46,6 +47,7 @@ public class Agency extends Model {
     public static Agency factory(String id) {
       return Agency.findById(Long.parseLong(id));
     }
+    */
     
     public Agency(com.conveyal.gtfs.model.Agency agency) {
         this.gtfsAgencyId = agency.agency_id;
