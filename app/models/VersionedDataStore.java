@@ -12,6 +12,7 @@ import models.transit.ServiceCalendar;
 import models.transit.Stop;
 import models.transit.Trip;
 import models.transit.TripPattern;
+import models.transit.TripShape;
 
 import org.mapdb.BTreeKeySerializer;
 import org.mapdb.Bind;
@@ -62,8 +63,6 @@ public class VersionedDataStore {
 	 * if it does not you will get a (hopefully) empty DB, unless you've done the same thing previously.
 	 */
 	public static AgencyTx getAgencyTx (String agencyId) {
-		// should this check if the agency exists?
-		// that would add additional overhead.
 		if (!agencyTxMakers.containsKey(agencyId)) {
 			synchronized (agencyTxMakers) {
 				if (!agencyTxMakers.containsKey(agencyId)) {
@@ -81,6 +80,14 @@ public class VersionedDataStore {
 		}
 		
 		return new AgencyTx(agencyTxMakers.get(agencyId).makeTx());
+	}
+	
+	/** Convenience function to check if an agency exists */
+	public static boolean agencyExists (String agencyId) {
+		GlobalTx tx = getGlobalTx();
+		boolean exists = tx.agencies.containsKey(agencyId);
+		tx.rollback();
+		return exists;		
 	}
 	
 	/** A wrapped transaction, so the database just looks like a POJO */
@@ -178,6 +185,7 @@ public class VersionedDataStore {
 		public MapWithModificationListener<String, Trip> trips;
 		public MapWithModificationListener<String, ServiceCalendar> calendars;
 		public MapWithModificationListener<String, ScheduleException> exceptions;
+		public MapWithModificationListener<String, TripShape> shapes;
 		
 		// secondary indices
 		
@@ -187,6 +195,9 @@ public class VersionedDataStore {
 		/** <route ID, trip pattern ID> */
 		public NavigableSet<Tuple2<String, String>> tripPatternsByRoute;
 		
+		/** <trip pattern ID, trip ID> */
+		public NavigableSet<Tuple2<String, String>> tripsByTripPattern;
+		
 		public AgencyTx (DB tx) {
 			super(tx);
 			
@@ -195,6 +206,7 @@ public class VersionedDataStore {
 			trips = getMap("trips");
 			calendars = getMap("calendars");
 			exceptions = getMap("exceptions");
+			shapes = getMap("shapes");
 			
 			// build secondary indices
 			// we store indices in the mapdb not because we care about persistence, but because then they
@@ -221,6 +233,15 @@ public class VersionedDataStore {
 				}
 			});
 			
+			tripsByTripPattern = getSet("tripsByTripPattern");
+			Bind.secondaryKeys(trips, tripsByTripPattern, new Fun.Function2<String[], String, Trip> () {
+
+				@Override
+				public String[] run(String tripId, Trip trip) {
+					// TODO Auto-generated method stub
+					return new String[] { trip.patternId };
+				}				
+			});			
 		}
 	}
 }

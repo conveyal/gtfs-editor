@@ -68,6 +68,13 @@ public class TripShape extends Model implements Serializable {
     	this.shape = geometryFactory.createLineString(coords);
     	this.gtfsShapeId = shapeId;
     }
+    
+    /**
+     * Create a trip shape from an encoded polyline.
+     */
+    public TripShape(String encoded) {
+    	this.shape = generateLinestring(encoded);
+    }
 
     public void updateShapeFromEncoded(String encoded) {
     	this.shape = generateLinestring(encoded);
@@ -111,5 +118,5 @@ public class TripShape extends Model implements Serializable {
 		public InvalidShapeException(String msg) {
 			super(msg);
 		}
-	}   
+	}
 }
