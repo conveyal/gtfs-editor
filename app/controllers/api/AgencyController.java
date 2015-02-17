@@ -28,6 +28,7 @@ public class AgencyController extends Controller {
         	
             if(id != null) {
 	            if (!tx.agencies.containsKey(id)) {
+	            	tx.rollback();
 	            	notFound();
 	            	return;
 	            }
@@ -38,7 +39,7 @@ public class AgencyController extends Controller {
                 renderJSON(Api.toJson(tx.agencies.values(), false));
             }
             
-            tx.commit();
+            tx.rollback();
         } catch (Exception e) {
             e.printStackTrace();
             badRequest();
@@ -76,8 +77,11 @@ public class AgencyController extends Controller {
             
             GlobalTx tx = VersionedDataStore.getGlobalTx();
 
-            if(agency.id == null || !tx.agencies.containsKey(agency.id))
+            if(agency.id == null || !tx.agencies.containsKey(agency.id)) {
+            	tx.rollback();
                 badRequest();
+                return;
+            }
             
             // check if gtfsAgencyId is specified, if not create from DB id
             if(agency.gtfsAgencyId == null)

@@ -29,7 +29,7 @@ public class TripPattern extends Model implements Serializable {
     
     public TripShape shape;
 
-    public Route route;
+    public String routeId;
 
     public List<TripPatternStop> patternStops;
 
