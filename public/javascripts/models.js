@@ -351,7 +351,7 @@ G.RouteTypes = Backbone.Collection.extend({
 
       var reversedLine = createEncodedPolyline(L.polyline(latlngs));
 
-      this.get('encodedShape', reversedLine);
+      this.set('encodedShape', reversedLine);
 
     },
 
