@@ -25,15 +25,15 @@ import com.conveyal.gtfs.model.Service;
 import play.db.jpa.Model;
 import models.gtfs.GtfsSnapshot;
 
-@JsonIgnoreProperties({"entityId", "persistent"})
+@JsonIgnoreProperties({"entityId", "persistent", "routesText"})
 @Entity
 public class ServiceCalendar extends Model {
-	
+
 	@ManyToOne
     public Agency agency;
-	
+
 	public String description;
-	
+
 	public String gtfsServiceId;
     public Boolean monday;
     public Boolean tuesday;
@@ -44,39 +44,39 @@ public class ServiceCalendar extends Model {
     public Boolean sunday;
     public Date startDate;
     public Date endDate;
-    
+
     // give the UI a little information about the content of this calendar
     public long getNumberOfTrips () {
     	return Trip.count("serviceCalendar = ?", this);
     }
-    
+
     public Collection<String> getRoutes () {
     	List<String> ret = new ArrayList<String>();
-    	
+
     	// we're using a JPA native query here because looping over all trips for an agency is too slow
     	Query q = Trip.em().createQuery("SELECT DISTINCT t.route FROM Trip t WHERE serviceCalendar_id = ?");
     	q.setParameter(1, this.id);
     	List<Route> routes = q.getResultList();
-    	
+
     	for (Route route : routes) {
     		String name = route.routeShortName;
-    		
+
     		if (name == null || name.isEmpty())
     			name = route.routeLongName;
-    		
+
     		ret.add(name);
     	}
-    	
+
     	return ret;
     }
-    
+
     // these are computed properties that we can't actually set, but
     // unfortunately this seems to be the only way to explicitly ignore only
     // these properties on deserialization.
     // https://github.com/FasterXML/jackson-databind/issues/95
     public void setNumberOfTrips (long trips) {}
     public void setRoutes (Collection<String> routes) {}
-    
+
 	@JsonCreator
     public static ServiceCalendar factory(long id) {
       return ServiceCalendar.findById(id);
@@ -88,40 +88,40 @@ public class ServiceCalendar extends Model {
     }
 
     /**
-     * Get a description for an OBA GTFS service calendar 
+     * Get a description for an OBA GTFS service calendar
      */
     public static String getNameForGtfsServiceCalendar(org.onebusaway.gtfs.model.ServiceCalendar cal) {
         StringBuilder sb = new StringBuilder(14);
-        
+
         if (cal.getMonday() == 1)
             sb.append("Mo");
-        
+
         if (cal.getTuesday() == 1)
             sb.append("Tu");
-        
+
         if (cal.getWednesday() == 1)
             sb.append("We");
-        
+
         if (cal.getThursday() == 1)
             sb.append("Th");
-        
+
         if (cal.getFriday() == 1)
             sb.append("Fr");
-        
+
         if (cal.getSaturday() == 1)
             sb.append("Sa");
-        
+
         if (cal.getSunday() == 1)
             sb.append("Su");
-        
+
         String ret = sb.toString();
-        
+
         if (ret.equals(""))
         	return cal.getServiceId().getId();
         else
         	return ret;
     }
-    
+
     public String toString() {
 
     	String str = "";
@@ -154,7 +154,7 @@ public class ServiceCalendar extends Model {
     {
     	Query idQuery = em.createNativeQuery("SELECT NEXTVAL('hibernate_sequence');");
 		BigInteger nextId = (BigInteger)idQuery.getSingleResult();
-		
+
 		em.createNativeQuery("INSERT INTO servicecalendar (id, gtfsserviceid, monday, tuesday, wednesday, thursday, friday, saturday, sunday, startdate, enddate, agency_id, description)" +
 	    	"  VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);")
 	      .setParameter(1,  nextId)
@@ -171,14 +171,14 @@ public class ServiceCalendar extends Model {
 	      .setParameter(12, agencyId)
 	      .setParameter(13, getNameForGtfsServiceCalendar(gtfsServiceCalendar))
 	      .executeUpdate();
-		
+
 		return nextId;
     }
 
     /**
      * Convert this service to a GTFS service calendar.
      * @param startDate int, in GTFS format: YYYYMMDD
-     * @param endDate int, again in GTFS format 
+     * @param endDate int, again in GTFS format
      */
 	public Service toGtfs(int startDate, int endDate) {
 		Service ret = new Service(getId().toString());
@@ -193,26 +193,26 @@ public class ServiceCalendar extends Model {
 		ret.calendar.thursday   = thursday  ? 1 : 0;
 		ret.calendar.friday     = friday    ? 1 : 0;
 		ret.calendar.saturday   = saturday  ? 1 : 0;
-		
+
 		// TODO: calendar dates
 		return ret;
 	}
-	
+
 	// equals and hashcode use DB ID; they are used to put service calendar dates into a HashMultimap in ProcessGtfsSnapshotExport
 	public int hashCode () {
 		return (int) (long) id;
 	}
-    
+
 	public boolean equals(Object o) {
 		if (o instanceof ServiceCalendar) {
 			ServiceCalendar c = (ServiceCalendar) o;
-			
+
 			return id.equals(c.id);
 		}
-		
+
 		return false;
 	}
-	
+
 	/**
 	 * Used to represent a service calendar and its service on a particular route.
 	 */
@@ -220,7 +220,7 @@ public class ServiceCalendar extends Model {
 		public String description;
 		public long id;
 		public long routeTrips;
-		
+
 		public ServiceCalendarForPattern(ServiceCalendar cal, TripPattern patt) {
 			this.description = cal.description;
 			this.id = cal.id;
