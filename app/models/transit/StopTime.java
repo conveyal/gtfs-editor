@@ -15,9 +15,9 @@ import javax.persistence.Query;
 import org.codehaus.jackson.annotate.JsonBackReference;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.hibernate.annotations.Type;
+import org.mapdb.Fun.Tuple2;
 
 import play.db.jpa.Model;
-import models.gtfs.GtfsSnapshot;
 
 /**
  * Represents a stop time. This is not a model, as it is stored directly as a list in Trip.
@@ -30,7 +30,6 @@ public class StopTime implements Serializable {
     public int arrivalTime;
     public int departureTime;
  
-    public int stopSequence;
     public String stopHeadsign;
     
     /* reference to trip pattern stop is implied based on position, no stop sequence needed */
@@ -41,18 +40,17 @@ public class StopTime implements Serializable {
     
     public double shapeDistTraveled;
     
-    public String stopId;
+    public Tuple2<String, String> stopId;
     
     public StopTime()
     {
     	
     }
     
-    public StopTime(com.conveyal.gtfs.model.StopTime stopTime, int stopSequence, String stopId) {
+    public StopTime(com.conveyal.gtfs.model.StopTime stopTime, Tuple2<String, String> stopId) {
         
     	this.arrivalTime = stopTime.arrival_time;
     	this.departureTime = stopTime.departure_time;
-    	this.stopSequence = stopSequence;
     	this.stopHeadsign = stopTime.stop_headsign;
     	this.pickupType = mapGtfsPickupDropOffType(stopTime.pickup_type);
     	this.dropOffType = mapGtfsPickupDropOffType(stopTime.drop_off_type);
@@ -79,7 +77,7 @@ public class StopTime implements Serializable {
     }
 
     // TODO fix
-	public com.conveyal.gtfs.model.StopTime toGtfs() {
+	/*public com.conveyal.gtfs.model.StopTime toGtfs() {
 	    com.conveyal.gtfs.model.StopTime st = new com.conveyal.gtfs.model.StopTime();
 	    st.trip_id = trip.getGtfsId();
 	    st.stop_id = stop.getGtfsId();
@@ -94,5 +92,5 @@ public class StopTime implements Serializable {
 	    	st.timepoint = patternStop.timepoint ? 1 : 0;
 	    
 	    return st;
-	}
+	}*/
 }

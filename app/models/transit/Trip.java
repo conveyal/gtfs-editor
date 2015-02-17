@@ -82,14 +82,13 @@ public class Trip extends Model implements Serializable {
 			return id.toString();
     }
     
-	public com.conveyal.gtfs.model.Trip toGtfs(com.conveyal.gtfs.model.Route route, Service service) {
+	/*public com.conveyal.gtfs.model.Trip toGtfs(com.conveyal.gtfs.model.Route route, Service service) {
 		com.conveyal.gtfs.model.Trip ret = new com.conveyal.gtfs.model.Trip();
 		
 		ret.block_id = blockId;
 		ret.route = route;
 		ret.trip_id = getGtfsId();
 		ret.service = service;
-		ret.shape_id = shape == null ? null : shape.getGtfsId();
 		ret.trip_headsign = tripHeadsign;
 		ret.trip_short_name = tripShortName;
 		ret.direction_id = tripDirection == tripDirection.A ? 0 : 1;
@@ -120,7 +119,7 @@ public class Trip extends Model implements Serializable {
 		}
 		
 		return ret;
-	}
+	}*/
 
 	/** get the frequencies.txt entry for this trip, or null if this trip should not be in frequencies.txt */
 	public Frequency getFrequency(com.conveyal.gtfs.model.Trip trip) {

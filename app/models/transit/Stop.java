@@ -1,5 +1,6 @@
 package models.transit;
 
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;

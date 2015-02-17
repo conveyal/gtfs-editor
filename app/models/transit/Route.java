@@ -128,7 +128,7 @@ public class Route extends Model implements Serializable {
     	if(type == null)
 			return null;
 		
-    	RouteType routeType = RouteType.find("gtfsRouteType = ?", type).first();
+    	RouteType routeType = null;//RouteType.find("gtfsRouteType = ?", type).first();
     	
     	if(routeType != null)
     		return routeType;
@@ -138,7 +138,7 @@ public class Route extends Model implements Serializable {
     		routeType = new RouteType();
     		routeType.gtfsRouteType = type;
     		routeType.description = type.name();
-    		routeType.save();
+    		//routeType.save();
     		
     		return routeType;
     	}    

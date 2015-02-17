@@ -26,7 +26,7 @@ import utils.StopSequence;
 
 //@OnApplicationStart
 public class ProcessSystemMap extends Job {
-
+/*
 	
 	public void doJob() {
 		
@@ -200,5 +200,6 @@ public class ProcessSystemMap extends Job {
 	
 		TripShape.em().createNativeQuery("UPDATE tripshape SET simpleshape = ST_Simplify(shape, 0.00001);").executeUpdate();
 	}
+	*/
 }
 

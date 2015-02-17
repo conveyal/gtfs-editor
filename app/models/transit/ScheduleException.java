@@ -26,7 +26,7 @@ public class ScheduleException extends Model implements Serializable {
 	public static final long serialVersionUID = 1;
 	
 	/** The agency whose service this schedule exception describes */
-	public Agency agency;
+	public String agencyId;
 	
 	/**
 	 * If non-null, run service that would ordinarily run on this day of the week.
@@ -41,7 +41,7 @@ public class ScheduleException extends Model implements Serializable {
 	public List<LocalDate> dates;
 	
 	/** A custom schedule. Only used if like == null */
-	public List<ServiceCalendar> customSchedule;
+	public List<String> customSchedule;
 	
 	/**
 	 * Represents a desire about what service should be like on a particular day.

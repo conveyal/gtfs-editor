@@ -1,8 +1,11 @@
 package models;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.Map;
 import java.util.NavigableSet;
+import java.util.Set;
+import java.util.concurrent.ConcurrentMap;
 
 import models.transit.Agency;
 import models.transit.Route;
@@ -15,6 +18,7 @@ import models.transit.TripPattern;
 import models.transit.TripShape;
 
 import org.mapdb.BTreeKeySerializer;
+import org.mapdb.BTreeMap;
 import org.mapdb.Bind;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
@@ -24,7 +28,10 @@ import org.mapdb.Fun.Tuple2;
 import org.mapdb.Serializer;
 import org.mapdb.TxMaker;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.Maps;
+import com.google.protobuf.ServiceException;
 
 import play.Logger;
 import play.Play;
@@ -96,7 +103,7 @@ public class VersionedDataStore {
 		protected final DB tx;
 		
 		/** Convenience function to get a map */
-		protected final <T1, T2> MapWithModificationListener<T1, T2> getMap (String name) {
+		protected final <T1, T2> BTreeMap <T1, T2> getMap (String name) {
 			return tx.createTreeMap(name)
 					// use java serialization to allow for schema upgrades
 					.valueSerializer(Serializer.JAVA)
@@ -198,6 +205,15 @@ public class VersionedDataStore {
 		/** <trip pattern ID, trip ID> */
 		public NavigableSet<Tuple2<String, String>> tripsByTripPattern;
 		
+		/** <calendar id, schedule exception id> */
+		public NavigableSet<Tuple2<String, String>> exceptionsByCalendar;
+		
+		/** number of trips on each tuple2<patternId, calendar id> */
+		public ConcurrentMap<Tuple2<String, String>, Long> tripCountByPatternAndCalendar;
+		
+		/** number of trips on each calendar */
+		public ConcurrentMap<String, Long> tripCountByCalendar;
+		
 		public AgencyTx (DB tx) {
 			super(tx);
 			
@@ -241,7 +257,58 @@ public class VersionedDataStore {
 					// TODO Auto-generated method stub
 					return new String[] { trip.patternId };
 				}				
-			});			
+			});
+			
+			exceptionsByCalendar = getSet("exceptionsByCalendar");
+			Bind.secondaryKeys(exceptions, exceptionsByCalendar, new Fun.Function2<String[], String, ScheduleException> () {
+
+				@Override
+				public String[] run(String key, ScheduleException ex) {
+					if (ex.customSchedule == null) return new String[0];
+					
+					return ex.customSchedule.toArray(new String[ex.customSchedule.size()]);
+				}
+				
+			});
+			
+			tripCountByPatternAndCalendar = getMap("tripCountByPatternAndCalendar");
+			Bind.histogram(trips, tripCountByPatternAndCalendar, new Fun.Function2<Tuple2<String, String>, String, Trip>() {
+
+				@Override
+				public Tuple2<String, String> run(String tripId, Trip trip) {
+					return new Tuple2(trip.patternId, trip.calendarId);
+				}
+			});
+			
+			tripCountByCalendar = getMap("tripCountByCalendar");
+			Bind.histogram(trips, tripCountByCalendar, new Fun.Function2<String, String, Trip>() {
+
+				@Override
+				public String run(String key, Trip trip) {
+					// TODO Auto-generated method stub
+					return trip.calendarId;
+				}
+			});
+		}
+
+		public Collection<Trip> getTripsByPattern(String patternId) {
+			Set<Tuple2<String, String>> matchedKeys = tripsByTripPattern.subSet(new Tuple2(patternId, null), new Tuple2(patternId, Fun.HI));
+			
+			return Collections2.transform(matchedKeys, new Function<Tuple2<String, String>, Trip> () {
+				public Trip apply(Tuple2<String, String> input) {
+					return trips.get(input.b);
+				}	
+			});
+		}
+		
+		public Collection<ScheduleException> getExceptionsByCalendar(String calendarId) {
+			Set<Tuple2<String, String>> matchedKeys = exceptionsByCalendar.subSet(new Tuple2(calendarId, null), new Tuple2(calendarId, Fun.HI));
+			
+			return Collections2.transform(matchedKeys, new Function<Tuple2<String, String>, ScheduleException> () {
+				public ScheduleException apply(Tuple2<String, String> input) {
+					return exceptions.get(input.b);
+				}	
+			});
 		}
 	}
 }

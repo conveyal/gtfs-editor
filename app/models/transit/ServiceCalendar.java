@@ -20,7 +20,7 @@ import models.Model;
 public class ServiceCalendar extends Model implements Serializable {
 	public static final long serialVersionUID = 1;
 	
-    public Agency agency;
+    public String agencyId;
 	
 	public String description;
 	
@@ -81,9 +81,9 @@ public class ServiceCalendar extends Model implements Serializable {
 	}
 
 	// give the UI a little information about the content of this calendar
-    public long getNumberOfTrips () {
+    /*public long getNumberOfTrips () {
     	return Trip.count("serviceCalendar = ?", this);
-    }
+    }*/
     
     /*
     public Collection<String> getRoutes () {
@@ -216,15 +216,15 @@ public class ServiceCalendar extends Model implements Serializable {
 	/**
 	 * Used to represent a service calendar and its service on a particular route.
 	 */
-	/*public static class ServiceCalendarForPattern {
+	public static class ServiceCalendarForPattern {
 		public String description;
 		public String id;
 		public long routeTrips;
 		
-		public ServiceCalendarForPattern(ServiceCalendar cal, TripPattern patt) {
+		public ServiceCalendarForPattern(ServiceCalendar cal, TripPattern patt, long routeTrips	) {
 			this.description = cal.description;
 			this.id = cal.id;
-			this.routeTrips = Trip.count("serviceCalendar = ? AND pattern = ?", cal, patt);
+			this.routeTrips = routeTrips;
 		}
-	}*/
+	}
 }

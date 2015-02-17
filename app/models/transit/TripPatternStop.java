@@ -18,8 +18,6 @@ public class TripPatternStop implements Serializable {
 
     public Tuple2<String, String> stopId;
 
-	public Integer stopSequence;
-
 	public Double defaultDistance;
 
 	public int defaultTravelTime;
