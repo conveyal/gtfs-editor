@@ -1,14 +1,20 @@
 import org.junit.*;
 
+import org.mapdb.DB;
+import org.mapdb.DBMaker;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import jersey.repackaged.com.google.common.collect.Lists;
 import static java.util.Collections.sort;
 import play.test.*;
 import models.*;
+import models.VersionedDataStore.AgencyTx;
+import models.VersionedDataStore.GlobalTx;
 import models.transit.Agency;
 import models.transit.Route;
 import models.transit.RouteType;
@@ -16,9 +22,8 @@ import models.transit.Stop;
 import models.transit.StopTime;
 import models.transit.Trip;
 import models.transit.TripPattern;
-import models.transit.TripPattern.PatternStopSequenceComparator;
-import models.transit.TripPattern.StopTimeSequenceComparator;
 import models.transit.TripPatternStop;
+import static controllers.api.TripPatternController.reconcilePatternStops;
 
 /**
  * Test that reconciling trip patterns does the right thing with stop times, etc.
@@ -32,17 +37,19 @@ import models.transit.TripPatternStop;
 public class TripPatternReconciliationTest extends UnitTest {
     private Agency agency;
     private RouteType routeType;
+    private AgencyTx atx;
+    private GlobalTx gtx;
     
     @Before
     public void setUp () {
-        // Technically, this is the wrong thing to do, because it also zaps the unmanaged spatial_ref_sys table and
-        // postgis views. But deleteAllModels() has a bug with sequences, and this unit test isn't using any
-        // PostGIS functions.
-        Fixtures.deleteDatabase();
-        agency = new Agency("agency", "agency", "http://www.example.com", "America/New_York", "en", "5551234567");
-        agency.save();
-        routeType = new RouteType();
-        routeType.save();
+    	DB db = DBMaker.newHeapDB()
+    			.transactionDisable()
+    			.make();
+    	
+    	atx = new AgencyTx(db);
+    	
+    	DB global = DBMaker.newHeapDB().transactionDisable().make();
+    	gtx = new GlobalTx(global);
     }
     
     /** Make some dummy stops */
@@ -53,7 +60,7 @@ public class TripPatternReconciliationTest extends UnitTest {
         for (int i = 0; i < 20; i++) {
             // proceeding east along North Ave west of Wicker Park, Chicago, Ill.
             ret[i] = new Stop(agency, "stop_" + i, null, null, null, 41.9100, -87.713 + i * 0.001);
-            ret[i].save();
+            gtx.stops.put(ret[i].id, ret[i]);
         }
         
         return ret;
@@ -74,17 +81,17 @@ public class TripPatternReconciliationTest extends UnitTest {
         // (that seemed like a good idea at the time, but in retrospect I should have stopped at every stop)
         int j = 1;
         for (int i = 0; i < 15; i += 2) {
-            TripPatternStop ps = new TripPatternStop(tp, stops[i], j++, 120);
+            TripPatternStop ps = new TripPatternStop(tp, stops[i], 120);
             pss.add(ps);
         }
         
         if (loop) {
-            TripPatternStop ps = new TripPatternStop(tp, stops[0], j++, 120);
+            TripPatternStop ps = new TripPatternStop(tp, stops[0], 120);
             pss.add(ps);
         }
         
         tp.patternStops = pss;
-        tp.save();
+        atx.tripPatterns.put(tp.id, tp);
         
         return tp;
     }
@@ -96,31 +103,34 @@ public class TripPatternReconciliationTest extends UnitTest {
     /** Create some stop times for the trip pattern */
     private void createStopTimesForTripPattern (TripPattern tp, boolean skipStop) {
         Route route = new Route("1", "One", routeType, null, agency);
-        route.save();
+        atx.routes.put(route.id, route);
 
         // 6:00 am
         int currentTime = 6 * 60 * 60;
 
         for (int i = 0; i < 5; i++) {
             Trip trip = new Trip();
-            trip.route = route;
-            trip.pattern = tp;
-            trip.save();
+            trip.routeId = route.id;
+            trip.patternId = tp.id;
 
+            List<StopTime> sts = Lists.newArrayList();
+            int idx = 0;
             for (TripPatternStop ps : tp.patternStops) {
-                if (skipStop && ps.stopSequence.equals(6)) // stop 10
+                if (skipStop && idx++ == 5) { // stop 10
+                    sts.add(null);
                     continue;
+                }
                 
                 StopTime st = new StopTime();
                 st.arrivalTime = st.departureTime = currentTime;
-                st.stopSequence = ps.stopSequence;
-                st.stop = ps.stop;
-                st.patternStop = ps;
-                st.trip = trip;
-                st.save();
-
+                st.stopId = ps.stopId;
+                sts.add(st);
+                
                 currentTime += ps.defaultTravelTime;
             }
+            
+            trip.stopTimes = sts;
+            atx.trips.put(trip.id, trip);
         }
     }
     
@@ -132,67 +142,44 @@ public class TripPatternReconciliationTest extends UnitTest {
         TripPattern tp = makePattern(stops);
         createStopTimesForTripPattern(tp);
         
-        // make sure the correct number of stop times were created
-        assertEquals(40, StopTime.count());
-        
         // make a new pattern
         TripPattern tp2 = makePattern(stops);
         
         assertEquals(8, tp.patternStops.size());
         
         // check that it worked
-        Collection<Trip> trips = Trip.find("pattern = ?", tp).fetch();
+        Collection<Trip> trips = atx.trips.values();
         
         for (Trip t : trips) {
-            List<StopTime> stopTimes = t.getStopTimes();
+            List<StopTime> stopTimes = t.stopTimes;
             
             assertEquals(8, stopTimes.size());
-            
-            sort(stopTimes, new StopTimeSequenceComparator());
-            
-            assertEquals(stops[14].id, stopTimes.get(7).stop.id);
-            assertEquals((Integer) 8, stopTimes.get(7).stopSequence);
+                        
+            assertEquals(stops[14].id, stopTimes.get(7).stopId);
         }
         
         // add a pattern stop
-        TripPatternStop tps2 = new TripPatternStop(tp2, stops[5], 4, 180);
+        TripPatternStop tps2 = new TripPatternStop(tp2, stops[5], 180);
         
-        // update stop sequences
-        // it's ok to assume order here since we made the stops a moment ago, in order
-        for (int i = 4; i < tp2.patternStops.size(); i++) {
-            tp2.patternStops.get(i).stopSequence++;
-        }
-        
-        // order shouldn't matter; test this implicitly
-        tp2.patternStops.add(tps2);
+        tp2.patternStops.add(4, tps2);
 
-        tp.reconcilePatternStops(tp2);
+        reconcilePatternStops(tp, tp2, atx);
         
-        // check that the stop was added
-        // this is actually not done in reconcilePatternStops; it only updates the stop times
-        //assertEquals(9, tp.patternStops.size());
-        
-        // only now sort the patternstops
-        sort(tp2.patternStops, new PatternStopSequenceComparator());
-        
-        assertEquals(stops[5].id, tp2.patternStops.get(4).stop.id);
+        assertEquals(stops[5].id, tp2.patternStops.get(4).stopId);
         
         // check that no stop times were added, but that stop sequences were updated
-        assertEquals(40, StopTime.count());
-        
-        trips = Trip.find("pattern = ?", tp).fetch();
+        trips = atx.trips.values();
         
         for (Trip t : trips) {
-            List<StopTime> stopTimes = t.getStopTimes();
+            List<StopTime> stopTimes = t.stopTimes;
             
-            assertEquals(8, stopTimes.size());
+            assertEquals(9, stopTimes.size());
+                        
+            // make sure it moved
+            assertEquals(stops[14].id, stopTimes.get(8).stopId);
             
-            sort(stopTimes, new StopTimeSequenceComparator());
-            
-            // it's still the seventh stoptime, since there is no 4.
-            assertEquals(stops[14].id, stopTimes.get(7).stop.id);
-            // it was eight before
-            assertEquals((Integer) 9, stopTimes.get(7).stopSequence);
+            // make sure there is a blank
+            assertEquals(null, stopTimes.get(4));
         }
     }
     
@@ -204,47 +191,35 @@ public class TripPatternReconciliationTest extends UnitTest {
         TripPattern tp = makePattern(stops);
         createStopTimesForTripPattern(tp);
         
-        // make sure the correct number of stop times were created
-        assertEquals(40, StopTime.count());
-        
         // make a new pattern
         TripPattern tp2 = makePattern(stops);
         
         assertEquals(8, tp.patternStops.size());
         
         // check that it worked
-        Collection<Trip> trips = Trip.find("pattern = ?", tp).fetch();
+        Collection<Trip> trips = atx.trips.values();
         
         for (Trip t : trips) {
-            List<StopTime> stopTimes = t.getStopTimes();
+            List<StopTime> stopTimes = t.stopTimes;
             
             assertEquals(8, stopTimes.size());
             
-            sort(stopTimes, new StopTimeSequenceComparator());
-            
-            assertEquals(stops[14].id, stopTimes.get(7).stop.id);
-            assertEquals((Integer) 8, stopTimes.get(7).stopSequence);
+            assertEquals(stops[14].id, stopTimes.get(7).stopId);
         }
         
         // add a pattern stop at the end
-        // note that stop sequence is nonconsecutive
-        TripPatternStop tps2 = new TripPatternStop(tp2, stops[5], 12, 180);
+        TripPatternStop tps2 = new TripPatternStop(tp2, stops[5], 180);
 
         tp2.patternStops.add(tps2);
 
-        tp.reconcilePatternStops(tp2);
+        reconcilePatternStops(tp, tp2, atx);
         
         // make sure that the stoptimes haven't changed one iota
         for (Trip t : trips) {
-            List<StopTime> stopTimes = t.getStopTimes();
+            List<StopTime> stopTimes = t.stopTimes;
             
-            assertEquals(8, stopTimes.size());
-            
-            sort(stopTimes, new StopTimeSequenceComparator());
-            
-            assertEquals(stops[14].id, stopTimes.get(7).stop.id);
-            // it was 8 before
-            assertEquals((Integer) 8, stopTimes.get(7).stopSequence);
+            assertEquals(8, stopTimes.size());            
+            assertEquals(stops[14].id, stopTimes.get(7).stopId);
         }
     }
     
@@ -256,58 +231,46 @@ public class TripPatternReconciliationTest extends UnitTest {
         TripPattern tp = makePattern(stops);
         createStopTimesForTripPattern(tp);
         
-        // make sure the correct number of stop times were created
-        assertEquals(40, StopTime.count());
-        
         // make a new pattern
         TripPattern tp2 = makePattern(stops);
         
         assertEquals(8, tp.patternStops.size());
         
         // check that it worked
-        Collection<Trip> trips = Trip.find("pattern = ?", tp).fetch();
+        Collection<Trip> trips = atx.trips.values();
         
         for (Trip t : trips) {
-            List<StopTime> stopTimes = t.getStopTimes();
+            List<StopTime> stopTimes = t.stopTimes;
             
             assertEquals(8, stopTimes.size());
-            
-            sort(stopTimes, new StopTimeSequenceComparator());
-            
-            assertEquals(stops[14].id, stopTimes.get(7).stop.id);
-            assertEquals((Integer) 8, stopTimes.get(7).stopSequence);
+                        
+            assertEquals(stops[14].id, stopTimes.get(7).stopId);
         }
         
         // zap the third stop (which is stop 4)
         TripPatternStop removed = tp2.patternStops.remove(2);
         
         // make sure we got the indices right (this is more a test of the test)
-        assertEquals(stops[4].id, removed.stop.id);
+        assertEquals(stops[4].id, removed.stopId);
         
-        tp.reconcilePatternStops(tp2);
+        reconcilePatternStops(tp, tp2, atx);
         
         // make sure that stop times got deleted
-        assertEquals(35, StopTime.count());
         
-        // check that the right stop times got deleted and that sequences were repacked
-        trips = Trip.find("pattern = ?", tp).fetch();
+        // check that the right stop times got deleted and that stops are still in order
+        trips = atx.trips.values();
         
         for (Trip t : trips) {
-            List<StopTime> stopTimes = t.getStopTimes();
+            List<StopTime> stopTimes = t.stopTimes;
             
             assertEquals(7, stopTimes.size());
-            
-            sort(stopTimes, new StopTimeSequenceComparator());
-            
-            int previousStopSeq = 0;
-            
+                        
+            int previousDep = 0;
             for (StopTime st : stopTimes) {
                 // is this the stop that was supposed to be deleted?
-                assertNotSame(stops[4].id, st.stop.id);
-                assertNotSame(removed.id, st.patternStop.id);
-                
-                // are stop sequences repacked correctly?
-                assertEquals(++previousStopSeq, (int) st.stopSequence);
+                assertNotSame(stops[4].id, st.stopId);
+                assertTrue(st.departureTime > previousDep);
+                previousDep = st.departureTime;
             }
         }
     }
@@ -318,10 +281,7 @@ public class TripPatternReconciliationTest extends UnitTest {
         
         // build a pattern with a trip and a few stoptimes
         TripPattern tp = makePattern(stops);
-        createStopTimesForTripPattern(tp);
-        
-        // make sure the correct number of stop times were created
-        assertEquals(40, StopTime.count());
+        createStopTimesForTripPattern(tp);;
         
         // make a new pattern
         TripPattern tp2 = makePattern(stops);
@@ -329,49 +289,40 @@ public class TripPatternReconciliationTest extends UnitTest {
         assertEquals(8, tp.patternStops.size());
         
         // check that it worked
-        Collection<Trip> trips = Trip.find("pattern = ?", tp).fetch();
+        Collection<Trip> trips = atx.trips.values();
         
         for (Trip t : trips) {
-            List<StopTime> stopTimes = t.getStopTimes();
+            List<StopTime> stopTimes = t.stopTimes;
             
             assertEquals(8, stopTimes.size());
-            
-            sort(stopTimes, new StopTimeSequenceComparator());
-            
-            assertEquals(stops[14].id, stopTimes.get(7).stop.id);
-            assertEquals((Integer) 8, stopTimes.get(7).stopSequence);
+                        
+            assertEquals(stops[14].id, stopTimes.get(7).stopId);
         }
         
         // zap the last stop (which is stop 14)
         TripPatternStop removed = tp2.patternStops.remove(7);
         
         // make sure we got the indices right (this is more a test of the test)
-        assertEquals(stops[14].id, removed.stop.id);
+        assertEquals(stops[14].id, removed.stopId);
         
-        tp.reconcilePatternStops(tp2);
+        reconcilePatternStops(tp, tp2, atx);
         
-        // make sure that stop times got deleted
-        assertEquals(35, StopTime.count());
         
         // check that the right stop times got deleted and that sequences were repacked
-        trips = Trip.find("pattern = ?", tp).fetch();
+        trips = atx.trips.values();
         
         for (Trip t : trips) {
-            List<StopTime> stopTimes = t.getStopTimes();
+            List<StopTime> stopTimes = t.stopTimes;
             
             assertEquals(7, stopTimes.size());
-            
-            sort(stopTimes, new StopTimeSequenceComparator());
-            
-            int previousStopSeq = 0;
+                        
+            int previousDep = 0;
             
             for (StopTime st : stopTimes) {
                 // is this the stop that was supposed to be deleted?
-                assertNotSame(stops[14].id, st.stop.id);
-                assertNotSame(removed.id, st.patternStop.id);
-                
-                // are stop sequences repacked correctly?
-                assertEquals(++previousStopSeq, (int) st.stopSequence);
+                assertNotSame(stops[14].id, st.stopId);
+                assertTrue(st.departureTime > previousDep);
+                previousDep = st.departureTime;
             }
         }
     }
@@ -383,68 +334,41 @@ public class TripPatternReconciliationTest extends UnitTest {
         // build a pattern with a trip and a few stoptimes
         TripPattern tp = makePattern(stops);
         createStopTimesForTripPattern(tp);
-        
-        // make sure the correct number of stop times were created
-        assertEquals(40, StopTime.count());
-        
+                
         // make a new pattern
         TripPattern tp2 = makePattern(stops);
         
         assertEquals(8, tp.patternStops.size());
         
         // check that it worked
-        Collection<Trip> trips = Trip.find("pattern = ?", tp).fetch();
+        Collection<Trip> trips = atx.trips.values();
         
         for (Trip t : trips) {
-            List<StopTime> stopTimes = t.getStopTimes();
+            List<StopTime> stopTimes = t.stopTimes;
             
             assertEquals(8, stopTimes.size());
-            
-            sort(stopTimes, new StopTimeSequenceComparator());
-            
-            assertEquals(stops[14].id, stopTimes.get(7).stop.id);
-            assertEquals((Integer) 8, stopTimes.get(7).stopSequence);
+                        
+            assertEquals(stops[14].id, stopTimes.get(7).stopId);
         }
         
         // move one stop
         TripPatternStop toMove = tp2.patternStops.remove(4);
-        toMove.stopSequence = 7;
         tp2.patternStops.add(6, toMove);
-        tp2.patternStops.get(7).stopSequence = 8;
         
-        tp.reconcilePatternStops(tp2);
+        reconcilePatternStops(tp, tp2, atx);
         
         // make sure that everything looks right
-        trips = Trip.find("pattern = ?", tp).fetch();
+        trips = atx.trips.values();
         
         for (Trip t : trips) {
-            List<StopTime> stopTimes = t.getStopTimes();
+            List<StopTime> stopTimes = t.stopTimes;
             
             assertEquals(8, stopTimes.size());
-            
-            sort(stopTimes, new StopTimeSequenceComparator());
-            
-            int expectedStopSequence = 1;
-            
-            for (StopTime st : stopTimes) {
-                if (expectedStopSequence == 7) {
-                    // this is the moved stop
-                    assertEquals(toMove.stop.id, st.stop.id);
-                }
-                else if (expectedStopSequence == 3) {
-                    assertEquals(stops[4].id, st.stop.id);
-                }
-                else if (expectedStopSequence == 5) {
-                    // this should be the former stop 6
-                    assertEquals(stops[10].id, st.stop.id);
-                }
-                else if (expectedStopSequence == 8) {
-                    // this should still be the last stop from before
-                    assertEquals(stops[14].id, st.stop.id);
-                }
-                
-                assertEquals(expectedStopSequence ++, (int) st.stopSequence);
-            }
+                        
+            assertEquals(toMove.stopId, stopTimes.get(6).stopId);
+            assertEquals(stops[4].id, stopTimes.get(2).stopId);
+            assertEquals(stops[10].id, stopTimes.get(4).stopId);
+            assertEquals(stops[14].id, stopTimes.get(7).stopId);
         }
     }
     
@@ -456,27 +380,25 @@ public class TripPatternReconciliationTest extends UnitTest {
         TripPattern tp = makePattern(stops);
         createStopTimesForTripPattern(tp, true);
         
-        // make sure the correct number of stop times were created
-        assertEquals(35, StopTime.count());
-        
         // make a new pattern
         TripPattern tp2 = makePattern(stops);
         
         assertEquals(8, tp.patternStops.size());
         
         // check that it worked
-        Collection<Trip> trips = Trip.find("pattern = ?", tp).fetch();
+        Collection<Trip> trips = atx.trips.values();
         
         for (Trip t : trips) {
-            List<StopTime> stopTimes = t.getStopTimes();
+            List<StopTime> stopTimes = t.stopTimes;
             
-            assertEquals(7, stopTimes.size());
+            assertEquals(8, stopTimes.size());
             
-            sort(stopTimes, new StopTimeSequenceComparator());
-            
+            int idx = 0;
             for (StopTime st : stopTimes) {
-                assertNotSame(stops[10].id, st.stop.id);
-                assertNotSame(6, st.stopSequence);
+            	if (idx++ == 5)
+            		assertNull(st);
+            	else
+            		assertNotSame(stops[10].id, st.stopId);
             }
         }
         
@@ -484,40 +406,32 @@ public class TripPatternReconciliationTest extends UnitTest {
         TripPatternStop removed = tp2.patternStops.remove(6);
         
         // make sure we got the indices right (this is more a test of the test)
-        assertEquals(stops[12].id, removed.stop.id);
+        assertEquals(stops[12].id, removed.stopId);
         
-        tp.reconcilePatternStops(tp2);
-        
-        // make sure that stop times got deleted
-        assertEquals(30, StopTime.count());
+        reconcilePatternStops(tp, tp2, atx);
         
         // check that the right stop times got deleted and that sequences were repacked
-        trips = Trip.find("pattern = ?", tp).fetch();
+        trips = atx.trips.values();
         
         for (Trip t : trips) {
-            List<StopTime> stopTimes = t.getStopTimes();
+            List<StopTime> stopTimes = t.stopTimes;
             
-            assertEquals(6, stopTimes.size());
+            assertEquals(7, stopTimes.size());
             
-            sort(stopTimes, new StopTimeSequenceComparator());
-            
-            int expectedStopSeq = 1;
+            int idx = 0;
             
             for (StopTime st : stopTimes) {
+            	// skip the stop sequence that was skipped
+                if (idx++ == 5) {
+                	assertNull(st);
+                	continue;
+                }
+            	
                 // is this the stop that was supposed to be deleted?
-                assertNotSame(stops[12].id, st.stop.id);
-                assertNotSame(removed.id, st.patternStop.id);
+                assertNotSame(stops[12].id, st.stopId);
                 
                 // is this the stop that was originally skipped?
-                assertNotSame(stops[10].id, st.stop.id);
-                assertNotSame(6, st.stopSequence);
-                
-                // skip the stop sequence that was skipped
-                if (expectedStopSeq == 6)
-                    expectedStopSeq++;
-                
-                // are stop sequences repacked correctly?
-                assertEquals(expectedStopSeq++, (int) st.stopSequence);
+                assertNotSame(stops[10].id, st.stopId);
             }
         }
     }
@@ -530,63 +444,51 @@ public class TripPatternReconciliationTest extends UnitTest {
         TripPattern tp = makePattern(stops);
         createStopTimesForTripPattern(tp, true);
         
-        // make sure the correct number of stop times were created
-        assertEquals(35, StopTime.count());
-        
         // make a new pattern
         TripPattern tp2 = makePattern(stops);
         
         assertEquals(8, tp.patternStops.size());
         
         // check that it worked
-        Collection<Trip> trips = Trip.find("pattern = ?", tp).fetch();
+        Collection<Trip> trips = atx.trips.values();
         
         for (Trip t : trips) {
-            List<StopTime> stopTimes = t.getStopTimes();
+            List<StopTime> stopTimes = t.stopTimes;
             
-            assertEquals(7, stopTimes.size());
+            assertEquals(8, stopTimes.size());
             
-            sort(stopTimes, new StopTimeSequenceComparator());
-            
-            for (StopTime st : stopTimes) {
-                assertNotSame(stops[10].id, st.stop.id);
-                assertNotSame(6, st.stopSequence);
-            }
+            assertEquals(stops[0].id, stopTimes.get(0).stopId);
+            assertEquals(stops[2].id, stopTimes.get(1).stopId);
+            assertEquals(stops[4].id, stopTimes.get(2).stopId);
+            assertEquals(stops[6].id, stopTimes.get(3).stopId);
+            assertEquals(stops[8].id, stopTimes.get(4).stopId);
+            assertNull(stopTimes.get(5));
+            assertEquals(stops[12].id, stopTimes.get(6).stopId);
+            assertEquals(stops[14].id, stopTimes.get(7).stopId);
         }
         
         // add a pattern stop at the end
-        // note that stop sequence is nonconsecutive
-        TripPatternStop tps2 = new TripPatternStop(tp2, stops[5], 12, 180);
+        TripPatternStop tps2 = new TripPatternStop(tp2, stops[5], 180);
 
         tp2.patternStops.add(tps2);
 
-        tp.reconcilePatternStops(tp2);
+        reconcilePatternStops(tp, tp2, atx);
         
         // stop times should not have changed
-        assertEquals(35, StopTime.count());
-        
+        trips = atx.trips.values();
         for (Trip t : trips) {
-            List<StopTime> stopTimes = t.getStopTimes();
+            List<StopTime> stopTimes = t.stopTimes;
             
-            assertEquals(7, stopTimes.size());
-            
-            sort(stopTimes, new StopTimeSequenceComparator());
-            
-            int expectedStopSeq = 1;
-            
-            for (StopTime st : stopTimes) {
-           
-                // is this the stop that was originally skipped?
-                assertNotSame(stops[10].id, st.stop.id);
-                assertNotSame(6, st.stopSequence);
-                
-                // skip the stop sequence that was skipped
-                if (expectedStopSeq == 6)
-                    expectedStopSeq++;
-                
-                // are stop sequences repacked correctly?
-                assertEquals(expectedStopSeq++, (int) st.stopSequence);
-            }
+            assertEquals(8, stopTimes.size());
+                        
+            assertEquals(stops[0].id, stopTimes.get(0).stopId);
+            assertEquals(stops[2].id, stopTimes.get(1).stopId);
+            assertEquals(stops[4].id, stopTimes.get(2).stopId);
+            assertEquals(stops[6].id, stopTimes.get(3).stopId);
+            assertEquals(stops[8].id, stopTimes.get(4).stopId);
+            assertNull(stopTimes.get(5));
+            assertEquals(stops[12].id, stopTimes.get(6).stopId);
+            assertEquals(stops[14].id, stopTimes.get(7).stopId);
         }
     }
     
@@ -599,72 +501,44 @@ public class TripPatternReconciliationTest extends UnitTest {
         TripPattern tp = makePattern(stops);
         createStopTimesForTripPattern(tp);
         
-        // make sure the correct number of stop times were created
-        assertEquals(40, StopTime.count());
-        
         // make a new pattern
         TripPattern tp2 = makePattern(stops);
         
         assertEquals(8, tp.patternStops.size());
         
         // check that it worked
-        Collection<Trip> trips = Trip.find("pattern = ?", tp).fetch();
+        Collection<Trip> trips = atx.trips.values();
         
         for (Trip t : trips) {
-            List<StopTime> stopTimes = t.getStopTimes();
+            List<StopTime> stopTimes = t.stopTimes;
             
             assertEquals(8, stopTimes.size());
-            
-            sort(stopTimes, new StopTimeSequenceComparator());
-            
-            assertEquals(stops[14].id, stopTimes.get(7).stop.id);
-            assertEquals((Integer) 8, stopTimes.get(7).stopSequence);
+                        
+            assertEquals(stops[14].id, stopTimes.get(7).stopId);
         }
         
         // move one stop
         TripPatternStop toMove = tp2.patternStops.remove(4);
-        toMove.stopSequence = 3;
         tp2.patternStops.add(3, toMove);
-        
-        // fix up later stop times
-        for (int i = 4; i < tp2.patternStops.size(); i++)  {
-            tp2.patternStops.get(i).stopSequence++;
-        }
-        
-        tp.reconcilePatternStops(tp2);
+
+        reconcilePatternStops(tp, tp2, atx);
         
         // make sure that everything looks right
-        trips = Trip.find("pattern = ?", tp).fetch();
+        trips = atx.trips.values();
         
         for (Trip t : trips) {
-            List<StopTime> stopTimes = t.getStopTimes();
+            List<StopTime> stopTimes = t.stopTimes;
             
             assertEquals(8, stopTimes.size());
-            
-            sort(stopTimes, new StopTimeSequenceComparator());
-            
-            int expectedStopSequence = 1;
-            
-            for (StopTime st : stopTimes) {
-                if (expectedStopSequence == 2) {
-                    // this is before the moved stop
-                    assertEquals(stops[2].id, st.stop.id);
-                }
-                else if (expectedStopSequence == 4) {
-                    // this is the moved stop
-                    assertEquals(stops[8].id, st.stop.id);
-                }
-                else if (expectedStopSequence == 5) {
-                    // this should be the former stop 3
-                    assertEquals(stops[6].id, st.stop.id);
-                }
-                else if (expectedStopSequence == 8) {
-                    // this should still be the last stop from before
-                    assertEquals(stops[14].id, st.stop.id);
-                }
-                
-                assertEquals(expectedStopSequence ++, (int) st.stopSequence);
-            }
+
+            assertEquals(stops[0].id, stopTimes.get(0).stopId);
+            assertEquals(stops[2].id, stopTimes.get(1).stopId);
+            assertEquals(stops[4].id, stopTimes.get(2).stopId);
+            assertEquals(stops[8].id, stopTimes.get(3).stopId);
+            assertEquals(stops[6].id, stopTimes.get(4).stopId);
+            assertEquals(stops[10].id, stopTimes.get(5).stopId);
+            assertEquals(stops[12].id, stopTimes.get(6).stopId);
+            assertEquals(stops[14].id, stopTimes.get(7).stopId);
         }
     }
     
@@ -676,89 +550,52 @@ public class TripPatternReconciliationTest extends UnitTest {
         TripPattern tp = makePattern(stops);
         createStopTimesForTripPattern(tp, true);
         
-        // make sure the correct number of stop times were created
-        assertEquals(35, StopTime.count());
-        
         // make a new pattern
         TripPattern tp2 = makePattern(stops);
         
         assertEquals(8, tp.patternStops.size());
         
         // check that it worked
-        Collection<Trip> trips = Trip.find("pattern = ?", tp).fetch();
+        Collection<Trip> trips = atx.trips.values();
         
         for (Trip t : trips) {
-            List<StopTime> stopTimes = t.getStopTimes();
-            
-            assertEquals(7, stopTimes.size());
-            
-            sort(stopTimes, new StopTimeSequenceComparator());
-            
-            for (StopTime st : stopTimes) {
-                assertNotSame(stops[10].id, st.stop.id);
-                assertNotSame(6, st.stopSequence);
-            }
+        	List<StopTime> stopTimes = t.stopTimes;
+        	assertEquals(8, stopTimes.size());
+            assertEquals(stops[0].id, stopTimes.get(0).stopId);
+            assertEquals(stops[2].id, stopTimes.get(1).stopId);
+            assertEquals(stops[4].id, stopTimes.get(2).stopId);
+            assertEquals(stops[6].id, stopTimes.get(3).stopId);
+            assertEquals(stops[8].id, stopTimes.get(4).stopId);
+            assertNull(stopTimes.get(5));
+            assertEquals(stops[12].id, stopTimes.get(6).stopId);
+            assertEquals(stops[14].id, stopTimes.get(7).stopId);
         }
         
         // move a stop
         TripPatternStop toMove = tp2.patternStops.remove(6);
-        toMove.stopSequence = 4;
         tp2.patternStops.add(4, toMove);
         
-        assertEquals(stops[12].id, toMove.stop.id);
+        assertEquals(stops[12].id, toMove.stopId);
         
-        // fix stop sequences (generally this would be done in javascript on the client)
-        // note that this leaves stop sequences non-consecutive, which is a supported case
-        for (int i = 5; i < tp2.patternStops.size(); i++) {
-            tp2.patternStops.get(i).stopSequence++;
-        }
-        
-        tp.reconcilePatternStops(tp2);
-        
-        // stop times should not have changed
-        assertEquals(35, StopTime.count());
+        reconcilePatternStops(tp, tp2, atx);
         
         for (Trip t : trips) {
-            List<StopTime> stopTimes = t.getStopTimes();
+            List<StopTime> stopTimes = t.stopTimes;
             
-            assertEquals(7, stopTimes.size());
+            assertEquals(8, stopTimes.size());
             
-            sort(stopTimes, new StopTimeSequenceComparator());
+            // 0 - 3: same
+            assertEquals(stops[0].id, stopTimes.get(0).stopId);
+            assertEquals(stops[2].id, stopTimes.get(1).stopId);
+            assertEquals(stops[4].id, stopTimes.get(2).stopId);
+            assertEquals(stops[6].id, stopTimes.get(3).stopId);
             
-            int expectedStopSeq = 1;
-            
-            for (StopTime st : stopTimes) {
-           
-                // is this the stop that was originally skipped?
-                assertNotSame(stops[10].id, st.stop.id);
-                assertNotSame(7, st.stopSequence);
-                
-                // skip the stop sequence that was skipped
-                // it was stop sequence 6 but then we moved a stop before it
-                if (expectedStopSeq == 7)
-                    expectedStopSeq++;
-                
-                // is the moved stop moved?
-                if (expectedStopSeq == 5) 
-                    // the stop that was formerly 6
-                    assertEquals(stops[12].id, st.stop.id);
-                
-                if (expectedStopSeq == 8)
-                    // after from
-                    assertEquals(stops[14].id, st.stop.id);
-                
-                if (expectedStopSeq == 6)
-                    // between to and from
-                    // the stop formerly known as the fourth stop
-                    assertEquals(stops[8].id, st.stop.id);
-                
-                if (expectedStopSeq == 1)
-                    // beginning
-                    assertEquals(stops[0].id, st.stop.id);
-                
-                // are stop sequences repacked correctly?
-                assertEquals(expectedStopSeq++, (int) st.stopSequence);
-            }
+            // 4: formerly 6
+            assertEquals(stops[12].id, stopTimes.get(4).stopId);
+            assertEquals(stops[8].id, stopTimes.get(5).stopId);
+            // skipped
+            assertNull(stopTimes.get(6));
+            assertEquals(stops[14].id, stopTimes.get(7).stopId);
         }
     }
     
@@ -770,9 +607,6 @@ public class TripPatternReconciliationTest extends UnitTest {
         TripPattern tp = makePattern(stops, true);
         createStopTimesForTripPattern(tp);
         
-        // make sure the correct number of stop times were created
-        assertEquals(45, StopTime.count());
-        
         // make a new pattern
         TripPattern tp2 = makePattern(stops, true);
         
@@ -780,55 +614,34 @@ public class TripPatternReconciliationTest extends UnitTest {
         assertEquals(9, tp2.patternStops.size());
         
         // check that it worked
-        Collection<Trip> trips = Trip.find("pattern = ?", tp).fetch();
+        Collection<Trip> trips = atx.trips.values();
         
         for (Trip t : trips) {
-            List<StopTime> stopTimes = t.getStopTimes();
+            List<StopTime> stopTimes = t.stopTimes;
             
             assertEquals(9, stopTimes.size());
             
-            sort(stopTimes, new StopTimeSequenceComparator());
-            
-            assertEquals(stops[0].id, stopTimes.get(0).stop.id);
-            assertEquals(stops[0].id, stopTimes.get(8).stop.id);
+            assertEquals(stops[0].id, stopTimes.get(0).stopId);
+            assertEquals(stops[0].id, stopTimes.get(8).stopId);
         }
         
         // remove the loop stop
         TripPatternStop toMove = tp2.patternStops.remove(0);
-        assertEquals(stops[0].id, toMove.stop.id);
+        assertEquals(stops[0].id, toMove.stopId);
         
-        // fix stop sequences (generally this would be done in javascript on the client)
-        // note that this leaves stop sequences non-consecutive, which is a supported case
-        for (int i = 5; i < tp2.patternStops.size(); i++) {
-            tp2.patternStops.get(i).stopSequence++;
-        }
-        
-        tp.reconcilePatternStops(tp2);
-        
-        // some stop times should have been removed
-        assertEquals(40, StopTime.count());
+        reconcilePatternStops(tp, tp2, atx);
         
         for (Trip t : trips) {
-            List<StopTime> stopTimes = t.getStopTimes();
+            List<StopTime> stopTimes = t.stopTimes;
             
-            assertEquals(8, stopTimes.size());
-            
-            sort(stopTimes, new StopTimeSequenceComparator());
-            
-            int expectedStopSeq = 1;
-            
-            for (StopTime st : stopTimes) {
-                if (expectedStopSeq == 8) {
-                    assertEquals(stops[0].id, st.stop.id);
-                }
-                else {
-                    // even numbered stops, except the (removed) 0th one.
-                    // stop sequences 1-based and stop indices 0-based, so no need to do plus 2
-                    assertEquals(stops[expectedStopSeq * 2].id, st.stop.id);
-                }
-                
-                assertEquals(expectedStopSeq ++, (int) st.stopSequence);
-            }
+           assertEquals(stops[2].id, stopTimes.get(0).stopId);
+           assertEquals(stops[4].id, stopTimes.get(1).stopId);
+           assertEquals(stops[6].id, stopTimes.get(2).stopId);
+           assertEquals(stops[8].id, stopTimes.get(3).stopId);
+           assertEquals(stops[10].id, stopTimes.get(4).stopId);
+           assertEquals(stops[12].id, stopTimes.get(5).stopId);
+           assertEquals(stops[14].id, stopTimes.get(6).stopId);
+           assertEquals(stops[0].id, stopTimes.get(7).stopId);
         }
     }
     
@@ -840,9 +653,6 @@ public class TripPatternReconciliationTest extends UnitTest {
         TripPattern tp = makePattern(stops, false);
         createStopTimesForTripPattern(tp);
         
-        // make sure the correct number of stop times were created
-        assertEquals(40, StopTime.count());
-        
         // make a loop pattern
         TripPattern tp2 = makePattern(stops, true);
         
@@ -850,32 +660,26 @@ public class TripPatternReconciliationTest extends UnitTest {
         assertEquals(9, tp2.patternStops.size());
         
         // check that it worked
-        Collection<Trip> trips = Trip.find("pattern = ?", tp).fetch();
+        Collection<Trip> trips = atx.trips.values();
         
         for (Trip t : trips) {
-            List<StopTime> stopTimes = t.getStopTimes();
+            List<StopTime> stopTimes = t.stopTimes;
             
             assertEquals(8, stopTimes.size());
         }
         
-        tp.reconcilePatternStops(tp2);
-        
-        // stop times should be same
-        assertEquals(40, StopTime.count());
+        reconcilePatternStops(tp, tp2, atx);
         
         for (Trip t : trips) {
-            List<StopTime> stopTimes = t.getStopTimes();
+            List<StopTime> stopTimes = t.stopTimes;
             
             assertEquals(8, stopTimes.size());
-            
-            sort(stopTimes, new StopTimeSequenceComparator());
-            
-            int expectedStopSeq = 1;
+                        
+            int idx = 0;
 
             for (StopTime st : stopTimes) {
-                // even numbered stops, accounting for one-based vs zero based
-                assertEquals(stops[expectedStopSeq * 2 - 2].id, st.stop.id);
-                assertEquals(expectedStopSeq ++, (int) st.stopSequence);
+                // even numbered stops
+                assertEquals(stops[idx++ * 2].id, st.stopId);
             }
         }
     }
@@ -888,9 +692,6 @@ public class TripPatternReconciliationTest extends UnitTest {
         TripPattern tp = makePattern(stops, true);
         createStopTimesForTripPattern(tp);
         
-        // make sure the correct number of stop times were created
-        assertEquals(45, StopTime.count());
-        
         // make a new pattern
         TripPattern tp2 = makePattern(stops, true);
         
@@ -898,52 +699,45 @@ public class TripPatternReconciliationTest extends UnitTest {
         assertEquals(9, tp2.patternStops.size());
         
         // check that it worked
-        Collection<Trip> trips = Trip.find("pattern = ?", tp).fetch();
+        Collection<Trip> trips = atx.trips.values();
         
         for (Trip t : trips) {
-            List<StopTime> stopTimes = t.getStopTimes();
+            List<StopTime> stopTimes = t.stopTimes;
             
             assertEquals(9, stopTimes.size());
-            
-            sort(stopTimes, new StopTimeSequenceComparator());
-            
-            assertEquals(stops[0].id, stopTimes.get(0).stop.id);
-            assertEquals(stops[0].id, stopTimes.get(8).stop.id);
+                        
+            assertEquals(stops[0].id, stopTimes.get(0).stopId);
+            assertEquals(stops[0].id, stopTimes.get(8).stopId);
         }
         
         // move the loop stop
         TripPatternStop toMove = tp2.patternStops.remove(8);
-        assertEquals(stops[0].id, toMove.stop.id);
-        toMove.stopSequence = 4; // 1-based
+        assertEquals(stops[0].id, toMove.stopId);
         tp2.patternStops.add(3, toMove);
-        
-        for (int i = 4; i < 9; i++) {
-            tp2.patternStops.get(i).stopSequence++;
-        }
-        
-        tp.reconcilePatternStops(tp2);
+
+        reconcilePatternStops(tp, tp2, atx);
 
         for (Trip t : trips) {
-            List<StopTime> stopTimes = t.getStopTimes();
+            List<StopTime> stopTimes = t.stopTimes;
             
             assertEquals(9, stopTimes.size());
             
-            sort(stopTimes, new StopTimeSequenceComparator());
             
-            int expectedStopSeq = 1;
+            
+            int idx = 1;
             
             for (StopTime st : stopTimes) {
-                if (expectedStopSeq == 4) {
-                    assertEquals(stops[0].id, st.stop.id);
+                if (idx == 3) {
+                    assertEquals(stops[0].id, st.stopId);
                 }
-                else if (expectedStopSeq < 4) {
-                    assertEquals(stops[expectedStopSeq * 2 - 2].id, st.stop.id);
+                else if (idx < 4) {
+                    assertEquals(stops[idx * 2].id, st.stopId);
                 }
                 else {
-                    assertEquals(stops[expectedStopSeq * 2 - 4].id, st.stop.id);                    
+                    assertEquals(stops[idx * 2 - 2].id, st.stopId);                    
                 }
                 
-                assertEquals(expectedStopSeq ++, (int) st.stopSequence);
+                idx++;
             }
         }
     }
