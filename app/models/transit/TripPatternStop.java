@@ -13,8 +13,6 @@ import play.Logger;
 /** A stop on a trip pattern. This is not a model, as it is stored in a list within trippattern */
 public class TripPatternStop implements Serializable {
 	public static final long serialVersionUID = 1;
-	
-    public TripPattern pattern;
 
     public Tuple2<String, String> stopId;
 
@@ -35,9 +33,8 @@ public class TripPatternStop implements Serializable {
 
 	}
 
-	public TripPatternStop(TripPattern pattern, Stop stop, Integer defaultTravelTime)
+	public TripPatternStop(Stop stop, Integer defaultTravelTime)
 	{
-		this.pattern = pattern;
 		this.stopId = stop.id;
 		this.defaultTravelTime = defaultTravelTime;
 

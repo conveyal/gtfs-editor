@@ -49,18 +49,7 @@ import models.transit.TripPattern;
 import models.transit.TripPatternStop;
 import models.transit.TripShape;
 
-
-@With(Secure.class)
-public class Api extends Controller {
-
-	@Before
-	static void initSession() throws Throwable {
-		 
-		if(!Security.isConnected() && !Application.checkOAuth(request, session))
-			Secure.login();
-		
-	}
-	
+public class Api {
     public static ObjectMapper mapper = new ObjectMapper();
     private static JsonFactory jf = new JsonFactory();
 

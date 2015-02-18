@@ -60,28 +60,7 @@ public class Stop implements Serializable {
     // Major stop is a custom field; it has no corralary in the GTFS.
     public Boolean majorStop;
     
-    @JsonIgnore
     public Point location;
-
-    @JsonProperty("location")
-    public Hashtable getLocation() {
-        Hashtable loc = new Hashtable();
-        loc.put("lat", this.location.getY());
-        loc.put("lng", this.location.getX());
-        return loc;
-    }
-
-    public void setLocation(Hashtable<String, Double> loc) {
-        GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
-        this.location = geometryFactory.createPoint(new Coordinate(loc.get("lng"), loc.get("lat")));;
-    }
-       
-    public Point locationPoint() {
-   
-    	Hashtable<String, Double> loc = this.getLocation();
-    	GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
-        return geometryFactory.createPoint(new Coordinate(loc.get("lng"), loc.get("lat")));
-    }
 
     public Stop(com.conveyal.gtfs.model.Stop stop, GeometryFactory geometryFactory, Agency agency) {
 
@@ -122,10 +101,8 @@ public class Stop implements Serializable {
 		ret.stop_id = getGtfsId();
 		ret.stop_code = stopCode;
 		ret.stop_desc = stopDesc;
-		// we can't use this.location directly, because Hibernate masks that field with the getter...
-		Hashtable<String, Double> loc = getLocation();
-		ret.stop_lat = loc.get("lat");
-		ret.stop_lon = loc.get("lng");
+		ret.stop_lat = location.getY();
+		ret.stop_lon = location.getX();
 		
 		if (stopName != null && !stopName.isEmpty())
 			ret.stop_name = stopName;

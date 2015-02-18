@@ -5,19 +5,10 @@ import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import javax.persistence.Entity;
-import javax.persistence.EntityManager;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.ManyToOne;
-import javax.persistence.Query;
-
 import org.codehaus.jackson.annotate.JsonBackReference;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.hibernate.annotations.Type;
 import org.mapdb.Fun.Tuple2;
-
-import play.db.jpa.Model;
 
 /**
  * Represents a stop time. This is not a model, as it is stored directly as a list in Trip.

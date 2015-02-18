@@ -23,7 +23,7 @@ import models.transit.StopTime;
 import models.transit.Trip;
 import models.transit.TripPattern;
 import models.transit.TripPatternStop;
-import static controllers.api.TripPatternController.reconcilePatternStops;
+import static models.transit.TripPattern.reconcilePatternStops;
 
 /**
  * Test that reconciling trip patterns does the right thing with stop times, etc.
@@ -42,14 +42,26 @@ public class TripPatternReconciliationTest extends UnitTest {
     
     @Before
     public void setUp () {
-    	DB db = DBMaker.newHeapDB()
-    			.transactionDisable()
-    			.make();
+    	DB db = DBMaker.newTempFileDB()
+    			.mmapFileEnable()
+    			.makeTxMaker().makeTx();
     	
     	atx = new AgencyTx(db);
     	
-    	DB global = DBMaker.newHeapDB().transactionDisable().make();
+    	DB global = DBMaker.newTempFileDB()
+    			.mmapFileEnable()
+    			.makeTxMaker().makeTx();
+    	
     	gtx = new GlobalTx(global);
+    	
+    	agency = new Agency(null, "test", "http://www.example.com", "America/Chicago", "en", "5555555555");
+    	gtx.agencies.put(agency.id, agency);
+    }
+    
+    @After
+    public void tearDown() {
+    	atx.commit();
+    	gtx.commit();
     }
     
     /** Make some dummy stops */
@@ -81,12 +93,12 @@ public class TripPatternReconciliationTest extends UnitTest {
         // (that seemed like a good idea at the time, but in retrospect I should have stopped at every stop)
         int j = 1;
         for (int i = 0; i < 15; i += 2) {
-            TripPatternStop ps = new TripPatternStop(tp, stops[i], 120);
+            TripPatternStop ps = new TripPatternStop(stops[i], 120);
             pss.add(ps);
         }
         
         if (loop) {
-            TripPatternStop ps = new TripPatternStop(tp, stops[0], 120);
+            TripPatternStop ps = new TripPatternStop(stops[0], 120);
             pss.add(ps);
         }
         
@@ -112,6 +124,8 @@ public class TripPatternReconciliationTest extends UnitTest {
             Trip trip = new Trip();
             trip.routeId = route.id;
             trip.patternId = tp.id;
+            // there is an index on this field so it can't be null. however no referential integrity checks are performed.
+            trip.calendarId = "none";
 
             List<StopTime> sts = Lists.newArrayList();
             int idx = 0;
@@ -159,7 +173,7 @@ public class TripPatternReconciliationTest extends UnitTest {
         }
         
         // add a pattern stop
-        TripPatternStop tps2 = new TripPatternStop(tp2, stops[5], 180);
+        TripPatternStop tps2 = new TripPatternStop(stops[5], 180);
         
         tp2.patternStops.add(4, tps2);
 
@@ -208,7 +222,7 @@ public class TripPatternReconciliationTest extends UnitTest {
         }
         
         // add a pattern stop at the end
-        TripPatternStop tps2 = new TripPatternStop(tp2, stops[5], 180);
+        TripPatternStop tps2 = new TripPatternStop(stops[5], 180);
 
         tp2.patternStops.add(tps2);
 
@@ -218,8 +232,9 @@ public class TripPatternReconciliationTest extends UnitTest {
         for (Trip t : trips) {
             List<StopTime> stopTimes = t.stopTimes;
             
-            assertEquals(8, stopTimes.size());            
+            assertEquals(9, stopTimes.size());            
             assertEquals(stops[14].id, stopTimes.get(7).stopId);
+            assertNull(stopTimes.get(8));
         }
     }
     
@@ -468,7 +483,7 @@ public class TripPatternReconciliationTest extends UnitTest {
         }
         
         // add a pattern stop at the end
-        TripPatternStop tps2 = new TripPatternStop(tp2, stops[5], 180);
+        TripPatternStop tps2 = new TripPatternStop(stops[5], 180);
 
         tp2.patternStops.add(tps2);
 
@@ -479,7 +494,7 @@ public class TripPatternReconciliationTest extends UnitTest {
         for (Trip t : trips) {
             List<StopTime> stopTimes = t.stopTimes;
             
-            assertEquals(8, stopTimes.size());
+            assertEquals(9, stopTimes.size());
                         
             assertEquals(stops[0].id, stopTimes.get(0).stopId);
             assertEquals(stops[2].id, stopTimes.get(1).stopId);
@@ -489,6 +504,7 @@ public class TripPatternReconciliationTest extends UnitTest {
             assertNull(stopTimes.get(5));
             assertEquals(stops[12].id, stopTimes.get(6).stopId);
             assertEquals(stops[14].id, stopTimes.get(7).stopId);
+            assertNull(stopTimes.get(8));
         }
     }
     
@@ -673,14 +689,16 @@ public class TripPatternReconciliationTest extends UnitTest {
         for (Trip t : trips) {
             List<StopTime> stopTimes = t.stopTimes;
             
-            assertEquals(8, stopTimes.size());
+            assertEquals(9, stopTimes.size());
                         
             int idx = 0;
 
-            for (StopTime st : stopTimes) {
+            for (int i = 0; i < 7; i++) {
                 // even numbered stops
-                assertEquals(stops[idx++ * 2].id, st.stopId);
+                assertEquals(stops[idx++ * 2].id, stopTimes.get(i).stopId);
             }
+            
+            assertNull(stopTimes.get(8));
         }
     }
     
@@ -722,15 +740,13 @@ public class TripPatternReconciliationTest extends UnitTest {
             
             assertEquals(9, stopTimes.size());
             
-            
-            
-            int idx = 1;
+            int idx = 0;
             
             for (StopTime st : stopTimes) {
                 if (idx == 3) {
                     assertEquals(stops[0].id, st.stopId);
                 }
-                else if (idx < 4) {
+                else if (idx < 3) {
                     assertEquals(stops[idx * 2].id, st.stopId);
                 }
                 else {
