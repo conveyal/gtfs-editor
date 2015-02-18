@@ -123,7 +123,7 @@ public class Admin extends Controller {
 		}
 		
 		Account acct = tx.accounts.get(username);
-		acct.setPassword(newPassword);
+		acct.updatePassword(newPassword);
 		tx.accounts.put(acct.id, acct);
 		
 		tx.commit();

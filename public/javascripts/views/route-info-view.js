@@ -36,13 +36,13 @@ var GtfsEditor = GtfsEditor || {};
     render: function () {
       var data = this.model ? this.model.toJSON() : {};
 
-      data.agency = data.agency ? data.agency.id : this.options.agencyId;
+      data.agencyId = data.agencyId ? data.agencyId : this.options.agencyId;
 
       // Get the markup from icanhaz
       var $tpl = ich['route-info-tpl'](data);
 
       var routeTypeData = {routeTypes: this.routeTypes.models};
-      
+
       // select route type the option
       if(data.routeType != undefined) {
         $tpl
@@ -74,7 +74,7 @@ var GtfsEditor = GtfsEditor || {};
 
     /*
        // old code from backbone-driven route-type manager
-       
+
      updateRouteTypes: function(evt) {
         var data = this.model ? this.model.toJSON() : {};
 
@@ -85,16 +85,16 @@ var GtfsEditor = GtfsEditor || {};
 
       // insert routeType selector list into form
       this.$el.find('#routeType').html($routeTypeTpl);
-      
+
       // Easily select the option
       this.$el.find('#routeType option[value="'+ data.routeType+'"]')
         .attr('selected', true);
 
       // insert route type tabel into modal dialog
       var $routeTypeTable = ich['route-type-modal-body-tpl'](routeTypeData);
-      this.$el.find('#route-type-modal-body').html($routeTypeTable); 
+      this.$el.find('#route-type-modal-body').html($routeTypeTable);
 
-    }, 
+    },
 
     saveRouteType: function(evt) {
       evt.preventDefault();

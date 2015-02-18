@@ -49,8 +49,8 @@ public class Application extends Controller {
     	GlobalTx tx = VersionedDataStore.getGlobalTx();
     	
     	try {
-	    	Collection<Agency> agencies = new ArrayList<Agency>();
-	    	
+    		Agency[] agencies;
+    		
 	    	if(Security.isConnected()) {
 	            renderArgs.put("user", Security.connected());
 	            
@@ -61,9 +61,9 @@ public class Application extends Controller {
 	            }
 	            
 	            if(account.admin != null && account.admin)
-	            	agencies = tx.agencies.values();
+	            	agencies = tx.agencies.values().toArray(new Agency[tx.agencies.size()]);
 	            else {
-	            	agencies.add(tx.agencies.get(account.agencyId));            	
+	            	agencies = new Agency[] { tx.agencies.get(account.agencyId) };           	
 	            }
 	            
 	            renderArgs.put("agencies", agencies);
@@ -74,10 +74,10 @@ public class Application extends Controller {
 	    	    OAuthToken token = getToken(request, session, tx);
 	    	    
 	    	    if (token.agencyId != null) {
-	    	        agencies.add(tx.agencies.get(token.agencyId)); 
+	            	agencies = new Agency[] { tx.agencies.get(token.agencyId) };           	
 	    	    }
 	    	    else {
-	    	        agencies = tx.agencies.values();
+	            	agencies = tx.agencies.values().toArray(new Agency[tx.agencies.size()]);
 	    	    }
 	    	    
 	    	    renderArgs.put("agencies", agencies);
@@ -88,11 +88,13 @@ public class Application extends Controller {
 	        		Bootstrap.index();
 	        	else
 	        	    Secure.login();
+	        	
+	        	return;
 	        }
-	
+
 	        if(session.get("agencyId") == null) {
 	            
-	        	Agency agency = agencies.iterator().next();
+	        	Agency agency = agencies[0];
 	
 	            session.put("agencyId", agency.id);
 	            session.put("agencyName", agency.name);
@@ -101,6 +103,9 @@ public class Application extends Controller {
 	            session.put("zoom", 12); 
 	            
 	        }
+	        
+	        // used to render agency name in templates
+	        renderArgs.put("agencyJson", Api.toJson(tx.agencies.get(session.get("agencyId")), false));
     	}
     	finally {
     		tx.rollback();
@@ -228,7 +233,8 @@ public class Application extends Controller {
     	GlobalTx tx = VersionedDataStore.getGlobalTx();
     	
     	try {
-    		render(tx.routeTypes.values());
+    		Collection<RouteType> routeTypes = tx.routeTypes.values();
+    		render(routeTypes);
     	} finally {
     		tx.rollback();
     	}

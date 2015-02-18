@@ -56,6 +56,7 @@ public class Agency extends Model implements Serializable {
         this.timezone = agency.agency_timezone;
         this.lang = agency.agency_lang;
         this.phone = agency.agency_phone;
+        generateId();
     }
     
     public Agency(String gtfsAgencyId, String name, String url, String timezone, String lang, String phone) {
@@ -65,6 +66,7 @@ public class Agency extends Model implements Serializable {
         this.timezone = timezone;
         this.lang = lang;
         this.phone = phone;
+        generateId();
     }
 
 	public com.conveyal.gtfs.model.Agency toGtfs() {

@@ -32,7 +32,7 @@ var GtfsEditor = GtfsEditor || {};
               collection: _stopCollection,
               model: model, //Route info model
               agencyId: _agencyId
-            }); 
+            });
           }
 
           return _instantiatedViews['stops'];
@@ -49,7 +49,7 @@ var GtfsEditor = GtfsEditor || {};
 
           return _instantiatedViews['trippatterns'];
         },
-        'trips': function(model) {  
+        'trips': function(model) {
           if(_instantiatedViews['trips'] == null) {
             _instantiatedViews['trips'] = new G.TripInfoView({
               el: '#route-step-content',
@@ -59,9 +59,9 @@ var GtfsEditor = GtfsEditor || {};
             });
           }
 
-          return _instantiatedViews['trips']; 
+          return _instantiatedViews['trips'];
         },
-        'review': function(model) { 
+        'review': function(model) {
           if(_instantiatedViews['review'] == null) {
             _instantiatedViews['review'] = new G.RouteReviewView({
               el: '#route-step-content',
@@ -71,7 +71,7 @@ var GtfsEditor = GtfsEditor || {};
             });
           }
 
-          return _instantiatedViews['review']; 
+          return _instantiatedViews['review'];
          }
       };
 
@@ -112,7 +112,7 @@ var GtfsEditor = GtfsEditor || {};
 
       // If this route exists already
       if (id) {
-        model = _routeCollection.get(parseInt(id, 10));
+        model = _routeCollection.get(id);
 
         if (model) {
           $('.route-link').each(function(i, el) {

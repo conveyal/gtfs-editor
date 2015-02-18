@@ -23,7 +23,7 @@ var GtfsEditor = GtfsEditor || {};
       this.collection.on('remove', this.onModelRemove, this);
       this.collection.on('change', this.onModelStopChange, this);
 
-      this.stopGroups = new G.StopGroups({agencyId: this.model.get('agency').id, success: this.finishedFindDuplicateStops});
+      this.stopGroups = new G.StopGroups({agencyId: this.model.get('agencyId'), success: this.finishedFindDuplicateStops});
 
       this.stopGroups.on('reset', this.resetDuplicateStops, this);
       this.stopGroups.on('add', this.addStopGroup, this);
@@ -85,6 +85,7 @@ var GtfsEditor = GtfsEditor || {};
 
       var sidebarData = {
         route: this.model.attributes,
+        agency: G.session.agency,
         useSatellite : G.session.useSatellite
       }
 
@@ -176,7 +177,7 @@ var GtfsEditor = GtfsEditor || {};
 
        var agencyId = null;
        if($('input[name="stopFilterRadio"]:checked').val() != 'all' )
-          agencyId = this.model.get('agency').id;
+          agencyId = this.model.get('agencyId');
 
        if(G.config.showStandardStops && this.map.getZoom() >= 15) {
           if(mapCenter == null)
@@ -212,7 +213,7 @@ var GtfsEditor = GtfsEditor || {};
 
       this.duplicateStopsCollection.on('reset', this.deduplicateStops);
 
-      this.duplicateStopsCollection.fetch({reset: true, data: {agencyId: this.model.get('agency').id}});*/
+      this.duplicateStopsCollection.fetch({reset: true, data: {agencyId: this.model.get('agencyId')}});*/
 
     },
 
@@ -395,7 +396,7 @@ var GtfsEditor = GtfsEditor || {};
 
       var $popupContent;
 
-      if (model.get('agency').id == this.model.get('agency').id) {
+      if (model.get('agencyId') == this.model.get('agencyId')) {
 
         $popupContent = ich['stop-form-tpl'](model.toJSON());
 
@@ -459,7 +460,7 @@ var GtfsEditor = GtfsEditor || {};
 
       var $popupContent;
 
-      if (model.get('agency').id == this.model.get('agency').id) {
+      if (model.get('agencyId') == this.model.get('agencyId')) {
 
         $popupContent = ich['stop-form-tpl'](model.toJSON());
 
@@ -503,7 +504,7 @@ var GtfsEditor = GtfsEditor || {};
 
 
 
-      if(model.get('agency').id == this.model.get('agency').id) {
+      if(model.get('agencyId') == this.model.get('agencyId')) {
 
         markerLayer.on('dblclick', function(evt) {
           evt.target.setIcon(this.selectedStopIcon);
@@ -540,7 +541,7 @@ var GtfsEditor = GtfsEditor || {};
         majorStop: majorStop,
         justAdded: true,
         location: {lat: lat, lng: lng},
-        agency: this.model.get('agency').id
+        agency: this.model.get('agencyId')
       };
 
       this.collection.create(data, {

@@ -140,6 +140,7 @@ public class Bootstrap extends Controller {
 	        }
 	    	
 	    	Agency agency = new Agency(gtfsId, name, url, timezone, language, phone);
+	    	agency.generateId();
 	    	
 	    	agency.defaultLat = defaultLat;
 	    	agency.defaultLon = defaultLon;

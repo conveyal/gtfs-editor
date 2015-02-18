@@ -30,7 +30,9 @@ public class RouteController extends Controller {
         			return;
         		}
         		
-        		renderJSON(Api.toJson(tx.routes.get(id), false));
+        		Route route = tx.routes.get(id);
+        		
+        		renderJSON(Api.toJson(route, false));
         	}
         	else {
         		renderJSON(Api.toJson(tx.routes.values(), false));
@@ -48,6 +50,7 @@ public class RouteController extends Controller {
 
         try {
             route = Api.mapper.readValue(params.get("body"), Route.class);
+            route.generateId();
             
             GlobalTx gtx = VersionedDataStore.getGlobalTx();
             if (!gtx.agencies.containsKey(route.agencyId)) {

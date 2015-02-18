@@ -47,7 +47,7 @@
 
 
 <form class="route-info-form form-horizontal span12">
-  <input type="hidden" name="agency" id="agency" value="{{agency}}">
+  <input type="hidden" name="agencyId" id="agencyId" value="{{agencyId}}">
 
   <div class="control-group">
     <label class="control-label" for="routeShortName"><strong>&{'route.route-info-tpl.short-name'}</strong><br>(&{'shared.required'})</label>
@@ -64,9 +64,9 @@
   </div>
 
   <div class="control-group">
-    <label class="control-label" for="routeType"><strong>&{'route.route-info-tpl.route-type'}</strong><br>(&{'shared.required'})</label>
+    <label class="control-label" for="routeTypeId"><strong>&{'route.route-info-tpl.route-type'}</strong><br>(&{'shared.required'})</label>
     <div class="controls">
-      <select required name="routeType" id="routeType" class="input-xlarge" title="&{'route.route-info-tpl.route-type'}" data-content="&{'route.route-info-tpl.route-type-content'}">
+      <select required name="routeTypeId" id="routeTypeId" class="input-xlarge" title="&{'route.route-info-tpl.route-type'}" data-content="&{'route.route-info-tpl.route-type-content'}">
 
         #{list items:routeTypes, as:'routeType'}
             <option value="${routeType.id}">${routeType.localizedVehicleType} (${routeType.hvtRouteType})</option>
@@ -468,7 +468,7 @@
     <div class="stop-filter-details well">
       <legend>&{'route.filter-stops'}</legend>
       <label class="radio">
-        <input type="radio" name="stopFilterRadio" id="optionsRadios1" value="filtered" checked>&{'route.filter-stops-by-agency'} {{ route.agency.name }}
+        <input type="radio" name="stopFilterRadio" id="optionsRadios1" value="filtered" checked>&{'route.filter-stops-by-agency'} {{ agency.name }}
       </label>
       <label class="radio">
         <input type="radio" name="stopFilterRadio" id="optionsRadios2" value="all">&{'route.filter-all-stops'}
@@ -1024,7 +1024,7 @@
     $(function(){
       // TODO: the config be need to be dynamic based on the user details.
       // ie. agency, etc
-      GtfsEditor.RoutePage.init(${session.agencyId});
+      GtfsEditor.RoutePage.init("${session.agencyId}");
     });
   </script>
 #{/set}

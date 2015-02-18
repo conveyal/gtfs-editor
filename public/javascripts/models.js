@@ -53,11 +53,11 @@ G.RouteTypes = Backbone.Collection.extend({
       routeShortName: null,
       routeLongName: null,
       routeDesc: null,
-      routeType: null,
+      routeTypeId: null,
       routeUrl: null,
       routeColor: 'FFFFFF',
       routeTextColor: '000000',
-      agency: null
+      agencyId: null
     },
 
     initialize: function() {

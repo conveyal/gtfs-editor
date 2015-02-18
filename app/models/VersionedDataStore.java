@@ -35,6 +35,7 @@ import com.google.protobuf.ServiceException;
 
 import play.Logger;
 import play.Play;
+import utils.ClassLoaderSerializer;
 
 /**
  * Create a new versioned datastore. A versioned data store handles multiple databases,
@@ -109,7 +110,7 @@ public class VersionedDataStore {
 		protected final <T1, T2> BTreeMap <T1, T2> getMap (String name) {
 			return tx.createTreeMap(name)
 					// use java serialization to allow for schema upgrades
-					.valueSerializer(Serializer.JAVA)
+					.valueSerializer(new ClassLoaderSerializer())
 					.makeOrGet();
 		}
 		

@@ -24,55 +24,55 @@ GET     /manage/agencies                      	Application.manageAgencies
 
 GET     /bootstrap/index                      	Bootstrap.index
 
-GET     /api/agency/?                           Api.getAgency
-GET     /api/agency/{id}                        Api.getAgency
-POST    /api/agency/                            Api.createAgency
-PUT     /api/agency/{id}                        Api.updateAgency
-DELETE  /api/agency/{id}                        Api.deleteAgency
+GET     /api/agency/?                           api.AgencyController.getAgency
+GET     /api/agency/{id}                        api.AgencyController.getAgency
+POST    /api/agency/                            api.AgencyController.createAgency
+PUT     /api/agency/{id}                        api.AgencyController.updateAgency
+DELETE  /api/agency/{id}                        api.AgencyController.deleteAgency
 
-GET     /api/route/?                            Api.getRoute
-GET     /api/route/{id}                         Api.getRoute
-POST    /api/route/                             Api.createRoute
-PUT     /api/route/{id}                         Api.updateRoute
-DELETE  /api/route/{id}                         Api.deleteRoute
+GET     /api/route/?                            api.RouteController.getRoute
+GET     /api/route/{id}                         api.RouteController.getRoute
+POST    /api/route/                             api.RouteController.createRoute
+PUT     /api/route/{id}                         api.RouteController.updateRoute
+DELETE  /api/route/{id}                         api.RouteController.deleteRoute
 
-GET     /api/routetype/?                        Api.getRouteType
-GET     /api/routetype/{id}                     Api.getRouteType
-POST    /api/routetype/                         Api.createRouteType
-PUT     /api/routetype/{id}                     Api.updateRouteType
-DELETE  /api/routetype/{id}                     Api.deleteRouteType
+GET     /api/routetype/?                        api.RouteTypeController.getRouteType
+GET     /api/routetype/{id}                     api.RouteTypeController.getRouteType
+POST    /api/routetype/                         api.RouteTypeController.createRouteType
+PUT     /api/routetype/{id}                     api.RouteTypeController.updateRouteType
+DELETE  /api/routetype/{id}                     api.RouteTypeController.deleteRouteType
 
 GET     /timetable/{patternId}/{calendar}       Application.timetable
 
-GET     /api/stop/?                             Api.getStop
-GET     /api/stop/{id}                          Api.getStop
-POST    /api/stop/                              Api.createStop
-PUT     /api/stop/{id}                          Api.updateStop
-DELETE  /api/stop/{id}                          Api.deleteStop
+GET     /api/stop/?                             api.StopController.getStop
+GET     /api/stop/{id}                          api.StopController.getStop
+POST    /api/stop/                              api.StopController.createStop
+PUT     /api/stop/{id}                          api.StopController.updateStop
+DELETE  /api/stop/{id}                          api.StopController.deleteStop
 
-GET     /api/trippattern/?                      Api.getTripPattern
-GET     /api/trippattern/{id}                   Api.getTripPattern
-POST    /api/trippattern/                       Api.createTripPattern
-PUT     /api/trippattern/{id}                   Api.updateTripPattern
-DELETE  /api/trippattern/{id}                   Api.deleteTripPattern
+GET     /api/trippattern/?                      api.TripPatternController.getTripPattern
+GET     /api/trippattern/{id}                   api.TripPatternController.getTripPattern
+POST    /api/trippattern/                       api.TripPatternController.createTripPattern
+PUT     /api/trippattern/{id}                   api.TripPatternController.updateTripPattern
+DELETE  /api/trippattern/{id}                   api.TripPatternController.deleteTripPattern
 
-GET     /api/calendar/?                         Api.getCalendar
-GET     /api/calendar/{id}                      Api.getCalendar
-POST    /api/calendar/                          Api.createCalendar
-PUT     /api/calendar/{id}                      Api.updateCalendar
-DELETE  /api/calendar/{id}                      Api.deleteCalendar
+GET     /api/calendar/?                         api.CalendarController.getCalendar
+GET     /api/calendar/{id}                      api.CalendarController.getCalendar
+POST    /api/calendar/                          api.CalendarController.createCalendar
+PUT     /api/calendar/{id}                      api.CalendarController.updateCalendar
+DELETE  /api/calendar/{id}                      api.CalendarController.deleteCalendar
 
-GET     /api/trip/?                         	Api.getTrip
-GET     /api/trip/{id}                      	Api.getTrip
-POST    /api/trip/                          	Api.createTrip
-PUT     /api/trip/{id}                     		Api.updateTrip
-DELETE  /api/trip/{id}                      	Api.deleteTrip
+GET     /api/trip/?                         	api.TripController.getTrip
+GET     /api/trip/{id}                      	api.TripController.getTrip
+POST    /api/trip/                          	api.TripController.createTrip
+PUT     /api/trip/{id}                     		api.TripController.updateTrip
+DELETE  /api/trip/{id}                      	api.TripController.deleteTrip
 
-GET     /api/scheduleexception/?              Api.getScheduleException
-GET     /api/scheduleexception/{exceptionId}  Api.getScheduleException
-POST    /api/scheduleexception/?              Api.createScheduleException
-PUT     /api/scheduleexception/{id}           Api.updateScheduleException
-DELETE  /api/scheduleexception/{id}           Api.deleteScheduleException
+GET     /api/scheduleexception/?              api.ScheduleExceptionController.getScheduleException
+GET     /api/scheduleexception/{exceptionId}  api.ScheduleExceptionController.getScheduleException
+POST    /api/scheduleexception/?              api.ScheduleExceptionController.createScheduleException
+PUT     /api/scheduleexception/{id}           api.ScheduleExceptionController.updateScheduleException
+DELETE  /api/scheduleexception/{id}           api.ScheduleExceptionController.deleteScheduleException
 
 
 # Ignore favicon requests

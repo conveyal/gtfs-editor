@@ -14,6 +14,7 @@ import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.hibernate.annotations.Type;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.vividsolutions.jts.geom.MultiLineString;
 
 import play.Logger;
@@ -27,7 +28,7 @@ public class Route extends Model implements Serializable {
  
     public String routeDesc;
 
-    public RouteType routeType;
+    public String routeTypeId;
 
     public String routeUrl;
     public String routeColor;
@@ -68,7 +69,7 @@ public class Route extends Model implements Serializable {
         this.routeLongName = route.route_long_name;
         this.routeDesc = route.route_desc;
         
-        this.routeType = mapGtfsRouteType(route.route_type);
+        //this.routeTypeId = mapGtfsRouteType(route.route_type);
         
         
         this.routeUrl = route.route_url != null ? route.route_url.toString() : null;
@@ -82,7 +83,7 @@ public class Route extends Model implements Serializable {
     public Route(String routeShortName, String routeLongName, RouteType routeType, String routeDescription,  Agency agency) {
         this.routeShortName = routeShortName;
         this.routeLongName = routeLongName;
-        this.routeType = routeType;
+        this.routeTypeId = routeType.id;
         this.routeDesc = routeDescription;
 
         this.agencyId = agency.id;
@@ -179,7 +180,7 @@ public class Route extends Model implements Serializable {
 		ret.route_short_name = routeShortName;
 		ret.route_text_color = routeTextColor;
 		// TODO also handle HVT types here
-		ret.route_type = mapGtfsRouteType(routeType);
+		//ret.route_type = mapGtfsRouteType(routeTypeId);
 		try {
 			ret.route_url = new URL(routeUrl);
 		} catch (MalformedURLException e) {

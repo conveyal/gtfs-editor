@@ -16,7 +16,7 @@ public class OAuthToken extends Model implements Serializable {
     public String agencyId;
     
     public OAuthToken (String token, String agencyId) {
-    	super(Account.hash(token));
+    	this.id = Account.hash(token);
     	this.token = Account.hash(token);
     	this.agencyId = agencyId;
     	this.creationDate = System.currentTimeMillis();
