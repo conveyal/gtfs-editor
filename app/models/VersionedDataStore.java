@@ -208,6 +208,9 @@ public class VersionedDataStore {
 		/** <calendar id, schedule exception id> */
 		public NavigableSet<Tuple2<String, String>> exceptionsByCalendar;
 		
+		/** <<patternId, calendarId>, trip id> */
+		public NavigableSet<Tuple2<Tuple2<String, String>, String>> tripsByPatternAndCalendar;
+		
 		/** number of trips on each tuple2<patternId, calendar id> */
 		public ConcurrentMap<Tuple2<String, String>, Long> tripCountByPatternAndCalendar;
 		
@@ -271,6 +274,15 @@ public class VersionedDataStore {
 				
 			});
 			
+			tripsByPatternAndCalendar = getSet("tripsByPatternAndCalendar");
+			Bind.secondaryKeys(trips, tripsByPatternAndCalendar, new Fun.Function2<Tuple2<String, String>[], String, Trip>() {
+
+				@Override
+				public Tuple2<String, String>[] run(String key, Trip trip) {
+					return new Tuple2[] { new Tuple2(trip.patternId, trip.calendarId) };
+				}
+			});
+			
 			tripCountByPatternAndCalendar = getMap("tripCountByPatternAndCalendar");
 			Bind.histogram(trips, tripCountByPatternAndCalendar, new Fun.Function2<Tuple2<String, String>, String, Trip>() {
 
@@ -307,6 +319,17 @@ public class VersionedDataStore {
 			return Collections2.transform(matchedKeys, new Function<Tuple2<String, String>, ScheduleException> () {
 				public ScheduleException apply(Tuple2<String, String> input) {
 					return exceptions.get(input.b);
+				}	
+			});
+		}
+		
+		public Collection<Trip> getTripsByPatternAndCalendar(String patternId, String calendarId) {
+			Set<Tuple2<Tuple2<String, String>, String>> matchedKeys =
+					tripsByPatternAndCalendar.subSet(new Tuple2(new Tuple2(patternId, calendarId), null), new Tuple2(new Tuple2(patternId, calendarId), Fun.HI));
+			
+			return Collections2.transform(matchedKeys, new Function<Tuple2<Tuple2<String, String>, String>, Trip> () {
+				public Trip apply(Tuple2<Tuple2<String, String>, String> input) {
+					return trips.get(input.b);
 				}	
 			});
 		}

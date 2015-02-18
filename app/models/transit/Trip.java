@@ -49,6 +49,8 @@ public class Trip extends Model implements Serializable {
     public Boolean invalid;
     
     public List<StopTime> stopTimes;
+
+	public String agencyId;
     
     public Trip () {}
   
