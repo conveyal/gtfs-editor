@@ -19,14 +19,9 @@ import org.onebusaway.gtfs.serialization.GtfsReader;
 
 import com.mchange.v2.c3p0.impl.DbAuth;
 
-import models.gtfs.GtfsAgency;
-import models.gtfs.GtfsSnapshotMerge;
-import models.gtfs.GtfsSnapshotMergeTask;
-import models.gtfs.GtfsSnapshotMergeTaskStatus;
 import models.transit.Agency;
 import models.transit.Route;
 import models.transit.ServiceCalendar;
-import models.transit.ServiceCalendarDate;
 import models.transit.Stop;
 import models.transit.StopTime;
 import models.transit.TripPattern;
@@ -39,11 +34,9 @@ import play.Logger;
 import play.Play;
 import play.jobs.Job;
 import play.jobs.OnApplicationStart;
-import utils.StopSequence;
-
 
 public class ProcessGtfsSnapshotUpload extends Job {
-
+/*
 	private Long _gtfsSnapshotMergeId;
 
 	private Map<String, BigInteger> agencyIdMap = new HashMap<String, BigInteger>();
@@ -104,6 +97,6 @@ public class ProcessGtfsSnapshotUpload extends Job {
         	
         	snapshotMerge.failed(e.toString());
     	}
-	}
+	}*/
 }
 

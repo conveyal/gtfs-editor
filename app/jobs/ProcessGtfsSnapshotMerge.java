@@ -42,13 +42,9 @@ import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.PrecisionModel;
 
 import controllers.Bootstrap;
-import models.gtfs.GtfsSnapshotMerge;
-import models.gtfs.GtfsSnapshotMergeTask;
-import models.gtfs.GtfsSnapshotMergeTaskStatus;
 import models.transit.Agency;
 import models.transit.Route;
 import models.transit.ServiceCalendar;
-import models.transit.ServiceCalendarDate;
 import models.transit.Stop;
 import models.transit.StopTime;
 import models.transit.TripPattern;
@@ -65,11 +61,8 @@ import play.jobs.OnApplicationStart;
 
 import org.mapdb.Fun.Tuple2;
 
-import utils.GeoUtils;
-import utils.StopSequence;
-
 public class ProcessGtfsSnapshotMerge extends Job {
-
+/*
 	private Long _gtfsSnapshotMergeId;
 
 	private Map<String, Agency> agencyIdMap = new HashMap<String, Agency>();
@@ -415,12 +408,12 @@ public class ProcessGtfsSnapshotMerge extends Job {
         	
         	snapshotMerge.failed(e.toString());
     	}
-	}
+	}*/
 	
 	/**
 	 * Create a trip pattern from the given trip.
 	 * Neither the trippattern nor the trippatternstops are saved.
-	 */
+	 *//*
 	public TripPattern createTripPatternFromTrip (com.conveyal.gtfs.model.Trip gtfsTrip) {
 		TripPattern patt = new TripPattern();
 		patt.route = routeIdMap.get(gtfsTrip.route.route_id);
@@ -514,6 +507,6 @@ public class ProcessGtfsSnapshotMerge extends Job {
 				tp.save();
 			}
 		}
-	}
+	}*/
 }
 

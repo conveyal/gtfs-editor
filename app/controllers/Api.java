@@ -4,7 +4,6 @@ import play.*;
 import play.mvc.*;
 import play.data.binding.As;
 import play.db.jpa.JPA;
-import utils.GeoUtils;
 
 import java.io.IOException;
 import java.io.StringWriter;

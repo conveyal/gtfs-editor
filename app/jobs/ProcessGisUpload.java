@@ -52,18 +52,9 @@ import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.MultiLineString;
 import com.vividsolutions.jts.operation.linemerge.LineMerger;
 
-import models.gis.GisRoute;
-import models.gis.GisStop;
-import models.gis.GisUpload;
-import models.gis.GisUploadField;
-import models.gis.GisUploadType;
-import models.gtfs.GtfsSnapshotMerge;
-import models.gtfs.GtfsSnapshotMergeTask;
-import models.gtfs.GtfsSnapshotMergeTaskStatus;
 import models.transit.Agency;
 import models.transit.Route;
 import models.transit.ServiceCalendar;
-import models.transit.ServiceCalendarDate;
 import models.transit.Stop;
 import models.transit.StopTime;
 import models.transit.TripShape;
@@ -77,7 +68,7 @@ import play.jobs.OnApplicationStart;
 import utils.FeatureAttributeFormatter;
 
 public class ProcessGisUpload extends Job {
-
+/*
 	private Long _gisUploadId;
 	
 	public ProcessGisUpload(Long gisUploadId)
@@ -312,5 +303,6 @@ public class ProcessGisUpload extends Job {
         	e.printStackTrace();
         }
 	}
+	*/
 }
 

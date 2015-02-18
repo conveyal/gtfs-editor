@@ -19,8 +19,6 @@ import models.transit.Trip;
 import models.transit.TripPattern;
 import models.transit.TripPatternStop;
 import models.transit.TripShape;
-import models.transit.TripPattern.PatternStopSequenceComparator;
-import models.transit.TripPattern.StopTimeSequenceComparator;
 
 import org.geotools.geometry.jts.JTS;
 import org.mapdb.Fun;
@@ -42,7 +40,6 @@ import controllers.Api;
 import play.Logger;
 import play.db.jpa.JPA;
 import play.mvc.Controller;
-import utils.GeoUtils;
 
 public class TripPatternController extends Controller {
     public static void getTripPattern(String id, String routeId, String agencyId) {
@@ -172,42 +169,27 @@ public class TripPatternController extends Controller {
                         
             // update stop times
             try {
-            	reconcilePatternStops(originalTripPattern, tripPattern, tx));
+            	reconcilePatternStops(originalTripPattern, tripPattern, tx);
             } catch (IllegalStateException e) {
             	tx.rollback();
             	badRequest();
             	return;
             }
             	            
-            if(tripPattern.shape != null) {
-                MathTransform mt = GeoUtils.getTransform(new Coordinate(tripPattern.shape.shape.getCoordinateN(0).y, tripPattern.shape.shape.getCoordinateN(0).x));
-                GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
-                Coordinate[] mCoords = tripPattern.shape.shape.getCoordinates();
-                ArrayList<Coordinate> coords = new ArrayList<Coordinate>();
-                for(Coordinate mCoord : mCoords) {
-                    coords.add(new Coordinate(mCoord.x, mCoord.y));
-                }
-                Coordinate[] coordArray = coords.toArray(new Coordinate[coords.size()]);
-                LineString ls = (LineString) JTS.transform(geometryFactory.createLineString(coordArray), mt);
-                LocationIndexedLine indexLine = new LocationIndexedLine(ls);
-                Logger.info("length: " + ls.getLength());
-                patternStops = TripPatternStop.find("pattern = ?", tripPattern).fetch();
-                for(TripPatternStop patternStop : patternStops) {
-                    Point p = (Point) JTS.transform(patternStop.stop.locationPoint(), mt);
-                    LinearLocation l = indexLine.project(p.getCoordinate());
-                    patternStop.defaultDistance = LengthLocationMap.getLength(ls, l);
-                    patternStop.save();
-                }
+            if(tripPattern.encodedShape != null) {
+            	TripShape ts = new TripShape(tripPattern.encodedShape);
+            	tx.shapes.put(ts.id, ts);
+            	tripPattern.shapeId = ts.id;	
+            }
+            
+            if (tx.tripPatterns.containsKey(tripPattern.id)) {
+            	tx.rollback();
+            	badRequest();
             }
             
             tx.tripPatterns.put(tripPattern.id, tripPattern);
-            
-            // make sure that things are persisted; avoid DB race conditions
-            // once upon a time, there was a bug in this code that only manifested itself once the entity manager
-            // had been flushed, either here or by GC.
-            JPA.em().flush();
-            
-            renderJSON(Api.toJson(updatedTripPattern, false));
+
+            renderJSON(Api.toJson(tripPattern, false));
         } catch (Exception e) {
         	if (tx != null) tx.rollback();
             e.printStackTrace();
@@ -215,26 +197,32 @@ public class TripPatternController extends Controller {
         }
     }
 
-    public static void deleteTripPattern(Long id) {
-        if(id == null) {
+    public static void deleteTripPattern(String id, String agencyId) {
+    	if (agencyId == null)
+    		agencyId = session.get("agencyId");
+    	
+        if(id == null || agencyId == null) {
             badRequest();
             return;
         }
 
-        TripPattern tripPattern = TripPattern.findById(id);
+        AgencyTx tx = VersionedDataStore.getAgencyTx(agencyId);
 
-        if(tripPattern == null) {
-            badRequest();
-            return;
-        }
-
-        tripPattern.delete();
-       	
-        ok();
+	    try {
+	        // first zap all trips on this trip pattern
+	        for (Trip trip : tx.getTripsByPattern(id)) {
+	        	tx.trips.remove(trip.id);
+	        }
+	        
+	        tx.tripPatterns.remove(id);
+	        tx.commit();
+    	} finally {
+    		tx.rollbackIfOpen();
+    	}
     }
     
     public static void calcTripPatternTimes(Long id, Double velocity, int defaultDwell) {
-    	
+    	/*
     	TripPattern tripPattern = TripPattern.findById(id);
     	
     	List<TripPatternStop> patternStops = TripPatternStop.find("pattern = ? ORDER BY stopSequence", tripPattern).fetch();
@@ -249,45 +237,9 @@ public class TripPatternController extends Controller {
         	distanceAlongLine = patternStop.defaultDistance;
         	
         	patternStop.save();
-        }
+        }*/
     
         ok();
-    }
-    
-    /**
-     * Sort a list of patternstops by stop_sequence
-     */
-    public static class PatternStopSequenceComparator implements Comparator<TripPatternStop> {
-        public int compare(TripPatternStop o1, TripPatternStop o2) {
-            
-            // nulls last
-            if (o1 == null && o2 == null)
-                return 0;
-            if (o1 == null)
-                return 1;
-            if (o2 == null)
-                return -1;
-            
-            return o1.stopSequence - o2.stopSequence;
-        }
-    }
-    
-    /**
-     * Sort a list of StopTimes by StopSequence
-     */
-    public static class StopTimeSequenceComparator implements Comparator<StopTime> {
-        public int compare(StopTime o1, StopTime o2) {
-            
-            // nulls last
-            if (o1 == null && o2 == null)
-                return 0;
-            if (o1 == null)
-                return 1;
-            if (o2 == null)
-                return -1;
-            
-            return o1.stopSequence - o2.stopSequence;
-        }
     }
     
     /**

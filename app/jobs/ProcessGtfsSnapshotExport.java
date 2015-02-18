@@ -41,19 +41,11 @@ import com.google.common.collect.Multimap;
 import com.mchange.v2.c3p0.impl.DbAuth;
 import com.vividsolutions.jts.geom.Coordinate;
 
-import models.gtfs.GtfsCalendarDate;
-import models.gtfs.GtfsSnapshotExport;
-import models.gtfs.GtfsSnapshotExportStatus;
-import models.gtfs.GtfsSnapshotMerge;
-import models.gtfs.GtfsSnapshotMergeTask;
-import models.gtfs.GtfsSnapshotMergeTaskStatus;
 import models.transit.Agency;
 import models.transit.AttributeAvailabilityType;
 import models.transit.Route;
 import models.transit.ScheduleException;
 import models.transit.ServiceCalendar;
-import models.transit.ServiceCalendarDate;
-import models.transit.ServiceCalendarDateType;
 import models.transit.Stop;
 import models.transit.StopTime;
 import models.transit.TripPatternStop;
@@ -66,7 +58,7 @@ import play.jobs.OnApplicationStart;
 import utils.DirectoryZip;
 
 public class ProcessGtfsSnapshotExport extends Job {
-
+/*
 	private Long _gtfsSnapshotExportId;
 	
 	public ProcessGtfsSnapshotExport(Long gtfsSnapshotExportId)
@@ -316,5 +308,6 @@ public class ProcessGtfsSnapshotExport extends Job {
 		LocalDate d = new LocalDate(date.getTime(), DateTimeZone.UTC);
 		return toGtfsDate(d);			
 	}
+	*/
 }
 

@@ -64,19 +64,9 @@ import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.MultiLineString;
 import com.vividsolutions.jts.operation.linemerge.LineMerger;
 
-import models.gis.GisExport;
-import models.gis.GisExportStatus;
-import models.gis.GisRoute;
-import models.gis.GisStop;
-import models.gis.GisUploadType;
-import models.gtfs.GtfsSnapshotExportStatus;
-import models.gtfs.GtfsSnapshotMerge;
-import models.gtfs.GtfsSnapshotMergeTask;
-import models.gtfs.GtfsSnapshotMergeTaskStatus;
 import models.transit.Agency;
 import models.transit.Route;
 import models.transit.ServiceCalendar;
-import models.transit.ServiceCalendarDate;
 import models.transit.Stop;
 import models.transit.StopTime;
 import models.transit.TripPattern;
@@ -90,7 +80,7 @@ import utils.DirectoryZip;
 import utils.FeatureAttributeFormatter;
 
 public class ProcessGisExport extends Job {
-
+/*
 	private Long _gisExportId;
 
 	
@@ -277,7 +267,7 @@ public class ProcessGisExport extends Job {
         	Logger.error("Unable to process GIS export: ", e.toString());
         	e.printStackTrace();
         } 
-	}
+	}*/
 }
 
 

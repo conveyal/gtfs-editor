@@ -38,15 +38,19 @@ public class Admin extends Controller {
 	
 	
 	public static void accounts() {
+		GlobalTx tx = VersionedDataStore.getGlobalTx();
 		
-		List<Account> accounts = Account.find("order by username").fetch();
+		try {
+			Collection<Account> accounts = tx.accounts.values();
+			Collection<Agency> agencies = tx.agencies.values();
 		
-		List<Agency> agencies = Agency.findAll();
-		
-		render(accounts, agencies);
+			render(accounts, agencies);
+		} finally {
+			tx.rollback();
+		}
 	}
 	
-	public static void createAccount(String username, String password, String email, Boolean admin, Boolean taxi, Boolean citom, String agencyId)
+	public static void createAccount(String username, String password, String email, Boolean admin, String agencyId)
 	{		
 		GlobalTx tx = VersionedDataStore.getGlobalTx();
 		
@@ -107,21 +111,6 @@ public class Admin extends Controller {
 		else
 			ok();
 	
-	}
-	
-	public static void changePassword(String currentPassword, String newPassword)
-	{
-		GlobalTx tx = VersionedDataStore.getGlobalTx();
-		Account acct = tx.accounts.get(Security.connected());
-		if (acct.changePassword(currentPassword, newPassword)) {
-			tx.accounts.put(acct.id, acct);
-			tx.commit();
-			ok();
-		}
-		else {
-			tx.rollback();
-			badRequest();
-		}
 	}
 	
 	public static void resetPassword(String username, String newPassword)

@@ -44,7 +44,7 @@ import play.Play;
  *
  */
 public class VersionedDataStore {
-	private static File dataDirectory = new File((String) Play.configuration.get("database-directory"));
+	private static File dataDirectory = new File((String) Play.configuration.get("application.database-directory"));
 	private static TxMaker globalTxMaker;
 	
 	private static Map<String, TxMaker> agencyTxMakers = Maps.newConcurrentMap();
@@ -54,7 +54,7 @@ public class VersionedDataStore {
 		globalDataDirectory.mkdirs();
 		
 		// initialize the global database
-		globalTxMaker = DBMaker.newFileDB(globalDataDirectory)
+		globalTxMaker = DBMaker.newFileDB(new File(globalDataDirectory, "global.db"))
 					.mmapFileEnable()
 					.compressionEnable()
 					.makeTxMaker();
@@ -76,7 +76,7 @@ public class VersionedDataStore {
 					File path = new File(dataDirectory, agencyId);
 					path.mkdirs();
 					
-					TxMaker agencyTxm = DBMaker.newFileDB(path)
+					TxMaker agencyTxm = DBMaker.newFileDB(new File(path, "master.db"))
 							.mmapFileEnable()
 							.compressionEnable()
 							.makeTxMaker();

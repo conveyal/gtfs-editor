@@ -27,14 +27,8 @@ import jobs.ProcessGisExport;
 import jobs.ProcessGtfsSnapshotExport;
 import jobs.ProcessGtfsSnapshotMerge;
 import models.*;
+import models.VersionedDataStore.AgencyTx;
 import models.VersionedDataStore.GlobalTx;
-import models.gis.GisExport;
-import models.gis.GisUploadType;
-import models.gtfs.GtfsSnapshot;
-import models.gtfs.GtfsSnapshotExport;
-import models.gtfs.GtfsSnapshotExportCalendars;
-import models.gtfs.GtfsSnapshotMerge;
-import models.gtfs.GtfsSnapshotSource;
 import models.transit.Route;
 import models.transit.RouteType;
 import models.transit.ServiceCalendar;
@@ -55,7 +49,7 @@ public class Application extends Controller {
     	GlobalTx tx = VersionedDataStore.getGlobalTx();
     	
     	try {
-	    	Collection<Agency> agencies;
+	    	Collection<Agency> agencies = new ArrayList<Agency>();
 	    	
 	    	if(Security.isConnected()) {
 	            renderArgs.put("user", Security.connected());
@@ -77,7 +71,7 @@ public class Application extends Controller {
 	    	else if (checkOAuth(request, session, tx)) {
 	    	    renderArgs.put("user", Messages.get("secure.anonymous"));
 	    	    
-	    	    OAuthToken token = getToken(request, session);
+	    	    OAuthToken token = getToken(request, session, tx);
 	    	    
 	    	    if (token.agencyId != null) {
 	    	        agencies.add(tx.agencies.get(token.agencyId)); 
@@ -117,6 +111,7 @@ public class Application extends Controller {
     	GlobalTx tx = VersionedDataStore.getGlobalTx();
     	boolean ret = checkOAuth(request, session, tx);
     	tx.rollback();
+    	return ret;
     }
     
     /**
@@ -165,28 +160,20 @@ public class Application extends Controller {
         }
     }
     
-    public static void changePassword(String currentPassword, String newPassword) {
-        
-        if(Security.isConnected())
-        {
-            if(currentPassword != null && newPassword != null)
-            {
-                Boolean changed = Account.changePassword(Security.connected(), currentPassword, newPassword);
-                
-                if(changed)
-                    Application.passwordChanged();
-                else
-                {
-                    Boolean badPassword = true;
-                    render(badPassword);
-                }
-            }   
-            else
-                render();
-        }
-        else
-            Application.index();
-    }
+	public static void changePassword(String currentPassword, String newPassword)
+	{
+		GlobalTx tx = VersionedDataStore.getGlobalTx();
+		Account acct = tx.accounts.get(Security.connected());
+		if (acct.changePassword(currentPassword, newPassword)) {
+			tx.accounts.put(acct.id, acct);
+			tx.commit();
+			passwordChanged();
+		}
+		else {
+			tx.rollback();
+			Application.index();
+		}
+	}
     
     public static void passwordChanged() {
         
@@ -206,75 +193,103 @@ public class Application extends Controller {
      * Helper to go to the search page for a particular agency (never called from the router directly).
      * @param agencyId
      */
-    public static void search(Long agencyId) {
-        Agency selectedAgency;
-        
-        if (agencyId == null) {
-            agencyId = Long.parseLong(session.get("agencyId"));      
-            selectedAgency = Agency.findById(agencyId);            
-        }
-        else {
-            session.put("agencyId", agencyId);
-            
-            selectedAgency = Agency.findById(agencyId);
-            
-            session.put("agencyId", agencyId);
-            session.put("agencyName", selectedAgency.name);
-            session.put("lat", selectedAgency.defaultLat);
-            session.put("lon", selectedAgency.defaultLon);
-            session.put("zoom", 12);
-        }
-        
-        List<Route> routes = Route.find("agency = ? order by routeShortName", selectedAgency).fetch();
-        render(routes);
+    public static void search(String agencyId) {
+    	GlobalTx tx = VersionedDataStore.getGlobalTx();
+    	AgencyTx atx = null;
+    	
+    	try {
+    		Agency selectedAgency;
+	        if (agencyId == null) {
+	            agencyId = session.get("agencyId");
+	            selectedAgency = tx.agencies.get(agencyId);
+	        }
+	        else {
+	            session.put("agencyId", agencyId);
+	            
+	            selectedAgency = tx.agencies.get(agencyId);
+	            
+	            session.put("agencyId", agencyId);
+	            session.put("agencyName", selectedAgency.name);
+	            session.put("lat", selectedAgency.defaultLat);
+	            session.put("lon", selectedAgency.defaultLon);
+	            session.put("zoom", 12);
+	        }
+	        
+	        atx = VersionedDataStore.getAgencyTx(agencyId);
+	        
+	        render(atx.routes.values());
+    	} finally {
+    		if (atx != null) atx.rollback();
+    		tx.rollback();
+    	}
     }
 
-    public static void route(Long id) {
-    	List<RouteType> routeTypes = RouteType.findAll();
-        render(routeTypes);
+    public static void route(String id) {
+    	GlobalTx tx = VersionedDataStore.getGlobalTx();
+    	
+    	try {
+    		render(tx.routeTypes.values());
+    	} finally {
+    		tx.rollback();
+    	}
     }
     
     public static void manageRouteTypes() {
-    	List<RouteType> routeTypes = RouteType.findAll();
-        render(routeTypes);
+    	GlobalTx tx = VersionedDataStore.getGlobalTx();
+    	
+    	try {
+    		render(tx.routeTypes.values());
+    	} finally {
+    		tx.rollback();
+    	}
     }
 
     public static void manageStopTypes() {
-        List<StopType> routeTypes = StopType.findAll();
-        render(routeTypes);
+    	GlobalTx tx = VersionedDataStore.getGlobalTx();
+    	
+    	try {
+    		render(tx.routeTypes.values());
+    	} finally {
+    		tx.rollback();
+    	}
     }
 
     public static void manageAgencies() {
-        List<RouteType> routeTypes = RouteType.findAll();
-        render(routeTypes);
+    	GlobalTx tx = VersionedDataStore.getGlobalTx();
+    	
+    	try {
+    		render(tx.routeTypes.values());
+    	} finally {
+    		tx.rollback();
+    	}
     }
 
     public static void setLang(String lang) {
     	Lang.change(lang);
     	ok();
     }
-
-    public static void createAccount(String username, String password, String email, Boolean admin, Long agencyId)
-	{
-		if(!username.isEmpty() && !password.isEmpty() && !email.isEmpty() && Account.find("username = ?", username).first() == null )
-			new Account(username, password, email, admin, agencyId);
-		
-		Application.index();
-	}
     
-    public static void setAgency(Long agencyId) {
-        Agency agency = Agency.findById(agencyId);
-
-        if(agency == null)
-            badRequest();
-
-        session.put("agencyId", agencyId);
-        session.put("agencyName", agency.name);
-        session.put("lat", agency.defaultLat);
-        session.put("lon", agency.defaultLon);
-        session.put("zoom", 12);
-
-        ok();
+    public static void setAgency(String agencyId) {
+    	GlobalTx tx = VersionedDataStore.getGlobalTx();
+    	
+    	try {
+    		if(!tx.agencies.containsKey(agencyId)) {
+                badRequest();
+    			return;
+    		}
+    		
+    		Agency agency = tx.agencies.get(agencyId);
+	
+	        session.put("agencyId", agencyId);
+	        session.put("agencyName", agency.name);
+	        session.put("lat", agency.defaultLat);
+	        session.put("lon", agency.defaultLon);
+	        session.put("zoom", 12);
+	
+	        ok();
+    	} finally {
+    		tx.rollback();
+    	}
     }
 
     public static void setMap(String zoom, String lat, String lon) {
@@ -291,21 +306,26 @@ public class Application extends Controller {
     }
     
     public static void exportGtfs() {
-        
-        List<Agency> agencyObjects = Agency.findAll();
+    	GlobalTx tx = VersionedDataStore.getGlobalTx();
+    	Collection<Agency> agencyObjects;
+    	
+    	try {
+    		agencyObjects = tx.agencies.values();
+    	} finally {
+    		tx.rollback();
+    	}
 
         render();
-                
     }
     
     /**
-     * Build a GTFS file with the specified agency ID.
+     * Build a GTFS file with the specified agency IDs.
      * 
      * @param agencySelect
      * @param calendarFrom
      * @param calendarTo
      */
-    public static void createGtfs(List<Long> agencySelect, Long calendarFrom, Long calendarTo) {
+    public static void createGtfs(List<String> agencySelect, Long calendarFrom, Long calendarTo) {
         // reasonable defaults: now to 2 months from now (more or less)
         if (calendarFrom == null)
             calendarFrom = new Date().getTime();
@@ -313,11 +333,11 @@ public class Application extends Controller {
         if (calendarTo == null)
             calendarTo = new Date().getTime() + 2L * 31L * 24L * 60L * 60L * 1000L;
         
-        List<Agency> agencyObjects = new ArrayList<Agency>(); 
+        /*List<Agency> agencyObjects = new ArrayList<Agency>(); 
         
         if(agencySelect != null && agencySelect.size() > 0) {
 
-            for(Long agencyId : agencySelect) {
+            for(String agencyId : agencySelect) {
                 
                 Agency a = Agency.findById(agencyId);
                 if(a != null)
@@ -342,20 +362,23 @@ public class Application extends Controller {
         // running as a sync task for now -- needs to be async for processing larger feeds.
         exportJob.doJob(); 
         
-        redirect(Play.configuration.getProperty("application.appBase") + "/public/data/"  + snapshotExport.getZipFilename());
+        redirect(Play.configuration.getProperty("application.appBase") + "/public/data/"  + snapshotExport.getZipFilename());*/
     }
     
     public static void exportGis(List<Long> agencySelect) {
-        
-        List<Agency> agencyObjects = Agency.findAll();
-
-        render();
-                
+    	GlobalTx tx = VersionedDataStore.getGlobalTx();
+    	
+    	try {
+    		Collection<Agency> agencyObjects = tx.agencies.values();
+    		render(agencyObjects);
+    	} finally {
+    		tx.rollback();
+    	}                
     }
     
     
     public static void createGis(List<Long> agencySelect, String exportType) {
-    	
+    	/*
     	List<Agency> agencyObjects = new ArrayList<Agency>(); 
         
         if(agencySelect != null || agencySelect.size() > 0) {
@@ -385,6 +408,7 @@ public class Application extends Controller {
     	exportJob.doJob();
     	
     	redirect(Play.configuration.getProperty("application.appBase") + "/public/data/"  + gisExport.getFilename());
+    	*/
              
     }
     
@@ -406,7 +430,7 @@ public class Application extends Controller {
     		importGtfs();
         }
     	else {
-    		
+    /*		
     		GtfsSnapshot snapshot = new GtfsSnapshot(gtfsUpload.getName(), new Date(), GtfsSnapshotSource.UPLOAD);
     		snapshot.save();
     		
@@ -434,345 +458,12 @@ public class Application extends Controller {
 	        mergeJob.doJob(); 
 			
 			//valdiateGtfs(snapshot.id);
+			 *
+			 */
     	}
     	
     }
-    
-    public static void valdiateGtfs(Long snapshotId) {
-    	
-    }
-    
-    public static void valdiateGtfsStatus(Long snapshotId) {
-    	
-    }
-    
-    public static void mergeGtfs(Long snapshotId) {
-    	
-    }
 
-    public static void createCsvSchedule(Long patternId, Long calendarId)
-    {
-   	 response.setHeader("Content-Disposition", "attachment; filename=\"schedule_" + patternId + ".csv\"");
-   	 response.setHeader("Content-type", "text/csv");
-   	 
-   	 SimpleDateFormat dfTime = new SimpleDateFormat("hh:mm a");
-   	 
-   	 TripPattern pattern = TripPattern.findById(patternId);
-   	 ServiceCalendar calendar = ServiceCalendar.findById(calendarId);
-   	 
-   	 // ensure that the trip pattern sequence isn't broken
-   	 pattern.resequenceTripStops();
-   	 
-   	 List<Trip> trips  = Trip.find("pattern = ? and serviceCalendar = ? ORDER by id", pattern, calendar).fetch();
-   	 List<TripPatternStop> stopList  = TripPatternStop.find("pattern = ? ORDER BY stopSequence", pattern).fetch();
-   	 	
-   	 StringWriter csvString = new StringWriter();
-   	 CSVWriter csvWriter = new CSVWriter(csvString);
-   	 
-   	 String[] headerBase = "trip_id, pattern_id, block_id, headsign, short_name".split(",");
-   	 String[] headerStopNames = new String[headerBase.length + stopList.size() + 1];
-   	 String[] headerStopIds = new String[headerBase.length + stopList.size() + 1];
-   	 String[] headerStopTravelTimes = new String[headerBase.length + stopList.size() + 1];
-   	 String[] headerStopDwellTimes = new String[headerBase.length + stopList.size() + 1];
-   	 String[] headerStopTravelCumulative = new String[headerBase.length + stopList.size() + 1];
-
-   	 Integer cumulativeTravelTime = 0;
-   	 
-   	 headerStopNames[headerBase.length] = "stop_name";
-   	 headerStopIds[headerBase.length] = "stop_id";
-   	 headerStopTravelTimes[headerBase.length] = "travel_time";
-   	 headerStopDwellTimes[headerBase.length] = "dwell_time";
-   	 headerStopTravelCumulative[headerBase.length] = "cumulative_time";
-   	 
-   	 HashMap<Integer, Integer> stopColumnIndex = new HashMap<Integer, Integer>();
-   	 HashMap<Long, Integer> patternStopColumnIndex = new HashMap<Long, Integer>(); 
-   	 
-   	 for(TripPatternStop patternStop : stopList)
-   	 {	
-   		 if(patternStop.defaultDwellTime == null)
-   		 {
-   			 patternStop.defaultDwellTime = 0;
-   		 }
-   		 
-   		 cumulativeTravelTime = cumulativeTravelTime + patternStop.defaultTravelTime + patternStop.defaultDwellTime;
-   		 Logger.info(patternStop.stopSequence.toString());
-   		 headerStopNames[headerBase.length + patternStop.stopSequence + 1] = patternStop.stop.stopName;
-   		 headerStopIds[headerBase.length + patternStop.stopSequence + 1] = patternStop.stop.id.toString();
-   		 headerStopTravelTimes[headerBase.length + patternStop.stopSequence  + 1] = "=\"" + TimeExtensions.ccyAmount(patternStop.defaultTravelTime) + "\"";
-   		 headerStopDwellTimes[headerBase.length + patternStop.stopSequence  + 1] = "=\"" + TimeExtensions.ccyAmount(patternStop.defaultDwellTime) + "\"";
-   		 headerStopTravelCumulative[headerBase.length + patternStop.stopSequence  + 1] = "=\"" + TimeExtensions.ccyAmount(cumulativeTravelTime) + "\""; 
-   		 
-   		 stopColumnIndex.put(patternStop.stopSequence + 1, headerBase.length + patternStop.stopSequence);
-   		 patternStopColumnIndex.put(patternStop.id, headerBase.length + patternStop.stopSequence);
-   	 }
-   	 
-   	 String[] header = (String[]) ArrayUtils.addAll(headerBase, headerStopNames);
-   	 
-   	 csvWriter.writeNext(headerBase);
-   	 csvWriter.writeNext(headerStopNames);
-   	 csvWriter.writeNext(headerStopIds);
-   	 csvWriter.writeNext(headerStopTravelTimes);
-   	 csvWriter.writeNext(headerStopDwellTimes);
-   	 csvWriter.writeNext(headerStopTravelCumulative);
-   	 
-   	 for(Trip trip : trips)
-   	 {
-   		 String[] tripTimes = new String[headerBase.length + stopList.size() + 1];
-   		 
-   		 tripTimes[0] = trip.id.toString();
-   		 tripTimes[1] = patternId.toString();
-   		 tripTimes[2] = trip.blockId;
-   		 tripTimes[3] = trip.tripHeadsign;
-   		 tripTimes[4] = trip.tripShortName;
-   		 
-   		 List<StopTime> stopTimes  = StopTime.find("trip = ? order by stopSequence", trip).fetch();
-   		 
-   		 try
-   		 {
-   			 Date startTime = dfTime.parse("00:00 AM");
-   		 
-   			 for(StopTime stopTime : stopTimes)
-   			 {
-   				 if(stopTime.departureTime != null)
-   				 {
-   					 Date newTime = new Date(startTime.getTime() + (stopTime.departureTime * 1000));
-   					
-   					 String timeString = dfTime.format(newTime);
-   					 
-   					 if(stopTime.pickupType != null && stopTime.pickupType.equals(StopTimePickupDropOffType.NONE))
-   						 timeString += " <";
-   					 
-   					 if(stopTime.dropOffType != null && stopTime.dropOffType.equals(StopTimePickupDropOffType.NONE))
-   						 timeString += " >";
-   					 
-   					 if(stopTime.patternStop == null)
-   						 tripTimes[stopColumnIndex.get(stopTime.stopSequence) + 1] = timeString;
-   					 else
-   						 tripTimes[patternStopColumnIndex.get(stopTime.patternStop.id) + 1] = timeString;
-   				 }
-   				 else
-   				 {
-   					 String boardAlightStatus = "";
-   					 
-   					 if(stopTime.pickupType != null && stopTime.pickupType.equals(StopTimePickupDropOffType.NONE))
-   						 boardAlightStatus += " <";
-   					 
-   					 if(stopTime.dropOffType != null && stopTime.dropOffType.equals(StopTimePickupDropOffType.NONE))
-   						 boardAlightStatus += " >";
-   					 
-   					 if(stopTime.patternStop == null)
-   						 tripTimes[stopColumnIndex.get(stopTime.stopSequence) + 1] = "-" + boardAlightStatus;
-   					 else
-   						 tripTimes[patternStopColumnIndex.get(stopTime.patternStop.id) + 1] = "-" + boardAlightStatus;
-   				 }
-   			 }
-   		 }
-   		 catch(Exception e)
-   		 {
-   			 Logger.error(e.toString());
-   		 }
-   		 
-   		 csvWriter.writeNext(tripTimes);
-   	 }
-   	 
-   	 renderText(csvString);
-    }
-    
-    public static void uploadCsvSchedule(Long patternId, Long calendarId, String qqfile)
-    {	     
-   	 
-		SimpleDateFormat dfTime = new SimpleDateFormat("hh:mm a");
-		SimpleDateFormat dfsTime = new SimpleDateFormat("hh:mm:ss a");
-		 
-		TripPattern pattern = TripPattern.findById(patternId); 
-		ServiceCalendar calendar = ServiceCalendar.findById(calendarId);
-		
-		List<Trip> trips = Trip.find("pattern = ? and serviceCalendar = ?", pattern, calendar).fetch();
-
-		for(Trip trip : trips) {
-			
-			StopTime.delete("trip = ?", trip); 
-		
-			trip.delete();
-	
-		}
-   	 
-	   	try {
-	   		
-	   		String uploadName = "csv_" + patternId;
-	   		
-	   		File uploadedFile = new File(Play.configuration.getProperty("application.publicDataDirectory"), uploadName + ".csv");
-	   		
-	   		FileOutputStream fileOutputStream = new FileOutputStream(uploadedFile);
-	   		IOUtils.copy(request.body, fileOutputStream);
-	   		fileOutputStream.close();
-           
-           
-           CSVReader csvReader = new CSVReader(new FileReader(uploadedFile));
-           
-           int lineNum = 1;
-           
-           HashMap<Integer, TripPatternStop> columnStopIndex = new HashMap<Integer, TripPatternStop>();
-           
-           HashMap<Integer, Integer> columnStopDelta = new HashMap<Integer, Integer>();
-           
-           Integer cumulativeTime = 0;
-           
-           List<TripPatternStop> patternStops = TripPatternStop.find("pattern = ? order by stopSequence", pattern).fetch();
-           
-           for(String[] csvLine : csvReader.readAll())
-           {
-           	int columnIndex = 0;
-           
-           	if(lineNum == 3)
-           	{
-           		if(!csvLine[5].equals("stop_id"))
-           			throw new Exception("Invalid stop_id row.");
-           		
-           		for(String column : csvLine)	
-           		{
-           			if(columnIndex > 5)
-           			{
-           				Stop stop = Stop.findById(Long.parseLong(column));
-           				
-           				TripPatternStop patternStop = patternStops.get(0);
-           				patternStops = patternStops.subList(1, patternStops.size());
-           				
-           				if(!patternStop.stop.id.equals(stop.id))
-           					throw new Exception("Stop ID " + stop.id + "doesn't match pattern sequence for stop " + patternStop.stop.id);
-           				
-           				columnStopIndex.put(columnIndex, patternStop);
-           				
-           				cumulativeTime += patternStop.defaultDwellTime != null? patternStop.defaultDwellTime: 0;
-           				cumulativeTime += patternStop.defaultTravelTime != null? patternStop.defaultTravelTime: 0	;
-           				
-           				columnStopDelta.put(columnIndex, new Integer(cumulativeTime));
-           			}
-           			
-           			columnIndex++;
-           		}
-           	}
-           	else if(lineNum > 6)
-           	{
-   	        	if(!csvLine[0].isEmpty())
-   	        	{
-   	        		Trip trip = new Trip();
-   	        		
-   	        		trip.pattern = pattern;
-   	        		trip.serviceCalendar = calendar;
-   	        		
-   	        		trip.blockId = csvLine[2];
-   	        		trip.tripHeadsign = csvLine[3];
-   	        		trip.tripShortName = csvLine[4];
-   	        		
-   	        		trip.useFrequency = false;
-   	        		
-   	        		trip.save();
-   	        		
-   	        		Integer firstTimepoint = null;
-   	        		Integer columnCount = 0;
-   	        		Integer previousTime = 0;
-   	        		Integer dayOffset = 0;
-   	        		
-   	        		for(String column : csvLine)	
-   	        		{	
-   	        			if(columnIndex > 5)
-   	        			{
-   	        				if(!column.isEmpty())
-   	        				{
-   	        					StopTime stopTime = new StopTime();
-   	        					
-   	        					stopTime.trip = trip;
-   	        					
-   	        					// check for board/alight only flag
-           						if(column.contains(">")) {
-           							
-           							column = column.replace(">", "");
-           							
-           							// board only
-           							stopTime.dropOffType = StopTimePickupDropOffType.NONE;
-           						}
-           						
-           						if(column.contains("<")) {
-           							
-           							column = column.replace("<", "");
-           							
-           							// alight only
-           							stopTime.pickupType = StopTimePickupDropOffType.NONE;
-           						}
-           						
-           						column = column.trim();
-   	        					
-   	        					if(column.equals("+"))
-   	        						stopTime.departureTime = firstTimepoint + columnStopDelta.get(columnIndex);
-   	        					else if(column.equals("-"))
-   	        						stopTime.departureTime = null;
-   	        					else
-   	        					{
-   	        						Integer currentTime;
-   	        							
-   	        						
-   	        						try
-   	        						{
-   	        							currentTime = (dfTime.parse(column).getHours() * 60 * 60 ) + (dfTime.parse(column).getMinutes() * 60) + (dfTime.parse(column).getSeconds());
-   	        						}
-   	        						catch(ParseException e)
-   	        						{
-   	        							try
-   		        						{
-   	        								currentTime = (dfsTime.parse(column).getHours() * 60 * 60 ) + (dfsTime.parse(column).getMinutes() * 60) + (dfsTime.parse(column).getSeconds());
-   		        						}
-   		        						catch(ParseException e2)
-   		        						{
-   		        							continue;
-   		        						}
-   		        					}
-   	        						
-   	        						// in case of time that decreases add a day to offset for trips that cross midnight boundary
-   	        						if(previousTime > currentTime)	        							
-   	        							dayOffset += 24 * 60 * 60;
-   	        							
-   	        						stopTime.departureTime = currentTime + dayOffset;
-   	        						
-   	        						previousTime = currentTime;
-   	        						
-   	        						if(firstTimepoint == null)
-   		    	        			{
-   		        						firstTimepoint = stopTime.departureTime;
-   		    	        			}
-   	        						
-   	        					}
-   	        					
-   	        					stopTime.arrivalTime = stopTime.departureTime;
-   	        					
-   	        					stopTime.patternStop = columnStopIndex.get(columnIndex);
-   	        					stopTime.stop = columnStopIndex.get(columnIndex).stop;
-   	        					stopTime.stopSequence = columnCount + 1;
-   	        					
-   	        					stopTime.save();
-   	        					
-   	        					columnCount++;
-   	        				}
-   	        			}
-   	        				
-   	        			columnIndex++;
-   	        		}	        		
-   	        	}
-           	}
-           	
-           	lineNum++;
-           }
-           
-           csvReader.close();
-	   	}
-	   	catch(Exception e)
-	   	{
-	   		Logger.error(e.toString());
-	   	}
-	   	
-	   	ok();
-    }
-    
     /** schedule exceptions page */
     public static void exceptions () {
     	render();
