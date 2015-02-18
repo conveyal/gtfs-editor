@@ -102,6 +102,9 @@ public class VersionedDataStore {
 		/** the database (transaction). subclasses must initialize. */
 		protected final DB tx;
 		
+		/** has this transaction been closed? */
+		boolean closed = false;
+		
 		/** Convenience function to get a map */
 		protected final <T1, T2> BTreeMap <T1, T2> getMap (String name) {
 			return tx.createTreeMap(name)
@@ -125,15 +128,24 @@ public class VersionedDataStore {
 		
 		public void commit() {
 			tx.commit();
+			closed = true;
 		}
 		
 		public void rollback() {
 			tx.rollback();
+			closed = true;
+		}
+		
+		/** roll this transaction back if it has not been committed or rolled back already */
+		public void rollbackIfOpen () {
+			if (!closed) rollback();
 		}
 		
 		protected final void finalize () {
-			Logger.error("DB transaction left unclosed, this signifies a memory leak!");
-			rollback();
+			if (!closed) {
+				Logger.error("DB transaction left unclosed, this signifies a memory leak!");
+				rollback();
+			}
 		}
 	}
 	

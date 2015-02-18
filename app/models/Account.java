@@ -8,6 +8,7 @@ import java.util.UUID;
 //import notifications.Mails;
 
 
+
 import models.transit.Agency;
 
 import org.apache.commons.codec.binary.Hex;
@@ -15,7 +16,7 @@ import org.hsqldb.lib.MD5;
 
 import play.Play;
 
-public class Account implements Serializable {
+public class Account extends Model implements Serializable {
 	public static final long serialVersionUID = 1;
 	
     public String username;
@@ -35,6 +36,7 @@ public class Account implements Serializable {
     
     public Account(String username, String password, String email, Boolean admin, String agencyId)
     {
+    	super(username);
     	this.username = username;
     	this.email = email;
     	this.active = true;
@@ -70,4 +72,21 @@ public class Account implements Serializable {
     		return null;
     	}
     }
+    
+    public boolean checkPassword(String password) {
+    	return hash(password).equals(this.password);
+    }
+
+	public boolean changePassword(String currentPassword, String newPassword) {
+		if (!checkPassword(currentPassword))
+			return false;
+		
+		setPassword(newPassword);
+		return true;
+		
+	}
+	
+	public void setPassword (String newPassword) {
+		this.password = hash(newPassword);
+	}
 }

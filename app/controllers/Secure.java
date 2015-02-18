@@ -6,6 +6,8 @@ import java.util.Date;
 import java.util.UUID;
 
 import models.OAuthToken;
+import models.VersionedDataStore;
+import models.VersionedDataStore.GlobalTx;
 import models.transit.Agency;
 import play.Logger;
 import play.Play;
@@ -116,24 +118,21 @@ public class Secure extends Controller {
     }
     
     // Get an OAuth token, possibly with particular agencies
-    public static void get_token (@Required String client_id, @Required String client_secret, Long agency) {
+    public static void get_token (@Required String client_id, @Required String client_secret, String agencyId) {
         // check if the client secret and client ID are correct, and if OAuth is enabled
         if (!"true".equals(Play.configuration.getProperty("application.oauthEnabled"))) {
             badRequest();
         } else if (client_id.equals(Play.configuration.getProperty("application.managerId")) &&
                 client_secret.equals(Play.configuration.getProperty("application.managerSecret"))) {
             // create an OAuth key
-            OAuthToken token = new OAuthToken();
-            token.token = UUID.randomUUID().toString().replace("-", "").substring(0, 16);
-            token.creationDate = new Date().getTime();
+        	String tokenRaw = UUID.randomUUID().toString().replace("-", "").substring(0, 16);
+            OAuthToken token = new OAuthToken(tokenRaw, agencyId);
             
-            if (agency != null) {
-                token.agency = Agency.findById(agency);
-            }
+            GlobalTx tx = VersionedDataStore.getGlobalTx();
+            tx.tokens.put(token.id, token);
+            tx.commit();
             
-            token.save();
-            
-            renderText(token.token);
+            renderText(tokenRaw);
         }
         else {
             Logger.info("Invalid client ID or secret");

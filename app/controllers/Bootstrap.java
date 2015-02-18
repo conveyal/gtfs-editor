@@ -19,6 +19,8 @@ import com.vividsolutions.jts.geom.Coordinate;
 import static java.util.Collections.sort;
 import controllers.Secure.Security;
 import models.Account;
+import models.VersionedDataStore;
+import models.VersionedDataStore.GlobalTx;
 import models.transit.Agency;
 import models.transit.GtfsRouteType;
 import models.transit.Route;
@@ -39,290 +41,116 @@ import play.utils.*;
 public class Bootstrap extends Controller {
 
     public static void index() {
+    	GlobalTx tx = VersionedDataStore.getGlobalTx();
     	
-    	if(Account.count() == 0)
-    		Bootstrap.adminForm();
-    	
-    	else if(Agency.count() == 0)
-    		Bootstrap.agencyForm();
-    	
-    	else 
-    		Application.index();
+    	try {
+	    	if (tx.accounts.size() == 0)
+	    		Bootstrap.adminForm();
+	    	
+	    	else if(tx.agencies.size() == 0)
+	    		Bootstrap.agencyForm();
+	    	
+	    	else 
+	    		Application.index();
+    	}
+    	finally {
+    		tx.rollback();
+    	}
     }
     
     public static void adminForm() {
+    	GlobalTx tx = VersionedDataStore.getGlobalTx();
     	
-    	if(Account.count() > 0)
-    		Bootstrap.agencyForm();
+    	try {
+    		if(tx.accounts.size() > 0)
+    			Bootstrap.agencyForm();
     	
-    	render();
-    	
+    		render();
+    	}
+    	finally {
+    		tx.rollback();
+    	}    	
     }
     
     public static void createAdmin(String username, String password, String password2, String email) throws Throwable {
+    	GlobalTx tx = VersionedDataStore.getGlobalTx();
         
-    	if(Account.count() > 0 && !Play.configuration.getProperty("application.allowBootstrapAdminCreate").equals("true"))
-    		Bootstrap.index();
-    	
-    	validation.required(username).message("Username cannot be blank.");
-    	validation.required(password).message("Password cannot be blank.");
-    	validation.equals(password, password2).message("Passwords do not match.");
-    	
-    	if(validation.hasErrors()) {
-    		params.flash();
-    		validation.keep();
-            adminForm();
-        }
-       	
-    	new Account(username, password, email, true, null);
-    	
+    	try {
+	    	if(tx.accounts.size() > 0 && !Play.configuration.getProperty("application.allowBootstrapAdminCreate").equals("true"))
+	    		Bootstrap.index();
+	    	
+	    	validation.required(username).message("Username cannot be blank.");
+	    	validation.required(password).message("Password cannot be blank.");
+	    	validation.equals(password, password2).message("Passwords do not match.");
+	    	
+	    	if(validation.hasErrors()) {
+	    		params.flash();
+	    		validation.keep();
+	            adminForm();
+	            return;
+	        }
+	       	
+	    	if (tx.accounts.containsKey(username)) {
+	    		badRequest();
+	    		adminForm();
+	    		return;
+	    	}
+	    	
+	    	Account acct = new Account(username, password, email, true, null);
+	    	tx.accounts.put(acct.id, acct);
+	    	tx.commit();
+    	} finally {
+    		tx.rollbackIfOpen();
+    	}
+	    	
     	Bootstrap.index();
     }
     
     public static void agencyForm() {
+    	GlobalTx tx = VersionedDataStore.getGlobalTx();
     	
-    	if(Account.count() == 0)
-    		Bootstrap.adminForm();
-    	
-    	if(Agency.count() > 0)
-    		Application.index();
-    	
+    	try {
+	    	if (tx.accounts.size() == 0)
+	    		Bootstrap.adminForm();
+	    	
+	    	if (tx.agencies.size() > 0)
+	    		Application.index();
+    	} finally {
+    		tx.rollback();
+    	}
+	    	
     	render();
     }
     
     public static void createAgency( String gtfsId, String name, String url, @Required String timezone, @Required String language, String phone, Double defaultLat, Double defaultLon) throws Throwable {
+    	GlobalTx tx = VersionedDataStore.getGlobalTx();
     	
-    	if(Agency.count() > 0)
-    		Bootstrap.index();
-    	
-    	validation.required(gtfsId).message("Agency GTFS ID cannot be blank.");
-    	validation.required(name).message("Agency name cannot be blank.");
-    	validation.required(url).message("Agency URL cannot be blank.");
-    	
-    	if(validation.hasErrors()) {
-    		params.flash();
-    		validation.keep();
-    		agencyForm();
-        }
-    	
-    	Agency agency = new Agency(gtfsId, name, url, timezone, language, phone);
-    	
-    	agency.defaultLat = defaultLat;
-    	agency.defaultLon = defaultLon;
-    	
-    	agency.save();
+    	try {
+	    	if(tx.agencies.size() > 0)
+	    		Bootstrap.index();
+	    	
+	    	validation.required(gtfsId).message("Agency GTFS ID cannot be blank.");
+	    	validation.required(name).message("Agency name cannot be blank.");
+	    	validation.required(url).message("Agency URL cannot be blank.");
+	    	
+	    	if(validation.hasErrors()) {
+	    		params.flash();
+	    		validation.keep();
+	    		agencyForm();
+	        }
+	    	
+	    	Agency agency = new Agency(gtfsId, name, url, timezone, language, phone);
+	    	
+	    	agency.defaultLat = defaultLat;
+	    	agency.defaultLon = defaultLon;
+	    	
+	    	tx.agencies.put(agency.id, agency);
+	    	tx.commit();
+    	} finally {
+    		tx.rollbackIfOpen();
+    	}
     	
     	Bootstrap.index();
     }
-    
-    // helper bootstap function for updating from GeoServer-centric db versions
-    
-    public static void encodeTripShapes() {
-    	
-    	List<TripPattern> tps = TripPattern.findAll();
-    	
-    	for(TripPattern tp : tps) {
-    		if(tp.shape != null && tp.encodedShape == null) {
-    			tp.encodedShape = tp.shape.generateEncoded();
-    			tp.save();
-    		}
-    	}
-    	
-    	String step = "Encode Trip Shapes";
-    	renderTemplate("Bootstrap/dataProcessingComplete.html", step);
-    }
-    
-    
-    // sync tripshpes 
-    public static void syncTripShapes() {
-    	
-    	List<TripPattern> tps = TripPattern.findAll();
-    	
-    	for(TripPattern tp : tps) {
-    		if(tp.shape != null && tp.encodedShape != null) {
-    			
-    			tp.shape.updateShapeFromEncoded(tp.encodedShape );
-        		tp.shape.save();
-    			
-    		}
-    	}
-    	
-    	String step = "Sync Trip Shapes";
-    	renderTemplate("Bootstrap/dataProcessingComplete.html", step);
-    }
-    
-    
-    public static void repackPatternSequences() {
-    	
-    	List<TripPattern> tps = TripPattern.findAll();
-    	
-    	for(TripPattern tp : tps) {
-    		List<TripPatternStop> tpStops = tp.patternStops;
-    		Collections.sort(tpStops);
-    		
-    		Integer stopSequence = 1;
-    		    		
-    		for(TripPatternStop tpStop : tpStops ) {
-    			tpStop.stopSequence = stopSequence;
-    			tpStop.save();
-    			stopSequence++;
-    		}
-    		
-    		List<Trip> trips = Trip.find("pattern = ?", tp).fetch();
-    		for (Trip trip : trips) {
-    		    // make sure that trip and pattern are compatible
-    		    List<StopTime> sts = trip.getStopTimes();
-    		    
-                    ListIterator<TripPatternStop> psi = tpStops.listIterator();
-    		    
-    		    TripPatternStop current;
-    		    for (StopTime st : trip.getStopTimes()) {
-    		        // always advance at least one stop, to handle patterns with repeated stops, which is
-    		        // sadly common in data out there.
-    		        // Advance more than one stop if stop ID doesn't match, which implies a skipped stop.
-    		        do {
-    		            try {
-                                current = psi.next();
-    		            } catch (NoSuchElementException e) {
-    		                Logger.error("Trip %s is incompatible with pattern %s!", trip, tp);
-    		                error();
-    		                return;
-    		            }
-    		        } while (!st.stop.id.equals(current.stop.id));
-    		        
-    		        st.stopSequence = current.stopSequence;
-    		        // it would be nice to be able to rely on st.patternStop, but it gets lost on import. recreate it.
-    		        st.patternStop = current;
-    		        st.save();
-    		    }
-    		}
-    	}
-    	
-    	String step = "Repack Pattern Sequences";
-    	renderTemplate("Bootstrap/dataProcessingComplete.html", step);
-    }	
-   
-    public static void listReversedTripShapes() {
-    	
-    	List<TripPattern> tps = TripPattern.findAll();
-    	
-    	for(TripPattern tp : tps) {
-    		List<TripPatternStop> tpStops = tp.patternStops;
-    		
-    		Collections.sort(tpStops);
-    		
-    		Coordinate tpsc1 = tpStops.get(0).stop.locationPoint().getCoordinate();
-    		Coordinate tpsc2 = tpStops.get(tpStops.size() - 1).stop.locationPoint().getCoordinate();
-    		
-    		Coordinate sc1 = tp.shape.shape.getCoordinateN(0);
-    		Coordinate sc2 = tp.shape.shape.getCoordinateN(tp.shape.shape.getNumPoints() -1);
-    		
-    		try {
-				Double distance1a = JTS.orthodromicDistance(tpsc1,sc1,org.geotools.referencing.crs.DefaultGeographicCRS.WGS84);
-				Double distance1b = JTS.orthodromicDistance(tpsc1,sc2,org.geotools.referencing.crs.DefaultGeographicCRS.WGS84);
-				
-				Double distance2a = JTS.orthodromicDistance(tpsc2,sc2,org.geotools.referencing.crs.DefaultGeographicCRS.WGS84);
-				Double distance2b = JTS.orthodromicDistance(tpsc2,sc1,org.geotools.referencing.crs.DefaultGeographicCRS.WGS84);
-				
-				
-				if(distance2a > (distance2b * 5) || distance1a > (distance1b * 5))
-					play.Logger.info(distance1a + "|"  + distance1b + "--" + distance2a + "|"  + distance2b + " " + tp.route.agency.gtfsAgencyId + " " + tp.route.routeShortName + " "  + tp.route.routeLongName + " " +  tp.name);
-				//else
-				//	play.Logger.info(distance2a + "|"  + distance2b + " " + tp.route.agency.gtfsAgencyId + " " + tp.route.routeShortName + " "  + tp.route.routeLongName + " " +  tp.name);
-			} catch (TransformException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-    	
-    	
-    	}
-    	
-    	String step = "List Reversed Trip Shapes";
-    	renderTemplate("Bootstrap/dataProcessingComplete.html", step);
-    }
-
-    public static void updateFrequencySettings() {
-    	Trip.em().createNativeQuery("update trip set usefrequency = false where usefrequency is null").executeUpdate();
-    	Trip.em().createNativeQuery("update trippattern set usefrequency = false where usefrequency is null").executeUpdate();
-    
-    	String step = "Update Frequency Settings";
-    	renderTemplate("Bootstrap/dataProcessingComplete.html", step);
-    }
-    
-    public static void assignRouteTypes() {
-        
-    	List<Object[]> result = Route.em().createNativeQuery("SELECT id, routetype, routetype_id FROM route;").getResultList();
-
-    	for(Object[] o : result) {
-    		Logger.info(o[0].toString() + " " + o[1].toString());
-    		
-    		GtfsRouteType gtfsRouteType = GtfsRouteType.valueOf(o[1].toString());
-    
-    		Integer gtfsTypeId;
-    		
-    		switch(gtfsRouteType)
-        	{
-        		case TRAM:
-        			gtfsTypeId = 0;
-        			break;
-        		case SUBWAY:
-        			gtfsTypeId = 1;
-        			break;
-        		case RAIL:
-        			gtfsTypeId = 2;
-        			break;
-        		case BUS:
-        			gtfsTypeId = 3;
-        			break;
-        		case FERRY:
-        			gtfsTypeId = 4;
-        			break;
-        		case CABLECAR:
-        			gtfsTypeId = 5;
-        			break;
-        		case GONDOLA:
-        			gtfsTypeId = 6;
-        			break;
-        		case FUNICULAR:
-        			gtfsTypeId = 7;
-        			break;
-        		default:
-        			gtfsTypeId = null;
-        			break;
-        	}
-    		
-    		Route r = Route.findById(((BigInteger)o[0]).longValue());
-    		r.routeType = Route.mapGtfsRouteType(gtfsTypeId);
-    		
-    		r.save();
-    	}	
-    	
-    	String step = "Assign Route Types";
-    	renderTemplate("Bootstrap/dataProcessingComplete.html", step);
-    }
-    
-    
-    public static void createShapesFromPatterns() {
-        
-    	List<TripPattern> tps = TripPattern.findAll();
-   
-    	
-    	for(TripPattern tp : tps) {
-    		
-    		if(tp.shape == null) {
-    			
-    			tp.shape = TripShape.createFromPattern(tp);
-    			if(tp.shape != null) {
-    				tp.encodedShape = tp.shape.generateEncoded();
-    				tp.save();
-    			}
-    			Logger.info("Creating shape for: " + tp.name);
-    			
-    		}
-    	}
-    	
-    	String step = "Create TripShapes from TripPatterns";
-    	renderTemplate("Bootstrap/dataProcessingComplete.html", step);
-    }   
 }
 

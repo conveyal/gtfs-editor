@@ -27,6 +27,7 @@ import jobs.ProcessGisExport;
 import jobs.ProcessGtfsSnapshotExport;
 import jobs.ProcessGtfsSnapshotMerge;
 import models.*;
+import models.VersionedDataStore.GlobalTx;
 import models.gis.GisExport;
 import models.gis.GisUploadType;
 import models.gtfs.GtfsSnapshot;
@@ -51,70 +52,83 @@ public class Application extends Controller {
     @Before
     static void initSession() throws Throwable {
 
-    	List<Agency> agencies = new ArrayList<Agency>();
+    	GlobalTx tx = VersionedDataStore.getGlobalTx();
     	
-    	if(Security.isConnected()) {
-            renderArgs.put("user", Security.connected());
-            
-            Account account = Account.find("username = ?", Security.connected()).first();
-            
-            if(account == null && Account.count() == 0) {
-            	Bootstrap.index();
-            }
-            
-            if(account.admin != null && account.admin)
-            	agencies = Agency.find("order by name").fetch();
-            else {
-            	agencies.add(((Agency)Agency.findById(account.agency.id)));            	
-            }
-            
-            renderArgs.put("agencies", agencies);
-        }
-    	else if (checkOAuth(request, session)) {
-    	    renderArgs.put("user", Messages.get("secure.anonymous"));
-    	    
-    	    OAuthToken token = getToken(request, session);
-    	    
-    	    if (token.agency != null) {
-    	        agencies.add(token.agency); 
-    	    }
-    	    else {
-    	        agencies = Agency.find("order by name").fetch();
-    	    }
-    	    
-    	    renderArgs.put("agencies", agencies);
+    	try {
+	    	Collection<Agency> agencies;
+	    	
+	    	if(Security.isConnected()) {
+	            renderArgs.put("user", Security.connected());
+	            
+	            Account account = tx.accounts.get(Security.connected());
+	            
+	            if(account == null && tx.accounts.size() == 0) {
+	            	Bootstrap.index();
+	            }
+	            
+	            if(account.admin != null && account.admin)
+	            	agencies = tx.agencies.values();
+	            else {
+	            	agencies.add(tx.agencies.get(account.agencyId));            	
+	            }
+	            
+	            renderArgs.put("agencies", agencies);
+	        }
+	    	else if (checkOAuth(request, session, tx)) {
+	    	    renderArgs.put("user", Messages.get("secure.anonymous"));
+	    	    
+	    	    OAuthToken token = getToken(request, session);
+	    	    
+	    	    if (token.agencyId != null) {
+	    	        agencies.add(tx.agencies.get(token.agencyId)); 
+	    	    }
+	    	    else {
+	    	        agencies = tx.agencies.values();
+	    	    }
+	    	    
+	    	    renderArgs.put("agencies", agencies);
+	    	}
+	        else {
+	
+	        	if(tx.accounts.size() == 0)
+	        		Bootstrap.index();
+	        	else
+	        	    Secure.login();
+	        }
+	
+	        if(session.get("agencyId") == null) {
+	            
+	        	Agency agency = agencies.iterator().next();
+	
+	            session.put("agencyId", agency.id);
+	            session.put("agencyName", agency.name);
+	            session.put("lat", agency.defaultLat);
+	            session.put("lon", agency.defaultLon);
+	            session.put("zoom", 12); 
+	            
+	        }
     	}
-        else {
-
-        	if(Account.count() == 0)
-        		Bootstrap.index();
-        	else
-        	    Secure.login();
-        }
-
-        if(session.get("agencyId") == null) {
-            
-        	Agency agency = agencies.get(0);
-
-            session.put("agencyId", agency.id);
-            session.put("agencyName", agency.name);
-            session.put("lat", agency.defaultLat);
-            session.put("lon", agency.defaultLon);
-            session.put("zoom", 12); 
-            
-        } 
+    	finally {
+    		tx.rollback();
+    	}
     }
 
+    public static boolean checkOAuth(Request request, Session session) {
+    	GlobalTx tx = VersionedDataStore.getGlobalTx();
+    	boolean ret = checkOAuth(request, session, tx);
+    	tx.rollback();
+    }
+    
     /**
      * Check if a user has access via OAuth.
      * @param session
      * @return
      */
-    public static boolean checkOAuth(Request request, Session session) {
+    public static boolean checkOAuth(Request request, Session session, GlobalTx tx) {
         if (!"true".equals(Play.configuration.getProperty("application.oauthEnabled")))
             return false;
         
-        OAuthToken token = getToken(request, session);
+        OAuthToken token = getToken(request, session, tx);
         
         if (token == null)
             return false;
@@ -129,7 +143,7 @@ public class Application extends Controller {
      * Get the OAuth token from the request/session.
      * Note that we support OAuth tokens in Authorization headers, or in the session, or in the GET param oauth_token.
      */
-    public static OAuthToken getToken (Request request, Session session) {
+    public static OAuthToken getToken (Request request, Session session, GlobalTx tx) {
         String token = null;
         if (request.params.get("oauth_token") != null)
             token = request.params.get("oauth_token");
@@ -145,8 +159,10 @@ public class Application extends Controller {
         if (token == null)
             return null;
         
-        else
-            return OAuthToken.find("token = ?", token).first();
+        else {
+        	token = Account.hash(token);
+            return tx.tokens.get(token);
+        }
     }
     
     public static void changePassword(String currentPassword, String newPassword) {

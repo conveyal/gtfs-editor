@@ -1,30 +1,45 @@
 package controllers;
  
 import models.*;
+import models.VersionedDataStore.GlobalTx;
  
 public class Security extends Secure.Security {
 	
     static boolean authenticate(String username, String password) {
-        return Account.connect(username, password);
+        GlobalTx tx = VersionedDataStore.getGlobalTx();
+        
+        try {
+        	return tx.accounts.containsKey(username) && tx.accounts.get(username).checkPassword(password);
+        }
+        finally {
+        	tx.rollback();
+        }
+        
     }
     
     static boolean check(String profile) {
-        if("admin".equals(profile)) {
-        	Account account = Account.find("username", connected()).<Account>first();
-        	
-        	if(account == null) {
-        		return false;
-        	}
-        		
-            return account.isAdmin();
-        }
-   
-        return false;
+    	GlobalTx tx = VersionedDataStore.getGlobalTx();
+    	
+    	try {
+	        if("admin".equals(profile))
+	        	return tx.accounts.containsKey(connected()) && tx.accounts.get(connected()).isAdmin(); 
+	        else
+	        	return false;
+    	}
+    	finally {
+    		tx.rollback();
+    	}
     }
  
     static Account getAccount()
     {
-    	return Account.find("username", connected()).<Account>first();
+    	GlobalTx tx = VersionedDataStore.getGlobalTx();
+    	try {
+    		return tx.accounts.get(connected());
+    	}
+    	finally {
+    		tx.rollback();
+    	}
     }
     
 }
