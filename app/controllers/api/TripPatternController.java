@@ -117,6 +117,7 @@ public class TripPatternController extends Controller {
             }
             
             tx.tripPatterns.put(tripPattern.id, tripPattern);
+            tx.commit();
 
             renderJSON(Api.toJson(tripPattern, false));
         } catch (Exception e) {
@@ -185,12 +186,8 @@ public class TripPatternController extends Controller {
             	tripPattern.shapeId = ts.id;	
             }
             
-            if (tx.tripPatterns.containsKey(tripPattern.id)) {
-            	tx.rollback();
-            	badRequest();
-            }
-            
             tx.tripPatterns.put(tripPattern.id, tripPattern);
+            tx.commit();
 
             renderJSON(Api.toJson(tripPattern, false));
         } catch (Exception e) {
