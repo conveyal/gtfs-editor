@@ -1,5 +1,6 @@
 package controllers.api;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Collection;
 import java.util.List;
@@ -19,20 +20,15 @@ import models.transit.Stop;
 import controllers.Api;
 import play.data.binding.As;
 import play.mvc.Controller;
+import utils.JacksonSerializers;
 
 public class StopController extends Controller {
-    public static void getStop(String id, String agencyId, Double west, Double east, Double north, Double south) {
-    	if (agencyId == null) {
-    		badRequest();
-    		return;
-    	}
-    	
-    	final GlobalTx tx = VersionedDataStore.getGlobalTx();    	
+    public static void getStop(List<String> id, Double west, Double east, Double north, Double south) {
+    	final GlobalTx tx = VersionedDataStore.getGlobalTx();
  
     	try {
-	    	Tuple2<String, String> stopId = new Tuple2(agencyId, id);
-	    	
-	    	if (id != null) {
+	      	if (id != null && id.size() == 1) {
+	      		Tuple2<String, String> stopId = JacksonSerializers.Tuple2Deserializer.deserialize(id.get(0));
 	    		if (!tx.stops.containsKey(stopId)) {
 	    			tx.rollback();
 	    			notFound();
@@ -61,6 +57,20 @@ public class StopController extends Controller {
 	    		});
 	    		
 	    		renderJSON(Api.toJson(matchedStops, false));
+	    	}
+	    	else if (id != null) {
+	    		Collection<Stop> ret = Collections2.transform(id, new Function<String, Stop> () {
+					@Override
+					public Stop apply(String input) {
+						try {
+							return tx.stops.get(JacksonSerializers.Tuple2Deserializer.deserialize(input));
+						} catch (IOException e) {
+							return null;
+						}
+					}
+	    		});
+	    		
+	    		renderJSON(Api.toJson(ret, false));
 	    	}
 	    	else {
 	    		badRequest();

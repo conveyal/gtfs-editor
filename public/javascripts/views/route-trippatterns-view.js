@@ -322,19 +322,31 @@ var GtfsEditor = GtfsEditor || {};
     },
 
     updateStops: function (mapCenter) {
+      var instance = this;
 
       if(this.map == undefined)
         return;
 
-      var selectedPatternId  = this.$('#trip-pattern-select').val();
-      /*if(this.model.tripPatterns.get(selectedPatternId) != undefined) {
-        var patternStops = _.pluck(this.model.tripPatterns.get(selectedPatternId).attributes.patternStops, 'stop');
-        this.options.stops.add(patternStops);
-      }*/
-
       // don't keep more than 500 markers on map at anytime.
-       if(this.options.stops.length > 500)
-          this.options.stops.remove(this.options.stops.slice(0, 200));
+      if(this.options.stops.length > 500)
+        this.options.stops.remove(this.options.stops.slice(0, 200));
+
+      var selectedPatternId  = this.$('#trip-pattern-select').val();
+      if(this.model.tripPatterns.get(selectedPatternId) != undefined) {
+        var patternStops = _.pluck(this.model.tripPatterns.get(selectedPatternId).attributes.patternStops, 'stopId');
+        var stopsToFetch = [];
+        _.each(patternStops, function (stopId) {
+          var stop = instance.options.stops.get(stopId);
+          if (stop !== undefined) {
+            instance.onStopModelAdd(stop);
+          } else {
+            stopsToFetch.push(stopId);
+          }
+        });
+
+        if (stopsToFetch.length > 0)
+          this.options.stops.fetch({remove: false, data: {id: stopsToFetch}});
+      }
 
       var agencyId = null;
        if($('input[name="stopFilterRadio"]:checked').val() != 'all' )
@@ -376,6 +388,7 @@ var GtfsEditor = GtfsEditor || {};
     },
 
     onStopModelAdd: function(model) {
+      var instance = this;
       var $popupContent, markerLayer;
 
       var selectedPatternId  = this.$('#trip-pattern-select').val();
@@ -390,7 +403,7 @@ var GtfsEditor = GtfsEditor || {};
         var instance = this;
         var data = _.reduce(pss, function(memo, ps, idx) {
 
-          if (ps.stopId != model.id || ps.agencyId != model.agencyId)
+          if (ps.stopId != model.id)
             return;
 
           var travelTimeStr = instance.convertTime(ps.defaultTravelTime);
@@ -639,7 +652,7 @@ var GtfsEditor = GtfsEditor || {};
 
               for(var i in newStops) {
 
-                  view.model.tripPatterns.get(data.id).addStop({stopId: newStops[i].id, agencyId: newStops[i].agencyId, defaultTravelTime: view.impportedPattern.stops[i].travelTime, defaultDwellTime: 0});
+                  view.model.tripPatterns.get(data.id).addStop({stopId: newStops[i].id, defaultTravelTime: view.impportedPattern.stops[i].travelTime, defaultDwellTime: 0});
 
               }
 
@@ -760,7 +773,7 @@ var GtfsEditor = GtfsEditor || {};
       var polyline = L.polyline([], {color: 'red'}).addTo(this.drawnItems);
 
       for(var s in data.stops) {
-        var id = data.stops[s].stop.id
+        var id = data.stops[s].stopId;
 
         if(this.stopLayers[id] != undefined) {
              polyline.addLatLng(this.stopLayers[id].getLatLng());
@@ -885,7 +898,6 @@ var GtfsEditor = GtfsEditor || {};
 
       this.model.tripPatterns.get(selectedPatternId).addStop({
         stopId: data.id,
-        agencyId: data.agencyId,
         defaultTravelTime: this.calcTime(travelTimeString),
         defaultDwellTime: this.calcTime(dwellTimeString),
         timepoint: this.$('#timepoint').is(':checked')
@@ -897,15 +909,13 @@ var GtfsEditor = GtfsEditor || {};
     },
 
     zoomToPatternExtent: function(evt) {
-
+      var instance = this;
       var selectedPatternId  = this.$('#trip-pattern-select').val();
 
-      var latlngs = [];
-      for(var stop in this.model.tripPatterns.get(selectedPatternId).attributes.patternStops) {
-
-        var latlng = new L.LatLng(this.model.tripPatterns.get(selectedPatternId).attributes.patternStops[stop].stop.location.lat, this.model.tripPatterns.get(selectedPatternId).attributes.patternStops[stop].stop.location.lng);
-        latlngs.push(latlng);
-      }
+      var latlngs = _.map(this.model.tripPatterns.get(selectedPatternId).get('patternStops'), function (ps) {
+        var stop = instance.options.stops.get(ps.stopId);
+        return new L.LatLng(stop.get('lat'), stop.get('lon'));
+      });
 
       var bounds = new L.LatLngBounds(latlngs);
 
