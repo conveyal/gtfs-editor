@@ -66,8 +66,9 @@ public class Agency extends Model implements Serializable {
         this.timezone = timezone;
         this.lang = lang;
         this.phone = phone;
-        generateId();
     }
+    
+    public Agency () {}
 
 	public com.conveyal.gtfs.model.Agency toGtfs() {
 		com.conveyal.gtfs.model.Agency ret = new com.conveyal.gtfs.model.Agency();

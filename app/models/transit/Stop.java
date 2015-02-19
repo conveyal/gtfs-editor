@@ -11,10 +11,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import org.mapdb.Fun;
 import org.mapdb.Fun.Tuple2;
 
 import models.Model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.mysql.jdbc.log.Log;
@@ -28,6 +30,8 @@ import play.Logger;
 /** does not extend model because has tuple key */
 public class Stop implements Serializable {
 	public static final long serialVersionUID = 1;
+	
+	private static GeometryFactory geometryFactory = new GeometryFactory();
 
     public String gtfsStopId;
     public String stopCode;
@@ -36,12 +40,20 @@ public class Stop implements Serializable {
     public String zoneId;
     public String stopUrl;
     
-    /** Agency ID, Stop ID */
+    /** Agency ID, Stop ID
+     *  Serialized to JSON as just the stop ID, and the id is reconstructed on deser.  
+     */   
+    @JsonIgnore
     public Tuple2<String, String> id;
+    
+    @JsonProperty("id")
+    public String jsonGetId () {
+    	return id != null ? id.b : null;
+    }
 
     public String stopIconUrl;
 
-    public Agency agency;
+    public String agencyId;
 
     public LocationType locationType;
 
@@ -81,7 +93,7 @@ public class Stop implements Serializable {
     }
 
     public Stop(Agency agency, String stopName,  String stopCode,  String stopUrl, String stopDesc, Double lat, Double lon) {
-        this.agency = agency;
+        this.agencyId = agency.id;
         this.stopCode = stopCode;
         this.stopName = stopName;
         this.stopDesc = stopDesc;
@@ -89,11 +101,43 @@ public class Stop implements Serializable {
         this.locationType = LocationType.STOP;
         this.pickupType = StopTimePickupDropOffType.SCHEDULED;
         this.dropOffType = StopTimePickupDropOffType.SCHEDULED;
-        this.id = new Tuple2(agency.id, UUID.randomUUID().toString());
 
+        generateId();
+        
         GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
 
         this.location = geometryFactory.createPoint(new Coordinate(lon, lat));;
+    }
+    
+    /** Create a stop. Note that this does *not* generate an ID, as you have to set the agency first */
+    public Stop () {}
+    
+    public double getLat () {
+    	return location.getY();
+    }
+    
+    public double getLon () {
+    	return location.getX();
+    }
+    
+    public void generateId () {
+    	this.id = new Tuple2(this.agencyId, UUID.randomUUID().toString());
+    }
+    
+    @JsonCreator
+    public static Stop fromJson(@JsonProperty("lat") double lat, @JsonProperty("lon") double lon,
+    		@JsonProperty("agencyId") String agencyId, @JsonProperty("id") String id) {
+    	Stop ret = new Stop();
+    	ret.location = geometryFactory.createPoint(new Coordinate(lon, lat));
+    	ret.agencyId = agencyId;
+    	
+    	if (id != null && !id.isEmpty())
+    		ret.id = new Fun.Tuple2<String, String>(ret.agencyId, id);
+    	else
+    		// new stop
+    		ret.generateId();
+    	
+    	return ret;
     }
 
 	public com.conveyal.gtfs.model.Stop toGtfs() {

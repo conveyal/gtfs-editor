@@ -51,13 +51,20 @@ public class AgencyController extends Controller {
 
         try {
             agency = Api.mapper.readValue(params.get("body"), Agency.class);
-
+            
             // check if gtfsAgencyId is specified, if not create from DB id
             if(agency.gtfsAgencyId == null) {
                 agency.gtfsAgencyId = "AGENCY_" + agency.id;
             }
             
             GlobalTx tx = VersionedDataStore.getGlobalTx();
+            
+            if (tx.agencies.containsKey(agency.id)) {
+            	tx.rollback();
+                badRequest();
+                return;
+            }
+            
             tx.agencies.put(agency.id, agency);
             tx.commit();
 
@@ -77,7 +84,7 @@ public class AgencyController extends Controller {
             
             GlobalTx tx = VersionedDataStore.getGlobalTx();
 
-            if(agency.id == null || !tx.agencies.containsKey(agency.id)) {
+            if(!tx.agencies.containsKey(agency.id)) {
             	tx.rollback();
                 badRequest();
                 return;

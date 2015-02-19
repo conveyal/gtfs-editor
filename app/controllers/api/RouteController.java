@@ -50,7 +50,6 @@ public class RouteController extends Controller {
 
         try {
             route = Api.mapper.readValue(params.get("body"), Route.class);
-            route.generateId();
             
             GlobalTx gtx = VersionedDataStore.getGlobalTx();
             if (!gtx.agencies.containsKey(route.agencyId)) {
@@ -62,6 +61,12 @@ public class RouteController extends Controller {
             gtx.rollback();
    
             AgencyTx tx = VersionedDataStore.getAgencyTx(route.agencyId);
+            
+            if (tx.routes.containsKey(route.id)) {
+            	tx.rollback();
+            	badRequest();
+            	return;
+            }
 
             // check if gtfsRouteId is specified, if not create from DB id
             if(route.gtfsRouteId == null) {

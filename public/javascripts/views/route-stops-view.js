@@ -259,8 +259,8 @@ var GtfsEditor = GtfsEditor || {};
       }
       var $popupContent = ich['stop-merge-view-tpl'](data);
 
-      var markerLayer = L.marker([stopGroup.get('mergedStop').get('location').lat,
-        stopGroup.get('mergedStop').get('location').lng], {
+      var markerLayer = L.marker([stopGroup.get('mergedStop').get('lat'),
+        stopGroup.get('mergedStop').get('lon')], {
         draggable: false,
         icon: this.selectedStopIcon
       });
@@ -361,7 +361,7 @@ var GtfsEditor = GtfsEditor || {};
       evt.target.setIcon(this.stopIcons[evt.target.options.id]);
 
       this.collection.get(evt.target.options.id)
-        .save({location: {lat: latLng.lat, lng: latLng.lng} });
+        .save({lat: latLng.lat, lon: latLng.lng});
     },
 
     // When the stop collection resets, clear all the markers and add new ones.
@@ -379,7 +379,7 @@ var GtfsEditor = GtfsEditor || {};
     //  - Handle visiblity
     onModelStopChange: function(model) {
 
-      this.stopLayers[model.id].setLatLng([model.get('location').lat,model.get('location').lng]);
+      this.stopLayers[model.id].setLatLng([model.get('lat'),model.get('lon')]);
 
       if (model.get('majorStop')) {
 
@@ -487,8 +487,8 @@ var GtfsEditor = GtfsEditor || {};
         .find('#wheelchairBoarding option[value="' + model.get('wheelchairBoarding') + '"]')
         .attr('selected', true);
 
-      this.stopLayers[model.id] = markerLayer = L.marker([model.get('location').lat,
-          model.get('location').lng], {
+      this.stopLayers[model.id] = markerLayer = L.marker([model.get('lat'),
+          model.get('lon')], {
           draggable: false,
           id: model.id,
           icon: this.stopIcons[model.id]
@@ -540,8 +540,9 @@ var GtfsEditor = GtfsEditor || {};
       var data = {
         majorStop: majorStop,
         justAdded: true,
-        location: {lat: lat, lng: lng},
-        agency: this.model.get('agencyId')
+        lat: lat,
+        lon: lng,
+        agencyId: this.model.get('agencyId')
       };
 
       this.collection.create(data, {

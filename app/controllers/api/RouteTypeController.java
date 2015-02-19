@@ -35,9 +35,15 @@ public class RouteTypeController extends Controller {
 
 		try {
 			routeType = Api.mapper.readValue(params.get("body"), RouteType.class);
-			routeType.generateId();
 			
 			GlobalTx tx = VersionedDataStore.getGlobalTx();
+			
+			if (tx.routeTypes.containsKey(routeType.id)) {
+				tx.rollback();
+				badRequest();
+				return;
+			}
+			
 			tx.routeTypes.put(routeType.id, routeType);
 			tx.commit();
 			

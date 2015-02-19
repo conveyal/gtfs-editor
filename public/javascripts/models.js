@@ -80,17 +80,18 @@ G.RouteTypes = Backbone.Collection.extend({
       stopDesc: null,
       zoneId: null,
       stopUrl: null,
-      agency: null,
+      agencyId: null,
       locationType: null,
       parentStation: null,
       bikeParking: null,
       carParking: null,
       wheelchairBoarding: null,
       majorStop: false,
-      location: null
+      lat: null,
+      lon: null
     },
 
-    blacklist: ['justAdded','lat','lng'],
+    blacklist: ['justAdded'],
     toJSON: function(options) {
         return _.omit(this.attributes, this.blacklist);
     },
