@@ -88,8 +88,8 @@ public class StopController extends Controller {
             }
             
             tx.stops.put(stop.id, stop);
-            return;
-            
+            tx.commit();
+            renderJSON(Api.toJson(stop, false));
         } catch (Exception e) {
         	tx.rollback();
             e.printStackTrace();

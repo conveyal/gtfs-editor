@@ -179,11 +179,11 @@ var GtfsEditor = GtfsEditor || {};
        if($('input[name="stopFilterRadio"]:checked').val() != 'all' )
           agencyId = this.model.get('agencyId');
 
-       if(G.config.showStandardStops && this.map.getZoom() >= 15) {
-          if(mapCenter == null)
-            mapCenter = this.map.getCenter();
-
-        this.collection.fetch({remove: false, data: {agencyId: agencyId, lat: mapCenter.lat, lon: mapCenter.lng}});
+       if(G.config.showStandardStops && this.map.getZoom() >= 14) {
+        var bounds = this.map.getBounds();
+        var nw = bounds.getNorthWest();
+        var se = bounds.getSouthEast();
+        this.collection.fetch({remove: false, data: {agencyId: agencyId, west: nw.lng, east: se.lng, north: nw.lat, south: se.lat}});
       }
 
 

@@ -72,6 +72,7 @@ public class Stop implements Serializable {
     // Major stop is a custom field; it has no corralary in the GTFS.
     public Boolean majorStop;
     
+    @JsonIgnore
     public Point location;
 
     public Stop(com.conveyal.gtfs.model.Stop stop, GeometryFactory geometryFactory, Agency agency) {
