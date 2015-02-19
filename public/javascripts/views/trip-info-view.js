@@ -31,7 +31,7 @@ var GtfsEditor = GtfsEditor || {};
       this.agencyTrips = new G.Trips();
       this.calendars = new G.Calendars();
 
-      this.calendars.fetch({data: {agencyId: this.model.get('agency').id}});
+      this.calendars.fetch({data: {agencyId: this.model.get('agencyId')}});
 
       this.calendars.on('add', this.onCalendarsReset, this);
       this.calendars.on('remove', this.onCalendarsReset, this);
@@ -403,7 +403,7 @@ var GtfsEditor = GtfsEditor || {};
 
       var data = G.Utils.serializeForm($(evt.target));
 
-      data.agency = this.options.agencyId;
+      data.agencyId = this.options.agencyId;
 
       // Currently existing route, save it
       if (data.id != undefined && data.id != "") {

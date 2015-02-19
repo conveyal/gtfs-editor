@@ -199,4 +199,21 @@ public class Route extends Model implements Serializable {
 			return id;
 	}
 
+
+	/**
+	 * Get a name for this combining the short name and long name as available.
+	 * @return
+	 */
+	public String getName() {
+		if (routeShortName == null && routeLongName == null)
+			return id;
+		else if (routeShortName == null)
+			return routeLongName;
+		else if (routeLongName == null)
+			return routeShortName;
+		else
+			return routeShortName + " " + routeLongName;
+	
+	}
+
 }

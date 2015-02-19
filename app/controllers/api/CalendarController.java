@@ -40,6 +40,12 @@ public class CalendarController extends Controller {
     				tx.rollback();
     				return;
     			}
+    			
+    			else {
+    				ServiceCalendar c = tx.calendars.get(id);
+    				c.addDerivedInfo(tx);
+    				renderJSON(Api.toJson(c, false));
+    			}
     		}
     		else if (patternId != null) {
     			if (!tx.tripPatterns.containsKey(patternId)) {
@@ -72,7 +78,11 @@ public class CalendarController extends Controller {
     			renderJSON(Api.toJson(ret, false));
     		}
     		else {
-    			renderJSON(Api.toJson(tx.calendars.values(), false));
+    			Collection<ServiceCalendar> cals = tx.calendars.values();
+    			for (ServiceCalendar c : cals) {
+    				c.addDerivedInfo(tx);
+    			}
+    			renderJSON(Api.toJson(cals, false));
     		}
     		
     		tx.rollback();

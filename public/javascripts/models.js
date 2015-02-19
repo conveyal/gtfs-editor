@@ -379,7 +379,7 @@ G.RouteTypes = Backbone.Collection.extend({
   G.Calendar = Backbone.Model.extend({
     defaults: {
       id: null,
-      agency: null,
+      agencyId: null,
       description: null,
       gtfsServiceId: null,
       monday: null,

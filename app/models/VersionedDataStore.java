@@ -218,6 +218,9 @@ public class VersionedDataStore {
 		/** <trip pattern ID, trip ID> */
 		public NavigableSet<Tuple2<String, String>> tripsByTripPattern;
 		
+		/** <calendar ID, trip ID> */
+		public NavigableSet<Tuple2<String, String>> tripsByCalendar;
+		
 		/** <calendar id, schedule exception id> */
 		public NavigableSet<Tuple2<String, String>> exceptionsByCalendar;
 		
@@ -275,6 +278,16 @@ public class VersionedDataStore {
 				}				
 			});
 			
+			tripsByCalendar = getSet("tripsByCalendar");
+			Bind.secondaryKeys(trips, tripsByCalendar, new Fun.Function2<String[], String, Trip> () {
+
+				@Override
+				public String[] run(String tripId, Trip trip) {
+					// TODO Auto-generated method stub
+					return new String[] { trip.calendarId };
+				}				
+			});
+			
 			exceptionsByCalendar = getSet("exceptionsByCalendar");
 			Bind.secondaryKeys(exceptions, exceptionsByCalendar, new Fun.Function2<String[], String, ScheduleException> () {
 
@@ -318,6 +331,26 @@ public class VersionedDataStore {
 
 		public Collection<Trip> getTripsByPattern(String patternId) {
 			Set<Tuple2<String, String>> matchedKeys = tripsByTripPattern.subSet(new Tuple2(patternId, null), new Tuple2(patternId, Fun.HI));
+			
+			return Collections2.transform(matchedKeys, new Function<Tuple2<String, String>, Trip> () {
+				public Trip apply(Tuple2<String, String> input) {
+					return trips.get(input.b);
+				}	
+			});
+		}
+		
+		public Collection<Trip> getTripsByRoute(String routeId) {
+			Set<Tuple2<String, String>> matchedKeys = tripsByRoute.subSet(new Tuple2(routeId, null), new Tuple2(routeId, Fun.HI));
+			
+			return Collections2.transform(matchedKeys, new Function<Tuple2<String, String>, Trip> () {
+				public Trip apply(Tuple2<String, String> input) {
+					return trips.get(input.b);
+				}	
+			});
+		}
+		
+		public Collection<Trip> getTripsByCalendar(String calendarId) {
+			Set<Tuple2<String, String>> matchedKeys = tripsByCalendar.subSet(new Tuple2(calendarId, null), new Tuple2(calendarId, Fun.HI));
 			
 			return Collections2.transform(matchedKeys, new Function<Tuple2<String, String>, Trip> () {
 				public Trip apply(Tuple2<String, String> input) {

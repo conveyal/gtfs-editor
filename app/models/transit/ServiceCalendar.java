@@ -12,10 +12,15 @@ import java.util.Set;
 
 import org.joda.time.LocalDate;
 
+import com.beust.jcommander.internal.Sets;
 import com.conveyal.gtfs.model.Calendar;
 import com.conveyal.gtfs.model.Service;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Function;
+import com.google.common.collect.Collections2;
 
 import models.Model;
+import models.VersionedDataStore.AgencyTx;
 
 public class ServiceCalendar extends Model implements Serializable {
 	public static final long serialVersionUID = 1;
@@ -81,38 +86,19 @@ public class ServiceCalendar extends Model implements Serializable {
 	}
 
 	// give the UI a little information about the content of this calendar
-    /*public long getNumberOfTrips () {
-    	return Trip.count("serviceCalendar = ?", this);
-    }*/
-    
-    /*
-    public Collection<String> getRoutes () {
-    	List<String> ret = new ArrayList<String>();
-    	
-    	// we're using a JPA native query here because looping over all trips for an agency is too slow
-    	Query q = Trip.em().createQuery("SELECT DISTINCT t.route FROM Trip t WHERE serviceCalendar_id = ?");
-    	q.setParameter(1, this.id);
-    	List<Route> routes = q.getResultList();
-    	
-    	for (Route route : routes) {
-    		String name = route.routeShortName;
-    		
-    		if (name == null || name.isEmpty())
-    			name = route.routeLongName;
-    		
-    		ret.add(name);
-    	}
-    	
-    	return ret;
-    }
-    */
-    
-    // these are computed properties that we can't actually set, but
-    // unfortunately this seems to be the only way to explicitly ignore only
-    // these properties on deserialization.
-    // https://github.com/FasterXML/jackson-databind/issues/95
-    /*public void setNumberOfTrips (long trips) {}
-    public void setRoutes (Collection<String> routes) {}*/
+	public transient Long numberOfTrips;
+	
+	@JsonProperty("numberOfTrips")
+	public Long jsonGetNumberOfTrips () {
+		return numberOfTrips;
+	}
+	
+	public transient Collection<String> routes;
+	
+	@JsonProperty("routes")
+	public Collection<String> jsonGetRoutes () {
+		return routes;
+	}
 
     /**
      * Infer the name of this calendar 
@@ -226,5 +212,30 @@ public class ServiceCalendar extends Model implements Serializable {
 			this.id = cal.id;
 			this.routeTrips = routeTrips;
 		}
+	}
+
+	/** add transient info for UI with number of routes, number of trips */
+	public void addDerivedInfo(final AgencyTx tx) {
+		this.numberOfTrips = tx.tripCountByCalendar.get(this.id);
+		
+		if (this.numberOfTrips == null)
+			this.numberOfTrips = 0L;
+		
+		// note that this is not ideal as we are fetching all of the trips. however, it's not really very possible
+		// with MapDB to have an index involving three tables.
+		Set<String> routeIds = Sets.newHashSet();
+		
+		for (Trip trip : tx.getTripsByCalendar(this.id)) {
+			routeIds.add(trip.routeId);
+		}
+		
+		this.routes = Collections2.transform(routeIds, new Function<String, String> () {
+
+			@Override
+			public String apply(String routeId) {
+				return tx.routes.get(routeId).getName();
+			}
+			
+		});
 	}
 }
