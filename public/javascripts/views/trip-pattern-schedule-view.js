@@ -228,8 +228,8 @@ var GtfsEditor = GtfsEditor || {};
 
       // consistency check
       this.collection.each(function(trip) {
-        if (trip.get('pattern').id != instance.pattern.id ||
-          trip.get('serviceCalendar').id != instance.calendar.id) {
+        if (trip.get('patternId') != instance.pattern.id ||
+          trip.get('calendarId') != instance.calendar.id) {
           throw new Error("Trip pattern or service calendars differ between trips");
         }
       });
@@ -398,6 +398,7 @@ var GtfsEditor = GtfsEditor || {};
     newTrip: function() {
       var trip = new G.Trip();
       trip.set('patternId', this.pattern.id);
+      trip.set('agencyId', this.pattern.get('agencyId'));
       trip.set('calendarId', this.calendar.id);
       trip.set('routeId', this.pattern.get('routeId'));
       trip.set('useFrequency', false);
