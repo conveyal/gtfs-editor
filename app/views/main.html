@@ -169,7 +169,7 @@ cf = play.Play.configuration
           G.session = {
 
             agencyId: "${session.agencyId}",
-            agency: ${agencyJson.raw()},
+            agencies: ${agenciesJson.raw()},
             mapCenter: [${session.lat}, ${session.lon}],
             mapZoom: ${session.zoom},
             tripPattern: null,

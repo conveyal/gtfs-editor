@@ -104,8 +104,10 @@ public class Application extends Controller {
 	            
 	        }
 	        
-	        // used to render agency name in templates
-	        renderArgs.put("agencyJson", Api.toJson(tx.agencies.get(session.get("agencyId")), false));
+	        // used to render agency names in templates
+	        // note that we do need to include all agencies here; it is possible to see stops from agencies you do
+	        // not have permission to edit.
+	        renderArgs.put("agenciesJson", Api.toJson(tx.agencies, false));
     	}
     	finally {
     		tx.rollback();

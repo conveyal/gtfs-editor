@@ -602,7 +602,7 @@
 
        <div class="control-group">
         <div class="controls">
-          <input name="lat" class="input-small" type="text" placeholder="Lat" value="{{lat}}"> <input name="lng" class="input-small" type="text" placeholder="Lng" value="{{lon}}">
+          <input name="lat" class="input-small" type="text" placeholder="Lat" value="{{lat}}"> <input name="lon" class="input-small" type="text" placeholder="Lng" value="{{lon}}">
         </div>
       </div>
 
@@ -748,12 +748,12 @@
               &{'route.trip-pattern-popup-pattern-stop'}
           </legend>
 
-          <input type="hidden" name="id" value="{{patternStop.stop.id}}">
-          <input type="hidden" name="stopSequence" value="{{patternStop.stopSequence}}">
+          <input type="hidden" name="id" value="{{patternStop.stopId}}" />
+          <input type="hidden" name="stopSequence" value="{{stopSequence}}}" />
 
           <p>
-            <label><strong>&{'route.route-info-tpl.agency'}</strong>: {{patternStop.stop.agency.name}}</label>
-            <label><strong>&{'route.stops-stop-name'}</strong>: {{patternStop.stop.stopName}}</label>
+            <label><strong>&{'route.route-info-tpl.agency'}</strong>: {{agency.name}}</label>
+            <label><strong>&{'route.stops-stop-name'}</strong>: {{stop.stopName}}</label>
           </p>
           <p>
             <input id="travel-time" name="travelTime" class="input" type="text" placeholder="&{'route.trip-pattern-travel-time'}" value="{{travelTime}}">

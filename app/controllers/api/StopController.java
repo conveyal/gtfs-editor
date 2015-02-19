@@ -115,8 +115,7 @@ public class StopController extends Controller {
             }
             
             tx.stops.put(stop.id, stop);
-            return;
-            
+            tx.commit();            
         } catch (Exception e) {
         	tx.rollback();
             e.printStackTrace();

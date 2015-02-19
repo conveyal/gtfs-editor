@@ -395,16 +395,18 @@ var GtfsEditor = GtfsEditor || {};
 
       var patternStopLabel = false;
 
-      if(this.model.tripPatterns.get(selectedPatternId) !== undefined && this.model.tripPatterns.get(selectedPatternId).isPatternStop(model.id, model.agencyId)) {
+      if(this.model.tripPatterns.get(selectedPatternId) !== undefined && this.model.tripPatterns.get(selectedPatternId).isPatternStop(model.id)) {
 
-        var pss = this.model.tripPatterns.get(selectedPatternId).patternStops;
+        var pss = this.model.tripPatterns.get(selectedPatternId).get('patternStops');
 
         // grab all the requisite information from each of the pattern stops
+        // this is a bit complex because the same stop can appear in a pattern more than once, so we make a list
+        // of all of the pattern stops, in order.
         var instance = this;
         var data = _.reduce(pss, function(memo, ps, idx) {
 
           if (ps.stopId != model.id)
-            return;
+            return memo;
 
           var travelTimeStr = instance.convertTime(ps.defaultTravelTime);
           var dwellTimeStr = instance.convertTime(ps.defaultDwellTime);
@@ -416,11 +418,15 @@ var GtfsEditor = GtfsEditor || {};
               sequence: i + 1
             });
 
+            var stop = instance.options.stops.get(ps.stopId).toJSON();
+
           memo.push({
             travelTime: travelTimeStr,
             dwellTime: dwellTimeStr,
             patternStop: ps,
             stopSequence: idx + 1,
+            stop: stop,
+            agency: G.session.agencies[stop.agencyId],
             sequenceList: sequenceList
           });
 
@@ -934,26 +940,25 @@ var GtfsEditor = GtfsEditor || {};
 
       this.onTripPatternChange();
     },
-
-
-
     stopUpdateButton: function(evt) {
 
       var selectedPatternId  = this.$('#trip-pattern-select').val();
 
-      var form = $(evt.target).closest('form')
-      var ps = this.model.tripPatterns.get(selectedPatternId)
-        .getPatternStop(form.find('input[name="id"]').val(), form.find('input[name="stopSequence"]').val() - 1);
+      var form = $(evt.target).closest('form');
 
-      var newSequence = form.find('select[name="sequencePositionList"]').val();
+      // convert 1-based sequences to 0-based indices
+      var origIdx = form.find('input[name="stopSequence"]').val() - 1;
+      var newIdx = form.find('select[name="sequencePositionList"]').val() - 1;
+
+      var ps = this.model.tripPatterns.get(selectedPatternId)
+        .get('patternStops')[origIdx];
 
       ps.defaultDwellTime = this.calcTime(form.find('input[name="dwellTime"]').val());
       ps.defaultTravelTime = this.calcTime(form.find('input[name="travelTime"]').val());
       ps.timepoint = form.find('input[name="timepoint"]').is(':checked');
 
-      this.model.tripPatterns.get(selectedPatternId).moveStopTo(ps.stopSequence -1,newSequence -1);
+      this.model.tripPatterns.get(selectedPatternId).moveStopTo(origIdx,newIdx);
       this.onTripPatternChange();
-      //.updatePatternStop(ps);
       this.model.tripPatterns.get(selectedPatternId).save();
       this.map.closePopup();
 
@@ -979,15 +984,13 @@ var GtfsEditor = GtfsEditor || {};
 
       // update the stop sequence and save
       var patStops = pat.get('patternStops');
-      // make it the last stop
-      ps.id = undefined;
       patStops.push(ps);
 
       var instance = this;
       pat.set({patternStops: patStops});
       pat.save().done(function () {
         // re-open popup
-        instance.stopLayers[ps.stop.id].fireEvent('click');
+        instance.stopLayers[ps.stopId].fireEvent('click');
       });
     },
 

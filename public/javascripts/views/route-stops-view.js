@@ -85,7 +85,7 @@ var GtfsEditor = GtfsEditor || {};
 
       var sidebarData = {
         route: this.model.attributes,
-        agency: G.session.agency,
+        agency: G.session.agencies[G.session.agencyId],
         useSatellite : G.session.useSatellite
       }
 
