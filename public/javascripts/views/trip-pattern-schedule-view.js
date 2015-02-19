@@ -484,12 +484,9 @@ var GtfsEditor = GtfsEditor || {};
         var toCell = coords[3] - 4;
         var from = Math.floor(fromCell / 2);
         var to = Math.floor(toCell / 2) + 1;
-        var patternStops = instance.pattern.get('patternStops');
+        var affectedStopTimes = trip.get('stopTimes').slice(from, to);
 
-        _.each(patternStops, function(ps, idx) {
-          // get the stoptime
-          var st = trip.get('stopTimes')[idx];
-
+        _.each(affectedStopTimes, function(st, idx) {
           if (st === null || _.isUndefined(st))
             return;
 
@@ -500,7 +497,7 @@ var GtfsEditor = GtfsEditor || {};
             st.arrivalTime += offset;
 
           // same idea at the end. if the tocell is odd or we're in the middle, update both arrival and departure times
-          if ((idx != patternStops.length - 1 || toCell % 2 == 1) && st.departureTime != null)
+          if ((idx != affectedStopTimes.length - 1 || toCell % 2 == 1) && st.departureTime != null)
             st.departureTime += offset;
         });
 
