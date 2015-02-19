@@ -43,6 +43,9 @@ import play.mvc.Controller;
 
 public class TripPatternController extends Controller {
     public static void getTripPattern(String id, String routeId, String agencyId) {
+    	if (agencyId == null)
+    		agencyId = session.get("agencyId");
+    	
     	if (agencyId == null) {
     		badRequest();
     		return;
@@ -80,7 +83,7 @@ public class TripPatternController extends Controller {
             	badRequest();
             }
             
-            tx.commit();
+            tx.rollback();
             
         } catch (Exception e) {
         	tx.rollback();

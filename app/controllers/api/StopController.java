@@ -80,13 +80,7 @@ public class StopController extends Controller {
 
         try {
             Stop stop = Api.mapper.readValue(params.get("body"), Stop.class);
-
-            if (tx.stops.containsKey(stop.id)) {
-            	badRequest();
-            	tx.rollback();
-            	return;
-            }
-            
+            stop.generateId();            
             tx.stops.put(stop.id, stop);
             tx.commit();
             renderJSON(Api.toJson(stop, false));

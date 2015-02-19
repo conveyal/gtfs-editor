@@ -16,6 +16,7 @@ import javax.persistence.Query;
 import static java.util.Collections.sort;
 
 import org.geotools.geometry.jts.JTS;
+import org.mapdb.Fun.Tuple2;
 import org.opengis.referencing.operation.MathTransform;
 import org.python.google.common.collect.Collections2;
 
@@ -36,6 +37,7 @@ import com.vividsolutions.jts.linearref.LinearLocation;
 import com.vividsolutions.jts.linearref.LocationIndexedLine;
 
 import models.*;
+import models.MixIns.Tuple2MixIn;
 import models.transit.Agency;
 import models.transit.Route;
 import models.transit.RouteType;
@@ -51,6 +53,10 @@ import models.transit.TripShape;
 public class Api {
     public static ObjectMapper mapper = new ObjectMapper();
     private static JsonFactory jf = new JsonFactory();
+    
+    static {
+    	mapper.addMixInAnnotations(Tuple2.class, Tuple2MixIn.class);
+    }
 
     public static String toJson(Object pojo, boolean prettyPrint)
             throws JsonMappingException, JsonGenerationException, IOException {

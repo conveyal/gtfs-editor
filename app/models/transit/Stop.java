@@ -19,6 +19,8 @@ import models.Model;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.mysql.jdbc.log.Log;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
@@ -26,6 +28,7 @@ import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.PrecisionModel;
 
 import play.Logger;
+import utils.JacksonSerializers;
 
 /** does not extend model because has tuple key */
 public class Stop implements Serializable {
@@ -40,16 +43,10 @@ public class Stop implements Serializable {
     public String zoneId;
     public String stopUrl;
     
-    /** Agency ID, Stop ID
-     *  Serialized to JSON as just the stop ID, and the id is reconstructed on deser.  
-     */   
-    @JsonIgnore
+    /** Agency ID, Stop ID */
+    @JsonSerialize(using=JacksonSerializers.Tuple2Serializer.class)
+    @JsonDeserialize(using=JacksonSerializers.Tuple2Deserializer.class)
     public Tuple2<String, String> id;
-    
-    @JsonProperty("id")
-    public String jsonGetId () {
-    	return id != null ? id.b : null;
-    }
 
     public String stopIconUrl;
 
@@ -69,7 +66,7 @@ public class Stop implements Serializable {
 
     public String parentStation;
     
-    // Major stop is a custom field; it has no corralary in the GTFS.
+    // Major stop is a custom field; it has no corrolary in the GTFS.
     public Boolean majorStop;
     
     @JsonIgnore
@@ -126,18 +123,9 @@ public class Stop implements Serializable {
     }
     
     @JsonCreator
-    public static Stop fromJson(@JsonProperty("lat") double lat, @JsonProperty("lon") double lon,
-    		@JsonProperty("agencyId") String agencyId, @JsonProperty("id") String id) {
+    public static Stop fromJson(@JsonProperty("lat") double lat, @JsonProperty("lon") double lon) {
     	Stop ret = new Stop();
-    	ret.location = geometryFactory.createPoint(new Coordinate(lon, lat));
-    	ret.agencyId = agencyId;
-    	
-    	if (id != null && !id.isEmpty())
-    		ret.id = new Fun.Tuple2<String, String>(ret.agencyId, id);
-    	else
-    		// new stop
-    		ret.generateId();
-    	
+    	ret.location = geometryFactory.createPoint(new Coordinate(lon, lat));    	
     	return ret;
     }
 

@@ -712,7 +712,8 @@
 <script id="trippattern-stop-add-form-tpl" type="text/html">
   <form class="trippattern-stop-add-form">
     <legend>&{'route.trip-pattern-popup-add-stop-pattern'}</legend>
-    <input type="hidden" name="id" value="{{id}}">
+    <input type="hidden" name="id" value="{{id}}" />
+    <input type="hidden" name="agencyId" value="{{agencyId}}" />
     <p>
       <label><strong>&{'route.route-info-tpl.agency'}</strong>: {{agency.name}}</label>
       <label><strong>&{'route.stops-stop-name'}</strong>: {{stopName}}</label>

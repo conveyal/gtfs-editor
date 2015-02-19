@@ -327,10 +327,10 @@ var GtfsEditor = GtfsEditor || {};
         return;
 
       var selectedPatternId  = this.$('#trip-pattern-select').val();
-      if(this.model.tripPatterns.get(selectedPatternId) != undefined) {
+      /*if(this.model.tripPatterns.get(selectedPatternId) != undefined) {
         var patternStops = _.pluck(this.model.tripPatterns.get(selectedPatternId).attributes.patternStops, 'stop');
         this.options.stops.add(patternStops);
-      }
+      }*/
 
       // don't keep more than 500 markers on map at anytime.
        if(this.options.stops.length > 500)
@@ -338,15 +338,13 @@ var GtfsEditor = GtfsEditor || {};
 
       var agencyId = null;
        if($('input[name="stopFilterRadio"]:checked').val() != 'all' )
-          agencyId = this.model.attributes.agency.id;
+          agencyId = this.model.attributes.agencyId;
 
       if(G.config.showStandardStops && this.map.getZoom() >= 15) {
-          if(mapCenter == null)
-            mapCenter = this.map.getCenter();
-
-          this.options.stops.fetch({remove: false, data: {agencyId: agencyId, lat: mapCenter.lat, lon: mapCenter.lng}});
-
-          this.options.stops
+        var bounds = this.map.getBounds();
+        var nw = bounds.getNorthWest();
+        var se = bounds.getSouthEast();
+        this.options.stops.fetch({remove: false, data: {agencyId: agencyId, west: nw.lng, east: se.lng, north: nw.lat, south: se.lat}});
       }
 
       this.updatePatternList();
@@ -384,37 +382,43 @@ var GtfsEditor = GtfsEditor || {};
 
       var patternStopLabel = false;
 
-      if(this.model.tripPatterns.get(selectedPatternId) !== undefined && this.model.tripPatterns.get(selectedPatternId).isPatternStop(model.id)) {
+      if(this.model.tripPatterns.get(selectedPatternId) !== undefined && this.model.tripPatterns.get(selectedPatternId).isPatternStop(model.id, model.agencyId)) {
 
-        var pss = this.model.tripPatterns.get(selectedPatternId).getPatternStops(model.id);
+        var pss = this.model.tripPatterns.get(selectedPatternId).patternStops;
 
         // grab all the requisite information from each of the pattern stops
         var instance = this;
-        var data = _.map(pss, function(ps) {
+        var data = _.reduce(pss, function(memo, ps, idx) {
+
+          if (ps.stopId != model.id || ps.agencyId != model.agencyId)
+            return;
 
           var travelTimeStr = instance.convertTime(ps.defaultTravelTime);
           var dwellTimeStr = instance.convertTime(ps.defaultDwellTime);
 
           var sequenceList = [];
 
-          for (var i = 1; i <= instance.model.tripPatterns.get(selectedPatternId).get('patternStops').length; i++)
+          for (var i = 0; i < instance.model.tripPatterns.get(selectedPatternId).get('patternStops').length; i++)
             sequenceList.push({
-              sequence: i
+              sequence: i + 1
             });
 
-          return {
+          memo.push({
             travelTime: travelTimeStr,
             dwellTime: dwellTimeStr,
             patternStop: ps,
+            stopSequence: idx + 1,
             sequenceList: sequenceList
-          }
-        });
+          });
+
+          return memo;
+        }, []);
 
         $popupContent = ich['trippattern-stop-edit-form-tpl']({data: data});
 
         // select the correct stop sequence for each patternstop
         var selects = $popupContent.find('select[name="sequencePositionList"]');
-        var stopSequences = _.map(data, function (v) { return v.patternStop.stopSequence });
+        var stopSequences = _.map(data, function (v) { return v.stopSequence; });
         var stopSequencesBySelect = _.zip(selects, stopSequences);
         _.each(stopSequencesBySelect, function (v) {
           // _.zip seems to unwrap the jQuery object
@@ -430,7 +434,7 @@ var GtfsEditor = GtfsEditor || {};
           $popupContent.find($t.attr('data-target')).collapse('toggle');
         });
 
-        patternStopLabel = this.model.tripPatterns.get(selectedPatternId).getPatternStopLabel(model.id);
+        patternStopLabel = this.model.tripPatterns.get(selectedPatternId).getPatternStopLabel(model.id, model.agencyId);
 
         // can only reasonably display dwell/travel time when there is but a single value
         if (data.length == 1)
@@ -438,7 +442,7 @@ var GtfsEditor = GtfsEditor || {};
 
         this.stopIcons[model.id] = this.patternStopIcon;
       }
-      else if (model.get('agency').id == this.model.get('agency').id) {
+      else if (model.get('agencyId') == this.model.get('agencyId')) {
 
         $popupContent = ich['trippattern-stop-add-form-tpl'](model.toJSON());
 
@@ -455,8 +459,8 @@ var GtfsEditor = GtfsEditor || {};
         this.stopIcons[model.id] = this.otherStopIcon;
       }
 
-      markerLayer = L.marker([model.get('location').lat,
-          model.get('location').lng], {
+      markerLayer = L.marker([model.get('lat'),
+          model.get('lon')], {
           draggable: false,
           id: model.id,
           icon: this.stopIcons[model.id]
@@ -590,7 +594,8 @@ var GtfsEditor = GtfsEditor || {};
 
 
        var tripPatternData = {
-        route: this.model,
+        routeId: this.model.id,
+        agencyId: this.model.get('agencyId'),
         name: this.$('[name=name]').val()
       };
 
@@ -605,8 +610,9 @@ var GtfsEditor = GtfsEditor || {};
             var stopData = {
               majorStop: true,
               justAdded: false,
-              location: {lat: stop.lat, lng: stop.lon},
-              agency: this.model.get('agency').id
+              lat: stop.lat,
+              lon: stop.lon,
+              agencyId: this.model.get('agencyId')
             };
 
             this.options.stops.create(stopData, {
@@ -633,7 +639,7 @@ var GtfsEditor = GtfsEditor || {};
 
               for(var i in newStops) {
 
-                  view.model.tripPatterns.get(data.id).addStop({stop: newStops[i].id, defaultTravelTime: view.impportedPattern.stops[i].travelTime, defaultDwellTime: 0});
+                  view.model.tripPatterns.get(data.id).addStop({stopId: newStops[i].id, agencyId: newStops[i].agencyId, defaultTravelTime: view.impportedPattern.stops[i].travelTime, defaultDwellTime: 0});
 
               }
 
@@ -676,7 +682,6 @@ var GtfsEditor = GtfsEditor || {};
         data.id = null;
         return data;
       });
-      originalTpData.route = originalTpData.route.id;
 
       var view = this;
 
@@ -878,10 +883,9 @@ var GtfsEditor = GtfsEditor || {};
 
       var travelTime = 0;
 
-      var stop = this.options.stops.get(data.id);
-
       this.model.tripPatterns.get(selectedPatternId).addStop({
-        stop: stop,
+        stopId: data.id,
+        agencyId: data.agencyId,
         defaultTravelTime: this.calcTime(travelTimeString),
         defaultDwellTime: this.calcTime(dwellTimeString),
         timepoint: this.$('#timepoint').is(':checked')
@@ -915,10 +919,7 @@ var GtfsEditor = GtfsEditor || {};
       var selectedPatternId  = this.$('#trip-pattern-select').val();
 
       var form = $(evt.target).closest('form')
-      var ps = this.model.tripPatterns.get(selectedPatternId)
-        .getPatternStop(form.find('input[name="id"]').val(), form.find('select[name="sequencePositionList"]').val());
-
-      this.model.tripPatterns.get(selectedPatternId).removeStopAt(ps.stopSequence  -1);
+      this.model.tripPatterns.get(selectedPatternId).removeStopAt(form.find('select[name="sequencePositionList"]').val() - 1);
       this.model.tripPatterns.get(selectedPatternId).save();
 
       this.onTripPatternChange();
@@ -932,7 +933,7 @@ var GtfsEditor = GtfsEditor || {};
 
       var form = $(evt.target).closest('form')
       var ps = this.model.tripPatterns.get(selectedPatternId)
-        .getPatternStop(form.find('input[name="id"]').val(), form.find('input[name="stopSequence"]').val());
+        .getPatternStop(form.find('input[name="id"]').val(), form.find('input[name="stopSequence"]').val() - 1);
 
       var newSequence = form.find('select[name="sequencePositionList"]').val();
 
@@ -944,8 +945,6 @@ var GtfsEditor = GtfsEditor || {};
       this.onTripPatternChange();
       //.updatePatternStop(ps);
       this.model.tripPatterns.get(selectedPatternId).save();
-
-
       this.map.closePopup();
 
       //.addStop({stop: data.id, defaultTravelTime: this.calcTime(travelTimeString), defaultDwellTime: this.calcTime(dwellTimeString)});
@@ -971,7 +970,6 @@ var GtfsEditor = GtfsEditor || {};
       // update the stop sequence and save
       var patStops = pat.get('patternStops');
       // make it the last stop
-      ps.stopSequence = patStops[patStops.length - 1].stopSequence + 1;
       ps.id = undefined;
       patStops.push(ps);
 

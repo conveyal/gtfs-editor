@@ -267,55 +267,47 @@ G.RouteTypes = Backbone.Collection.extend({
       headsign: null,
       encodedShape: null,
       patternStops: [],
-      shape: null,
-      route: null,
-      useFrequency: null
+      shapeId: null,
+      routeId: null,
+      useFrequency: null,
+      agencyId: null
     },
 
     urlRoot: G.config.baseUrl + 'api/trippattern/',
 
     initialize: function() {
-      this.on('change:patternStops', this.normalizeSequence, this);
-
       this.trips = new G.Trips({patternId: this.id});
-
-      this.sortPatternStops();
     },
 
     /**
-     * Get all of the pattern stops for a particular stop.
-     * Generally there will only be one, but there can be more on a loop route.
-     * If you'd like only one stop, see getPatternStop(stopId, stopSequence)
+     * Get all of the pattern stops for this stop and agency
      */
-    getPatternStops: function(stopId) {
-      return this.isPatternStop(stopId);
-    },
-
-    isPatternStop: function(stopId) {
-      var patternStops = _.filter(this.get('patternStops'), function(ps, i) {
-        return ps.stop.id == stopId;
+    getPatternStops: function(stopId, agencyId) {
+      return _.filter(this.get('patternStops'), function (ps) {
+        return ps.stopId == stopId && ps.agencyId == agencyId;
       });
-      return patternStops.length > 0 ? patternStops : false;
     },
 
-    /**
-     * Get the pattern stop for this stop ID and stop sequence.
-     * If you don't have a stop sequence, see getPatternStops(stopId)
-     */
-     getPatternStop: function (stopId, stopSequence) {
-       var ret = _.find(this.get('patternStops'), function (ps) {
-         return ps.stop.id == stopId && ps.stopSequence == stopSequence;
-       });
+    getStopSequences: function (stopId) {
+      var stopSequences = [];
 
-        // match the behavior of getPatternStop/isPatternStop
-       return ret === null ? false : ret;
-     },
+      _.each(this.get('patternStops'), function (ps, i) {
+        if (ps.stopId == stopId)
+          stopSequences.put(i);
+      });
+      return stopSequences;
+    },
+
+    /** is this stop/agency a pattern stop on this pattern */
+    isPatternStop: function (stopId) {
+      return this.getPatternStops(stopId).length > 0;
+    },
 
     getPatternStopLabel: function(stopId) {
       var stopsSequences = [];
       _.each(this.get('patternStops'), function(ps, i) {
-        if(ps.stop.id == stopId) {
-          stopsSequences.push(ps.stopSequence);
+        if(ps.stopId == stopId) {
+          stopsSequences.push(i + 1);
         }
       });
       return stopsSequences.join(" & ");
@@ -324,81 +316,31 @@ G.RouteTypes = Backbone.Collection.extend({
     reverse: function() {
 
       var patternStops = this.get('patternStops');
-      var newPatternStops = new Array();
-
-      _.each(patternStops, function(stop, i){
-        if(i+1 < patternStops.length) {
-          stop.defaultTravelTime = patternStops[i+1].defaultTravelTime;
-          stop.defaultDwellTime = patternStops[i+1].defaultDwellTime;
-        }
-
-        if(patternStops.length == i+1) {
-          stop.defaultTravelTime = null;
-          stop.defaultDwellTime = null;
-        }
-
-        newPatternStops.push(stop)
-      });
-
-      newPatternStops.reverse();
-
-      this.set('patternStops', newPatternStops);
-
-      this.normalizeSequence();
+      patternStops.reverse();
+      this.set('patternStops', patternStops);
 
       var latlngs = (new L.EncodedPolyline(this.get('encodedShape'))).getLatLngs();
-
       latlngs.reverse();
-
       var reversedLine = createEncodedPolyline(L.polyline(latlngs));
-
-      this.get('encodedShape', reversedLine);
-
+      this.set('encodedShape', reversedLine);
     },
-
-    sortPatternStops: function() {
-      var patternStops = _.sortBy(this.get('patternStops'), function(ps){
-        return ps.stopSequence;
-      });
-
-      this.set('patternStops', patternStops, {silent: true});
-    },
-
-    normalizeSequence: function () {
-      _.each(this.get('patternStops'), function(ps, i) {
-        ps.stopSequence = i+1;
-      });
-      this.sortPatternStops();
-      //this.save();
-    },
-
-    validate: function(attrs) {
-      // Override the sequence value to match the array order
-      this.sortPatternStops();
-    },
-
-    // name, headsign, alignment, stop_times[], shape, route_id (fk)
-    // stop_id, travel_time, dwell_time
 
     addStop: function(stopTime) {
       var patternStops = this.get('patternStops');
       patternStops.push(stopTime);
       this.set('patternStops', patternStops);
-      this.normalizeSequence();
     },
 
     insertStopAt: function(stopTime, i) {
       var patternStops = this.get('patternStops');
       patternStops.splice(i, 0, stopTime);
       this.set('patternStops', patternStops);
-      this.normalizeSequence();
     },
 
     removeStopAt: function(i) {
       var patternStops = this.get('patternStops'),
           removed = patternStops.splice(i, 1)[0];
       this.set('patternStops', patternStops);
-      this.normalizeSequence();
       return removed;
     },
 
@@ -412,17 +354,6 @@ G.RouteTypes = Backbone.Collection.extend({
 
       stopTime = this.removeStopAt(fromIndex);
       this.insertStopAt(stopTime, toIndex);
-      this.normalizeSequence();
-    },
-
-    updatePatternStop: function(data) {
-      var patternStops = this.get('patternStops');
-      this.removeAllStops();
-      this.save();
-
-      patternStops[data.stopSequence] = data;
-      this.set('patternStops', patternStops);
-      this.save();
     },
 
     useFrequency: function() {

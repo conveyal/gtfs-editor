@@ -10,6 +10,11 @@ import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.hibernate.annotations.Type;
 import org.mapdb.Fun.Tuple2;
 
+import utils.JacksonSerializers;
+
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 /**
  * Represents a stop time. This is not a model, as it is stored directly as a list in Trip.
  * @author mattwigway
@@ -31,6 +36,8 @@ public class StopTime implements Serializable {
     
     public double shapeDistTraveled;
     
+    @JsonSerialize(using=JacksonSerializers.Tuple2Serializer.class)
+    @JsonDeserialize(using=JacksonSerializers.Tuple2Deserializer.class)
     public Tuple2<String, String> stopId;
     
     public StopTime()

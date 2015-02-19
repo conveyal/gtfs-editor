@@ -8,12 +8,21 @@ import java.util.Collection;
 
 import org.mapdb.Fun.Tuple2;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import play.Logger;
+import utils.JacksonSerializers;
 
 /** A stop on a trip pattern. This is not a model, as it is stored in a list within trippattern */
 public class TripPatternStop implements Serializable {
 	public static final long serialVersionUID = 1;
 
+	@JsonSerialize(using=JacksonSerializers.Tuple2Serializer.class)
+    @JsonDeserialize(using=JacksonSerializers.Tuple2Deserializer.class)
     public Tuple2<String, String> stopId;
 
 	public Double defaultDistance;
