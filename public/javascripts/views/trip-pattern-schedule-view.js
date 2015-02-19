@@ -224,6 +224,7 @@ var GtfsEditor = GtfsEditor || {};
 
       this.calendar = attr.calendar;
       this.pattern = attr.pattern;
+      this.stops = attr.stops;
 
       // consistency check
       this.collection.each(function(trip) {
@@ -259,19 +260,14 @@ var GtfsEditor = GtfsEditor || {};
       var instance = this;
       var ret = {
         data: function(trip, val) {
-          if (name.indexOf('stop:') === 0) {
+          if (name.indexOf('stop;') === 0) {
             // we need to return a stop time, so first parse out the column header
-            var sp = name.split(':');
+            var sp = name.split(';');
             var stopId = sp[1];
             var stopSeq = sp[2];
             var arr = sp[3] == 'arr';
 
-            // find the stopTime with this stop id and stop sequence
-            // note that this makes an assumption about stop_sequence: when a stop is ommitted,
-            // its sequence number is omitted as well
-            var st = _.find(trip.get('stopTimes'), function(st) {
-              return st.stop.id == stopId && st.stopSequence == stopSeq && st.deleted !== true;
-            });
+            var st = trip.get('stopTimes')[stopSeq];
 
             if (_.isUndefined(val)) {
               return new StopTimeCell({
@@ -349,7 +345,7 @@ var GtfsEditor = GtfsEditor || {};
         },
       };
 
-      if (name.indexOf('stop:') === 0) {
+      if (name.indexOf('stop;') === 0) {
         ret.validator = validTimeFormat;
         ret.renderer = stopTimeRenderer;
         ret.editor = StopTimeEditor;
@@ -401,9 +397,9 @@ var GtfsEditor = GtfsEditor || {};
     // create a new trip based on the pattern
     newTrip: function() {
       var trip = new G.Trip();
-      trip.set('pattern', this.pattern.toJSON());
-      trip.set('serviceCalendar', this.calendar.toJSON());
-      trip.set('route', this.pattern.get('route'));
+      trip.set('patternId', this.pattern.id);
+      trip.set('calendarId', this.calendar.id);
+      trip.set('routeId', this.pattern.get('routeId'));
       trip.set('useFrequency', false);
       var stopTimes = [];
 
@@ -488,13 +484,10 @@ var GtfsEditor = GtfsEditor || {};
         var from = Math.floor(fromCell / 2);
         var to = Math.floor(toCell / 2) + 1;
         var patternStops = instance.pattern.get('patternStops');
-        patternStops = _.sortBy(patternStops, 'stopSequence').slice(from, to);
 
         _.each(patternStops, function(ps, idx) {
           // get the stoptime
-          var st = _.find(trip.get('stopTimes'), function(st) {
-            return st.stop.id == ps.stop.id && st.stopSequence == ps.stopSequence;
-          });
+          var st = trip.get('stopTimes')[idx];
 
           if (st === null || _.isUndefined(st))
             return;
@@ -526,11 +519,9 @@ var GtfsEditor = GtfsEditor || {};
     makeStopTime: function(patternStop) {
       var st = {};
 
-      st.stop = patternStop.stop;
-      st.patternStop = patternStop;
-      st.stopSequence = patternStop.stopSequence;
-      st.pickupType = patternStop.stop.pickupType;
-      st.dropOffType = patternStop.stop.dropOffType;
+      st.stopId = patternStop.stopId;
+      st.pickupType = this.stops.get(patternStop.stopId).get('pickupType');
+      st.dropOffType = this.stops.get(patternStop.stopId).get('dropoffType');
 
       st.arrivalTime = st.departureTime = null;
 
@@ -671,13 +662,6 @@ var GtfsEditor = GtfsEditor || {};
 
       // allow user to type again
       this.allInputPrevented = false;
-    },
-
-    /** Find a stop time given a trip and a pattern stop, or null if no such stop time exists */
-    findStopTimeByPatternStop: function (trip, patternStop) {
-      return _.find(trip.stopTimes || trip.get('stopTimes'), function (st) {
-        return st.stop.id == patternStop.stop.id && st.stopSequence == patternStop.stopSequence;
-      });
     },
 
     /** handle horizontal autofill, fill in times from pattern */
@@ -837,9 +821,8 @@ var GtfsEditor = GtfsEditor || {};
               // at the start, due to conditions above. So there is no race condition with the block above
               if (st == null) {
                 st = instance.makeStopTime(ps);
-                trip.get('stopTimes').push(st);
+                trip.get('stopTimes').splice(i, 1, st);
                 // shouldn't matter, but it's nice to keep this sorted
-                trip.set('stopTimes', _.sortBy(trip.get('stopTimes'), 'stopSequence'));
                 wasStopTimeCreated = true;
               }
 
@@ -930,11 +913,14 @@ var GtfsEditor = GtfsEditor || {};
       // display cells
       var colWidths = [15, 150, 150, 150];
 
+      // get all of the stops
+
+
       _.each(this.pattern.get('patternStops'), function(patternStop, idx) {
         // we put stopSequence here for loop routes
-        columns.push(instance.attr('stop:' + patternStop.stop.id + ':' + patternStop.stopSequence + ':arr'));
-        columns.push(instance.attr('stop:' + patternStop.stop.id + ':' + patternStop.stopSequence + ':dep'));
-        headers.push(patternStop.stop.stopName);
+        columns.push(instance.attr('stop;' + patternStop.stopId + ';' + idx + ';arr'));
+        columns.push(instance.attr('stop;' + patternStop.stopId + ';' + idx + ';dep'));
+        headers.push(instance.stops.get(patternStop.stopId).get('stopName'));
         // dummy header, will be overwritten when cells are merged
         headers.push('');
 

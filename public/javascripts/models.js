@@ -423,8 +423,8 @@ G.RouteTypes = Backbone.Collection.extend({
 G.Trip = Backbone.Model.extend({
     defaults: {
       tripDescription: null,
-      pattern: null,
-      serviceCalendar: null,
+      patternId: null,
+      calendarId: null,
       startTime: null,
       endTime: null,
       headway: null,
@@ -443,7 +443,6 @@ G.Trip = Backbone.Model.extend({
       var stopTimes = _.map(this.get('stopTimes'), function (st) {
         // clone
         st = _.extend({}, st);
-        st.id = null;
         return st;
       });
 

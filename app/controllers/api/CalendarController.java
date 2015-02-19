@@ -27,6 +27,10 @@ public class CalendarController extends Controller {
 
     public static void getCalendar(String id, String agencyId, final String patternId) {
     	if (agencyId == null) {
+    		agencyId = session.get("agencyId");
+    	}
+    	
+    	if (agencyId == null) {
     		badRequest();
     		return;
     	}
