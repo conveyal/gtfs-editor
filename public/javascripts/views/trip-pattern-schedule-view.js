@@ -878,7 +878,7 @@ var GtfsEditor = GtfsEditor || {};
           // add all the new trips
           newTrips.each(function (trip) {
             var newTrip = trip.clone();
-            newTrip.set('serviceCalendar', instance.calendar.toJSON());
+            newTrip.set('calendarId', instance.calendar.id);
             newTrip.modified = true;
             instance.collection.add(newTrip);
           });

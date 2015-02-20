@@ -442,6 +442,9 @@ G.Trip = Backbone.Model.extend({
 
       // clone the stop times
       var stopTimes = _.map(this.get('stopTimes'), function (st) {
+        if (st === null)
+          return null;
+        
         // clone
         st = _.extend({}, st);
         return st;
