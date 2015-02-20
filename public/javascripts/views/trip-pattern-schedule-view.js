@@ -707,9 +707,10 @@ var GtfsEditor = GtfsEditor || {};
 
             // Get the pattern stop to the left of the first filled stop time
             // this could be the same as the pattern stop of the first filled
-            var filledPatternStop = patternStops[(fromCol % 2) == 0 ? initialPatternStop - 1 : initialPatternStop];
+            var stopIdx = (fromCol % 2) == 0 ? initialPatternStop - 1 : initialPatternStop;
+            var filledPatternStop = patternStops[stopIdx];
             // can't autofill from a skipped or interpolated stop, don't autofill this trip
-            var filledStopTime = instance.findStopTimeByPatternStop(trip, filledPatternStop);
+            var filledStopTime = trip.get('stopTimes')[stopIdx];
 
             if (filledStopTime === null || _.isUndefined(filledStopTime))
               return;
@@ -725,7 +726,16 @@ var GtfsEditor = GtfsEditor || {};
 
             for (var i = initialPatternStop; i <= finalPatternStop; i++) {
               var ps = patternStops[i];
-              var st = instance.findStopTimeByPatternStop(trip, ps);
+              var st = trip.get('stopTimes')[i];
+
+              // previously skipped, fill it in now
+              // note that this cannot happen if we are filling the second half of a stop time
+              // at the start, due to conditions above. So there is no race condition with the block above
+              if (st == null) {
+                st = instance.makeStopTime(ps);
+                trip.get('stopTimes')[i] = st;
+                wasStopTimeCreated = true;
+              }
 
               // edge condition at start if filling only departure
               if ((fromCol % 2) == 1 && i == initialPatternStop) {
@@ -735,24 +745,8 @@ var GtfsEditor = GtfsEditor || {};
 
               var wasStopTimeCreated = false;
 
-              // previously skipped, fill it in now
-              // note that this cannot happen if we are filling the second half of a stop time
-              // at the start, due to conditions above. So there is no race condition with the block above
-              if (st == null) {
-                st = instance.makeStopTime(ps);
-                trip.get('stopTimes').push(st);
-                // shouldn't matter, but it's nice to keep this sorted
-                trip.set('stopTimes', _.sortBy(trip.get('stopTimes'), 'stopSequence'));
-                wasStopTimeCreated = true;
-              }
-
-              if (st.deleted)
-                // undelete
-                // how meta
-                delete st.deleted;
-
               var previousPs = patternStops[i - 1];
-              var previousSt = instance.findStopTimeByPatternStop(trip, previousPs);
+              var previousSt = trip.get('stopTimes')[i - 1];
 
               // previousSt will always be defined, because we will have just made it if it didn't exist before
 
@@ -785,9 +779,10 @@ var GtfsEditor = GtfsEditor || {};
 
             // Get the pattern stop to the right of the first filled stop time
             // this could be the same as the pattern stop of the first filled
-            var filledPatternStop = patternStops[(fromCol % 2) == 0 ? initialPatternStop : initialPatternStop + 1];
+            var stopIdx = (fromCol % 2) == 0 ? initialPatternStop : initialPatternStop + 1;
+            var filledPatternStop = patternStops[stopIdx];
             // can't autofill from a skipped or interpolated stop, don't autofill this trip
-            var filledStopTime = instance.findStopTimeByPatternStop(trip, filledPatternStop);
+            var filledStopTime = trip.get('stopTimes')[stopIdx];
 
             if (filledStopTime === null || _.isUndefined(filledStopTime))
               return;
@@ -804,7 +799,7 @@ var GtfsEditor = GtfsEditor || {};
             // loop backwards over pattern stops, filling as we go
             for (var i = initialPatternStop; i >= finalPatternStop; i--) {
               var ps = patternStops[i];
-              var st = instance.findStopTimeByPatternStop(trip, ps);
+              var st = trip.get('stopTimes')[i];
 
               // edge condition at start if filling only arrival
               if ((fromCol % 2) == 0 && i == initialPatternStop) {
@@ -817,18 +812,14 @@ var GtfsEditor = GtfsEditor || {};
               // previously skipped, fill it in now
               // note that this cannot happen if we are filling the second half of a stop time
               // at the start, due to conditions above. So there is no race condition with the block above
-              if (st == null) {
+              if (st === null) {
                 st = instance.makeStopTime(ps);
-                trip.get('stopTimes').splice(i, 1, st);
-                // shouldn't matter, but it's nice to keep this sorted
+                trip.get('stopTimes')[i] = st;
                 wasStopTimeCreated = true;
               }
 
-              if (st.deleted)
-                delete st.deleted;
-
               var nextPs = patternStops[i + 1];
-              var nextSt = instance.findStopTimeByPatternStop(trip, nextPs);
+              var nextSt = trip.get('stopTimes')[i + 1];
 
               // nextSt will always be defined, because we will have just made it if it didn't exist before
 
