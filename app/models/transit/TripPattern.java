@@ -21,7 +21,12 @@ import org.hibernate.annotations.Type;
 import org.mapdb.Fun;
 import org.mapdb.Fun.Tuple2;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.vividsolutions.jts.geom.LineString;
+
 import play.Logger;
+import utils.JacksonSerializers;
 
 public class TripPattern extends Model implements Serializable {
 	public static final long serialVersionUID = 1;
@@ -29,26 +34,15 @@ public class TripPattern extends Model implements Serializable {
     public String name;
     public String headsign;
 
-    public String encodedShape;
+    @JsonSerialize(using=JacksonSerializers.EncodedPolylineSerializer.class)
+    @JsonDeserialize(using=JacksonSerializers.EncodedPolylineDeserializer.class)
+    public LineString shape;
     
-    public String shapeId;
-
     public String routeId;
     
     public String agencyId;
 
     public List<TripPatternStop> patternStops;
-
-    public Boolean longest;
-
-    public Boolean weekday;
-    public Boolean saturday;
-    public Boolean sunday;
-
-    public Boolean useFrequency;
-
-    public Integer startTime;
-    public Integer endTime;
 
     public Integer headway;
 
@@ -57,11 +51,11 @@ public class TripPattern extends Model implements Serializable {
 
     }
 
-    public TripPattern(String name, String headsign, TripShape shape, Route route)
+    public TripPattern(String name, String headsign, LineString shape, Route route)
     {
     	this.name = name;
     	this.headsign = headsign;
-    	this.shapeId = shape.id;
+    	this.shape = shape;
     	this.routeId = route.id;
     }
     

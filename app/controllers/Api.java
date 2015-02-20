@@ -48,7 +48,6 @@ import models.transit.StopTime;
 import models.transit.Trip;
 import models.transit.TripPattern;
 import models.transit.TripPatternStop;
-import models.transit.TripShape;
 
 public class Api {
     public static ObjectMapper mapper = new ObjectMapper();

@@ -15,7 +15,6 @@ import models.transit.ServiceCalendar;
 import models.transit.Stop;
 import models.transit.Trip;
 import models.transit.TripPattern;
-import models.transit.TripShape;
 
 import org.mapdb.BTreeKeySerializer;
 import org.mapdb.BTreeMap;
@@ -205,7 +204,6 @@ public class VersionedDataStore {
 		public MapWithModificationListener<String, Trip> trips;
 		public MapWithModificationListener<String, ServiceCalendar> calendars;
 		public MapWithModificationListener<String, ScheduleException> exceptions;
-		public MapWithModificationListener<String, TripShape> shapes;
 		
 		// secondary indices
 		
@@ -241,7 +239,6 @@ public class VersionedDataStore {
 			trips = getMap("trips");
 			calendars = getMap("calendars");
 			exceptions = getMap("exceptions");
-			shapes = getMap("shapes");
 			
 			// build secondary indices
 			// we store indices in the mapdb not because we care about persistence, but because then they

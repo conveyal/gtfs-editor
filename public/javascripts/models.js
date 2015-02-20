@@ -264,11 +264,9 @@ G.RouteTypes = Backbone.Collection.extend({
       id: null,
       name: null,
       headsign: null,
-      encodedShape: null,
+      shape: null,
       patternStops: [],
-      shapeId: null,
       routeId: null,
-      useFrequency: null,
       agencyId: null
     },
 
@@ -318,10 +316,10 @@ G.RouteTypes = Backbone.Collection.extend({
       patternStops.reverse();
       this.set('patternStops', patternStops);
 
-      var latlngs = (new L.EncodedPolyline(this.get('encodedShape'))).getLatLngs();
+      var latlngs = (new L.EncodedPolyline(this.get('shape'))).getLatLngs();
       latlngs.reverse();
       var reversedLine = createEncodedPolyline(L.polyline(latlngs));
-      this.set('encodedShape', reversedLine);
+      this.set('shape', reversedLine);
     },
 
     addStop: function(stopTime) {
@@ -444,7 +442,7 @@ G.Trip = Backbone.Model.extend({
       var stopTimes = _.map(this.get('stopTimes'), function (st) {
         if (st === null)
           return null;
-        
+
         // clone
         st = _.extend({}, st);
         return st;

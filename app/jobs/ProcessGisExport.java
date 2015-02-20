@@ -70,7 +70,6 @@ import models.transit.ServiceCalendar;
 import models.transit.Stop;
 import models.transit.StopTime;
 import models.transit.TripPattern;
-import models.transit.TripShape;
 import models.transit.Trip;
 import play.Logger;
 import play.Play;

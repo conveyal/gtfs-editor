@@ -18,7 +18,6 @@ import models.transit.StopTime;
 import models.transit.Trip;
 import models.transit.TripPattern;
 import models.transit.TripPatternStop;
-import models.transit.TripShape;
 
 import org.geotools.geometry.jts.JTS;
 import org.mapdb.Fun;
@@ -105,12 +104,6 @@ public class TripPatternController extends Controller {
             
             AgencyTx tx = VersionedDataStore.getAgencyTx(tripPattern.agencyId);
             
-            if(tripPattern.encodedShape != null) {
-            	TripShape ts = new TripShape(tripPattern.encodedShape);
-            	tx.shapes.put(ts.id, ts);
-            	tripPattern.shapeId = ts.id;	
-            }
-            
             if (tx.tripPatterns.containsKey(tripPattern.id)) {
             	tx.rollback();
             	badRequest();
@@ -151,25 +144,6 @@ public class TripPatternController extends Controller {
                 badRequest();
                 return;
             }
-                
-            
-            if (tripPattern.encodedShape != null) {
-                if (originalTripPattern.shapeId != null) {
-                	// get and save the shape
-                	TripShape shape = tx.shapes.get(originalTripPattern.shapeId);
-                    shape.updateShapeFromEncoded(tripPattern.encodedShape);
-                    tripPattern.shapeId = originalTripPattern.shapeId;
-                }
-                else {
-                	TripShape ts = new TripShape(tripPattern.encodedShape);
-                	tx.shapes.put(ts.id, ts);
-                	tripPattern.shapeId = ts.id;	
-                }
-            }
-            else {
-                tripPattern.shapeId = null;
-                // need to remove old shapes...
-            }
                         
             // update stop times
             try {
@@ -178,12 +152,6 @@ public class TripPatternController extends Controller {
             	tx.rollback();
             	badRequest();
             	return;
-            }
-            	            
-            if(tripPattern.encodedShape != null) {
-            	TripShape ts = new TripShape(tripPattern.encodedShape);
-            	tx.shapes.put(ts.id, ts);
-            	tripPattern.shapeId = ts.id;	
             }
             
             tx.tripPatterns.put(tripPattern.id, tripPattern);

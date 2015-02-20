@@ -31,9 +31,7 @@ public class Trip extends Model implements Serializable {
     public String blockId;
     
     public String routeId;
-    
-    public String shapeId;
-    
+        
     public String patternId;
  
     public String calendarId;
@@ -55,14 +53,13 @@ public class Trip extends Model implements Serializable {
     public Trip () {}
   
     
-    public Trip(com.conveyal.gtfs.model.Trip trip, Route route, TripShape shape, TripPattern pattern, ServiceCalendar serviceCalendar) {
+    public Trip(com.conveyal.gtfs.model.Trip trip, Route route, TripPattern pattern, ServiceCalendar serviceCalendar) {
     	gtfsTripId = trip.trip_id;
     	tripHeadsign = trip.trip_headsign;
     	tripShortName = trip.trip_short_name;
     	tripDirection = trip.direction_id == 0 ? TripDirection.A : TripDirection.B;
     	blockId = trip.block_id;
     	this.routeId = route.id;
-    	this.shapeId = shape.id;
     	this.patternId = pattern.id;
     	this.calendarId = serviceCalendar.id;
     	

@@ -57,7 +57,6 @@ import models.transit.Route;
 import models.transit.ServiceCalendar;
 import models.transit.Stop;
 import models.transit.StopTime;
-import models.transit.TripShape;
 import models.transit.Trip;
 
 

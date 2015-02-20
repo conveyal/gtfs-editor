@@ -49,9 +49,7 @@ import models.transit.Stop;
 import models.transit.StopTime;
 import models.transit.TripPattern;
 import models.transit.TripPatternStop;
-import models.transit.TripShape;
 import models.transit.Trip;
-import models.transit.TripShape.InvalidShapeException;
 import play.Logger;
 import play.Play;
 import play.db.jpa.NoTransaction;
@@ -61,72 +59,39 @@ import play.jobs.OnApplicationStart;
 
 import org.mapdb.Fun.Tuple2;
 
-public class ProcessGtfsSnapshotMerge extends Job {
-/*
-	private Long _gtfsSnapshotMergeId;
 
-	private Map<String, Agency> agencyIdMap = new HashMap<String, Agency>();
+public class ProcessGtfsSnapshotMerge extends Job {
+/*	private Map<String, Agency> agencyIdMap = new HashMap<String, Agency>();
 	private Map<String, Route> routeIdMap = new HashMap<String, Route>();
 	private Map<String, Stop> stopIdMap = new HashMap<String, Stop>();
 	private Map<Tuple2<String, String>, ServiceCalendar> serviceCalendarIdMap = new HashMap<Tuple2<String, String>, ServiceCalendar>();
 	private TObjectLongMap<String> shapeIdMap = new TObjectLongHashMap<String>();
 	private GTFSFeed input;	
+	private File gtfsFile;
 	
-	public ProcessGtfsSnapshotMerge(Long gtfsSnapshotMergeId)
-	{
-		this._gtfsSnapshotMergeId = gtfsSnapshotMergeId;
+	public ProcessGtfsSnapshotMerge (File gtfsFile)	{
+		this.gtfsFile = gtfsFile;
 	}
 
 	public void doJob() {
-			
-		GtfsSnapshotMerge snapshotMerge = null;
-		while(snapshotMerge == null)
-		{
-			snapshotMerge = GtfsSnapshotMerge.findById(this._gtfsSnapshotMergeId);
-			Logger.warn("Waiting for snapshotMerge to save...");
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-    	
     	long agencyCount = 0;
     	long routeCount = 0;
     	long stopCount = 0;
-    	Long stopTimeCount = new Long(0);
-    	Long tripCount = new Long(0);
-    	Long shapePointCount = new Long(0);
-    	Long serviceCalendarCount = new Long(0);
-    	Long serviceCalendarDateCount = new Long(0);
-    	Long shapeCount = new Long(0);
+    	long stopTimeCount = 0;
+    	long tripCount = 0;
+    	long shapePointCount = 0;
+    	long serviceCalendarCount = 0;
+    	long serviceCalendarDateCount = 0;
+    	long shapeCount = 0;
     	
     	try {
-    		
-    		File gtfsFile = new File(Play.configuration.getProperty("application.publicDataDirectory"), snapshotMerge.snapshot.getFilename());
-    		input = GTFSFeed.fromFile(gtfsFile.getAbsolutePath());
+       		input = GTFSFeed.fromFile(gtfsFile.getAbsolutePath());
     		
     	    	
-        	Logger.info("GtfsImporter: importing agencies...");
-        
-        	GtfsSnapshotMergeTask agencyTask = new GtfsSnapshotMergeTask(snapshotMerge);
-        	agencyTask.startTask();
-        
+        	Logger.info("GtfsImporter: importing agencies...");        
         	// store agencies
         	for (com.conveyal.gtfs.model.Agency gtfsAgency : input.agency.values()) {
-        		// deduplicate agency IDs
-        		String baseAgencyId = gtfsAgency.agency_id != null ? gtfsAgency.agency_id : gtfsAgency.agency_name;
-        		if (Agency.count("gtfsAgencyId = ?", baseAgencyId) > 0) {
-        			int number = 0;
-        			while (Agency.count("gtfsAgencyId = ?", baseAgencyId + "_" + number) > 0) {
-        				number++;
-        			}
-        			
-        			gtfsAgency.agency_id = baseAgencyId + "_" + number;
-        		}
-        		
-        		Agency agency = new Agency(gtfsAgency);
+   	       		Agency agency = new Agency(gtfsAgency);
         		// don't save the agency until we've come up with the stop centroid, below.
         		agencyCount++;
         		// we do want to use the modified agency ID here, because everything that refers to it has a reference
@@ -134,14 +99,9 @@ public class ProcessGtfsSnapshotMerge extends Job {
         		agencyIdMap.put(gtfsAgency.agency_id, agency);
         	}
 	    	
-	    	agencyTask.completeTask("Imported " + agencyCount + " agencies.", GtfsSnapshotMergeTaskStatus.SUCCESS);
-	    	
 	    	Logger.info("Agencies loaded: " + agencyCount);
 	    	
 	        Logger.info("GtfsImporter: importing stops...");
-	    	
-	    	GtfsSnapshotMergeTask stopTask = new GtfsSnapshotMergeTask(snapshotMerge);
-	    	stopTask.startTask();
 	    	
 	    	// build agency centroids as we go
 	    	// note that these are not actually centroids, but the center of the extent of the stops . . .
@@ -162,9 +122,7 @@ public class ProcessGtfsSnapshotMerge extends Job {
 	        	a.defaultLon = stopEnvelope.centre().x;
 	        	a.save();
 	        }
-	        
-	        stopTask.completeTask("Imported " + stopCount + " stops.", GtfsSnapshotMergeTaskStatus.SUCCESS);
-	        
+	        	        
 	        Logger.info("Stops loaded: " + stopCount);
 	    	
 	    	Logger.info("GtfsImporter: importing routes...");

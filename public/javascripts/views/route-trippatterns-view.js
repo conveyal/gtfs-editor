@@ -647,7 +647,7 @@ var GtfsEditor = GtfsEditor || {};
             });
         }
 
-        tripPatternData.encodedShape = this.impportedPattern.shape;
+        tripPatternData.shape = this.impportedPattern.shape;
 
       }
 
@@ -814,7 +814,7 @@ var GtfsEditor = GtfsEditor || {};
           var encodedPolyline = createEncodedPolyline(layer);
           var selectedPatternId  = this.$('#trip-pattern-select').val();
 
-          view.model.tripPatterns.get(selectedPatternId).set('encodedShape', encodedPolyline);
+          view.model.tripPatterns.get(selectedPatternId).set('shape', encodedPolyline);
           view.model.tripPatterns.get(selectedPatternId).save();
 
       });
@@ -846,13 +846,13 @@ var GtfsEditor = GtfsEditor || {};
         return;
       }
 
-      var encodedShape = this.model.tripPatterns.get(selectedPatternId).get('encodedShape');
+      var shape = this.model.tripPatterns.get(selectedPatternId).get('shape');
 
       this.drawnItems.clearLayers();
 
-      if(encodedShape != '' && encodedShape != null) {
+      if(shape != '' && shape != null) {
 
-        var polyline =  new L.EncodedPolyline(encodedShape, {color: 'red'});
+        var polyline =  new L.EncodedPolyline(shape, {color: 'red'});
 
         polyline.addTo(this.drawnItems);
       }

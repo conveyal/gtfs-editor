@@ -29,7 +29,6 @@ import models.transit.StopTime;
 import models.transit.Trip;
 import models.transit.TripPattern;
 import models.transit.TripPatternStop;
-import models.transit.TripShape;
 import play.Logger;
 import play.Play;
 import play.mvc.*;
