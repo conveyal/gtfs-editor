@@ -12,6 +12,7 @@ import org.mapdb.Fun.Tuple2;
 
 import utils.JacksonSerializers;
 
+import com.conveyal.gtfs.model.Entity;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
@@ -23,9 +24,9 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 public class StopTime implements Serializable {
 	public static final long serialVersionUID = 1;
 	
-    public int arrivalTime;
-    public int departureTime;
- 
+    public Integer arrivalTime;
+    public Integer departureTime;
+    
     public String stopHeadsign;
     
     /* reference to trip pattern stop is implied based on position, no stop sequence needed */

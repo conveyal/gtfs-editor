@@ -301,7 +301,7 @@ var GtfsEditor = GtfsEditor || {};
 
               if (ptime === false) {
                 // trip does not stop here
-                st.deleted = true;
+                trip.get('stopTimes')[stopSeq] = null;
               } else if (ptime === null) {
                 // interpolated stop
                 // it's illegal per gtfs to only interpolate arrival_time or departure_time

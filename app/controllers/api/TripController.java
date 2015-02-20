@@ -10,7 +10,9 @@ import models.transit.ServiceCalendar;
 import models.transit.StopTime;
 import models.transit.Trip;
 import models.transit.TripPattern;
+import models.transit.TripPatternStop;
 import controllers.Api;
+import play.Logger;
 import play.mvc.Controller;
 
 public class TripController extends Controller {
@@ -114,9 +116,30 @@ public class TripController extends Controller {
         		return;
         	}
         	
+        	TripPattern patt = tx.tripPatterns.get(trip.patternId);
+        	
+        	// confirm that each stop in the trip matches the stop in the pattern
+        	
+        	for (int i = 0; i < trip.stopTimes.size(); i++) {
+        		TripPatternStop ps = patt.patternStops.get(i);
+        		StopTime st =  trip.stopTimes.get(i);
+        		
+        		if (st == null)
+        			// skipped stop
+        			continue;
+        		
+        		if (!st.stopId.equals(ps.stopId)) {
+        			Logger.error("Mismatch between stop sequence in trip and pattern at position %s, pattern: %s, stop: %s", i, ps.stopId, st.stopId);
+        			tx.rollback();
+        			badRequest();
+        			return;
+        		}
+        	}
+        	
         	tx.trips.put(trip.id, trip);
         	tx.commit();
         } catch (Exception e) {
+        	if (tx != null) tx.rollback();
             e.printStackTrace();
             badRequest();
         }
@@ -124,7 +147,7 @@ public class TripController extends Controller {
 
     public static void deleteTrip(String id, String agencyId) {
     	if (agencyId == null)
-    		agencyId = session.get(agencyId);
+    		agencyId = session.get("agencyId");
     	
         if (id == null || agencyId == null) {
             badRequest();

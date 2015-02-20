@@ -123,6 +123,8 @@ public class CalendarController extends Controller {
             	cal.gtfsServiceId = "CAL_" + cal.id.toString();
             }
             
+            cal.addDerivedInfo(tx);
+            
             tx.calendars.put(cal.id, cal);
             tx.commit();
 
@@ -158,6 +160,8 @@ public class CalendarController extends Controller {
             if(cal.gtfsServiceId == null) {
             	cal.gtfsServiceId = "CAL_" + cal.id.toString();
             }
+            
+            cal.addDerivedInfo(tx);
             
             tx.calendars.put(cal.id, cal);
             tx.commit();

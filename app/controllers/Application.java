@@ -266,7 +266,8 @@ public class Application extends Controller {
     	GlobalTx tx = VersionedDataStore.getGlobalTx();
     	
     	try {
-    		render(tx.routeTypes.values());
+    		Collection<RouteType> routeTypes = tx.routeTypes.values();
+    		render(routeTypes);
     	} finally {
     		tx.rollback();
     	}

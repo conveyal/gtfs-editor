@@ -14,8 +14,7 @@ var GtfsEditor = GtfsEditor || {};
       lang: null,
       phone: null,
       defaultLat: null,
-      defaultLon: null,
-      defaultRouteType: null
+      defaultLon: null
     }
   });
 
@@ -390,7 +389,9 @@ G.RouteTypes = Backbone.Collection.extend({
       saturday: null,
       sunday: null,
       startDate: null,
-      endDate: null
+      endDate: null,
+      numberOfTrips: 0,
+      routes: []
     },
     urlRoot: G.config.baseUrl + 'api/calendar/',
     // days, start_date, end_date, exceptions[]

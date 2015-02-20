@@ -99,6 +99,13 @@ public class ServiceCalendar extends Model implements Serializable {
 	public Collection<String> jsonGetRoutes () {
 		return routes;
 	}
+	
+	// do-nothing setters
+	@JsonProperty("numberOfTrips")
+	public void jsonSetNumberOfTrips(Long numberOfTrips) { }
+	
+	@JsonProperty("routes")
+	public void jsonSetRoutes(Collection<String> routes) { }
 
     /**
      * Infer the name of this calendar 
