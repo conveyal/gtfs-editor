@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 
+import org.joda.time.DateTimeZone;
+import org.joda.time.LocalDate;
+import org.joda.time.LocalTime;
 import org.mapdb.Fun.Tuple2;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
@@ -97,5 +100,33 @@ public class JacksonSerializers {
 			List<Coordinate> coords = PolylineEncoder.decode(new EncodedPolylineBean(jp.getValueAsString(), null, 0));
 			return geometryFactory.createLineString(coords.toArray(new Coordinate[coords.size()]));
 		}
+	}
+	
+	/** serialize local dates as noon GMT epoch times */
+	public static class LocalDateSerializer extends StdScalarSerializer<LocalDate> {
+		public LocalDateSerializer() {
+			super(LocalDate.class, false);
+		}
+		
+		@Override
+		public void serialize(LocalDate ld, JsonGenerator jgen,
+				SerializerProvider arg2) throws IOException,
+				JsonGenerationException {
+			jgen.writeNumber(ld.toDateTime(new LocalTime(12, 0, 0), DateTimeZone.UTC).getMillis());
+		}
+	}
+	
+	/** deserialize local dates from GMT epochs */
+	public static class LocalDateDeserializer extends StdScalarDeserializer<LocalDate> {
+		public LocalDateDeserializer () {
+			super(LocalDate.class);
+		}
+
+		@Override
+		public LocalDate deserialize(JsonParser jp,
+				DeserializationContext arg1) throws IOException,
+				JsonProcessingException {
+			return new LocalDate(jp.getLongValue(), DateTimeZone.UTC);
+		}	
 	}
 }

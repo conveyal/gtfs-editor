@@ -64,7 +64,7 @@ var GtfsEditor = GtfsEditor || {};
       this.$('#exception-exemplar').val(this.model.get('exemplar'));
 
       _.each(this.model.get('customSchedule'), function (calendar) {
-        instance.$('#custom-schedule-container input[value="' + calendar.id + '"]').prop('checked', true);
+        instance.$('#custom-schedule-container input[value="' + calendar + '"]').prop('checked', true);
       });
 
       this.$('#exception-date').datepicker()
@@ -126,7 +126,7 @@ var GtfsEditor = GtfsEditor || {};
       this.$('#custom-schedule-container input[name="custom-schedule"]').each(function () {
         var $el = $(this);
         if ($el.is(':checked'))
-          customSchedule.push({id: $el.attr('value')});
+          customSchedule.push($el.attr('value'));
       });
 
       this.model.set('customSchedule', customSchedule);
@@ -163,7 +163,7 @@ var GtfsEditor = GtfsEditor || {};
 
       if (exceptionId === undefined) {
         // new exception
-        exception = new G.ScheduleException({agency: {id: G.session.agencyId}});
+        exception = new G.ScheduleException({agencyId: G.session.agencyId});
       } else {
         // existing exception
         exception = new G.ScheduleException({id: exceptionId});

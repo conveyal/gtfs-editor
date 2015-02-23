@@ -17,6 +17,7 @@ import javax.persistence.Query;
 import static java.util.Collections.sort;
 
 import org.geotools.geometry.jts.JTS;
+import org.joda.time.LocalDate;
 import org.mapdb.Fun.Tuple2;
 import org.opengis.referencing.operation.MathTransform;
 import org.python.google.common.collect.Collections2;
@@ -60,6 +61,8 @@ public class Api {
     	SimpleModule mod = new SimpleModule();
     	mod.addDeserializer(LineString.class, new JacksonSerializers.EncodedPolylineDeserializer());
     	mod.addSerializer(LineString.class, new JacksonSerializers.EncodedPolylineSerializer());
+    	mod.addDeserializer(LocalDate.class, new JacksonSerializers.LocalDateDeserializer());
+    	mod.addSerializer(LocalDate.class, new JacksonSerializers.LocalDateSerializer());
     	mapper.registerModule(mod);
     }
 

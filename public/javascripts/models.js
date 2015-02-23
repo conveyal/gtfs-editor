@@ -505,7 +505,7 @@ G.Trip = Backbone.Model.extend({
   /** Represents an exception to the schedule */
   G.ScheduleException = Backbone.Model.extend({
     defaults: {
-      agency: null,
+      agencyId: null,
       exemplar: null,
       dates: null,
       customSchedule: null
