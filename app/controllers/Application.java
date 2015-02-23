@@ -17,9 +17,12 @@ import java.io.StringWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
+import org.joda.time.DateTimeZone;
+import org.joda.time.LocalDate;
 
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
@@ -43,6 +46,9 @@ import models.transit.TripPatternStop;
 
 @With(Secure.class)
 public class Application extends Controller {
+	/** used to give almost-friendly names to exported files */
+	private static AtomicLong nextExportId = new AtomicLong(1);
+	
     @Before
     static void initSession() throws Throwable {
 
@@ -336,42 +342,25 @@ public class Application extends Controller {
      */
     public static void createGtfs(List<String> agencySelect, Long calendarFrom, Long calendarTo) {
         // reasonable defaults: now to 2 months from now (more or less)
+    	
+    	LocalDate startDate;
+    	LocalDate endDate;
+    	
         if (calendarFrom == null)
-            calendarFrom = new Date().getTime();
+            startDate = new LocalDate().minusDays(2);
+        else
+        	startDate = new LocalDate(calendarFrom, DateTimeZone.UTC);
         
         if (calendarTo == null)
-            calendarTo = new Date().getTime() + 2L * 31L * 24L * 60L * 60L * 1000L;
+            endDate = new LocalDate().plusMonths(2);
+        else
+        	endDate = new LocalDate(calendarTo, DateTimeZone.UTC);
         
-        /*List<Agency> agencyObjects = new ArrayList<Agency>(); 
+        File out = new File(Play.configuration.getProperty("application.publicDataDirectory"), "gtfs_" + nextExportId.incrementAndGet() + ".zip");
         
-        if(agencySelect != null && agencySelect.size() > 0) {
-
-            for(String agencyId : agencySelect) {
-                
-                Agency a = Agency.findById(agencyId);
-                if(a != null)
-                        agencyObjects.add(a);
-            
-            }
-        }
-        else 
-            agencyObjects = Agency.findAll();
-
-    
-        GtfsSnapshotExportCalendars calendarEnum;
-        calendarEnum = GtfsSnapshotExportCalendars.CURRENT_AND_FUTURE;
+        new ProcessGtfsSnapshotExport(agencySelect, out, startDate, endDate).run();
         
-        Date calendarFromDate = new Date(calendarFrom);
-        Date calendarToDate = new Date(calendarTo);
-        
-        GtfsSnapshotExport snapshotExport = new GtfsSnapshotExport(agencyObjects, calendarEnum, calendarFromDate, calendarToDate, "");
-        
-        ProcessGtfsSnapshotExport exportJob = new ProcessGtfsSnapshotExport(snapshotExport.id);
-        
-        // running as a sync task for now -- needs to be async for processing larger feeds.
-        exportJob.doJob(); 
-        
-        redirect(Play.configuration.getProperty("application.appBase") + "/public/data/"  + snapshotExport.getZipFilename());*/
+        redirect(Play.configuration.getProperty("application.appBase") + "/public/data/"  + out.getName());
     }
     
     public static void exportGis(List<Long> agencySelect) {

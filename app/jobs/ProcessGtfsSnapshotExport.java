@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.HashSet;
 import java.util.Map;
@@ -33,6 +34,7 @@ import org.onebusaway.gtfs.serialization.GtfsWriter;
 
 import com.conveyal.gtfs.GTFSFeed;
 import com.conveyal.gtfs.model.CalendarDate;
+import com.conveyal.gtfs.model.Entity;
 import com.conveyal.gtfs.model.Frequency;
 import com.conveyal.gtfs.model.Service;
 import com.conveyal.gtfs.model.Shape;
@@ -41,6 +43,9 @@ import com.google.common.collect.Multimap;
 import com.mchange.v2.c3p0.impl.DbAuth;
 import com.vividsolutions.jts.geom.Coordinate;
 
+import models.VersionedDataStore;
+import models.VersionedDataStore.AgencyTx;
+import models.VersionedDataStore.GlobalTx;
 import models.transit.Agency;
 import models.transit.AttributeAvailabilityType;
 import models.transit.Route;
@@ -48,6 +53,8 @@ import models.transit.ScheduleException;
 import models.transit.ServiceCalendar;
 import models.transit.Stop;
 import models.transit.StopTime;
+import models.transit.TripDirection;
+import models.transit.TripPattern;
 import models.transit.TripPatternStop;
 import models.transit.Trip;
 import play.Logger;
@@ -55,258 +62,201 @@ import play.Play;
 import play.jobs.Job;
 import play.jobs.OnApplicationStart;
 import utils.DirectoryZip;
+import utils.GeoUtils;
 
-public class ProcessGtfsSnapshotExport extends Job {
-/*
-	private Long _gtfsSnapshotExportId;
+public class ProcessGtfsSnapshotExport implements Runnable {
+	private Collection<String> agencies;
+	private File output;
+	private LocalDate startDate;
+	private LocalDate endDate;
 	
-	public ProcessGtfsSnapshotExport(Long gtfsSnapshotExportId)
-	{
-		this._gtfsSnapshotExportId = gtfsSnapshotExportId;
+	public ProcessGtfsSnapshotExport(Collection<String> agencies, File output, LocalDate startDate, LocalDate endDate) {
+		this.agencies = agencies;
+		this.output = output;
+		this.startDate = startDate;
+		this.endDate = endDate;
 	}
-	
-	public void doJob() {
+
+	@Override
+	public void run() {
+		GTFSFeed feed = new GTFSFeed();
 		
-		GtfsSnapshotExport snapshotExport = null;
-		while(snapshotExport == null)
-		{
-			snapshotExport = GtfsSnapshotExport.findById(this._gtfsSnapshotExportId);
-			Logger.warn("Waiting for snapshotExport to save...");
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
+		GlobalTx gtx = VersionedDataStore.getGlobalTx();
+		AgencyTx atx = null;
 		
-		try 
-		{
-			GTFSFeed feed = new GTFSFeed();
-			
-			File gtfsZip = new File(Play.configuration.getProperty("application.publicDataDirectory"), snapshotExport.getDirectory() + ".zip");
-					
-			// these keep track of what we've saved so far
-			TLongSet stopList = new TLongHashSet();
-			TLongSet routeList = new TLongHashSet();
-			TLongSet shapeList = new TLongHashSet();
-		
-			
-			for (Agency agency : snapshotExport.agencies) {
-				// export agencies
+		try {
+			for (String agencyId : agencies) {
+				Agency agency = gtx.agencies.get(agencyId);
 				com.conveyal.gtfs.model.Agency gtfsAgency = agency.toGtfs();
-				feed.agency.put(gtfsAgency.agency_id, gtfsAgency);
+				Logger.info("Exporting agency %s", gtfsAgency);
+				atx = VersionedDataStore.getAgencyTx(agencyId);
 				
-				// export calendars and calendar dates
-				List<ServiceCalendar> calendars = ServiceCalendar.find("agency = ?", agency).fetch();
+				// write the agencies.txt entry
+				feed.agency.put(agencyId, agency.toGtfs());
 				
-				List<ScheduleException> exceptions = ScheduleException.find("agency = ?", agency).fetch();
-				
-				// build up a map of calendars to calendar dates
-				Multimap<ServiceCalendar, CalendarDate> calendarDates = HashMultimap.create();
-				int dateFrom = toGtfsDate(snapshotExport.calendarFrom);
-				int dateTo = toGtfsDate(snapshotExport.calendarTo);
-				
-				for (ScheduleException e : exceptions) {
-					// figure out the service calendars
-					List<ServiceCalendar> runningCalendarList;
+				// write all of the calendars and calendar dates
+				for (ServiceCalendar cal : atx.calendars.values()) {
+					com.conveyal.gtfs.model.Service gtfsService = cal.toGtfs(toGtfsDate(startDate), toGtfsDate(endDate));
+					// note: not using user-specified IDs
 					
-					switch (e.exemplar) {
-					case MONDAY:
-						runningCalendarList = ServiceCalendar.find("agency = ? AND monday = TRUE", agency).fetch();
-						break;
-					case TUESDAY:
-						runningCalendarList = ServiceCalendar.find("agency = ? AND tuesday = TRUE", agency).fetch();
-						break;
-					case WEDNESDAY:
-						runningCalendarList = ServiceCalendar.find("agency = ? AND wednesday = TRUE", agency).fetch();
-						break;
-					case THURSDAY:
-						runningCalendarList = ServiceCalendar.find("agency = ? AND thursday = TRUE", agency).fetch();
-						break;
-					case FRIDAY:
-						runningCalendarList = ServiceCalendar.find("agency = ? AND friday = TRUE", agency).fetch();
-						break;
-					case SATURDAY:
-						runningCalendarList = ServiceCalendar.find("agency = ? AND saturday = TRUE", agency).fetch();
-						break;
-					case SUNDAY:
-						runningCalendarList = ServiceCalendar.find("agency = ? AND sunday = TRUE", agency).fetch();
-						break;
-					case CUSTOM:
-						runningCalendarList = e.customSchedule;
-						break;
-					case NO_SERVICE:
-						runningCalendarList = new ArrayList<ServiceCalendar>(0);
-						break;
-					default:
-						throw new IllegalStateException("Unrecognized service exception type.");
-					}
-					
-					Set<ServiceCalendar> runningCalendars = new HashSet<ServiceCalendar>(runningCalendarList);
-					
-					// make service exceptions for each and every calendar
-					for (ServiceCalendar cal : calendars) {
-						for (Date exceptionDate : e.dates) {
-							int gtfsDate = toGtfsDate(exceptionDate);
-							
-							// don't worry about exceptions outside the time window
-							if (gtfsDate < dateFrom || gtfsDate > dateTo)
+					// add calendar dates
+					for (ScheduleException ex : atx.exceptions.values()) {
+						for (LocalDate date : ex.dates) {
+							if (date.isBefore(startDate) || date.isAfter(endDate))
+								// no need to write dates that do not apply
 								continue;
-									
-							LocalDate xd = new LocalDate(exceptionDate.getTime(), DateTimeZone.UTC);
 							
-							CalendarDate d = new CalendarDate();
-							d.date = xd;
-							d.exception_type = runningCalendars.contains(cal) ? 1 : 2;
+							CalendarDate cd = new CalendarDate();
+							cd.date = date;
+							cd.service = gtfsService;
+							cd.exception_type = ex.serviceRunsOn(cal) ? 1 : 2;
 							
-							// add it to the service exceptions by date map
-							calendarDates.put(cal, d);							
+							if (gtfsService.calendar_dates.containsKey(date))
+								throw new IllegalArgumentException("Duplicate schedule exceptions on " + date.toString());
+							
+							gtfsService.calendar_dates.put(date, cd);
 						}
 					}
+					
+					feed.services.put(gtfsService.service_id, gtfsService);
 				}
 				
-				for(ServiceCalendar calendar : calendars) {
-					Service service = calendar.toGtfs(dateFrom, dateTo);
+				// write the routes
+				for (Route route : atx.routes.values()) {
+					com.conveyal.gtfs.model.Route gtfsRoute = route.toGtfs(gtfsAgency);
+					feed.routes.put(route.getGtfsId(), gtfsRoute);
 					
-					// export calendar dates relevant to this calendar
-					Collection<CalendarDate> dates = calendarDates.get(calendar);
-					
-					for (CalendarDate date : dates) {
-						date.service = service;
+					// write the trips on those routes
+					for (Trip trip : atx.getTripsByRoute(route.id)) {
+						com.conveyal.gtfs.model.Trip gtfsTrip = new com.conveyal.gtfs.model.Trip();
 						
-						// TODO ensure this can't happen upstream
-						if (service.calendar_dates.containsKey(date.date))
-							throw new IllegalStateException("Duplicate calendar dates detected for date " + date);
+						gtfsTrip.block_id = trip.blockId;
+						gtfsTrip.route = gtfsRoute;
+						gtfsTrip.trip_id = trip.getGtfsId();
+						// not using custom ids
+						gtfsTrip.service = feed.services.get(trip.calendarId);
+						gtfsTrip.trip_headsign = trip.tripHeadsign;
+						gtfsTrip.trip_short_name = trip.tripShortName;
+						gtfsTrip.direction_id = trip.tripDirection == TripDirection.A ? 0 : 1;
 						
-						service.calendar_dates.put(date.date, date);
-					}
-					
-					feed.services.put(service.service_id, service);
-
-										
-					List<Trip> trips = Trip.find("serviceCalendar = ?", calendar).fetch();
-					
-					for(Trip trip : trips) {	
-						List<TripPatternStop> patternStopTimes = TripPatternStop.find("pattern = ? order by stopSequence", trip.pattern).fetch();
+						TripPattern pattern = atx.tripPatterns.get(trip.patternId);
 						
-						if(trip.useFrequency == null || patternStopTimes == null || (trip.useFrequency && patternStopTimes.size() == 0) || !trip.pattern.route.agency.id.equals(agency.id) || (trip.useFrequency && trip.headway.equals(0)) || (trip.useFrequency && trip.startTime.equals(trip.endTime)))
-							continue;
-
-						// save the route, if we haven't already
-						if (!routeList.contains(trip.pattern.route.id))
-						{
-							com.conveyal.gtfs.model.Route route = trip.pattern.route.toGtfs(gtfsAgency);
-							feed.routes.put(route.route_id, route);
-							routeList.add(trip.pattern.route.id);
+						Tuple2<String, Integer> nextKey = feed.shapePoints.ceilingKey(new Tuple2(pattern.id, null));
+						if ((nextKey == null || !pattern.id.equals(nextKey.a)) && pattern.shape != null && !pattern.useStraightLineDistances) {
+							// this shape has not yet been saved
+							double[] coordDistances = GeoUtils.getCoordDistances(pattern.shape);
+							
+							for (int i = 0; i < coordDistances.length; i++) {
+								Coordinate coord = pattern.shape.getCoordinateN(i);
+								Shape shape = new Shape(pattern.id, coord.y, coord.x, i + 1, coordDistances[i]);
+								feed.shapePoints.put(new Tuple2(pattern.id, shape.shape_pt_sequence), shape);
+							}
 						}
 						
-						// save the shape
-						if (trip.pattern.shape != null && !shapeList.contains(trip.pattern.shape.id)) {
-							// TODO: this leaves feed.shapes in an undefined state. We don't really care for the time being.
-							for (Shape shp : trip.pattern.shape.toGtfs()) {
-								feed.shapePoints.put(new Tuple2<String, Integer>(shp.shape_id, shp.shape_pt_sequence), shp);
+						if (pattern.shape != null && !pattern.useStraightLineDistances)
+							gtfsTrip.shape_id = pattern.id;
+						
+						if (trip.wheelchairBoarding != null) {
+							if (trip.wheelchairBoarding.equals(AttributeAvailabilityType.AVAILABLE))
+								gtfsTrip.wheelchair_accessible = 1;
+							
+							else if (trip.wheelchairBoarding.equals(AttributeAvailabilityType.UNAVAILABLE))
+								gtfsTrip.wheelchair_accessible = 2;
+							
+							else
+								gtfsTrip.wheelchair_accessible = 0;
+							
+						}
+						else if (route.wheelchairBoarding != null) {
+							if (route.wheelchairBoarding.equals(AttributeAvailabilityType.AVAILABLE))
+								gtfsTrip.wheelchair_accessible = 1;
+							
+							else if (route.wheelchairBoarding.equals(AttributeAvailabilityType.UNAVAILABLE))
+								gtfsTrip.wheelchair_accessible = 2;
+							
+							else
+								gtfsTrip.wheelchair_accessible = 0;
+							
+						}
+						
+						feed.trips.put(gtfsTrip.trip_id, gtfsTrip);
+						
+						TripPattern patt = atx.tripPatterns.get(trip.patternId);
+						
+						Iterator<TripPatternStop> psi = patt.patternStops.iterator();
+						
+						int stopSequence = 1;
+						
+						// write the stop times
+						for (StopTime st : trip.stopTimes) {
+							TripPatternStop ps = psi.next();
+							if (st == null)
+								continue;
+							
+							Stop stop = gtx.stops.get(st.stopId);
+							
+							if (!st.stopId.equals(ps.stopId)) {
+								throw new IllegalStateException("Trip " + trip.id + " does not match its pattern!");
 							}
 							
-							shapeList.add(trip.pattern.shape.id);
-						}
+							com.conveyal.gtfs.model.StopTime gst = new com.conveyal.gtfs.model.StopTime();
+							gst.arrival_time = st.arrivalTime != null ? st.arrivalTime : Entity.INT_MISSING;
+							gst.departure_time = st.departureTime != null ? gst.departure_time : Entity.INT_MISSING;
 							
-						com.conveyal.gtfs.model.Trip gtfsTrip = trip.toGtfs(feed.routes.get(trip.pattern.route.getGtfsId()), service);
-						feed.trips.put(gtfsTrip.trip_id, gtfsTrip);					
-
-						Frequency f = trip.getFrequency(gtfsTrip); 
+							if (st.dropOffType != null)
+								gst.drop_off_type = st.dropOffType.toGtfsValue();
+							else if (stop.dropOffType != null)
+								gst.drop_off_type = stop.dropOffType.toGtfsValue();
+							
+							if (st.pickupType != null)
+								gst.pickup_type = st.pickupType.toGtfsValue();
+							else if (stop.dropOffType != null)
+								gst.drop_off_type = stop.dropOffType.toGtfsValue();
+							
+							gst.shape_dist_traveled = ps.shapeDistTraveled;
+							gst.stop_headsign = st.stopHeadsign;
+							gst.stop_id = stop.getGtfsId();
+							
+							// write the stop as needed 
+							if (!feed.stops.containsKey(gst.stop_id)) {
+								feed.stops.put(gst.stop_id, stop.toGtfs());
+							}
+							
+							gst.stop_sequence = stopSequence++;
+							
+							if (ps.timepoint != null)
+								gst.timepoint = ps.timepoint ? 1 : 0;
+							else
+								gst.timepoint = Entity.INT_MISSING;
+		
+							gst.trip_id = gtfsTrip.trip_id;
+							
+							feed.stop_times.put(new Tuple2(gtfsTrip.trip_id, gst.stop_sequence), gst);
+						}
 						
-						if (f != null) {
+						// create frequencies as needed
+						if (trip.useFrequency != null && trip.useFrequency) {
+							Frequency f = new Frequency();
+							f.trip = gtfsTrip;
+							f.start_time = trip.startTime;
+							f.end_time = trip.endTime;
+							f.exact_times = 0;
+							f.headway_secs = trip.headway;
 							feed.frequencies.put(gtfsTrip.trip_id, f);
-							
-							// build up the schedule
-							Integer cumulativeTime = 0;
-							for (TripPatternStop stopTime : patternStopTimes) {
-								if (!stopList.contains(stopTime.stop.id)) {
-									com.conveyal.gtfs.model.Stop stop = stopTime.stop.toGtfs(); 
-									feed.stops.put(stop.stop_id, stop);
-									stopList.add(stopTime.stop.id);
-								}
-								
-								if(stopTime.defaultTravelTime != null) {
-									
-									// need to flag negative travel times in the patterns!
-									if(stopTime.defaultTravelTime < 0)
-										cumulativeTime -= stopTime.defaultTravelTime;
-									else
-										cumulativeTime += stopTime.defaultTravelTime;	
-								}
-								
-								int arrivalTime = cumulativeTime;
-								
-								if(stopTime.defaultDwellTime != null) {
-									
-									// need to flag negative dwell times in the patterns!
-									if(stopTime.defaultDwellTime < 0)
-										cumulativeTime -= stopTime.defaultDwellTime;
-									else
-										cumulativeTime += stopTime.defaultDwellTime;
-								}
-								
-							    com.conveyal.gtfs.model.StopTime st = new com.conveyal.gtfs.model.StopTime();
-							    st.trip_id = gtfsTrip.trip_id;
-							    st.stop_id = stopTime.stop.getGtfsId();
-							    st.arrival_time = arrivalTime;
-							    st.departure_time = cumulativeTime;
-							    st.pickup_type = stopTime.stop.pickupType != null ? stopTime.stop.pickupType.toGtfsValue() : 0;
-							    st.drop_off_type = stopTime.stop.dropOffType != null ? stopTime.stop.dropOffType.toGtfsValue() : 0;
-							    st.shape_dist_traveled = Double.NaN;
-							    st.stop_sequence = stopTime.stopSequence;
-							    st.timepoint = stopTime.timepoint != null ? (stopTime.timepoint ? 1 : 0) : st.INT_MISSING;
-								
-								feed.stop_times.put(new Tuple2(st.trip_id, st.stop_sequence), st);
-							}
-						}
-						else {
-							// timetable based feed						
-							List<StopTime> stopTimes = StopTime.find("trip = ? order by stopSequence", trip).fetch();
-							
-							for(StopTime stopTime : stopTimes) {
-								if (!stopList.contains(stopTime.stop.id)) {
-									com.conveyal.gtfs.model.Stop stop = stopTime.stop.toGtfs(); 
-									feed.stops.put(stop.stop_id, stop);
-									stopList.add(stopTime.stop.id);
-								}
-								
-								com.conveyal.gtfs.model.StopTime st = stopTime.toGtfs();
-								feed.stop_times.put(new Tuple2(st.trip_id, st.stop_sequence), st);
-							}
 						}
 					}
 				}
-				
 			}
 			
-			feed.toFile(gtfsZip.getAbsolutePath());
-			
-			snapshotExport.status = GtfsSnapshotExportStatus.SUCCESS;
-			
-			snapshotExport.save();
-		
+			feed.toFile(output.getAbsolutePath());
+		} finally {
+			gtx.rollbackIfOpen();
+			if (atx != null) atx.rollbackIfOpen();
 		}
-		catch(Exception e)
-		{
-			Logger.error("error");
-			e.printStackTrace();
-		}
-	}
-
-	public static int toGtfsDate(LocalDate date) {
-		return date.getYear() * 10000 +
-				date.getMonthOfYear() * 100 +
-				date.getDayOfMonth();
 	}
 	
-	public static int toGtfsDate(Date date) {
-		// Everything is stored in UTC
-		LocalDate d = new LocalDate(date.getTime(), DateTimeZone.UTC);
-		return toGtfsDate(d);			
+	public static int toGtfsDate (LocalDate date) {
+		return date.getYear() * 10000 + date.getMonthOfYear() * 100 + date.getDayOfMonth();
 	}
-	*/
 }
 

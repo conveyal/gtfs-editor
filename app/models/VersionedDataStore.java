@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.NavigableSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 import models.transit.Agency;
 import models.transit.Route;
@@ -16,6 +17,7 @@ import models.transit.Stop;
 import models.transit.Trip;
 import models.transit.TripPattern;
 
+import org.mapdb.Atomic;
 import org.mapdb.BTreeKeySerializer;
 import org.mapdb.BTreeMap;
 import org.mapdb.Bind;
@@ -48,7 +50,7 @@ public class VersionedDataStore {
 	private static TxMaker globalTxMaker;
 	
 	private static Map<String, TxMaker> agencyTxMakers = Maps.newConcurrentMap();
-	
+		
 	static {
 		File globalDataDirectory = new File(dataDirectory, "global");
 		globalDataDirectory.mkdirs();
@@ -151,7 +153,6 @@ public class VersionedDataStore {
 	
 	/** a transaction in the global database */
 	public static class GlobalTx extends DatabaseTx {
-
 		public MapWithModificationListener<String, Agency> agencies;
 		
 		/** Stops for all agencies, keys are agency_id, stop_id */

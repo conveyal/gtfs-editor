@@ -1,6 +1,7 @@
 package utils;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 import org.mapdb.Fun.Tuple2;
@@ -32,7 +33,15 @@ public class JacksonSerializers {
 		public void serialize(Tuple2<String, String> t2, JsonGenerator jgen,
 				SerializerProvider arg2) throws IOException,
 				JsonProcessingException {
-			jgen.writeString(encoder.encode(t2.a.getBytes("UTF-8")) + ":" + encoder.encode(t2.b.getBytes("UTF-8")));
+			jgen.writeString(serialize(t2));
+		}
+		
+		public static String serialize (Tuple2<String, String> t2) {
+			try {
+				return encoder.encode(t2.a.getBytes("UTF-8")) + ":" + encoder.encode(t2.b.getBytes("UTF-8"));
+			} catch (UnsupportedEncodingException e) {
+				throw new UnsupportedOperationException(e);
+			}
 		}
 	}
 	

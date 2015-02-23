@@ -159,6 +159,6 @@ public class Stop implements Serializable {
 		if(gtfsStopId != null && !gtfsStopId.isEmpty())
 			return gtfsStopId;
 		else
-			return "STOP_" + id;
+			return "STOP_" + JacksonSerializers.Tuple2Serializer.serialize(id);
 	}
 }

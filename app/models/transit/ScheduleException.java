@@ -43,39 +43,38 @@ public class ScheduleException extends Model implements Serializable {
 	/** A custom schedule. Only used if like == null */
 	public List<String> customSchedule;
 	
+	public boolean serviceRunsOn(ServiceCalendar service) {
+		switch (exemplar) {
+		case MONDAY:
+			return service.monday;
+		case TUESDAY:
+			return service.tuesday;
+		case WEDNESDAY:
+			return service.wednesday;
+		case THURSDAY:
+			return service.thursday;
+		case FRIDAY:
+			return service.friday;
+		case SATURDAY:
+			return service.saturday;
+		case SUNDAY:
+			return service.sunday;
+		case NO_SERVICE:
+			// special case for quickly turning off all service.
+			return false;
+		case CUSTOM:
+			return customSchedule.contains(service.id);
+		default:
+			// can't actually happen, but java requires a default with a return here
+			return false;
+		}
+	}
+	
 	/**
 	 * Represents a desire about what service should be like on a particular day.
 	 * For example, run Sunday service on Presidents' Day, or no service on New Year's Day.
 	 */
 	public static enum ExemplarServiceDescriptor {
 		MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY, NO_SERVICE, CUSTOM;
-		
-		public boolean serviceRunsOn(ServiceCalendar service) {
-			switch (this) {
-			case MONDAY:
-				return service.monday;
-			case TUESDAY:
-				return service.tuesday;
-			case WEDNESDAY:
-				return service.wednesday;
-			case THURSDAY:
-				return service.thursday;
-			case FRIDAY:
-				return service.friday;
-			case SATURDAY:
-				return service.saturday;
-			case SUNDAY:
-				return service.sunday;
-			case NO_SERVICE:
-				// special case for quickly turning off all service.
-				return false;
-			case CUSTOM:
-				// custom service, no way to know what they want
-				throw new UnsupportedOperationException("I have no way to know whether a service calendar is running on a custom schedule");
-			default:
-				// can't actually happen, but java requires a default with a return here
-				return false;
-			}
-		}
 	}
 }

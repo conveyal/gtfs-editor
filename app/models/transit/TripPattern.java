@@ -2,6 +2,7 @@ package models.transit;
 
 
 import static java.util.Collections.sort;
+import static utils.GeoUtils.getCoordDistances;
 
 import java.io.Serializable;
 import java.math.BigInteger;
@@ -450,24 +451,6 @@ public class TripPattern extends Model implements Serializable {
 			gc.setDestinationGeographicPoint(stop.location.getX(), stop.location.getY());
 			previousDistance = ps.shapeDistTraveled = previousDistance + gc.getOrthodromicDistance();
 		}
-	}
-
-	/** get the distances from the start of the line string to every coordinate along the line string */
-	private static double[] getCoordDistances(LineString line) {
-		double[] coordDist = new double[line.getNumPoints()];
-		coordDist[0] = 0;
-		
-		Coordinate prev = line.getCoordinateN(0);
-		GeodeticCalculator gc = new GeodeticCalculator();
-		for (int j = 1; j < coordDist.length; j++) {
-			Coordinate current = line.getCoordinateN(j);
-			gc.setStartingGeographicPoint(prev.x, prev.y);
-			gc.setDestinationGeographicPoint(current.x, current.y);
-			coordDist[j] = coordDist[j - 1] + gc.getOrthodromicDistance();
-			prev = current;
-		}
-		
-		return coordDist;
 	}
 
 	/**

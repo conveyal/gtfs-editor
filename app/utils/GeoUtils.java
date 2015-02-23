@@ -6,6 +6,7 @@ import org.geotools.referencing.GeodeticCalculator;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.LinearRing;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.io.WKTWriter;
@@ -39,4 +40,23 @@ public class GeoUtils {
 		
 		return geometyFactory.createPolygon(ring, holes);
 	}
+	
+	/** get the distances from the start of the line string to every coordinate along the line string */
+	public static double[] getCoordDistances(LineString line) {
+		double[] coordDist = new double[line.getNumPoints()];
+		coordDist[0] = 0;
+		
+		Coordinate prev = line.getCoordinateN(0);
+		GeodeticCalculator gc = new GeodeticCalculator();
+		for (int j = 1; j < coordDist.length; j++) {
+			Coordinate current = line.getCoordinateN(j);
+			gc.setStartingGeographicPoint(prev.x, prev.y);
+			gc.setDestinationGeographicPoint(current.x, current.y);
+			coordDist[j] = coordDist[j - 1] + gc.getOrthodromicDistance();
+			prev = current;
+		}
+		
+		return coordDist;
+	}
+
 }

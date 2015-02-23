@@ -7,9 +7,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import models.Model;
+import models.VersionedDataStore.AgencyTx;
 
 import org.hibernate.annotations.Type;
 
+import com.conveyal.gtfs.GTFSFeed;
 import com.conveyal.gtfs.model.Frequency;
 import com.conveyal.gtfs.model.Service;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -134,6 +136,5 @@ public class Trip extends Model implements Serializable {
 		ret.trip = trip;
 		
 		return ret;
-	}
-    
+	}    
 }   
