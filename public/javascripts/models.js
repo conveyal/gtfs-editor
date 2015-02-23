@@ -276,6 +276,11 @@ G.RouteTypes = Backbone.Collection.extend({
       this.trips = new G.Trips({patternId: this.id});
     },
 
+    blacklist: ['stopConnections'],
+    toJSON: function(options) {
+      return _.omit(this.attributes, this.blacklist);
+    },
+
     /**
      * Get all of the pattern stops for this stop and agency
      */

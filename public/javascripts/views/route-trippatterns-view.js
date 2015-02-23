@@ -181,6 +181,10 @@ var GtfsEditor = GtfsEditor || {};
 
       this.map.on('draw:edited', this.saveTripPatternLine);
 
+      /** Connections from stops to pattern shapes */
+      this.stopConnections = new L.FeatureGroup();
+      this.map.addLayer(this.stopConnections);
+
 
       this.map.on('moveend', function(evt) {
         view.updateStops();
@@ -334,19 +338,7 @@ var GtfsEditor = GtfsEditor || {};
 
       var selectedPatternId  = this.$('#trip-pattern-select').val();
       if(this.model.tripPatterns.get(selectedPatternId) != undefined) {
-        var patternStops = _.pluck(this.model.tripPatterns.get(selectedPatternId).attributes.patternStops, 'stopId');
-        var stopsToFetch = [];
-        _.each(patternStops, function (stopId) {
-          var stop = instance.options.stops.get(stopId);
-          if (stop !== undefined) {
-            instance.onStopModelAdd(stop);
-          } else {
-            stopsToFetch.push(stopId);
-          }
-        });
-
-        if (stopsToFetch.length > 0)
-          this.options.stops.fetch({remove: false, data: {id: stopsToFetch}});
+          this.options.stops.fetch({remove: false, data: {patternId: this.model.tripPatterns.get(selectedPatternId).id}});
       }
 
       var agencyId = null;
@@ -835,7 +827,7 @@ var GtfsEditor = GtfsEditor || {};
     },
 
     updatePatternLine: function() {
-
+      var instance = this;
       var selectedPatternId  = this.$('#trip-pattern-select').val();
 
       if(this.drawnItems == undefined || this.model.tripPatterns.get(selectedPatternId) == undefined) {
@@ -856,6 +848,13 @@ var GtfsEditor = GtfsEditor || {};
 
         polyline.addTo(this.drawnItems);
       }
+
+      // draw the connections to the stops
+      this.stopConnections.clearLayers();
+
+      _.each(this.model.tripPatterns.get(selectedPatternId).get('stopConnections'), function (stopConnection) {
+        new L.EncodedPolyline(stopConnection, {color: 'gray'}).addTo(instance.stopConnections);
+      });
 
     },
 

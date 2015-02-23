@@ -439,38 +439,17 @@ public class Application extends Controller {
     		importGtfs();
         }
     	else {
-    /*		
-    		GtfsSnapshot snapshot = new GtfsSnapshot(gtfsUpload.getName(), new Date(), GtfsSnapshotSource.UPLOAD);
-    		snapshot.save();
-    		
-    		FileOutputStream fileOutputStream;
 			try {
-				
-				File fileOut = new File(Play.configuration.getProperty("application.publicDataDirectory"), snapshot.getFilename());
-				
-				gtfsUpload.renameTo(fileOut);
-        
+				new ProcessGtfsSnapshotMerge(gtfsUpload).run();
 			}	
 			catch (Exception e) {
-				
+				e.printStackTrace();
 				validation.addError("gtfsUpload", "Unable to process file.");
 				params.flash();
 	    		validation.keep();
 	    		importGtfs();
 			}
-            
-			snapshot.save();
-	        GtfsSnapshotMerge merge = new GtfsSnapshotMerge(snapshot);
-	        merge.save();
-	        
-	        ProcessGtfsSnapshotMerge mergeJob = new ProcessGtfsSnapshotMerge(merge.id);
-	        mergeJob.doJob(); 
-			
-			//valdiateGtfs(snapshot.id);
-			 *
-			 */
-    	}
-    	
+    	}    	
     }
 
     /** schedule exceptions page */

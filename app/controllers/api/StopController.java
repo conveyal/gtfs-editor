@@ -14,21 +14,25 @@ import com.google.common.collect.Collections2;
 import com.google.common.collect.Sets;
 
 import models.VersionedDataStore;
+import models.VersionedDataStore.AgencyTx;
 import models.VersionedDataStore.GlobalTx;
 import models.transit.Agency;
 import models.transit.Stop;
+import models.transit.TripPattern;
+import models.transit.TripPatternStop;
 import controllers.Api;
 import play.data.binding.As;
 import play.mvc.Controller;
 import utils.JacksonSerializers;
 
 public class StopController extends Controller {
-    public static void getStop(List<String> id, Double west, Double east, Double north, Double south) {
+    public static void getStop(String id, String patternId, String agencyId, Double west, Double east, Double north, Double south) {
     	final GlobalTx tx = VersionedDataStore.getGlobalTx();
+    	AgencyTx atx = null;
  
     	try {
-	      	if (id != null && id.size() == 1) {
-	      		Tuple2<String, String> stopId = JacksonSerializers.Tuple2Deserializer.deserialize(id.get(0));
+	      	if (id != null) {
+	      		Tuple2<String, String> stopId = JacksonSerializers.Tuple2Deserializer.deserialize(id);
 	    		if (!tx.stops.containsKey(stopId)) {
 	    			tx.rollback();
 	    			notFound();
@@ -58,15 +62,25 @@ public class StopController extends Controller {
 	    		
 	    		renderJSON(Api.toJson(matchedStops, false));
 	    	}
-	    	else if (id != null) {
-	    		Collection<Stop> ret = Collections2.transform(id, new Function<String, Stop> () {
+	    	else if (patternId != null) {
+	    		if (agencyId == null)
+	    			agencyId = session.get("agencyId");
+	    		
+	    		atx = VersionedDataStore.getAgencyTx(agencyId);
+	    		if (!atx.tripPatterns.containsKey(patternId)) {
+	    			notFound();
+	    			tx.rollback();
+	    			atx.rollback();
+	    			return;
+	    		}
+	    		
+	    		TripPattern p = atx.tripPatterns.get(patternId);
+	    		atx.rollback();
+	    		
+	    		Collection<Stop> ret = Collections2.transform(p.patternStops, new Function<TripPatternStop, Stop> () {
 					@Override
-					public Stop apply(String input) {
-						try {
-							return tx.stops.get(JacksonSerializers.Tuple2Deserializer.deserialize(input));
-						} catch (IOException e) {
-							return null;
-						}
+					public Stop apply(TripPatternStop input) {
+						return tx.stops.get(input.stopId);
 					}
 	    		});
 	    		
@@ -78,7 +92,8 @@ public class StopController extends Controller {
 	    	
     		tx.rollback();
     	} catch (Exception e) {
-    		tx.rollback();
+    		tx.rollbackIfOpen();
+    		if (atx != null) atx.rollbackIfOpen();
     		e.printStackTrace();
     		badRequest();
     		return;

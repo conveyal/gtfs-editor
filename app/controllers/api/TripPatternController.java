@@ -109,6 +109,8 @@ public class TripPatternController extends Controller {
             	badRequest();
             }
             
+            tripPattern.calcShapeDistTraveled();
+            
             tx.tripPatterns.put(tripPattern.id, tripPattern);
             tx.commit();
 
@@ -153,6 +155,8 @@ public class TripPatternController extends Controller {
             	badRequest();
             	return;
             }
+            
+            tripPattern.calcShapeDistTraveled();
             
             tx.tripPatterns.put(tripPattern.id, tripPattern);
             tx.commit();

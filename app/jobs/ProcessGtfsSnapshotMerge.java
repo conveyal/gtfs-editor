@@ -11,8 +11,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
@@ -22,6 +24,7 @@ import org.geotools.referencing.GeodeticCalculator;
 import org.hibernate.StatelessSession;
 import org.joda.time.DateTimeConstants;
 import org.joda.time.LocalDate;
+import org.mapdb.DBMaker;
 import org.mapdb.Fun;
 import org.opentripplanner.routing.core.RouteMatcher;
 
@@ -35,13 +38,18 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.primitives.Ints;
 import com.mchange.v2.c3p0.impl.DbAuth;
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.PrecisionModel;
 
 import controllers.Bootstrap;
+import models.VersionedDataStore;
+import models.VersionedDataStore.AgencyTx;
+import models.VersionedDataStore.GlobalTx;
 import models.transit.Agency;
 import models.transit.Route;
 import models.transit.ServiceCalendar;
@@ -60,12 +68,17 @@ import play.jobs.OnApplicationStart;
 import org.mapdb.Fun.Tuple2;
 
 
-public class ProcessGtfsSnapshotMerge extends Job {
-/*	private Map<String, Agency> agencyIdMap = new HashMap<String, Agency>();
+public class ProcessGtfsSnapshotMerge implements Runnable {
+	private Map<String, Agency> agencyIdMap = new HashMap<String, Agency>();
 	private Map<String, Route> routeIdMap = new HashMap<String, Route>();
 	private Map<String, Stop> stopIdMap = new HashMap<String, Stop>();
 	private Map<Tuple2<String, String>, ServiceCalendar> serviceCalendarIdMap = new HashMap<Tuple2<String, String>, ServiceCalendar>();
+	Map<String, LineString> shapes = DBMaker.newTempHashMap();
 	private TObjectLongMap<String> shapeIdMap = new TObjectLongHashMap<String>();
+	
+	/** Map from Stop ID to inferred agency ID */
+	private Map<String, String> stopAgencyMap = Maps.newHashMap();
+	
 	private GTFSFeed input;	
 	private File gtfsFile;
 	
@@ -73,7 +86,7 @@ public class ProcessGtfsSnapshotMerge extends Job {
 		this.gtfsFile = gtfsFile;
 	}
 
-	public void doJob() {
+	public void run () {
     	long agencyCount = 0;
     	long routeCount = 0;
     	long stopCount = 0;
@@ -81,13 +94,15 @@ public class ProcessGtfsSnapshotMerge extends Job {
     	long tripCount = 0;
     	long shapePointCount = 0;
     	long serviceCalendarCount = 0;
-    	long serviceCalendarDateCount = 0;
     	long shapeCount = 0;
     	
-    	try {
+    	GlobalTx gtx = VersionedDataStore.getGlobalTx();
+        // map from (non-gtfs) agency IDs to transactions.
+        Map<String, AgencyTx> agencyTxs = Maps.newHashMap();
+        
+        try {
        		input = GTFSFeed.fromFile(gtfsFile.getAbsolutePath());
     		
-    	    	
         	Logger.info("GtfsImporter: importing agencies...");        
         	// store agencies
         	for (com.conveyal.gtfs.model.Agency gtfsAgency : input.agency.values()) {
@@ -102,82 +117,112 @@ public class ProcessGtfsSnapshotMerge extends Job {
 	    	Logger.info("Agencies loaded: " + agencyCount);
 	    	
 	        Logger.info("GtfsImporter: importing stops...");
+	        
+	        // infer agency ownership of stops, if there are multiple agencies
+	        // if there's only one agency it doesn't matter
+	        Agency primaryAgency = agencyIdMap.values().iterator().next();
+	        if (agencyCount > 1)
+	        	inferAgencyStopOwnership();
 	    	
 	    	// build agency centroids as we go
 	    	// note that these are not actually centroids, but the center of the extent of the stops . . .
-	    	Envelope stopEnvelope = new Envelope();
+	    	Map<String, Envelope> stopEnvelopes = Maps.newHashMap();
+	    	
+	    	for (String agencyId : agencyIdMap.keySet()) {
+	    		stopEnvelopes.put(agencyId, new Envelope());
+	    	}
 	    	
 	    	GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
-	        for (com.conveyal.gtfs.model.Stop gtfsStop : input.stops.values()) {	     
-	           Stop stop = new Stop(gtfsStop, geometryFactory);
-	           stop.save();
+	        for (com.conveyal.gtfs.model.Stop gtfsStop : input.stops.values()) {
+	        	// figure out the agency
+	        	Agency agency;
+	        	if (agencyCount > 1 && stopAgencyMap.containsKey(gtfsStop.stop_id))
+	        		agency = agencyIdMap.get(stopAgencyMap.get(gtfsStop.stop_id));
+	        	else
+	        		// if there is only one agency, or if the stop is unused, give it the first agency in the feed
+	        		agency = primaryAgency;
+	        	
+	           Stop stop = new Stop(gtfsStop, geometryFactory, agency);
 	           stopIdMap.put(gtfsStop.stop_id, stop);
-	           stopEnvelope.expandToInclude(gtfsStop.stop_lon, gtfsStop.stop_lat);	           
+	           gtx.stops.put(stop.id, stop);
+	          	           
+	           stopEnvelopes.get(agency.gtfsAgencyId).expandToInclude(gtfsStop.stop_lon, gtfsStop.stop_lat);	           
 	           stopCount++;
 	        }
 	        
-	        // set the agency default zoom locations
+	        // set the agency default zoom locations and save the agencies
 	        for (Agency a : agencyIdMap.values()) {
+	        	Envelope stopEnvelope = stopEnvelopes.get(a.gtfsAgencyId);
 	        	a.defaultLat = stopEnvelope.centre().y;
 	        	a.defaultLon = stopEnvelope.centre().x;
-	        	a.save();
+	        	gtx.agencies.put(a.id, a);
 	        }
 	        	        
 	        Logger.info("Stops loaded: " + stopCount);
+	        
+	        // agency-specific stuff: start transactions for all relevant agencies	        
+	        for (Agency a : agencyIdMap.values()) {
+	        	agencyTxs.put(a.id, VersionedDataStore.getAgencyTx(a.id));
+	        }
 	    	
 	    	Logger.info("GtfsImporter: importing routes...");
 	    	
-	    	GtfsSnapshotMergeTask routeTask = new GtfsSnapshotMergeTask(snapshotMerge);
-	    	routeTask.startTask();
 	    	
 	    	for (com.conveyal.gtfs.model.Route gtfsRoute : input.routes.values()) {
-	    		Route route = new Route(gtfsRoute, agencyIdMap.get(gtfsRoute.agency.agency_id));
-	    		route.save();
+	    		Agency agency = agencyIdMap.get(gtfsRoute.agency.agency_id);
+	    		Route route = new Route(gtfsRoute, agency);
+	    		agencyTxs.get(agency.id).routes.put(route.id, route);
 	    		routeIdMap.put(gtfsRoute.route_id, route);
 	    		routeCount++;
 	    	}
-	        
-	        routeTask.completeTask("Imported " + routeCount + " routes.", GtfsSnapshotMergeTaskStatus.SUCCESS);
-	        
+	        	        
 	        Logger.info("Routes loaded:" + routeCount); 
 
-	        
 	        Logger.info("GtfsImporter: importing Shapes...");
-		    
-	        GtfsSnapshotMergeTask tripShapeTask = new GtfsSnapshotMergeTask(snapshotMerge);
-	        tripShapeTask.startTask();
+	        
+	        // shapes are a part of trippatterns, so we don't actually import them into the model, we just make a map
+	        // shape id -> linestring which we use when building trip patterns
+	        // we put this map in mapdb because it can be big
 	        
 	        // import points
 	        
 	        for (String shapeId : input.shapes.keySet()) {
-	        	TripShape shape;
-	        	Collection<Shape> shapes;
-	        	try {
-	        		shapes = input.shapePoints.subMap(new Tuple2(shapeId, 0), new Tuple2(shapeId, Fun.HI)).values();
-	        		shape = new TripShape(shapes, shapeId, geometryFactory);
-	        	} catch (InvalidShapeException e) {
-	        		Logger.warn("Shape " + shapeId + " is not valid. Using stop-to-stop geometries instead.");
+	        	Collection<Shape> points = input.shapePoints.subMap(new Tuple2(shapeId, 0), new Tuple2(shapeId, Fun.HI)).values();
+	        		
+	        	if (points.size() < 2) {
+	        		Logger.warn("Shape " + shapeId + " has fewer than two points. Using stop-to-stop geometries instead.");
 	        		continue;
 	        	}
-	        	shape.save();
+	        		
+	        	Coordinate[] coords = new Coordinate[points.size()];	
 	        	
-	        	// we track IDs here not the objects themselves, because they have the potential to be huge
-	        	shapeIdMap.put(shapeId, shape.id);
+	        	int lastSeq = Integer.MIN_VALUE;
 	        	
-	        	shapePointCount += shapes.size();
+	        	int i = 0;
+	        	for (Shape shape : points) {
+	        		if (shape.shape_pt_sequence <= lastSeq) {
+	        			Logger.warn("Shape %s has out-of-sequence points. This implies a bug in the GTFS importer. Using stop-to-stop geometries.");
+	        			continue;
+	        		}
+	        		lastSeq = shape.shape_pt_sequence;
+	        		
+	        		coords[i++] = new Coordinate(shape.shape_pt_lon, shape.shape_pt_lat);
+	        	}
+	        	
+	        	shapes.put(shapeId, geometryFactory.createLineString(coords));
+	        	shapePointCount += points.size();
 	        	shapeCount++;
 	        }
 	        
-	        Logger.info("Shape points loaded: " + shapePointCount.toString());
-	        Logger.info("Shapes loaded: " + shapeCount.toString());
-	        
-	        tripShapeTask.completeTask("Imported " + shapePointCount + " points in " + shapeCount + " shapes.", GtfsSnapshotMergeTaskStatus.SUCCESS);
-
-	        
-	        GtfsSnapshotMergeTask serviceCalendarsTask = new GtfsSnapshotMergeTask(snapshotMerge);
-	        serviceCalendarsTask.startTask();
+	        Logger.info("Shape points loaded: " + shapePointCount);
+	        Logger.info("Shapes loaded: " + shapeCount);
 	        
 	        Logger.info("GtfsImporter: importing Service Calendars...");
+	        
+	        // we don't put service calendars in the database just yet, because we don't know what agency they're associated with
+	        // we copy them into the agency database as needed
+	        // GTFS service ID -> ServiceCalendar
+	        Map<String, ServiceCalendar> calendars = Maps.newHashMap();
 	    	
 	        for (Service svc : input.services.values()) {
 	        	
@@ -186,7 +231,6 @@ public class ProcessGtfsSnapshotMerge extends Job {
 	        	if (svc.calendar != null) {
 	        		// easy case: don't have to infer anything!
 	        		cal = new ServiceCalendar(svc.calendar);
-	        		cal.save();
 	        	} else {
 	        		// infer a calendar
 	        		// number of mondays, etc. that this calendar is active
@@ -259,33 +303,22 @@ public class ProcessGtfsSnapshotMerge extends Job {
 		        		cal.saturday = saturday >= threshold;
 		        		cal.sunday = sunday >= threshold;
 		        		
-		        		cal.startDate = startDate.toDate();
-		        		cal.endDate = endDate.toDate();
+		        		cal.startDate = startDate;
+		        		cal.endDate = endDate;
 	        		}
 	        		
 	        		cal.inferName();
 	        		cal.gtfsServiceId = svc.service_id;
 	        	}
-	        	
-        		for (Agency a : agencyIdMap.values()) {
-        			ServiceCalendar aCal = cal.clone();
-        			aCal.agency = a;
-        			aCal.save();
-        			serviceCalendarIdMap.put(new Tuple2(a.gtfsAgencyId, svc.service_id), aCal);
-        		}
+	   
+	        	calendars.put(svc.service_id, cal);
 	        	
 	        	serviceCalendarCount++;
 	        }
-	    
 	        
 	        Logger.info("Service calendars loaded: " + serviceCalendarCount); 
-	        
-	        serviceCalendarsTask.completeTask("Imported " + serviceCalendarCount.toString() + " service calendars.", GtfsSnapshotMergeTaskStatus.SUCCESS);
-	        
+	        	        
 	        Logger.info("GtfsImporter: importing trips...");
-	        
-	        GtfsSnapshotMergeTask tripsStopTimesTask = new GtfsSnapshotMergeTask(snapshotMerge);
-	        tripsStopTimesTask.startTask();
 	        
 	        // import trips, stop times and patterns all at once
 	        Map<List<String>, List<String>> patterns = input.findPatterns();
@@ -296,16 +329,12 @@ public class ProcessGtfsSnapshotMerge extends Job {
 	        	Map<String, TripPattern> tripPatternsByRoute = Maps.newHashMap();
 	        	
 	        	for (String tripId : pattern.getValue()) {
-	        		com.conveyal.gtfs.model.Trip gtfsTrip = input.trips.get(tripId); 
+	        		com.conveyal.gtfs.model.Trip gtfsTrip = input.trips.get(tripId);
+	        		AgencyTx tx = agencyTxs.get(agencyIdMap.get(gtfsTrip.route.agency.agency_id).id);
+	        		
 	        		if (!tripPatternsByRoute.containsKey(gtfsTrip.route.route_id)) {
-	        			TripPattern pat = createTripPatternFromTrip(gtfsTrip);
-	        			pat.route = routeIdMap.get(gtfsTrip.route.route_id);
-	        			pat.save();
-	        			
-	        			for (TripPatternStop stop : pat.patternStops) {
-	        				stop.save();
-	        			}
-	        			
+	        			TripPattern pat = createTripPatternFromTrip(gtfsTrip, gtx);
+	        			tx.tripPatterns.put(pat.id, pat);
 	        			tripPatternsByRoute.put(gtfsTrip.route.route_id, pat);
 	        		}
 	        		
@@ -316,27 +345,23 @@ public class ProcessGtfsSnapshotMerge extends Job {
 	        		//  that short-turned at Missouri and 3rd).
 	        		TripPattern pat = tripPatternsByRoute.get(gtfsTrip.route.route_id);
 	        		
-	        		TripShape shape = null;
-	        		
-	        		if (gtfsTrip.shape_id != null && shapeIdMap.containsKey(gtfsTrip.shape_id))
-	        			shape = TripShape.findById(shapeIdMap.get(gtfsTrip.shape_id));
-	        		
-	        		Trip trip = new Trip(gtfsTrip, routeIdMap.get(gtfsTrip.route.route_id), shape, pat,
-	        				serviceCalendarIdMap.get(new Tuple2(gtfsTrip.route.agency.agency_id, gtfsTrip.service.service_id)));
-	        		trip.save();
-	        		
-	        		Trip.nativeInsert(snapshotMerge.em(), gtfsTrip, routeIdMap.get(gtfsTrip.route.route_id).id, shape != null ? shape.id : null,
-	        				serviceCalendarIdMap.get(new Tuple2(gtfsTrip.route.agency.agency_id, gtfsTrip.service.service_id)).id,
-	        				pat.id);
-	        		
-	        		int stopIdx = 0;
-	        		// next step: stop times. make sure to add trippatternstop info to each. 
-	        		for (com.conveyal.gtfs.model.StopTime gtfsStopTime : input.stop_times.subMap(new Tuple2(gtfsTrip.trip_id,0), new Tuple2(gtfsTrip.trip_id, Fun.HI)).values()) {
-	        			// we ignore the stop sequence information from the GTFS and renumber them starting at 1.
-	        			StopTime.nativeInsert(snapshotMerge.em(), gtfsStopTime, trip.id, stopIdMap.get(gtfsStopTime.stop_id).id, pat.patternStops.get(stopIdx).id);
-	        			stopIdx++;
-	        			stopTimeCount++;
+	        		ServiceCalendar cal = calendars.get(gtfsTrip.service.service_id);
+	        		// if the service calendar has not yet been imported, import it
+	        		if (!tx.calendars.containsKey(cal.id)) {
+	        			// no need to clone as they are going into completely separate mapdbs
+	        			tx.calendars.put(cal.id, cal);
 	        		}
+	        		
+	        		Trip trip = new Trip(gtfsTrip, routeIdMap.get(gtfsTrip.route.route_id), pat, cal);      		
+	        		
+	        		Collection<com.conveyal.gtfs.model.StopTime> stopTimes =
+	        				input.stop_times.subMap(new Tuple2(gtfsTrip.trip_id, null), new Tuple2(gtfsTrip.trip_id, Fun.HI)).values();
+	        		
+	        		for (com.conveyal.gtfs.model.StopTime st : stopTimes) {
+	        			trip.stopTimes.add(new StopTime(st, stopIdMap.get(st.stop_id).id));
+	        		}
+	        		
+	        		tx.trips.put(trip.id, trip);
 	        		
 	        		tripCount++;
 	        		
@@ -345,40 +370,77 @@ public class ProcessGtfsSnapshotMerge extends Job {
 	        		}
 	        	}
 	        }
-	        	
 	        
 	        Logger.info("Trips loaded: " + tripCount); 
 	        
-	        tripsStopTimesTask.completeTask("Imported " + tripCount.toString() + " trips and " + stopTimeCount.toString() + " stop times.",
-	                GtfsSnapshotMergeTaskStatus.SUCCESS);
-	        	        
-	        String mergeDescription = new String("Imported GTFS file: " + agencyCount + " agencies; " + routeCount + " routes;" + stopCount + " stops; " +  stopTimeCount + " stopTimes; " + tripCount + " trips;" + shapePointCount + " shapePoints");
-	        
-	        snapshotMerge.complete(mergeDescription);
-	       
-	        encodeTripShapes();
-	    }
-        catch (Exception e) {
-    		
-        	Logger.error(e.toString()); 
-        	
-        	e.printStackTrace();
-        	
-        	snapshotMerge.failed(e.toString());
-    	}
-	}*/
+	        // commit the agency TXs first, so that we have orphaned data rather than inconsistent data on a commit failure
+	        for (AgencyTx tx : agencyTxs.values()) {
+	        	tx.commit();
+	        }
+	        gtx.commit();
+	        	        	        
+	        Logger.info("Imported GTFS file: " + agencyCount + " agencies; " + routeCount + " routes;" + stopCount + " stops; " +  stopTimeCount + " stopTimes; " + tripCount + " trips;" + shapePointCount + " shapePoints");
+        }
+        finally {
+        	for (AgencyTx tx : agencyTxs.values()) {
+        		tx.rollbackIfOpen();
+        	}
+        	gtx.rollbackIfOpen();
+        }
+	}
+
+	/** infer the ownership of stops based on what stops there */
+	private void inferAgencyStopOwnership() {
+		// stop_id, agency_id - these are the GTFS values
+		SortedMap<Tuple2<String, String>, Long> stopsByAgencyTripCount = Maps.newTreeMap();
+		
+		for (com.conveyal.gtfs.model.StopTime st : input.stop_times.values()) {
+			String stopId = st.stop_id;
+			String agencyId = input.trips.get(st.trip_id).route.agency.agency_id;
+			Tuple2<String, String> key = new Tuple2(stopId, agencyId);
+			
+			if (!stopsByAgencyTripCount.containsKey(key))
+				stopsByAgencyTripCount.put(key, 1L);
+			else
+				stopsByAgencyTripCount.put(key, stopsByAgencyTripCount.get(key) + 1);
+		}
+		
+		for (String stopId : input.stops.keySet()) {
+			Map<Tuple2<String, String>, Long> agenciesForStop = stopsByAgencyTripCount.subMap(new Tuple2(stopId, null), new Tuple2(stopId, Fun.HI));
+			
+			long max = 0;
+			String agencyId = null;
+			for (Entry<Tuple2<String, String>, Long> ent : agenciesForStop.entrySet()) {
+				if (ent.getValue() > max) {
+					max = ent.getValue();
+					agencyId = ent.getKey().b;
+				}
+			}
+			
+			if (agencyId != null) {
+				stopAgencyMap.put(stopId, agencyId);
+			}
+		}
+	}
 	
 	/**
 	 * Create a trip pattern from the given trip.
 	 * Neither the trippattern nor the trippatternstops are saved.
-	 *//*
-	public TripPattern createTripPatternFromTrip (com.conveyal.gtfs.model.Trip gtfsTrip) {
+	 */
+	public TripPattern createTripPatternFromTrip (com.conveyal.gtfs.model.Trip gtfsTrip, GlobalTx gtx) {
 		TripPattern patt = new TripPattern();
-		patt.route = routeIdMap.get(gtfsTrip.route.route_id);
-		if (gtfsTrip.shape_id != null)
-			patt.shape = TripShape.findById(shapeIdMap.get(gtfsTrip.shape_id));
+		patt.routeId = routeIdMap.get(gtfsTrip.route.route_id).id;
+		patt.agencyId = agencyIdMap.get(gtfsTrip.route.agency.agency_id).id;
+		if (gtfsTrip.shape_id != null) {
+			if (!shapes.containsKey(gtfsTrip.shape_id)) {
+				Logger.warn("Missing shape for shape ID %s, referenced by trip %s", gtfsTrip.shape_id, gtfsTrip.trip_id);
+			}
+			else {
+				patt.shape = (LineString) shapes.get(gtfsTrip.shape_id).clone();
+			}
+		}
 		
-		List<TripPatternStop> patternStops = new ArrayList<TripPatternStop>();
+		patt.patternStops = new ArrayList<TripPatternStop>();
 				
 		com.conveyal.gtfs.model.StopTime[] stopTimes =
 				input.stop_times.subMap(new Tuple2(gtfsTrip.trip_id, 0), new Tuple2(gtfsTrip.trip_id, Fun.HI)).values().toArray(new com.conveyal.gtfs.model.StopTime[0]);
@@ -389,82 +451,54 @@ public class ProcessGtfsSnapshotMerge extends Job {
 			patt.name = Messages.get("gtfs.named-route-pattern", gtfsTrip.route.route_long_name, input.stops.get(stopTimes[stopTimes.length - 1].stop_id).stop_name, stopTimes.length);
 		else
 			patt.name = Messages.get("gtfs.unnamed-route-pattern", input.stops.get(stopTimes[stopTimes.length - 1].stop_id).stop_name, stopTimes.length);
-
-		// stop sequences are one-based
-		int stopSequence = 1;
-		Stop previous = null;
-		
-		GeodeticCalculator gc = new GeodeticCalculator();
-		
+				
 		for (com.conveyal.gtfs.model.StopTime st : stopTimes) {
 			TripPatternStop tps = new TripPatternStop();
-			tps.stop = stopIdMap.get(st.stop_id);
+			Stop stop = stopIdMap.get(st.stop_id);
+			tps.stopId = stop.id;
 			
-			tps.stopSequence = stopSequence++;
-			tps.pattern = patt;
 			if (st.timepoint != Entity.INT_MISSING)
 				tps.timepoint = st.timepoint == 1;
 			
 			if (st.departure_time != Entity.INT_MISSING && st.arrival_time != Entity.INT_MISSING)
 				tps.defaultDwellTime = st.departure_time - st.arrival_time;
 			else
-				tps.defaultDwellTime = 0;	
-				
-			// travel times will be inferred momentarily
-			if (previous != null) {
-				gc.setStartingGeographicPoint((Double) previous.getLocation().get("lat"), (Double) previous.getLocation().get("lng"));
-				gc.setDestinationGeographicPoint((Double) tps.stop.getLocation().get("lat"), (Double) tps.stop.getLocation().get("lng"));
-				tps.defaultDistance = gc.getOrthodromicDistance();
-			}
+				tps.defaultDwellTime = 0;
 			
-			patternStops.add(tps);
-			previous = tps.stop;
+			patt.patternStops.add(tps);
 		}
+		
+		patt.calcShapeDistTraveled(gtx);
 		
 		// infer travel times
 		if (stopTimes.length >= 2) {
 			int startOfBlock = 0;
-			double totalDistance = 0;
 			// start at one because the first stop has no travel time
 			// but don't put nulls in the data
-			patternStops.get(0).defaultTravelTime = 0;
+			patt.patternStops.get(0).defaultTravelTime = 0;
 			for (int i = 1; i < stopTimes.length; i++) {
 				com.conveyal.gtfs.model.StopTime current = stopTimes[i];
-				
-				totalDistance += patternStops.get(i).defaultDistance;
 				
 				if (current.arrival_time != Entity.INT_MISSING) {
 					// interpolate times
 					
 					int timeSinceLastSpecifiedTime = current.arrival_time - stopTimes[startOfBlock].departure_time;
 					
+					double blockLength = patt.patternStops.get(i).shapeDistTraveled - patt.patternStops.get(startOfBlock).shapeDistTraveled;
+					
 					// go back over all of the interpolated stop times and interpolate them
 					for (int j = startOfBlock + 1; j <= i; j++) {
-						TripPatternStop tps = patternStops.get(j);
-						tps.defaultTravelTime = (int) Math.round(timeSinceLastSpecifiedTime * tps.defaultDistance / totalDistance);
+						TripPatternStop tps = patt.patternStops.get(j);
+						double distFromLastStop = patt.patternStops.get(j).shapeDistTraveled - patt.patternStops.get(j - 1).shapeDistTraveled;
+						tps.defaultTravelTime = (int) Math.round(timeSinceLastSpecifiedTime * distFromLastStop / blockLength);
 					}
 					
 					startOfBlock = i;
-					totalDistance = 0;
 				}
 			}
 		}
-		
-		patt.patternStops = patternStops;
-		
+				
 		return patt;
 	}
-	
-	 public static void encodeTripShapes() {
-	    	
-		List<TripPattern> tps = TripPattern.findAll();
-		
-		for(TripPattern tp : tps) {
-			if(tp.shape != null && tp.encodedShape == null) {
-				tp.encodedShape = tp.shape.generateEncoded();
-				tp.save();
-			}
-		}
-	}*/
 }
 

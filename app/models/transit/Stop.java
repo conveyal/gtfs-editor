@@ -87,7 +87,9 @@ public class Stop implements Serializable {
 
         this.id = new Tuple2(agency.id, stop.stop_id);
         
-        this.location  =  geometryFactory.createPoint(new Coordinate(stop.stop_lat,stop.stop_lon));
+        this.location  =  geometryFactory.createPoint(new Coordinate(stop.stop_lon,stop.stop_lat));
+        
+        this.agencyId = agency.id;
     }
 
     public Stop(Agency agency, String stopName,  String stopCode,  String stopUrl, String stopDesc, Double lat, Double lon) {

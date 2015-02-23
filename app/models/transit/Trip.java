@@ -52,7 +52,7 @@ public class Trip extends Model implements Serializable {
     
     public Trip () {}
   
-    
+    /** Create a trips entry from a GTFS trip. Does not import stop times. */
     public Trip(com.conveyal.gtfs.model.Trip trip, Route route, TripPattern pattern, ServiceCalendar serviceCalendar) {
     	gtfsTripId = trip.trip_id;
     	tripHeadsign = trip.trip_headsign;
@@ -62,6 +62,8 @@ public class Trip extends Model implements Serializable {
     	this.routeId = route.id;
     	this.patternId = pattern.id;
     	this.calendarId = serviceCalendar.id;
+    	this.agencyId = route.agencyId;
+    	this.stopTimes = new ArrayList<StopTime>();
     	
     	if (trip.wheelchair_accessible == 1)
     		this.wheelchairBoarding = AttributeAvailabilityType.AVAILABLE;

@@ -4,6 +4,7 @@ import play.*;
 import play.mvc.*;
 import play.data.binding.As;
 import play.db.jpa.JPA;
+import utils.JacksonSerializers;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -25,6 +26,8 @@ import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.deser.std.JacksonDeserializers;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.common.base.Function;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -54,7 +57,10 @@ public class Api {
     private static JsonFactory jf = new JsonFactory();
     
     static {
-    	mapper.addMixInAnnotations(Tuple2.class, Tuple2MixIn.class);
+    	SimpleModule mod = new SimpleModule();
+    	mod.addDeserializer(LineString.class, new JacksonSerializers.EncodedPolylineDeserializer());
+    	mod.addSerializer(LineString.class, new JacksonSerializers.EncodedPolylineSerializer());
+    	mapper.registerModule(mod);
     }
 
     public static String toJson(Object pojo, boolean prettyPrint)

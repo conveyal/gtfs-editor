@@ -25,8 +25,6 @@ public class TripPatternStop implements Serializable {
     @JsonDeserialize(using=JacksonSerializers.Tuple2Deserializer.class)
     public Tuple2<String, String> stopId;
 
-	public Double defaultDistance;
-
 	public int defaultTravelTime;
 	public int defaultDwellTime;
 	
@@ -37,6 +35,8 @@ public class TripPatternStop implements Serializable {
 	 */
 	public Boolean timepoint;
 
+	public Double shapeDistTraveled;
+
 	public TripPatternStop()
 	{
 
@@ -46,8 +46,6 @@ public class TripPatternStop implements Serializable {
 	{
 		this.stopId = stop.id;
 		this.defaultTravelTime = defaultTravelTime;
-
-		this.defaultDistance = 0.0;
 	}
 }
 
