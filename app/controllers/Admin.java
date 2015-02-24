@@ -75,7 +75,7 @@ public class Admin extends Controller {
 			return;
 		}
 		
-		Account acct = tx.accounts.get(username);
+		Account acct = tx.accounts.get(username).clone();
 		acct.email = email;
 		acct.active = active;
 		acct.admin = admin;
@@ -122,7 +122,7 @@ public class Admin extends Controller {
 			return;
 		}
 		
-		Account acct = tx.accounts.get(username);
+		Account acct = tx.accounts.get(username).clone();
 		acct.updatePassword(newPassword);
 		tx.accounts.put(acct.id, acct);
 		

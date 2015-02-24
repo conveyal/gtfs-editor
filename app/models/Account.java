@@ -39,6 +39,8 @@ public class Account extends Model implements Serializable {
     
 	public String agencyId;
     
+	private Account() {};
+	
     public Account(String username, String password, String email, Boolean admin, String agencyId)
     {
     	id = username;
@@ -94,5 +96,18 @@ public class Account extends Model implements Serializable {
 	/** Set a new password. Not called setPassword because then mapdb will rehas the password on re-read of the DB */
 	public void updatePassword (String newPassword) {
 		this.password = hash(newPassword);
+	}
+	
+	public Account clone () {
+		Account ret = new Account();
+		ret.username = this.username;
+		ret.id = this.id;
+		ret.active = this.active;
+		ret.agencyId = this.agencyId;
+		ret.lastLogin = this.lastLogin;
+		ret.password = this.password;
+		ret.passwordChangeToken = this.passwordChangeToken;
+		ret.email = this.email;
+		return ret;
 	}
 }

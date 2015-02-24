@@ -176,7 +176,7 @@ public class Application extends Controller {
 	public static void changePassword(String currentPassword, String newPassword)
 	{
 		GlobalTx tx = VersionedDataStore.getGlobalTx();
-		Account acct = tx.accounts.get(Security.connected());
+		Account acct = tx.accounts.get(Security.connected()).clone();
 		if (acct.changePassword(currentPassword, newPassword)) {
 			tx.accounts.put(acct.id, acct);
 			tx.commit();
