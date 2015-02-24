@@ -1,7 +1,8 @@
 package controllers;
  
+import datastore.VersionedDataStore;
+import datastore.GlobalTx;
 import models.*;
-import models.VersionedDataStore.GlobalTx;
  
 public class Security extends Secure.Security {
 	

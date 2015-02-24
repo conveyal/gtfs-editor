@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import models.Model;
-import models.VersionedDataStore.AgencyTx;
 
 import org.hibernate.annotations.Type;
 
@@ -16,6 +15,7 @@ import com.conveyal.gtfs.model.Frequency;
 import com.conveyal.gtfs.model.Service;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import datastore.AgencyTx;
 import play.Logger;
 
 

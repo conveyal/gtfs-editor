@@ -27,14 +27,15 @@ import org.joda.time.LocalDate;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
+import datastore.VersionedDataStore;
+import datastore.AgencyTx;
+import datastore.GlobalTx;
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
 import jobs.ProcessGisExport;
 import jobs.ProcessGtfsSnapshotExport;
 import jobs.ProcessGtfsSnapshotMerge;
 import models.*;
-import models.VersionedDataStore.AgencyTx;
-import models.VersionedDataStore.GlobalTx;
 import models.transit.Route;
 import models.transit.RouteType;
 import models.transit.ServiceCalendar;

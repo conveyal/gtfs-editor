@@ -43,9 +43,9 @@ import com.google.common.collect.Multimap;
 import com.mchange.v2.c3p0.impl.DbAuth;
 import com.vividsolutions.jts.geom.Coordinate;
 
-import models.VersionedDataStore;
-import models.VersionedDataStore.AgencyTx;
-import models.VersionedDataStore.GlobalTx;
+import datastore.VersionedDataStore;
+import datastore.AgencyTx;
+import datastore.GlobalTx;
 import models.transit.Agency;
 import models.transit.AttributeAvailabilityType;
 import models.transit.Route;

@@ -2,11 +2,11 @@ package controllers.api;
 
 import java.util.List;
 
-import models.VersionedDataStore;
-import models.VersionedDataStore.AgencyTx;
 import models.transit.Agency;
 import models.transit.ScheduleException;
 import controllers.Api;
+import datastore.VersionedDataStore;
+import datastore.AgencyTx;
 import play.mvc.Controller;
 
 public class ScheduleExceptionController extends Controller {

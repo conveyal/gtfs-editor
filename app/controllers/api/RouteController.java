@@ -5,12 +5,12 @@ import java.util.Set;
 import org.mapdb.Fun;
 import org.mapdb.Fun.Tuple2;
 
-import models.VersionedDataStore;
-import models.VersionedDataStore.AgencyTx;
-import models.VersionedDataStore.GlobalTx;
 import models.transit.Agency;
 import models.transit.Route;
 import controllers.Api;
+import datastore.VersionedDataStore;
+import datastore.AgencyTx;
+import datastore.GlobalTx;
 import play.mvc.Controller;
 
 public class RouteController extends Controller {

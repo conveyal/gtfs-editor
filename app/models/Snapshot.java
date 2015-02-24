@@ -7,7 +7,7 @@ import org.mapdb.Fun.Tuple2;
 
 /**
  * Represents a snapshot of an agency database.
- * @author matthewc
+ * @author mattwigway
  *
  */
 public class Snapshot implements Serializable {	

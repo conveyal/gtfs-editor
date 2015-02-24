@@ -2,8 +2,6 @@ package controllers.api;
 
 import java.util.List;
 
-import models.VersionedDataStore;
-import models.VersionedDataStore.AgencyTx;
 import models.transit.Agency;
 import models.transit.Route;
 import models.transit.ServiceCalendar;
@@ -12,6 +10,8 @@ import models.transit.Trip;
 import models.transit.TripPattern;
 import models.transit.TripPatternStop;
 import controllers.Api;
+import datastore.VersionedDataStore;
+import datastore.AgencyTx;
 import play.Logger;
 import play.mvc.Controller;
 

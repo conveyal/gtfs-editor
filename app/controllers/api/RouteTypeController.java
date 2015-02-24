@@ -1,9 +1,9 @@
 package controllers.api;
 
-import models.VersionedDataStore;
-import models.VersionedDataStore.GlobalTx;
 import models.transit.RouteType;
 import controllers.Api;
+import datastore.VersionedDataStore;
+import datastore.GlobalTx;
 import play.mvc.Controller;
 
 public class RouteTypeController extends Controller {

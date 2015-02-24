@@ -7,7 +7,6 @@ import java.net.URL;
 import java.util.List;
 
 import models.Model;
-import models.VersionedDataStore.GlobalTx;
 import models.transit.RouteType;
 
 import org.codehaus.jackson.annotate.JsonCreator;
@@ -18,6 +17,7 @@ import org.hibernate.annotations.Type;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.vividsolutions.jts.geom.MultiLineString;
 
+import datastore.GlobalTx;
 import play.Logger;
 
 public class Route extends Model implements Serializable {

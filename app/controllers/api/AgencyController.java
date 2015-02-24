@@ -2,13 +2,13 @@ package controllers.api;
 
 import java.util.List;
 
-import models.VersionedDataStore;
-import models.VersionedDataStore.GlobalTx;
 import models.transit.Agency;
 import controllers.Api;
 import controllers.Application;
 import controllers.Secure;
 import controllers.Security;
+import datastore.VersionedDataStore;
+import datastore.GlobalTx;
 import play.mvc.Before;
 import play.mvc.Controller;
 import play.mvc.With;

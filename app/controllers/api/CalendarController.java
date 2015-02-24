@@ -12,8 +12,6 @@ import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Sets;
 
-import models.VersionedDataStore;
-import models.VersionedDataStore.AgencyTx;
 import models.transit.Agency;
 import models.transit.ScheduleException;
 import models.transit.ServiceCalendar;
@@ -21,6 +19,8 @@ import models.transit.ServiceCalendar.ServiceCalendarForPattern;
 import models.transit.Trip;
 import models.transit.TripPattern;
 import controllers.Api;
+import datastore.VersionedDataStore;
+import datastore.AgencyTx;
 import play.mvc.Controller;
 
 public class CalendarController extends Controller {

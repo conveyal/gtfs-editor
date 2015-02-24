@@ -1,7 +1,9 @@
 import org.junit.*;
-
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
+
+import datastore.VersionedDataStore.AgencyTx;
+import datastore.VersionedDataStore.GlobalTx;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -13,8 +15,6 @@ import jersey.repackaged.com.google.common.collect.Lists;
 import static java.util.Collections.sort;
 import play.test.*;
 import models.*;
-import models.VersionedDataStore.AgencyTx;
-import models.VersionedDataStore.GlobalTx;
 import models.transit.Agency;
 import models.transit.Route;
 import models.transit.RouteType;

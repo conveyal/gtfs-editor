@@ -13,14 +13,14 @@ import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Sets;
 
-import models.VersionedDataStore;
-import models.VersionedDataStore.AgencyTx;
-import models.VersionedDataStore.GlobalTx;
 import models.transit.Agency;
 import models.transit.Stop;
 import models.transit.TripPattern;
 import models.transit.TripPatternStop;
 import controllers.Api;
+import datastore.VersionedDataStore;
+import datastore.AgencyTx;
+import datastore.GlobalTx;
 import play.data.binding.As;
 import play.mvc.Controller;
 import utils.JacksonSerializers;

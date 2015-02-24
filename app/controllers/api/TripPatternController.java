@@ -10,9 +10,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import models.VersionedDataStore;
-import models.VersionedDataStore.AgencyTx;
-import models.VersionedDataStore.GlobalTx;
 import models.transit.Route;
 import models.transit.StopTime;
 import models.transit.Trip;
@@ -36,6 +33,9 @@ import com.vividsolutions.jts.linearref.LinearLocation;
 import com.vividsolutions.jts.linearref.LocationIndexedLine;
 
 import controllers.Api;
+import datastore.VersionedDataStore;
+import datastore.AgencyTx;
+import datastore.GlobalTx;
 import play.Logger;
 import play.db.jpa.JPA;
 import play.mvc.Controller;

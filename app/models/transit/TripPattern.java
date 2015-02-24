@@ -15,9 +15,6 @@ import java.util.ListIterator;
 import java.util.Set;
 
 import models.Model;
-import models.VersionedDataStore;
-import models.VersionedDataStore.AgencyTx;
-import models.VersionedDataStore.GlobalTx;
 
 import org.geotools.ows.bindings.UpdateSequenceTypeBinding;
 import org.geotools.referencing.GeodeticCalculator;
@@ -38,6 +35,9 @@ import com.vividsolutions.jts.io.WKTWriter;
 import com.vividsolutions.jts.linearref.LinearLocation;
 import com.vividsolutions.jts.linearref.LocationIndexedLine;
 
+import datastore.VersionedDataStore;
+import datastore.AgencyTx;
+import datastore.GlobalTx;
 import play.Logger;
 import utils.GeoUtils;
 import utils.JacksonSerializers;

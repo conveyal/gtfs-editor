@@ -20,8 +20,9 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
 
+import datastore.VersionedDataStore;
+import datastore.GlobalTx;
 import models.*;
-import models.VersionedDataStore.GlobalTx;
 import models.transit.Agency;
 
 @With(Secure.class)

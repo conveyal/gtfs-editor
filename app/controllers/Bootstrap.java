@@ -18,9 +18,9 @@ import com.vividsolutions.jts.geom.Coordinate;
 
 import static java.util.Collections.sort;
 import controllers.Secure.Security;
+import datastore.VersionedDataStore;
+import datastore.GlobalTx;
 import models.Account;
-import models.VersionedDataStore;
-import models.VersionedDataStore.GlobalTx;
 import models.transit.Agency;
 import models.transit.GtfsRouteType;
 import models.transit.Route;

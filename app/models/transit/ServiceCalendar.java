@@ -19,8 +19,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 
+import datastore.AgencyTx;
 import models.Model;
-import models.VersionedDataStore.AgencyTx;
 
 public class ServiceCalendar extends Model implements Serializable {
 	public static final long serialVersionUID = 1;

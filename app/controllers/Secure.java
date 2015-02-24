@@ -5,9 +5,9 @@ import java.util.List;
 import java.util.Date;
 import java.util.UUID;
 
+import datastore.VersionedDataStore;
+import datastore.GlobalTx;
 import models.OAuthToken;
-import models.VersionedDataStore;
-import models.VersionedDataStore.GlobalTx;
 import models.transit.Agency;
 import play.Logger;
 import play.Play;
