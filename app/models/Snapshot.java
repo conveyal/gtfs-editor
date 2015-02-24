@@ -5,6 +5,11 @@ import java.io.Serializable;
 
 import org.mapdb.Fun.Tuple2;
 
+import utils.JacksonSerializers;
+
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 /**
  * Represents a snapshot of an agency database.
  * @author mattwigway
@@ -18,6 +23,8 @@ public class Snapshot implements Serializable {
 	public String name;
 	
 	/** ID: agency ID, version */
+    @JsonSerialize(using=JacksonSerializers.Tuple2IntSerializer.class)
+    @JsonDeserialize(using=JacksonSerializers.Tuple2IntDeserializer.class)
 	public Tuple2<String, Integer> id;
 	
 	/** The agency associated with this */

@@ -70,6 +70,49 @@ public class JacksonSerializers {
 		}
 	}
 	
+	public static class Tuple2IntSerializer extends StdScalarSerializer<Tuple2<String, Integer>> {
+		public Tuple2IntSerializer () {
+			super(Tuple2.class, true);
+		}
+		
+		@Override
+		public void serialize(Tuple2<String, Integer> t2, JsonGenerator jgen,
+				SerializerProvider arg2) throws IOException,
+				JsonProcessingException {
+			jgen.writeString(serialize(t2));
+		}
+		
+		public static String serialize (Tuple2<String, Integer> t2) {
+			try {
+				return encoder.encode(t2.a.getBytes("UTF-8")) + ":" + t2.b.toString();
+			} catch (UnsupportedEncodingException e) {
+				throw new UnsupportedOperationException(e);
+			}
+		}
+	}
+	
+	public static class Tuple2IntDeserializer extends StdScalarDeserializer<Tuple2<String, Integer>> {
+		public Tuple2IntDeserializer () {
+			super(Tuple2.class);
+		}
+		
+		@Override
+		public Tuple2<String, Integer> deserialize(JsonParser jp,
+				DeserializationContext arg1) throws IOException,
+				JsonProcessingException {			
+			return deserialize(jp.readValueAs(String.class));
+		}
+		
+		public static Tuple2<String, Integer> deserialize (String serialized) throws IOException {
+			String[] val = serialized.split(":");
+			if (val.length != 2) {
+				throw new IOException("Unable to parse value");
+			}
+			
+			return new Tuple2<String, Integer>(new String(encoder.decode(val[0]), "UTF-8"), Integer.parseInt(val[1]));
+		}
+	}
+	
 	/** serialize a JTS linestring as an encoded polyline */
 	public static class EncodedPolylineSerializer extends StdScalarSerializer<LineString> {
 		public EncodedPolylineSerializer() {

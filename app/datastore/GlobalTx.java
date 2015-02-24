@@ -9,6 +9,7 @@ import models.transit.Agency;
 import models.transit.RouteType;
 import models.transit.Stop;
 
+import org.mapdb.BTreeMap;
 import org.mapdb.Bind;
 import org.mapdb.Bind.MapWithModificationListener;
 import org.mapdb.DB;
@@ -17,22 +18,22 @@ import org.mapdb.Fun.Tuple2;
 
 /** a transaction in the global database */
 public class GlobalTx extends DatabaseTx {
-	public MapWithModificationListener<String, Agency> agencies;
+	public BTreeMap<String, Agency> agencies;
 	
 	/** Stops for all agencies, keys are agency_id, stop_id */
-	public MapWithModificationListener<Tuple2<String, String>, Stop> stops;
+	public BTreeMap<Tuple2<String, String>, Stop> stops;
 	
 	/** Accounts */
-	public MapWithModificationListener<String, Account> accounts;
+	public BTreeMap<String, Account> accounts;
 	
 	/** OAuth tokens */
-	public MapWithModificationListener<String, OAuthToken> tokens;
+	public BTreeMap<String, OAuthToken> tokens;
 	
 	/** Route types */
-	public MapWithModificationListener<String, RouteType> routeTypes;
+	public BTreeMap<String, RouteType> routeTypes;
 	
 	/** Snapshots of agency DBs, keyed by agency_id, version */
-	public MapWithModificationListener<Tuple2<String, Integer>, Snapshot> snapshots;
+	public BTreeMap<Tuple2<String, Integer>, Snapshot> snapshots;
 	
 	/**
 	 * Spatial index of stops. Set<Tuple2<Tuple2<Lon, Lat>, stop ID>>

@@ -12,6 +12,7 @@ import models.transit.Trip;
 import models.transit.TripPattern;
 
 import org.mapdb.Atomic;
+import org.mapdb.BTreeMap;
 import org.mapdb.Bind;
 import org.mapdb.Bind.MapWithModificationListener;
 import org.mapdb.DB;
@@ -26,11 +27,11 @@ public class AgencyTx extends DatabaseTx {
 	// primary datastores
 	// if you add another, you MUST update SnapshotTx.java
 	// if you don't, not only will your new data not be backed up, IT WILL BE THROWN AWAY WHEN YOU RESTORE! 
-	public MapWithModificationListener<String, TripPattern> tripPatterns;
-	public MapWithModificationListener<String, Route> routes;
-	public MapWithModificationListener<String, Trip> trips;
-	public MapWithModificationListener<String, ServiceCalendar> calendars;
-	public MapWithModificationListener<String, ScheduleException> exceptions;
+	public BTreeMap<String, TripPattern> tripPatterns;
+	public BTreeMap<String, Route> routes;
+	public BTreeMap<String, Trip> trips;
+	public BTreeMap<String, ServiceCalendar> calendars;
+	public BTreeMap<String, ScheduleException> exceptions;
 	// if you add anything here, see warning above!
 	
 	// secondary indices

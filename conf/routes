@@ -74,6 +74,9 @@ POST    /api/scheduleexception/?              api.ScheduleExceptionController.cr
 PUT     /api/scheduleexception/{id}           api.ScheduleExceptionController.updateScheduleException
 DELETE  /api/scheduleexception/{id}           api.ScheduleExceptionController.deleteScheduleException
 
+GET     /api/snapshot/?                       api.SnapshotController.getSnapshot
+GET     /api/snapshot/{id}                    api.SnapshotController.getSnapshot
+
 # Ignore favicon requests
 GET     /favicon.ico                            404
 
