@@ -49,32 +49,32 @@ public class SnapshotTx extends DatabaseTx {
 	
 	/** restore into an agency. this will OVERWRITE ALL DATA IN THE AGENCY's MASTER BRANCH. */
 	public void restore (String agencyId) {
-		DB target = VersionedDataStore.getRawAgencyTx(agencyId);
-		
-		// clear out the agency tx, including all indices, etc.
-		for (String obj : target.tx.getAll().keySet()) {
+		DB targetTx = VersionedDataStore.getRawAgencyTx(agencyId);
+
+		for (String obj : targetTx.getAll().keySet()) {
 			if (obj.equals("snapshotVersion"))
 				// except don't overwrite the counter that keeps track of snapshot versions
 				continue;
 			else
-				target.tx.delete(obj);
+				targetTx.delete(obj);
 		}
 		
-		int rcount = target.pump("routes", (BTreeMap) this.<String, Route>getMap("routes"));
+		int rcount = pump(targetTx, "routes", (BTreeMap) this.<String, Route>getMap("routes"));
 		Logger.info("Restored %s routes", rcount);
-		int ccount = target.pump("calendars", (BTreeMap) this.<String, Calendar>getMap("calendars"));
+		int ccount = pump(targetTx, "calendars", (BTreeMap) this.<String, Calendar>getMap("calendars"));
 		Logger.info("Restored %s schedule exceptions", ccount);
-		int ecount = target.pump("exceptions", (BTreeMap) this.<String, ScheduleException>getMap("exceptions"));
+		int ecount = pump(targetTx, "exceptions", (BTreeMap) this.<String, ScheduleException>getMap("exceptions"));
 		Logger.info("Restored %s schedule exceptions", ecount);
-		int pcount = target.pump("tripPatterns", (BTreeMap) this.<String, TripPattern>getMap("tripPatterns"));
+		int pcount = pump(targetTx, "tripPatterns", (BTreeMap) this.<String, TripPattern>getMap("tripPatterns"));
 		Logger.info("Restored %s patterns", pcount);
-		int tcount = target.pump("trips", (BTreeMap) this.<String, Trip>getMap("trips"));
+		int tcount = pump(targetTx, "trips", (BTreeMap) this.<String, Trip>getMap("trips"));
 		Logger.info("Restored %s trips", tcount);
 		
+		// make an agencytx to build indices
 		Logger.info("Rebuilding indices, this could take a little while . . . ");
-		target.buildSecondaryIndices();
+		AgencyTx atx = new AgencyTx(targetTx);
 		Logger.info("done.");
 		
-		target.commit();
+		atx.commit();
 	}
 }

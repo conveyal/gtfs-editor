@@ -26,12 +26,12 @@ public class DatabaseTx {
 	
 	/** Convenience function to get a map */
 	protected final <T1, T2> BTreeMap <T1, T2> getMap (String name) {
-		return getMapMaker(name)
+		return getMapMaker(tx, name)
 				.makeOrGet();
 	}
 	
 	/** get a map maker, that can then be further modified */
-	protected final BTreeMapMaker getMapMaker (String name) {
+	private static final BTreeMapMaker getMapMaker (DB tx, String name) {
 		return tx.createTreeMap(name)
 				// use java serialization to allow for schema upgrades
 				.valueSerializer(new ClassLoaderSerializer());
@@ -65,8 +65,13 @@ public class DatabaseTx {
 		if (!closed) rollback();
 	}
 	
-	/** efficiently create a BTreeMap from another BTreeMap */
+	/** efficiently copy a btreemap into this database */
 	protected <K, V> int pump(String mapName, BTreeMap<K, V> source) {
+		return pump(tx, mapName, source);
+	}
+	
+	/** efficiently create a BTreeMap in the specified database from another BTreeMap */
+	protected static <K, V> int pump (DB tx, String mapName, BTreeMap<K, V> source) {
 		if (source.size() == 0)
 			return 0;
 		
@@ -78,7 +83,7 @@ public class DatabaseTx {
 			}			
 		});
 		
-		return getMapMaker(mapName)
+		return getMapMaker(tx, mapName)
 			.pumpSource(valueTuples)
 			.make()
 			.size();

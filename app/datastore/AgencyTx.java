@@ -62,9 +62,6 @@ public class AgencyTx extends DatabaseTx {
 	/** snapshot versions. we use an atomic value so that they are (roughly) sequential, instead of using unordered UUIDs */
 	private Atomic.Integer snapshotVersion;
 	
-	/** have the indices been built yet? */
-	private boolean indicesBuilt = false;
-	
 	/**
 	 * Create an agency tx.
 	 */
@@ -166,8 +163,6 @@ public class AgencyTx extends DatabaseTx {
 				return trip.calendarId;
 			}
 		});
-		
-		indicesBuilt = true;
 	}
 
 	public Collection<Trip> getTripsByPattern(String patternId) {
