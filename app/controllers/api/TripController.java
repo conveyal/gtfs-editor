@@ -85,8 +85,11 @@ public class TripController extends Controller {
         	
         	tx.trips.put(trip.id, trip);
         	tx.commit();
+        	
+        	renderJSON(Api.toJson(trip, false));
         } catch (Exception e) {
             e.printStackTrace();
+            if (tx != null) tx.rollbackIfOpen();
             badRequest();
         }
     }
@@ -138,8 +141,10 @@ public class TripController extends Controller {
         	
         	tx.trips.put(trip.id, trip);
         	tx.commit();
+        	
+        	renderJSON(Api.toJson(trip, false));
         } catch (Exception e) {
-        	if (tx != null) tx.rollback();
+        	if (tx != null) tx.rollbackIfOpen();
             e.printStackTrace();
             badRequest();
         }
