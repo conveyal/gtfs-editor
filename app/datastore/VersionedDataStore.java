@@ -75,6 +75,14 @@ public class VersionedDataStore {
 	 * if it does not you will get a (hopefully) empty DB, unless you've done the same thing previously.
 	 */
 	public static AgencyTx getAgencyTx (String agencyId) {
+		return new AgencyTx(getRawAgencyTx(agencyId));
+	}
+	
+	/**
+	 * Get a raw MapDB transaction for the given database. Use at your own risk - doesn't properly handle indexing, etc.
+	 * Intended for use primarily with database restore
+	 */
+	static DB getRawAgencyTx (String agencyId) {
 		if (!agencyTxMakers.containsKey(agencyId)) {
 			synchronized (agencyTxMakers) {
 				if (!agencyTxMakers.containsKey(agencyId)) {
@@ -91,7 +99,7 @@ public class VersionedDataStore {
 			}
 		}
 		
-		return new AgencyTx(agencyTxMakers.get(agencyId).makeTx());
+		return agencyTxMakers.get(agencyId).makeTx();
 	}
 	
 	/** Take a snapshot of an agency database. The snapshot will be saved in the global database. */
@@ -105,6 +113,7 @@ public class VersionedDataStore {
 			version = tx.getNextSnapshotId();
 			
 			Logger.info("Creating snapshot %s for agency %s", agencyId, version);
+			long startTime = System.currentTimeMillis();
 			
 			ret = new Snapshot(agencyId, version);
 			
@@ -124,6 +133,9 @@ public class VersionedDataStore {
 			gtx.snapshots.put(ret.id, ret);
 			gtx.commit();
 			tx.commit();
+			
+			Logger.info("Saving snapshot took %.2f seconds", (System.currentTimeMillis() - startTime) / 1000D);
+			
 			return ret;
 		} catch (Exception e) {
 			// clean up
@@ -145,6 +157,21 @@ public class VersionedDataStore {
 		} finally {
 			tx.rollbackIfOpen();
 			gtx.rollbackIfOpen();
+		}
+	}
+	
+	/** restore a snapshot */
+	public static void restore (Snapshot s) {
+		DB snapshotDb = getSnapshotDb(s.agencyId, s.version);
+		try {
+			Logger.info("Restoring snapshot %s of agency %s", s.version, s.agencyId);
+			long startTime = System.currentTimeMillis();
+			SnapshotTx tx = new SnapshotTx(snapshotDb);
+			tx.restore(s.agencyId);
+			tx.commit();
+			Logger.info("Restored snapshot in %.2f seconds", (System.currentTimeMillis() - startTime) / 1000D);
+		} finally {
+			snapshotDb.close();
 		}
 	}
 	

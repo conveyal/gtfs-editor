@@ -23,6 +23,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
+import org.mapdb.Fun;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -447,6 +448,13 @@ public class Application extends Controller {
     
     public static void snapshot(String agencyId, String name) throws JsonMappingException, JsonGenerationException, IOException {
     	Snapshot s = VersionedDataStore.takeSnapshot(agencyId, name);
+    	renderJSON(Api.toJson(s, false));
+    }
+    
+    public static void restore(String agencyId, int version) throws JsonMappingException, JsonGenerationException, IOException {
+    	GlobalTx tx = VersionedDataStore.getGlobalTx();
+    	Snapshot s = tx.snapshots.get(new Fun.Tuple2(agencyId, version));
+    	VersionedDataStore.restore(s);
     	renderJSON(Api.toJson(s, false));
     }
 

@@ -29,25 +29,22 @@ var GtfsEditor = GtfsEditor || {};
       }
     });
 
-    patDf.done(function() {
-      var stops = new G.Stops();
-      var ids = _.uniq(_.pluck(pattern.get('patternStops'), 'stopId'));
-      var stopsDf = stops.fetch({
-        data: {
-          id: ids
-        }
-      });
+    var stops = new G.Stops();
+    var stopsDf = stops.fetch({
+      data: {
+        patternId: tripPattern
+      }
+    });
 
-      // when all those requests are done
-      $.when(stopsDf, calDf, tripDf).then(function() {
-        new G.TripPatternScheduleView({
-          el: '#timetable-container',
-          collection: trips,
-          stops: stops,
-          pattern: pattern,
-          calendar: cal
-        }).render();
-      });
+    // when all those requests are done
+    $.when(stopsDf, patDf, calDf, tripDf).then(function() {
+      new G.TripPatternScheduleView({
+        el: '#timetable-container',
+        collection: trips,
+        stops: stops,
+        pattern: pattern,
+        calendar: cal
+      }).render();
     });
   });
 })(GtfsEditor, jQuery, ich);
