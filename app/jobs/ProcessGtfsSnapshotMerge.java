@@ -1,6 +1,8 @@
 package jobs;
 
+import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.TObjectLongMap;
+import gnu.trove.map.hash.TIntObjectHashMap;
 import gnu.trove.map.hash.TObjectLongHashMap;
 
 import java.io.File;
@@ -51,7 +53,9 @@ import models.VersionedDataStore;
 import models.VersionedDataStore.AgencyTx;
 import models.VersionedDataStore.GlobalTx;
 import models.transit.Agency;
+import models.transit.GtfsRouteType;
 import models.transit.Route;
+import models.transit.RouteType;
 import models.transit.ServiceCalendar;
 import models.transit.Stop;
 import models.transit.StopTime;
@@ -72,9 +76,8 @@ public class ProcessGtfsSnapshotMerge implements Runnable {
 	private Map<String, Agency> agencyIdMap = new HashMap<String, Agency>();
 	private Map<String, Route> routeIdMap = new HashMap<String, Route>();
 	private Map<String, Stop> stopIdMap = new HashMap<String, Stop>();
-	private Map<Tuple2<String, String>, ServiceCalendar> serviceCalendarIdMap = new HashMap<Tuple2<String, String>, ServiceCalendar>();
-	Map<String, LineString> shapes = DBMaker.newTempHashMap();
-	private TObjectLongMap<String> shapeIdMap = new TObjectLongHashMap<String>();
+	private TIntObjectMap<String> routeTypeIdMap = new TIntObjectHashMap<String>();
+	private Map<String, LineString> shapes = DBMaker.newTempHashMap();
 	
 	/** Map from Stop ID to inferred agency ID */
 	private Map<String, String> stopAgencyMap = Maps.newHashMap();
@@ -170,7 +173,18 @@ public class ProcessGtfsSnapshotMerge implements Runnable {
 	    	
 	    	for (com.conveyal.gtfs.model.Route gtfsRoute : input.routes.values()) {
 	    		Agency agency = agencyIdMap.get(gtfsRoute.agency.agency_id);
-	    		Route route = new Route(gtfsRoute, agency);
+	    		
+	    		if (!routeTypeIdMap.containsKey(gtfsRoute.route_type)) {
+	    			RouteType rt = new RouteType();
+	    			rt.gtfsRouteType = GtfsRouteType.fromGtfs(gtfsRoute.route_type);
+	    			rt.hvtRouteType = rt.gtfsRouteType.toHvt();
+	    			rt.description = agencyIdMap.values().iterator().next().name + " " + rt.gtfsRouteType.toString();
+	    			gtx.routeTypes.put(rt.id, rt);
+	    			routeTypeIdMap.put(gtfsRoute.route_type, rt.id);
+	    		}
+	    		
+	    		Route route = new Route(gtfsRoute, agency, routeTypeIdMap.get(gtfsRoute.route_type));
+	    		
 	    		agencyTxs.get(agency.id).routes.put(route.id, route);
 	    		routeIdMap.put(gtfsRoute.route_id, route);
 	    		routeCount++;

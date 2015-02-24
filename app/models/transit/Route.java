@@ -7,6 +7,7 @@ import java.net.URL;
 import java.util.List;
 
 import models.Model;
+import models.VersionedDataStore.GlobalTx;
 import models.transit.RouteType;
 
 import org.codehaus.jackson.annotate.JsonCreator;
@@ -63,14 +64,13 @@ public class Route extends Model implements Serializable {
       return Route.findById(Long.parseLong(id));
     }*/
 
-    public Route(com.conveyal.gtfs.model.Route route,  Agency agency) {	
+    public Route(com.conveyal.gtfs.model.Route route,  Agency agency, String routeTypeId) {	
         this.gtfsRouteId = route.route_id;
         this.routeShortName = route.route_short_name;
         this.routeLongName = route.route_long_name;
         this.routeDesc = route.route_desc;
         
-        //this.routeTypeId = mapGtfsRouteType(route.route_type);
-        
+        this.routeTypeId = routeTypeId;
         
         this.routeUrl = route.route_url != null ? route.route_url.toString() : null;
         this.routeColor = route.route_color;
@@ -89,88 +89,7 @@ public class Route extends Model implements Serializable {
         this.agencyId = agency.id;
     }
 
-    // slightly tricky as we can't match 1:1 against GTFS and TDM route types -- we'll pick or create a type.
-    public static RouteType mapGtfsRouteType(Integer gtfsRouteType)
-    {
-    	GtfsRouteType type;
-    	
-    	switch(gtfsRouteType)
-    	{
-    		case 0:
-    			type = GtfsRouteType.TRAM;
-    			break;
-    		case 1:
-    			type = GtfsRouteType.SUBWAY;
-    			break;
-    		case 2:
-    			type = GtfsRouteType.RAIL;
-    			break;
-    		case 3:
-    			type = GtfsRouteType.BUS;
-    			break;
-    		case 4:
-    			type = GtfsRouteType.FERRY;
-    			break;
-    		case 5:
-    			type = GtfsRouteType.CABLECAR;
-    			break;
-    		case 6:
-    			type = GtfsRouteType.GONDOLA;
-    			break;
-    		case 7:
-    			type = GtfsRouteType.FUNICULAR;
-    			break;
-    		default:
-    			type = null;
-    			break;
-    		
-    	}
-    	
-    	if(type == null)
-			return null;
-		
-    	RouteType routeType = null;//RouteType.find("gtfsRouteType = ?", type).first();
-    	
-    	if(routeType != null)
-    		return routeType;
-    	
-    	else {
-    		
-    		routeType = new RouteType();
-    		routeType.gtfsRouteType = type;
-    		routeType.description = type.name();
-    		//routeType.save();
-    		
-    		return routeType;
-    	}    
-    }
-
-    public static Integer mapGtfsRouteType(RouteType routeType)
-    {
-    	switch(routeType.gtfsRouteType)
-    	{
-    		case TRAM:
-    			return 0;
-    		case SUBWAY:
-    			return 1;
-    		case RAIL:
-    			return 2;
-    		case BUS:
-    			return 3;
-    		case FERRY:
-    			return 4;
-    		case CABLECAR:
-    			return 5;
-    		case GONDOLA:
-    			return 6;
-    		case FUNICULAR:
-    			return 7;
-    		default:
-    			return null;
-
-    	}
-    }
-	public com.conveyal.gtfs.model.Route toGtfs(com.conveyal.gtfs.model.Agency a) {
+	public com.conveyal.gtfs.model.Route toGtfs(com.conveyal.gtfs.model.Agency a, GlobalTx tx) {
 		com.conveyal.gtfs.model.Route ret = new com.conveyal.gtfs.model.Route();
 		ret.agency = a;
 		ret.route_color = routeColor;
@@ -187,6 +106,8 @@ public class Route extends Model implements Serializable {
 			Logger.warn("Cannot coerce route URL {} to URL", routeUrl);
 			ret.route_url = null;
 		}
+		
+		ret.route_type = tx.routeTypes.get(this.routeTypeId).gtfsRouteType.toGtfs();
 		
 		return ret;
 	}

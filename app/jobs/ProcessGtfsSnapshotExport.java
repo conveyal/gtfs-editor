@@ -123,7 +123,7 @@ public class ProcessGtfsSnapshotExport implements Runnable {
 				
 				// write the routes
 				for (Route route : atx.routes.values()) {
-					com.conveyal.gtfs.model.Route gtfsRoute = route.toGtfs(gtfsAgency);
+					com.conveyal.gtfs.model.Route gtfsRoute = route.toGtfs(gtfsAgency, gtx);
 					feed.routes.put(route.getGtfsId(), gtfsRoute);
 					
 					// write the trips on those routes

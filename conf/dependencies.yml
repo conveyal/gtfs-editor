@@ -8,8 +8,8 @@ require:
     - gov.sandia.foundry -> gov-sandia-cognition-learning-core 3.3.2
     - com.google.guava -> guava 11.0.1
     - com.vividsolutions -> jts 1.12
-    - org.geotools -> gt-main 8.0-M4
-    - org.geotools -> gt-geojson 8.0-M4
+    - org.geotools -> gt-main 12.2
+    - org.geotools -> gt-geojson 12.2
     - org.codehaus.jackson -> jackson-core-asl 1.9.5
     - org.codehaus.jackson -> jackson-mapper-asl 1.9.5
     - org.opentripplanner -> otp 1.0.0-SNAPSHOT
