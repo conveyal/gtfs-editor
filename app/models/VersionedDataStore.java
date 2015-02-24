@@ -91,6 +91,56 @@ public class VersionedDataStore {
 		return new AgencyTx(agencyTxMakers.get(agencyId).makeTx());
 	}
 	
+	/** Take a snapshot of an agency database. The snapshot will be saved in the global database. */
+	public static Snapshot takeSnapshot (String agencyId, String name) {
+		AgencyTx tx = getAgencyTx(agencyId);
+		GlobalTx gtx = getGlobalTx();
+		try {
+			int version = tx.getNextSnapshotId();
+			Snapshot ret = new Snapshot(agencyId, version);
+			
+			if (gtx.snapshots.containsKey(ret.id))
+				throw new IllegalStateException("Duplicate snapshot IDs");
+
+			ret.snapshotTime = System.currentTimeMillis();
+			ret.name = name;
+			
+			DB snapshot = getSnapshotDb(agencyId, version);
+			
+			tx.snapshot(snapshot);
+			// for good measure
+			snapshot.commit();
+			snapshot.close();
+			
+			gtx.snapshots.put(ret.id, ret);
+			gtx.commit();
+			return ret;
+		} finally {
+			tx.rollback();
+			gtx.rollback();
+		}
+	}
+	
+	/** get the directory in which to store a snapshot */
+	public static DB getSnapshotDb (String agencyId, int version) {
+		File agencyDir = new File(dataDirectory, agencyId);
+		File snapshotsDir = new File(agencyDir, "snapshots");
+		File thisSnapshotDir = new File(snapshotsDir, "" + version);
+		thisSnapshotDir.mkdirs();
+		File snapshotFile = new File(thisSnapshotDir, "snapshot_" + version + ".db");
+		
+		// we don't use transactions for snapshots - makes them faster
+		// and smaller.
+		// at the end everything gets committed and flushed to disk, so this thread
+		// will not complete until everything is done.
+		// also, we compress the snapshot databases
+		return DBMaker.newFileDB(snapshotFile)
+		.snapshotEnable()
+		.transactionDisable()
+		.compressionEnable()
+		.make();
+	}
+	
 	/** Convenience function to check if an agency exists */
 	public static boolean agencyExists (String agencyId) {
 		GlobalTx tx = getGlobalTx();
@@ -100,7 +150,7 @@ public class VersionedDataStore {
 	}
 	
 	/** A wrapped transaction, so the database just looks like a POJO */
-	public static abstract class DatabaseTx {
+	public static class DatabaseTx {
 		/** the database (transaction). subclasses must initialize. */
 		protected final DB tx;
 		
@@ -167,6 +217,9 @@ public class VersionedDataStore {
 		/** Route types */
 		public MapWithModificationListener<String, RouteType> routeTypes;
 		
+		/** Snapshots of agency DBs, keyed by agency_id, version */
+		public MapWithModificationListener<Tuple2<String, Integer>, Snapshot> snapshots;
+		
 		/**
 		 * Spatial index of stops. Set<Tuple2<Tuple2<Lon, Lat>, stop ID>>
 		 * This is not a true spatial index, but should be sufficiently efficient for our purposes.
@@ -182,6 +235,7 @@ public class VersionedDataStore {
 			accounts = getMap("accounts");
 			tokens = getMap("tokens");
 			routeTypes = getMap("routeTypes");
+			snapshots = getMap("snapshots");
 			
 			// secondary indices
 			stopsGix = getSet("stopsGix");
@@ -231,6 +285,9 @@ public class VersionedDataStore {
 		
 		/** number of trips on each calendar */
 		public ConcurrentMap<String, Long> tripCountByCalendar;
+		
+		/** snapshot versions. we use an atomic value so that they are (roughly) sequential, instead of using unordered UUIDs */
+		private Atomic.Integer snapshotVersion;
 		
 		public AgencyTx (DB tx) {
 			super(tx);
@@ -325,6 +382,8 @@ public class VersionedDataStore {
 					return trip.calendarId;
 				}
 			});
+			
+			snapshotVersion = tx.getAtomicInteger("snapshotVersion");
 		}
 
 		public Collection<Trip> getTripsByPattern(String patternId) {
@@ -376,6 +435,34 @@ public class VersionedDataStore {
 					return trips.get(input.b);
 				}	
 			});
+		}
+		
+		/** return the version number of the next snapshot */
+		public int getNextSnapshotId () {
+			return snapshotVersion.incrementAndGet();
+		}
+		
+		/** Snapshot this database into another one */
+		public void snapshot(DB db) {
+			if (db.getAll().size() != 0)
+				throw new IllegalStateException("Cannot snapshot into non-empty db");
+				
+			DatabaseTx tx = new DatabaseTx(db);
+			MapWithModificationListener<String, TripPattern> tripPatterns = tx.getMap("tripPatterns");
+			MapWithModificationListener<String, Route> routes = tx.getMap("routes");
+			MapWithModificationListener<String, Trip> trips = tx.getMap("trips");
+			MapWithModificationListener<String, ServiceCalendar> calendars = tx.getMap("calendars");
+			MapWithModificationListener<String, ScheduleException> exceptions = tx.getMap("exceptions");
+			
+			// note that we don't save indices
+			tripPatterns.putAll(this.tripPatterns);
+			routes.putAll(this.routes);
+			trips.putAll(this.trips);
+			calendars.putAll(this.calendars);
+			exceptions.putAll(this.exceptions);
+			// force a commit/flush. also ensure that the finalizer doesn't roll this back.
+			// generally the db we're snapshotting to is not transactional.
+			tx.commit();
 		}
 	}
 }

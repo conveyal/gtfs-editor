@@ -24,6 +24,9 @@ import org.apache.commons.lang.ArrayUtils;
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
 
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
 import jobs.ProcessGisExport;
@@ -439,6 +442,11 @@ public class Application extends Controller {
 	    		importGtfs();
 			}
     	}    	
+    }
+    
+    public static void snapshot(String agencyId, String name) throws JsonMappingException, JsonGenerationException, IOException {
+    	Snapshot s = VersionedDataStore.takeSnapshot(agencyId, name);
+    	renderJSON(Api.toJson(s, false));
     }
 
     /** schedule exceptions page */
