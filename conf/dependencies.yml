@@ -14,6 +14,7 @@ require:
     - org.codehaus.jackson -> jackson-mapper-asl 1.9.5
     - org.opentripplanner -> otp 1.0.0-SNAPSHOT
     - net.sf.opencsv -> opencsv 2.0
+    - org.mapdb -> mapdb 1.0.7
     
     
 repositories:
