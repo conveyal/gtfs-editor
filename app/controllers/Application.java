@@ -446,18 +446,11 @@ public class Application extends Controller {
     	}    	
     }
     
-    public static void snapshot(String agencyId, String name) throws JsonMappingException, JsonGenerationException, IOException {
-    	Snapshot s = VersionedDataStore.takeSnapshot(agencyId, name);
-    	renderJSON(Api.toJson(s, false));
+    /** snapshots page */
+    public static void snapshots() {
+    	render();
     }
     
-    public static void restore(String agencyId, int version) throws JsonMappingException, JsonGenerationException, IOException {
-    	GlobalTx tx = VersionedDataStore.getGlobalTx();
-    	Snapshot s = tx.snapshots.get(new Fun.Tuple2(agencyId, version));
-    	VersionedDataStore.restore(s);
-    	renderJSON(Api.toJson(s, false));
-    }
-
     /** schedule exceptions page */
     public static void exceptions () {
     	render();

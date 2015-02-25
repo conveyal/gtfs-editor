@@ -15,7 +15,12 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
  * @author mattwigway
  *
  */
-public class Snapshot implements Serializable {	
+public class Snapshot implements Serializable {
+	public static final long serialVersionUID = -2450165077572197392L;
+	
+	/** Is this snapshot the current snapshot - the most recently created or restored (i.e. the most current view of what's in master */
+	public boolean current;
+	
 	/** The version of this snapshot */
 	public int version;
 	
@@ -33,9 +38,28 @@ public class Snapshot implements Serializable {
 	/** the date/time this snapshot was taken (millis since epoch) */
 	public long snapshotTime;
 	
+	/** Used for Jackson deserialization */
+	public Snapshot () {}
+	
 	public Snapshot (String agencyId, int version) {
 		this.agencyId = agencyId;
 		this.version = version;
+		this.computeId();
+	}
+	
+	/** create an ID for this snapshot based on agency ID and version */
+	public void computeId () {
 		this.id = new Tuple2(agencyId, version);
+	}
+	
+	public Snapshot clone () {
+		Snapshot s = new Snapshot();
+		s.current = this.current;
+		s.version = version;
+		s.name = name;
+		s.id = id;
+		s.agencyId = agencyId;
+		s.snapshotTime = snapshotTime;
+		return s;
 	}
 }

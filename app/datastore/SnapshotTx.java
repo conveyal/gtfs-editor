@@ -77,4 +77,10 @@ public class SnapshotTx extends DatabaseTx {
 		
 		atx.commit();
 	}
+	
+	/** close the underlying data store */
+	public void close () {
+		tx.close();
+		closed = true;
+	}
 }

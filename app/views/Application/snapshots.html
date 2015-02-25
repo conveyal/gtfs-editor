@@ -1,0 +1,70 @@
+#{extends 'main.html' /}
+#{set title:'GTFS Editor | Snapshots' /}
+
+#{set 'styles'}
+#{stylesheet 'main.css' /}
+#{/set}
+
+#{set 'scripts'}
+#{script 'lib/moment.js' /}
+#{script 'lib/bootstrap-datepicker.js' /}
+#{script 'models.js' /}
+#{script 'pages/snapshots.js' /}
+#{/set}
+
+
+<div class="row-fluid">
+  <div class="span9">
+    <div id="snapshots"></div>
+  </div>
+</div>
+
+<!-- the list of snapshots -->
+<script id="snapshot-list-tpl" type="text/html">
+  <div id="modal-container"></div>
+
+  <h2>&{'snapshot.for'} {{ agencyName }}</h2>
+  <p>
+    <button class="btn btn-primary btn-small" id="new-snapshot"><i class="icon-camera icon-white"></i>&nbsp;&nbsp;&{'snapshot.new'}</button>
+  </p>
+  <table class="table table-striped">
+    <thead>
+      <th>&{'snapshot.name'}</th><th>&{'snapshot.version'}</th><th>&{'snapshot.date'}</th><th>&{'snapshot.current'}<th>&{'snapshot.restore'}</th>
+    </thead>
+    <tbody>
+      {{#snapshots}}
+        <tr>
+          <td>{{name}}</td>
+          <td>{{version}}</td>
+          <td>{{renderedDate}}</td>
+          <td>{{#current}}<i class="icon-ok"></i>{{/current}}</td>
+          <td><button class="btn btn-link restore-snapshot" data-snapshot="{{id}}"><i class="icon-refresh"></i>&nbsp;&{'snapshot.restore'}</button></td>
+        </tr>
+      {{/snapshots}}
+    </tbody>
+  </table>
+</script>
+
+<!-- the new snapshot dialog. used both for taking a snapshot and before restoring a snapshot -->
+<script id="snapshot-new-tpl" type="text/html">
+  <div class="modal hide fade">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+      <h3>&{'snapshot.take-snapshot'}</h3>
+    </div>
+    <div class="modal-body">
+      <div class="form-inline">
+        <label for="snapshot-name">&{'snapshot.name'}</label>
+        <input type="text" id="snapshot-name" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      {{#restore}}
+        <button class="btn btn-primary snapshot" id="take-restore" data-snapshot="{{restore}}">&{'snapshot.take-and-restore'}</button>
+      {{/restore}}
+      {{^restore}}
+        <button class="btn btn-primary snapshot" id="take-snapshot">&{'snapshot.take'}</button>
+      {{/restore}}
+    </div>
+  </div>
+</script>

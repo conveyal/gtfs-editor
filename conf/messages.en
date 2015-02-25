@@ -134,6 +134,14 @@ exception.custom-schedule=run the following calendars
 exception.new=New exception
 exception.enter-date=Please enter at least one date for this exception
 
+# /snapshots
+snapshot.version=Version
+snapshot.for=Snapshots for
+snapshot.new=Take snapshot
+snapshot.restore=Restore snapshot
+snapshot.name=Name
+snapshot.date=Snapshot date
+
 # /index
 
 

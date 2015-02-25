@@ -550,4 +550,27 @@ G.Trip = Backbone.Model.extend({
     url: G.config.baseUrl + 'api/scheduleexception/'
   });
 
+  G.Snapshot = Backbone.Model.extend({
+    defaults: {
+      name: null,
+      id: null,
+      agencyId: null,
+      snapshotTime: null,
+      version: null
+    },
+
+    restore: function () {
+      return $.ajax({
+        url: G.config.baseUrl + 'api/snapshot/' + this.id + '/restore',
+        method: 'POST'
+      });
+    }
+  });
+
+  G.Snapshots = Backbone.Collection.extend({
+    model: G.Snapshot,
+    url: G.config.baseUrl + 'api/snapshot',
+    // sort backwards, newest first
+    comparator: function (snap) { return -snap.get('version') }
+  });
 })(GtfsEditor, jQuery);

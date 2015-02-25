@@ -10,6 +10,7 @@ GET     /route/{id}/.*                        	Application.route
 GET     /route/	                        		Application.route
 GET     /route/.*                        		Application.route
 GET     /get_token								Secure.get_token
+GET     /snapshots                              Application.snapshots
 
 GET     /export/gtfs                      		Application.exportGtfs
 GET     /export/creategtfs                      Application.createGtfs
@@ -76,6 +77,8 @@ DELETE  /api/scheduleexception/{id}           api.ScheduleExceptionController.de
 
 GET     /api/snapshot/?                       api.SnapshotController.getSnapshot
 GET     /api/snapshot/{id}                    api.SnapshotController.getSnapshot
+POST    /api/snapshot                         api.snapshotController.createSnapshot
+POST    /api/snapshot/{id}/restore            api.snapshotController.restoreSnapshot
 
 # Ignore favicon requests
 GET     /favicon.ico                            404

@@ -123,7 +123,7 @@ public class VersionedDataStore {
 			ret.snapshotTime = System.currentTimeMillis();
 			ret.name = name;
 			
-			snapshot = getSnapshotDb(agencyId, version);
+			snapshot = getSnapshotDb(agencyId, version, false);
 			
 			new SnapshotTx(snapshot).make(tx);
 			// for good measure
@@ -162,21 +162,19 @@ public class VersionedDataStore {
 	
 	/** restore a snapshot */
 	public static void restore (Snapshot s) {
-		DB snapshotDb = getSnapshotDb(s.agencyId, s.version);
+		SnapshotTx tx = new SnapshotTx(getSnapshotDb(s.agencyId, s.version, true));
 		try {
 			Logger.info("Restoring snapshot %s of agency %s", s.version, s.agencyId);
 			long startTime = System.currentTimeMillis();
-			SnapshotTx tx = new SnapshotTx(snapshotDb);
 			tx.restore(s.agencyId);
-			tx.commit();
 			Logger.info("Restored snapshot in %.2f seconds", (System.currentTimeMillis() - startTime) / 1000D);
 		} finally {
-			snapshotDb.close();
+			tx.close();
 		}
 	}
 	
 	/** get the directory in which to store a snapshot */
-	public static DB getSnapshotDb (String agencyId, int version) {
+	public static DB getSnapshotDb (String agencyId, int version, boolean readOnly) {
 		File thisSnapshotDir = getSnapshotDir(agencyId, version);
 		thisSnapshotDir.mkdirs();
 		File snapshotFile = new File(thisSnapshotDir, "snapshot_" + version + ".db");
@@ -186,11 +184,13 @@ public class VersionedDataStore {
 		// at the end everything gets committed and flushed to disk, so this thread
 		// will not complete until everything is done.
 		// also, we compress the snapshot databases
-		return DBMaker.newFileDB(snapshotFile)
-		.snapshotEnable()
-		.transactionDisable()
-		.compressionEnable()
-		.make();
+		DBMaker maker = DBMaker.newFileDB(snapshotFile)
+				.compressionEnable();
+				
+		if (readOnly)
+			maker.readOnly();
+		
+		return maker.make();
 	}
 	
 	/** get the directory in which a snapshot is stored */
@@ -205,7 +205,7 @@ public class VersionedDataStore {
 		GlobalTx tx = getGlobalTx();
 		boolean exists = tx.agencies.containsKey(agencyId);
 		tx.rollback();
-		return exists;		
+		return exists;
 	}
 	
 	/** A wrapped transaction, so the database just looks like a POJO */
