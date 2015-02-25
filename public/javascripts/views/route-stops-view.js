@@ -635,7 +635,7 @@ var GtfsEditor = GtfsEditor || {};
             G.Utils.success('Stop successfully deleted');
           },
           error: function() {
-            G.Utils.error('Failed to delete stop');
+            G.Utils.error('Failed to delete stop. Stops must be used by no trip patterns.');
           }
         });
       }
