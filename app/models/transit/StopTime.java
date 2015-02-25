@@ -36,17 +36,15 @@ public class StopTime implements Serializable {
     public StopTimePickupDropOffType dropOffType;
     
     public double shapeDistTraveled;
-    
-    @JsonSerialize(using=JacksonSerializers.Tuple2Serializer.class)
-    @JsonDeserialize(using=JacksonSerializers.Tuple2Deserializer.class)
-    public Tuple2<String, String> stopId;
+
+    public String stopId;
     
     public StopTime()
     {
     	
     }
     
-    public StopTime(com.conveyal.gtfs.model.StopTime stopTime, Tuple2<String, String> stopId) {
+    public StopTime(com.conveyal.gtfs.model.StopTime stopTime, String stopId) {
         
     	this.arrivalTime = stopTime.arrival_time;
     	this.departureTime = stopTime.departure_time;

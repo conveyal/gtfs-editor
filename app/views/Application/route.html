@@ -465,23 +465,7 @@
 <!-- The Stop sidebar contents ie. stop marker toggles -->
 <script id="stops-sidebar-tpl" type="text/html">
 
-    <div class="stop-filter-details well">
-      <legend>&{'route.filter-stops'}</legend>
-      <label class="radio">
-        <input type="radio" name="stopFilterRadio" id="optionsRadios1" value="filtered" checked>&{'route.filter-stops-by-agency'} {{ agency.name }}
-      </label>
-      <label class="radio">
-        <input type="radio" name="stopFilterRadio" id="optionsRadios2" value="all">&{'route.filter-all-stops'}
-      </label>
-      <p class="text-warning" id="stops-hidden-message">&{'route.filter-hidden-stops'}</p>
-    </div>
-
-   <!-- <div class="stop-import-details well">
-      <legend>&{'route.stops-import'}</legend>
-
-        <button type="button" class="btn disabled stop-delete-btn">&{'route.stops-upload-data'}</button>
-    </div> -->
-
+    <p class="text-warning" id="stops-hidden-message">&{'route.filter-hidden-stops'}</p>
 
     <div class="stop-merge-details well">
       <legend>&{'route.stops-manage'}</legend>
@@ -595,7 +579,6 @@
 <script id="stop-form-tpl" type="text/html">
   <form class="stop-details-form form-inline">
     <legend>&{'route.stops-stop-details'}</legend>
-    <p><label><strong>&{'route.route-info-tpl.agency'}</strong>: {{agency.name}}</<label></p>
 
     <p>
       <input type="hidden" name="id" value="{{id}}">
@@ -689,7 +672,6 @@
 
 <!-- The stop details view appears in the map popup. -->
 <script id="stop-view-tpl" type="text/html">
-    <label><strong>&{'route.route-info-tpl.agency'}</strong>: {{agency.name}}</label>
     <label><strong>&{'route.stops-stop-name'}</strong>: {{stopName}}</label>
     <label><strong>&{'route.stops-stop-description'}</strong>: {{stopDesc}}</label>
 
@@ -715,7 +697,6 @@
     <input type="hidden" name="id" value="{{id}}" />
     <input type="hidden" name="agencyId" value="{{agencyId}}" />
     <p>
-      <label><strong>&{'route.route-info-tpl.agency'}</strong>: {{agency.name}}</label>
       <label><strong>&{'route.stops-stop-name'}</strong>: {{stopName}}</label>
     </p>
     <p>
@@ -752,7 +733,6 @@
           <input type="hidden" name="stopSequence" value="{{stopSequence}}}" />
 
           <p>
-            <label><strong>&{'route.route-info-tpl.agency'}</strong>: {{agency.name}}</label>
             <label><strong>&{'route.stops-stop-name'}</strong>: {{stop.stopName}}</label>
           </p>
           <p>
@@ -923,17 +903,7 @@
 <!-- The sidebar contents for the Trip Patterns step (in progress) -->
 <script id="trippatterns-sidebar-tpl" type="text/html">
   <div>
-
-    <div class="stop-filter-details well">
-      <legend>&{'route.filter-stops'}</legend>
-      <label class="radio">
-        <input type="radio" name="stopFilterRadio" id="optionsRadios1" value="filtered" checked>&{'route.filter-stops-by-agency'} {{agency.name}}
-      </label>
-      <label class="radio">
-        <input type="radio" name="stopFilterRadio" id="optionsRadios2" value="all">&{'route.filter-all-stops'}
-      </label>
-      <p class="text-warning" id="stops-hidden-message">&{'route.filter-hidden-stops'}</p>
-    </div>
+    <p class="text-warning" id="stops-hidden-message">&{'route.filter-hidden-stops'}</p>
 
     <div class="trippattern-details well">
 

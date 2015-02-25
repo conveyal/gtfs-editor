@@ -8,6 +8,7 @@ import java.util.concurrent.ConcurrentMap;
 import models.transit.Route;
 import models.transit.ScheduleException;
 import models.transit.ServiceCalendar;
+import models.transit.Stop;
 import models.transit.Trip;
 import models.transit.TripPattern;
 
@@ -17,6 +18,7 @@ import org.mapdb.Bind;
 import org.mapdb.Bind.MapWithModificationListener;
 import org.mapdb.DB;
 import org.mapdb.Fun;
+import org.mapdb.Fun.Function2;
 import org.mapdb.Fun.Tuple2;
 
 import com.google.common.base.Function;
@@ -32,6 +34,7 @@ public class AgencyTx extends DatabaseTx {
 	public BTreeMap<String, Trip> trips;
 	public BTreeMap<String, ServiceCalendar> calendars;
 	public BTreeMap<String, ScheduleException> exceptions;
+	public BTreeMap<String, Stop> stops;
 	// if you add anything here, see warning above!
 	
 	// secondary indices
@@ -54,11 +57,21 @@ public class AgencyTx extends DatabaseTx {
 	/** <<patternId, calendarId>, trip id> */
 	public NavigableSet<Tuple2<Tuple2<String, String>, String>> tripsByPatternAndCalendar;
 	
+	/** number of trip patterns using each stop */
+	public NavigableSet<Tuple2<String, String>> tripPatternsByStop;
+	
 	/** number of trips on each tuple2<patternId, calendar id> */
 	public ConcurrentMap<Tuple2<String, String>, Long> tripCountByPatternAndCalendar;
 	
 	/** number of trips on each calendar */
 	public ConcurrentMap<String, Long> tripCountByCalendar;
+	
+	/**
+	 * Spatial index of stops. Set<Tuple2<Tuple2<Lon, Lat>, stop ID>>
+	 * This is not a true spatial index, but should be sufficiently efficient for our purposes.
+	 * Jan Kotek describes this approach here, albeit in Czech: https://groups.google.com/forum/#!msg/mapdb/ADgSgnXzkk8/Q8J9rWAWXyMJ
+	 */
+	public NavigableSet<Tuple2<Tuple2<Double, Double>, String>> stopsGix;
 	
 	/** snapshot versions. we use an atomic value so that they are (roughly) sequential, instead of using unordered UUIDs */
 	private Atomic.Integer snapshotVersion;
@@ -75,7 +88,7 @@ public class AgencyTx extends DatabaseTx {
 		calendars = getMap("calendars");
 		exceptions = getMap("exceptions");
 		snapshotVersion = tx.getAtomicInteger("snapshotVersion");
-		
+		stops = getMap("stops");
 		buildSecondaryIndices();
 	}
 	
@@ -146,6 +159,20 @@ public class AgencyTx extends DatabaseTx {
 			}
 		});
 		
+		tripPatternsByStop = getSet("tripPatternsByStop");
+		Bind.secondaryKeys(tripPatterns, tripPatternsByStop, new Fun.Function2<String[], String, TripPattern>() {
+			@Override
+			public String[] run(String key, TripPattern tp) {
+				String[] stops = new String[tp.patternStops.size()];
+				
+				for (int i = 0; i < stops.length; i++) {
+					stops[i] = tp.patternStops.get(i).stopId;
+				}
+				
+				return stops;
+			}
+		});
+		
 		tripCountByPatternAndCalendar = getMap("tripCountByPatternAndCalendar");
 		Bind.histogram(trips, tripCountByPatternAndCalendar, new Fun.Function2<Tuple2<String, String>, String, Trip>() {
 
@@ -163,6 +190,18 @@ public class AgencyTx extends DatabaseTx {
 				// TODO Auto-generated method stub
 				return trip.calendarId;
 			}
+		});
+		
+		// "spatial index"
+		stopsGix = getSet("stopsGix");
+		Bind.secondaryKeys(stops, stopsGix, new Function2<Tuple2<Double, Double>[], String, Stop> () {
+
+			@Override
+			public Tuple2<Double, Double>[] run(
+					String stopId, Stop stop) {
+				return new Tuple2[] { new Tuple2(stop.location.getX(), stop.location.getY()) }; 
+			}
+							
 		});
 	}
 
@@ -215,6 +254,11 @@ public class AgencyTx extends DatabaseTx {
 				return trips.get(input.b);
 			}	
 		});
+	}
+	
+	/** how many trip patterns stop at the given stop */
+	public int countTripPatternsAtStop (String stopId) {
+		return tripPatternsByStop.subSet(new Tuple2(stopId, null), new Tuple2(stopId, Fun.HI)).size();
 	}
 	
 	/** return the version number of the next snapshot */

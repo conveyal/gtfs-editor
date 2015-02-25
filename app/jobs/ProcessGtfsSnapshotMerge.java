@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeMap;
 
 import javax.persistence.EntityManager;
@@ -35,9 +36,12 @@ import com.conveyal.gtfs.model.CalendarDate;
 import com.conveyal.gtfs.model.Entity;
 import com.conveyal.gtfs.model.Service;
 import com.conveyal.gtfs.model.Shape;
+import com.google.common.base.Function;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 import com.google.common.primitives.Ints;
 import com.mchange.v2.c3p0.impl.DbAuth;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -73,14 +77,13 @@ import org.mapdb.Fun.Tuple2;
 
 
 public class ProcessGtfsSnapshotMerge implements Runnable {
+	/** map from GTFS agency IDs to Agencies */
 	private Map<String, Agency> agencyIdMap = new HashMap<String, Agency>();
 	private Map<String, Route> routeIdMap = new HashMap<String, Route>();
-	private Map<String, Stop> stopIdMap = new HashMap<String, Stop>();
+	/** map from (gtfs stop ID, database agency ID) -> stop */
+	private Map<Tuple2<String, String>, Stop> stopIdMap = Maps.newHashMap();
 	private TIntObjectMap<String> routeTypeIdMap = new TIntObjectHashMap<String>();
 	private Map<String, LineString> shapes = DBMaker.newTempHashMap();
-	
-	/** Map from Stop ID to inferred agency ID */
-	private Map<String, String> stopAgencyMap = Maps.newHashMap();
 	
 	private GTFSFeed input;	
 	private File gtfsFile;
@@ -116,57 +119,62 @@ public class ProcessGtfsSnapshotMerge implements Runnable {
         		// to the agency object we updated.
         		agencyIdMap.put(gtfsAgency.agency_id, agency);
         	}
+        	
+	        // agency-specific stuff: start transactions for all relevant agencies	        
+	        for (Agency a : agencyIdMap.values()) {
+	        	agencyTxs.put(a.id, VersionedDataStore.getAgencyTx(a.id));
+	        }
 	    	
 	    	Logger.info("Agencies loaded: " + agencyCount);
 	    	
 	        Logger.info("GtfsImporter: importing stops...");
 	        
 	        // infer agency ownership of stops, if there are multiple agencies
-	        // if there's only one agency it doesn't matter
-	        Agency primaryAgency = agencyIdMap.values().iterator().next();
-	        if (agencyCount > 1)
-	        	inferAgencyStopOwnership();
+	        SortedSet<Tuple2<String, String>> stopsByAgency = inferAgencyStopOwnership();
 	    	
 	    	// build agency centroids as we go
 	    	// note that these are not actually centroids, but the center of the extent of the stops . . .
 	    	Map<String, Envelope> stopEnvelopes = Maps.newHashMap();
 	    	
-	    	for (String agencyId : agencyIdMap.keySet()) {
-	    		stopEnvelopes.put(agencyId, new Envelope());
+	    	for (Agency agency : agencyIdMap.values()) {
+	    		stopEnvelopes.put(agency.id, new Envelope());
 	    	}
 	    	
 	    	GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
 	        for (com.conveyal.gtfs.model.Stop gtfsStop : input.stops.values()) {
-	        	// figure out the agency
-	        	Agency agency;
-	        	if (agencyCount > 1 && stopAgencyMap.containsKey(gtfsStop.stop_id))
-	        		agency = agencyIdMap.get(stopAgencyMap.get(gtfsStop.stop_id));
-	        	else
-	        		// if there is only one agency, or if the stop is unused, give it the first agency in the feed
-	        		agency = primaryAgency;
+	        	// duplicate the stop for all of the agencies by which it is used
+	        	Collection<Agency> agencies = Collections2.transform(
+	        			stopsByAgency.subSet(new Tuple2(gtfsStop.stop_id, null), new Tuple2(gtfsStop.stop_id, Fun.HI)),
+	        			new Function<Tuple2<String, String>, Agency> () {
+
+							@Override
+							public Agency apply(Tuple2<String, String> input) {
+								// TODO Auto-generated method stub
+								return agencyIdMap.get(input.b);
+							}
+	        			});
+
+	        	// impossible to tell to whom unused stops belong, so give them to everyone
+	        	if (agencies.size() == 0)
+	        		agencies = agencyIdMap.values();
 	        	
-	           Stop stop = new Stop(gtfsStop, geometryFactory, agency);
-	           stopIdMap.put(gtfsStop.stop_id, stop);
-	           gtx.stops.put(stop.id, stop);
-	          	           
-	           stopEnvelopes.get(agency.gtfsAgencyId).expandToInclude(gtfsStop.stop_lon, gtfsStop.stop_lat);	           
-	           stopCount++;
+	        	for (Agency agency : agencies) {
+	        		Stop stop = new Stop(gtfsStop, geometryFactory, agency);
+	        		agencyTxs.get(agency.id).stops.put(stop.id, stop);
+	        		stopIdMap.put(new Tuple2(gtfsStop.stop_id, agency.id), stop);
+	        		stopEnvelopes.get(agency.id).expandToInclude(gtfsStop.stop_lon, gtfsStop.stop_lat);
+	        	}
 	        }
 	        
 	        // set the agency default zoom locations and save the agencies
 	        for (Agency a : agencyIdMap.values()) {
-	        	Envelope stopEnvelope = stopEnvelopes.get(a.gtfsAgencyId);
+	        	Envelope stopEnvelope = stopEnvelopes.get(a.id	);
 	        	a.defaultLat = stopEnvelope.centre().y;
 	        	a.defaultLon = stopEnvelope.centre().x;
 	        	gtx.agencies.put(a.id, a);
 	        }
 	        	        
 	        Logger.info("Stops loaded: " + stopCount);
-	        
-	        // agency-specific stuff: start transactions for all relevant agencies	        
-	        for (Agency a : agencyIdMap.values()) {
-	        	agencyTxs.put(a.id, VersionedDataStore.getAgencyTx(a.id));
-	        }
 	    	
 	    	Logger.info("GtfsImporter: importing routes...");
 	    	
@@ -344,10 +352,11 @@ public class ProcessGtfsSnapshotMerge implements Runnable {
 	        	
 	        	for (String tripId : pattern.getValue()) {
 	        		com.conveyal.gtfs.model.Trip gtfsTrip = input.trips.get(tripId);
-	        		AgencyTx tx = agencyTxs.get(agencyIdMap.get(gtfsTrip.route.agency.agency_id).id);
+	        		String agencyId = agencyIdMap.get(gtfsTrip.route.agency.agency_id).id;
+	        		AgencyTx tx = agencyTxs.get(agencyId);
 	        		
 	        		if (!tripPatternsByRoute.containsKey(gtfsTrip.route.route_id)) {
-	        			TripPattern pat = createTripPatternFromTrip(gtfsTrip, gtx);
+	        			TripPattern pat = createTripPatternFromTrip(gtfsTrip, tx);
 	        			tx.tripPatterns.put(pat.id, pat);
 	        			tripPatternsByRoute.put(gtfsTrip.route.route_id, pat);
 	        		}
@@ -372,7 +381,7 @@ public class ProcessGtfsSnapshotMerge implements Runnable {
 	        				input.stop_times.subMap(new Tuple2(gtfsTrip.trip_id, null), new Tuple2(gtfsTrip.trip_id, Fun.HI)).values();
 	        		
 	        		for (com.conveyal.gtfs.model.StopTime st : stopTimes) {
-	        			trip.stopTimes.add(new StopTime(st, stopIdMap.get(st.stop_id).id));
+	        			trip.stopTimes.add(new StopTime(st, stopIdMap.get(new Tuple2<String, String>(st.stop_id, agencyId)).id));
 	        		}
 	        		
 	        		tx.trips.put(trip.id, trip);
@@ -403,45 +412,27 @@ public class ProcessGtfsSnapshotMerge implements Runnable {
         }
 	}
 
-	/** infer the ownership of stops based on what stops there */
-	private void inferAgencyStopOwnership() {
-		// stop_id, agency_id - these are the GTFS values
-		SortedMap<Tuple2<String, String>, Long> stopsByAgencyTripCount = Maps.newTreeMap();
+	/** infer the ownership of stops based on what stops there
+	 * Returns a set of tuples stop ID, agency ID with GTFS IDs */
+	private SortedSet<Tuple2<String, String>> inferAgencyStopOwnership() {
+		// agency
+		SortedSet<Tuple2<String, String>> ret = Sets.newTreeSet();
 		
 		for (com.conveyal.gtfs.model.StopTime st : input.stop_times.values()) {
 			String stopId = st.stop_id;
 			String agencyId = input.trips.get(st.trip_id).route.agency.agency_id;
 			Tuple2<String, String> key = new Tuple2(stopId, agencyId);
-			
-			if (!stopsByAgencyTripCount.containsKey(key))
-				stopsByAgencyTripCount.put(key, 1L);
-			else
-				stopsByAgencyTripCount.put(key, stopsByAgencyTripCount.get(key) + 1);
+			ret.add(key);
 		}
 		
-		for (String stopId : input.stops.keySet()) {
-			Map<Tuple2<String, String>, Long> agenciesForStop = stopsByAgencyTripCount.subMap(new Tuple2(stopId, null), new Tuple2(stopId, Fun.HI));
-			
-			long max = 0;
-			String agencyId = null;
-			for (Entry<Tuple2<String, String>, Long> ent : agenciesForStop.entrySet()) {
-				if (ent.getValue() > max) {
-					max = ent.getValue();
-					agencyId = ent.getKey().b;
-				}
-			}
-			
-			if (agencyId != null) {
-				stopAgencyMap.put(stopId, agencyId);
-			}
-		}
+		return ret;
 	}
 	
 	/**
 	 * Create a trip pattern from the given trip.
 	 * Neither the trippattern nor the trippatternstops are saved.
 	 */
-	public TripPattern createTripPatternFromTrip (com.conveyal.gtfs.model.Trip gtfsTrip, GlobalTx gtx) {
+	public TripPattern createTripPatternFromTrip (com.conveyal.gtfs.model.Trip gtfsTrip, AgencyTx tx) {
 		TripPattern patt = new TripPattern();
 		patt.routeId = routeIdMap.get(gtfsTrip.route.route_id).id;
 		patt.agencyId = agencyIdMap.get(gtfsTrip.route.agency.agency_id).id;
@@ -468,7 +459,7 @@ public class ProcessGtfsSnapshotMerge implements Runnable {
 				
 		for (com.conveyal.gtfs.model.StopTime st : stopTimes) {
 			TripPatternStop tps = new TripPatternStop();
-			Stop stop = stopIdMap.get(st.stop_id);
+			Stop stop = stopIdMap.get(new Tuple2(st.stop_id, patt.agencyId));
 			tps.stopId = stop.id;
 			
 			if (st.timepoint != Entity.INT_MISSING)
@@ -482,7 +473,7 @@ public class ProcessGtfsSnapshotMerge implements Runnable {
 			patt.patternStops.add(tps);
 		}
 		
-		patt.calcShapeDistTraveled(gtx);
+		patt.calcShapeDistTraveled(tx);
 		
 		// infer travel times
 		if (stopTimes.length >= 2) {

@@ -62,7 +62,7 @@ public class TripPattern extends Model implements Serializable {
     	if (useStraightLineDistances || shape == null)
     		return null;
     	
-    	GlobalTx gtx = VersionedDataStore.getGlobalTx();
+    	AgencyTx tx = VersionedDataStore.getAgencyTx(this.agencyId);
     	
     	try {
     		LineString[] ret = new LineString[patternStops.size()];
@@ -80,13 +80,13 @@ public class TripPattern extends Model implements Serializable {
     			Coordinate snapped = shapeIdx.extractPoint(getLoc(coordDistances, ps.shapeDistTraveled));
     			// offset it slightly so that line creation does not fail if the stop is coincident
     			snapped.x = snapped.x - 0.00000001;
-    			Coordinate stop = gtx.stops.get(patternStops.get(i).stopId).location.getCoordinate();
+    			Coordinate stop = tx.stops.get(patternStops.get(i).stopId).location.getCoordinate();
     			ret[i] = GeoUtils.geometyFactory.createLineString(new Coordinate[] {stop, snapped});
     		}
     		
     		return ret;
     	} finally {
-    		gtx.rollback();
+    		tx.rollback();
     	}
     	
     }
@@ -181,7 +181,7 @@ public class TripPattern extends Model implements Serializable {
             }
             
             // remove stop times for removed pattern stop
-            Tuple2<String, String> removedStopId = originalStops.get(differenceLocation).stopId;
+            String removedStopId = originalStops.get(differenceLocation).stopId;
             
             for (Trip trip : tx.getTripsByPattern(originalTripPattern.id)) {
             	StopTime removed = trip.stopTimes.remove(differenceLocation);
@@ -268,7 +268,7 @@ public class TripPattern extends Model implements Serializable {
     }
 
     public void calcShapeDistTraveled () {
-    	GlobalTx tx = VersionedDataStore.getGlobalTx();
+    	AgencyTx tx = VersionedDataStore.getAgencyTx(agencyId);
     	calcShapeDistTraveled(tx);
     	tx.rollback();
     }
@@ -286,7 +286,7 @@ public class TripPattern extends Model implements Serializable {
      * 5. otherwise, mark it to be returned to on the second pass
      * 6. on the second pass, just snap to the closest point on the subsection of the shape defined by the previous and next stop positions.
      */
-	public void calcShapeDistTraveled(GlobalTx tx) {
+	public void calcShapeDistTraveled(AgencyTx tx) {
 		if (patternStops.size() == 0)
 			return;
 		
@@ -438,7 +438,7 @@ public class TripPattern extends Model implements Serializable {
 	}
 	
 	/** Calculate distances using straight line geometries */
-	public void calcShapeDistTraveledStraightLine(GlobalTx tx) {
+	public void calcShapeDistTraveledStraightLine(AgencyTx tx) {
 		useStraightLineDistances = true;
 		GeodeticCalculator gc = new GeodeticCalculator();
 		Stop prev = tx.stops.get(patternStops.get(0).stopId);

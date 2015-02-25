@@ -26,20 +26,26 @@ import play.mvc.Controller;
 import utils.JacksonSerializers;
 
 public class StopController extends Controller {
-    public static void getStop(String id, String patternId, String agencyId, Double west, Double east, Double north, Double south) {
-    	final GlobalTx tx = VersionedDataStore.getGlobalTx();
-    	AgencyTx atx = null;
+    public static void getStop(String id, String patternId, String agencyId, Double west, Double east, Double north, Double south) {    	
+    	if (agencyId == null)
+    		agencyId = session.get("agencyId");
+    	
+    	if (agencyId == null) {
+    		badRequest();
+    		return;
+    	}
+    	
+    	final AgencyTx tx = VersionedDataStore.getAgencyTx(agencyId);
  
     	try {
 	      	if (id != null) {
-	      		Tuple2<String, String> stopId = JacksonSerializers.Tuple2Deserializer.deserialize(id);
-	    		if (!tx.stops.containsKey(stopId)) {
+	    		if (!tx.stops.containsKey(id)) {
 	    			tx.rollback();
 	    			notFound();
 	    			return;
 	    		}
 	    		
-	    		renderJSON(Api.toJson(tx.stops.get(stopId), false));
+	    		renderJSON(Api.toJson(tx.stops.get(id), false));
 	    	}
 	    	else if (west != null && east != null && south != null && north != null) {
 	    		// find all the stops in this bounding box
@@ -47,15 +53,15 @@ public class StopController extends Controller {
 	    		Tuple2<Double, Double> min = new Tuple2<Double, Double>(west, south);
 	    		Tuple2<Double, Double> max = new Tuple2<Double, Double>(east, north);
 	    		
-	    		Set<Tuple2<Tuple2<Double, Double>, Tuple2<String, String>>> matchedKeys =
+	    		Set<Tuple2<Tuple2<Double, Double>, String>> matchedKeys =
 	    				tx.stopsGix.subSet(new Tuple2(min, null), new Tuple2(max, Fun.HI));
 	    		
 	    		Collection<Stop> matchedStops =
-	    				Collections2.transform(matchedKeys, new Function<Tuple2<Tuple2<Double, Double>, Tuple2<String, String>>, Stop> () {
+	    				Collections2.transform(matchedKeys, new Function<Tuple2<Tuple2<Double, Double>, String>, Stop> () {
 
 					@Override
 					public Stop apply(
-							Tuple2<Tuple2<Double, Double>, Tuple2<String, String>> input) {
+							Tuple2<Tuple2<Double, Double>, String> input) {
 						return tx.stops.get(input.b);
 					}
 	    		});
@@ -63,19 +69,13 @@ public class StopController extends Controller {
 	    		renderJSON(Api.toJson(matchedStops, false));
 	    	}
 	    	else if (patternId != null) {
-	    		if (agencyId == null)
-	    			agencyId = session.get("agencyId");
-	    		
-	    		atx = VersionedDataStore.getAgencyTx(agencyId);
-	    		if (!atx.tripPatterns.containsKey(patternId)) {
+	    		if (!tx.tripPatterns.containsKey(patternId)) {
 	    			notFound();
 	    			tx.rollback();
-	    			atx.rollback();
 	    			return;
 	    		}
 	    		
-	    		TripPattern p = atx.tripPatterns.get(patternId);
-	    		atx.rollback();
+	    		TripPattern p = tx.tripPatterns.get(patternId);
 	    		
 	    		Collection<Stop> ret = Collections2.transform(p.patternStops, new Function<TripPatternStop, Stop> () {
 					@Override
@@ -93,7 +93,6 @@ public class StopController extends Controller {
     		tx.rollback();
     	} catch (Exception e) {
     		tx.rollbackIfOpen();
-    		if (atx != null) atx.rollbackIfOpen();
     		e.printStackTrace();
     		badRequest();
     		return;
@@ -101,49 +100,93 @@ public class StopController extends Controller {
     }
 
     public static void createStop() {
-        GlobalTx tx = VersionedDataStore.getGlobalTx();
-
+    	AgencyTx tx = null;
         try {
             Stop stop = Api.mapper.readValue(params.get("body"), Stop.class);
-            stop.generateId();            
-            tx.stops.put(stop.id, stop);
-            tx.commit();
-            renderJSON(Api.toJson(stop, false));
-        } catch (Exception e) {
-        	tx.rollback();
-            e.printStackTrace();
-            badRequest();
-        }
-    }
-
-
-    public static void updateStop() {
-        GlobalTx tx = VersionedDataStore.getGlobalTx();
-
-        try {
-            Stop stop = Api.mapper.readValue(params.get("body"), Stop.class);
-
-            if (!tx.stops.containsKey(stop.id)) {
+            
+            if (!VersionedDataStore.agencyExists(stop.agencyId)) {
             	badRequest();
-            	tx.rollback();
+            	return;
+            }
+            
+            tx = VersionedDataStore.getAgencyTx(stop.agencyId);
+            
+            if (tx.stops.containsKey(stop.id)) {
+            	badRequest();
             	return;
             }
             
             tx.stops.put(stop.id, stop);
             tx.commit();
-            
             renderJSON(Api.toJson(stop, false));
         } catch (Exception e) {
-        	tx.rollback();
             e.printStackTrace();
             badRequest();
+        } finally {
+        	if (tx != null) tx.rollbackIfOpen();
+        }
+        	
+    }
+
+
+    public static void updateStop() {
+    	AgencyTx tx = null;
+        try {
+            Stop stop = Api.mapper.readValue(params.get("body"), Stop.class);
+            
+            if (!VersionedDataStore.agencyExists(stop.agencyId)) {
+            	badRequest();
+            	return;
+            }
+            
+            tx = VersionedDataStore.getAgencyTx(stop.agencyId);
+            
+            if (!tx.stops.containsKey(stop.id)) {
+            	badRequest();
+            	return;
+            }
+            
+            tx.stops.put(stop.id, stop);
+            tx.commit();
+            renderJSON(Api.toJson(stop, false));
+        } catch (Exception e) {
+            e.printStackTrace();
+            badRequest();
+        } finally {
+        	if (tx != null) tx.rollbackIfOpen();
         }
     }
 
-    public static void deleteStop(Long id) {
+    public static void deleteStop(String id, String agencyId) {
+    	if (agencyId == null)
+    		agencyId = session.get("agencyId");
     	
-    	// TODO: what to do?
-    	ok();
+    	if (agencyId == null) {
+    		badRequest();
+    		return;
+    	}
+    	
+    	AgencyTx tx = VersionedDataStore.getAgencyTx(agencyId);
+    	try {
+    		if (!tx.stops.containsKey(id)) {
+    			notFound();
+    			return;
+    		}
+    		
+    		if (tx.countTripPatternsAtStop(id) > 0) {
+    			badRequest();
+    			return;
+    		}
+    		
+    		Stop s = tx.stops.remove(id);
+    		tx.commit();
+    		renderJSON(Api.toJson(s, false));
+    	} catch (Exception e) {
+    		badRequest();
+    		e.printStackTrace();
+    	} finally {
+    		tx.rollbackIfOpen();
+    	}
     }
     
     

@@ -30,8 +30,7 @@ import com.vividsolutions.jts.geom.PrecisionModel;
 import play.Logger;
 import utils.JacksonSerializers;
 
-/** does not extend model because has tuple key */
-public class Stop implements Serializable {
+public class Stop extends Model implements Serializable {
 	public static final long serialVersionUID = 1;
 	
 	private static GeometryFactory geometryFactory = new GeometryFactory();
@@ -42,11 +41,6 @@ public class Stop implements Serializable {
     public String stopDesc;
     public String zoneId;
     public String stopUrl;
-    
-    /** Agency ID, Stop ID */
-    @JsonSerialize(using=JacksonSerializers.Tuple2Serializer.class)
-    @JsonDeserialize(using=JacksonSerializers.Tuple2Deserializer.class)
-    public Tuple2<String, String> id;
 
     public String stopIconUrl;
 
@@ -84,8 +78,6 @@ public class Stop implements Serializable {
         this.parentStation = stop.parent_station;
         this.pickupType = StopTimePickupDropOffType.SCHEDULED;
         this.dropOffType = StopTimePickupDropOffType.SCHEDULED;
-
-        this.id = new Tuple2(agency.id, stop.stop_id);
         
         this.location  =  geometryFactory.createPoint(new Coordinate(stop.stop_lon,stop.stop_lat));
         
@@ -101,12 +93,10 @@ public class Stop implements Serializable {
         this.locationType = LocationType.STOP;
         this.pickupType = StopTimePickupDropOffType.SCHEDULED;
         this.dropOffType = StopTimePickupDropOffType.SCHEDULED;
-
-        generateId();
         
         GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
 
-        this.location = geometryFactory.createPoint(new Coordinate(lon, lat));;
+        this.location = geometryFactory.createPoint(new Coordinate(lon, lat));
     }
     
     /** Create a stop. Note that this does *not* generate an ID, as you have to set the agency first */
@@ -118,10 +108,6 @@ public class Stop implements Serializable {
     
     public double getLon () {
     	return location.getX();
-    }
-    
-    public void generateId () {
-    	this.id = new Tuple2(this.agencyId, UUID.randomUUID().toString());
     }
     
     @JsonCreator
@@ -159,6 +145,6 @@ public class Stop implements Serializable {
 		if(gtfsStopId != null && !gtfsStopId.isEmpty())
 			return gtfsStopId;
 		else
-			return "STOP_" + JacksonSerializers.Tuple2Serializer.serialize(id);
+			return "STOP_" + id;
 	}
 }

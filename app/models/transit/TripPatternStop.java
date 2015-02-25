@@ -21,9 +21,7 @@ import utils.JacksonSerializers;
 public class TripPatternStop implements Serializable {
 	public static final long serialVersionUID = 1;
 
-	@JsonSerialize(using=JacksonSerializers.Tuple2Serializer.class)
-    @JsonDeserialize(using=JacksonSerializers.Tuple2Deserializer.class)
-    public Tuple2<String, String> stopId;
+    public String stopId;
 
 	public int defaultTravelTime;
 	public int defaultDwellTime;

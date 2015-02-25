@@ -193,7 +193,7 @@ public class ProcessGtfsSnapshotExport implements Runnable {
 							if (st == null)
 								continue;
 							
-							Stop stop = gtx.stops.get(st.stopId);
+							Stop stop = atx.stops.get(st.stopId);
 							
 							if (!st.stopId.equals(ps.stopId)) {
 								throw new IllegalStateException("Trip " + trip.id + " does not match its pattern!");
