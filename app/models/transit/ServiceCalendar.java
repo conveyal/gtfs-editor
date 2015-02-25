@@ -58,6 +58,7 @@ public class ServiceCalendar extends Model implements Serializable {
     
     public ServiceCalendar clone () {
     	ServiceCalendar r = new ServiceCalendar();
+    	r.id = id;
     	r.agencyId = agencyId;
     	r.description = description;
     	r.gtfsServiceId = gtfsServiceId;
