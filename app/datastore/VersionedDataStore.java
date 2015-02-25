@@ -122,6 +122,7 @@ public class VersionedDataStore {
 
 			ret.snapshotTime = System.currentTimeMillis();
 			ret.name = name;
+			ret.current = true;
 			
 			snapshot = getSnapshotDb(agencyId, version, false);
 			
