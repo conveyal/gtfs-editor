@@ -114,6 +114,9 @@ public class RouteController extends Controller {
     }
 
     public static void deleteRoute(String id, String agencyId) {
+    	if (agencyId == null)
+    		agencyId = session.get("agencyId");
+    	
         if(id == null || agencyId == null)
             badRequest();
 
