@@ -176,7 +176,7 @@ var GtfsEditor = GtfsEditor || {};
       this.map.on('zoomend', function(evt) {
         view.clearStops();
 
-        if(view.map.getZoom() < 15)
+        if(view.map.getZoom() < 13)
           $('#stops-hidden-message').show();
         else
           $('#stops-hidden-message').hide();
@@ -184,7 +184,7 @@ var GtfsEditor = GtfsEditor || {};
         G.session.mapZoom= view.map.getZoom();
       });
 
-      if(view.map.getZoom() < 15)
+      if(view.map.getZoom() < 13)
         $('#stops-hidden-message').show();
       else
         $('#stops-hidden-message').hide();
@@ -325,7 +325,7 @@ var GtfsEditor = GtfsEditor || {};
        if($('input[name="stopFilterRadio"]:checked').val() != 'all' )
           agencyId = this.model.attributes.agencyId;
 
-      if(G.config.showStandardStops && this.map.getZoom() >= 15) {
+      if(G.config.showStandardStops && this.map.getZoom() >= 13) {
         var bounds = this.map.getBounds();
         var nw = bounds.getNorthWest();
         var se = bounds.getSouthEast();

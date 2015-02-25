@@ -121,7 +121,7 @@ var GtfsEditor = GtfsEditor || {};
       this.map.on('zoomend', function(evt) {
         view.clearStops();
 
-        if(view.map.getZoom() < 15)
+        if(view.map.getZoom() < 13)
           $('#stops-hidden-message').show();
         else
           $('#stops-hidden-message').hide();
@@ -129,7 +129,7 @@ var GtfsEditor = GtfsEditor || {};
          G.session.mapZoom= view.map.getZoom();
       });
 
-      if(view.map.getZoom() < 15)
+      if(view.map.getZoom() < 13)
         $('#stops-hidden-message').show();
       else
         $('#stops-hidden-message').hide();
@@ -159,7 +159,7 @@ var GtfsEditor = GtfsEditor || {};
        if(this.collection.length > 750)
           this.collection.remove(this.collection.slice(0, 200));
 
-       if(G.config.showStandardStops && this.map.getZoom() >= 14) {
+       if(G.config.showStandardStops && this.map.getZoom() >= 13) {
         var bounds = this.map.getBounds();
         var nw = bounds.getNorthWest();
         var se = bounds.getSouthEast();
@@ -493,7 +493,7 @@ var GtfsEditor = GtfsEditor || {};
 
       // default to major stops when that's all that's showing
       var majorStop = false;
-      if(G.config.showMajorStops && !G.config.showStandardStops || this.map.getZoom() < 15)
+      if(G.config.showMajorStops && !G.config.showStandardStops || this.map.getZoom() < 13)
         majorStop = true;
 
       var data = {
