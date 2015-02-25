@@ -276,6 +276,35 @@ G.RouteTypes = Backbone.Collection.extend({
       this.trips = new G.Trips({patternId: this.id});
     },
 
+    /** Calculate the default dwell and default travel times for this trip pattern,
+         given a velocity in m/s and a default dwell in seconds */
+    calculateTimes: function (velocity, dwell) {
+      var pss = this.get('patternStops')
+      var pscount = pss.length;
+
+      if (pscount === 0)
+        return;
+
+      // first stop has no travel time, and less intuitively no dwell time
+      // imagine if the dwell was 5 mins, and you had a frequencies.txt entry starting at 6:00 am
+      // the trip would not actually leave the terminal until 6:05.
+      pss[0].defaultTravelTime = 0;
+      pss[0].defaultDwellTime = 0;
+
+      // this is not always zero; if the shape overshoots the last stop.
+      // also though if it undershoots we could underestimate the travel time for the first stop.
+      // generally just draw high-quality shapes and everyone will be happy.
+      var lastDistTraveled = pss[0].shapeDistTraveled;
+
+      _.each(pss, function (ps) {
+        ps.defaultTravelTime = (ps.shapeDistTraveled - lastDistTraveled) / velocity;
+        ps.defaultDwellTime = dwell;
+        lastDistTraveled = ps.shapeDistTraveled;
+      });
+
+      this.set('patternStops', pss);
+    },
+
     blacklist: ['stopConnections'],
     toJSON: function(options) {
       return _.omit(this.attributes, this.blacklist);

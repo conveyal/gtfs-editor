@@ -1019,19 +1019,13 @@ var GtfsEditor = GtfsEditor || {};
       var defaultDwell  = this.calcTime(this.$('#default-dwell-input').val());
 
       if(velocity != undefined && velocity != '') {
-
         // convert to m/s
         velocity = parseFloat(velocity) * 0.277778;
-
-        var view = this;
-        $.get(G.config.baseUrl + 'api/calctrippatterntimes', {id: selectedPatternId, velocity: velocity, defaultDwell: defaultDwell}, function(){
-
-          view.model.tripPatterns.fetch({data: {routeId: view.model.id}});
-        });
+        var tripPattern = this.model.tripPatterns.get(selectedPatternId);
+        tripPattern.calculateTimes(velocity, defaultDwell);
+        tripPattern.save();
       }
-
     },
-
 
     save: function(evt) {
       evt.preventDefault();

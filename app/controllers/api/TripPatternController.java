@@ -192,25 +192,4 @@ public class TripPatternController extends Controller {
     		tx.rollbackIfOpen();
     	}
     }
-    
-    public static void calcTripPatternTimes(Long id, Double velocity, int defaultDwell) {
-    	/*
-    	TripPattern tripPattern = TripPattern.findById(id);
-    	
-    	List<TripPatternStop> patternStops = TripPatternStop.find("pattern = ? ORDER BY stopSequence", tripPattern).fetch();
-    	
-    	Double distanceAlongLine = 0.0;
-    	
-        for(TripPatternStop patternStop : patternStops)
-        {
-        	patternStop.defaultTravelTime = (int) Math.round((patternStop.defaultDistance - distanceAlongLine) / velocity);
-            patternStop.defaultDwellTime = defaultDwell;
-        	
-        	distanceAlongLine = patternStop.defaultDistance;
-        	
-        	patternStop.save();
-        }*/
-    
-        ok();
-    }
 }
