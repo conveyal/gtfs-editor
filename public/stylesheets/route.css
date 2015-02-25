@@ -138,3 +138,28 @@
   }
 
 }
+
+/* Leaflet stop icons */
+.stop {
+  /* ha! who says we can't make a circle in pure CSS . . .
+     note that the folks who made CSS did not study geometry: border-radius is actually a diameter */
+  border-radius: 100%;
+  box-shadow: 3 3 4 6;
+  border: 1px solid #fff;
+}
+
+.stop-major {
+  background-color: #11f;
+}
+
+.stop-minor {
+  background-color: #628daa;
+}
+
+.stop-selected {
+  background-color: #dbcf2c;
+}
+
+.stop-pattern {
+  background-color: #049300;
+}

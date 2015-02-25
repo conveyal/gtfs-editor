@@ -29,41 +29,26 @@ var GtfsEditor = GtfsEditor || {};
 
 
       // Custom icons
-      this.agencyMajorStopIcon = L.icon({
-        iconUrl: G.config.baseUrl + 'public/images/markers/marker-0d85e9.png',
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
-        shadowUrl: G.config.baseUrl + 'public/images/markers/marker-shadow.png',
-        shadowSize: [41, 41]
+      this.agencyMajorStopIcon = L.divIcon({
+        iconSize: [10, 10],
+        iconAnchor: [5, 5],
+        popupAnchor: [5, 5],
+        className: 'stop stop-major'
       });
 
       // Custom icons
-      this.agencyMinorStopIcon = L.icon({
-        iconUrl: G.config.baseUrl + 'public/images/markers/marker-blue-gray.png',
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
-        shadowUrl: G.config.baseUrl + 'public/images/markers/marker-shadow.png',
-        shadowSize: [41, 41]
+      this.agencyMinorStopIcon = L.divIcon({
+        iconSize: [10, 10],
+        iconAnchor: [5, 5],
+        popupAnchor: [5, 5],
+        className: 'stop stop-minor'
       });
 
-      this.otherStopIcon = L.icon({
-        iconUrl: G.config.baseUrl + 'public/images/markers/marker-gray.png',
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
-        shadowUrl: G.config.baseUrl + 'public/images/markers/marker-shadow.png',
-        shadowSize: [41, 41]
-      });
-
-      this.selectedStopIcon = L.icon({
-        iconUrl: G.config.baseUrl + 'public/images/markers/marker-dbcf2c.png',
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
-        shadowUrl: G.config.baseUrl + 'public/images/markers/marker-shadow.png',
-        shadowSize: [41, 41]
+      this.selectedStopIcon = L.divIcon({
+        iconSize: [8, 8],
+        iconAnchor: [4, 4],
+        popupAnchor: [4, 4],
+        className: 'stop stop-selected'
       });
 
         _.bindAll(this, 'sizeContent', 'destroy', 'save', 'cancelFindDuplicateStops', 'findDuplicateStops', 'finishedFindDuplicateStops', 'addStopGroup', 'resetDuplicateStops', 'mergeStops', 'onSatelliteToggle');
@@ -385,20 +370,12 @@ var GtfsEditor = GtfsEditor || {};
 
       var $popupContent;
 
-      if (model.get('agencyId') == this.model.get('agencyId')) {
+      $popupContent = ich['stop-form-tpl'](model.toJSON());
 
-        $popupContent = ich['stop-form-tpl'](model.toJSON());
-
-        if(model.get('majorStop'))
-          this.stopIcons[model.id] = this.agencyMajorStopIcon;
-        else
-          this.stopIcons[model.id] = this.agencyMinorStopIcon;
-
-      }
-      else {
-        $popupContent = ich['stop-view-tpl'](model.toJSON());
-        this.stopIcons[model.id] = this.otherStopIcon;
-      }
+      if(model.get('majorStop'))
+        this.stopIcons[model.id] = this.agencyMajorStopIcon;
+      else
+        this.stopIcons[model.id] = this.agencyMinorStopIcon;
 
       $popupContent
         .find('#bikeParking option[value="' + model.get('bikeParking') + '"]')
@@ -449,20 +426,13 @@ var GtfsEditor = GtfsEditor || {};
 
       var $popupContent;
 
-      if (model.get('agencyId') == this.model.get('agencyId')) {
+      $popupContent = ich['stop-form-tpl'](model.toJSON());
 
-        $popupContent = ich['stop-form-tpl'](model.toJSON());
+      if(model.get('majorStop'))
+        this.stopIcons[model.id] = this.agencyMajorStopIcon;
+      else
+        this.stopIcons[model.id] = this.agencyMinorStopIcon;
 
-        if(model.get('majorStop'))
-          this.stopIcons[model.id] = this.agencyMajorStopIcon;
-        else
-          this.stopIcons[model.id] = this.agencyMinorStopIcon;
-
-      }
-      else {
-        $popupContent = ich['stop-view-tpl'](model.toJSON());
-        this.stopIcons[model.id] = this.otherStopIcon;
-      }
 
       $popupContent
         .find('#bikeParking option[value="' + model.get('bikeParking') + '"]')

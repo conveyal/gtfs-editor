@@ -53,56 +53,36 @@ var GtfsEditor = GtfsEditor || {};
       this.model.tripPatterns.fetch({data: {routeId: this.model.id}});
 
      // Custom icons
-      this.agencyMajorStopIcon = L.icon({
-        iconUrl: G.config.baseUrl + 'public/images/markers/marker-0d85e9.png',
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
-        shadowUrl: G.config.baseUrl + 'public/images/markers/marker-shadow.png',
-        shadowSize: [41, 41],
-        labelAnchor: [10, -16]
-      });
+     // Custom icons
+     this.agencyMajorStopIcon = L.divIcon({
+       iconSize: [10, 10],
+       iconAnchor: [5, 5],
+       popupAnchor: [5, 5],
+       className: 'stop stop-major'
+     });
 
-      // Custom icons
-      this.agencyMinorStopIcon = L.icon({
-        iconUrl: G.config.baseUrl + 'public/images/markers/marker-blue-gray.png',
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
-        shadowUrl: G.config.baseUrl + 'public/images/markers/marker-shadow.png',
-        shadowSize: [41, 41],
-        labelAnchor: [10, -16]
-      });
+     // Custom icons
+     this.agencyMinorStopIcon = L.divIcon({
+       iconSize: [10, 10],
+       iconAnchor: [5, 5],
+       popupAnchor: [5, 5],
+       className: 'stop stop-minor'
+     });
 
-      this.otherStopIcon = L.icon({
-        iconUrl: G.config.baseUrl + 'public/images/markers/marker-gray.png',
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
-        shadowUrl: G.config.baseUrl + 'public/images/markers/marker-shadow.png',
-        shadowSize: [41, 41],
-        labelAnchor: [10, -16]
-      });
+     this.patternStopIcon = L.divIcon({
+       iconSize: [10, 10],
+       iconAnchor: [5, 5],
+       popupAnchor: [5, 5],
+       className: 'stop stop-pattern'
+     });
 
-      this.patternStopIcon = L.icon({
-        iconUrl: G.config.baseUrl + 'public/images/markers/marker-4ab767.png',
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
-        shadowUrl: G.config.baseUrl + 'public/images/markers/marker-shadow.png',
-        shadowSize: [41, 41],
-        labelAnchor: [10, -16]
-      });
+     this.selectedStopIcon = L.divIcon({
+       iconSize: [8, 8],
+       iconAnchor: [4, 4],
+       popupAnchor: [4, 4],
+       className: 'stop stop-selected'
+     });
 
-      this.selectedStopIcon = L.icon({
-        iconUrl: G.config.baseUrl + 'public/images/markers/marker-dbcf2c.png',
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
-        shadowUrl: G.config.baseUrl + 'public/images/markers/marker-shadow.png',
-        shadowSize: [41, 41],
-        labelAnchor: [10, -16]
-      });
 
       _.bindAll(this, 'sizeContent', 'duplicateTripPattern', 'addDuplicateTripPattern', 'cancelDuplicateTripPattern', 'editTripPattern', 'submitEditTripPattern', 'cancelEditTripPattern', 'onStopFilterChange', 'loadTransitWand', 'calcTimesFromVelocity', 'saveTripPatternLine', 'onTripPatternChange', 'onTripPatternStopSelectChange', 'updateStops', 'zoomToPatternExtent', 'clearPatternButton', 'deletePatternButton', 'stopUpdateButton', 'stopRemoveButton', 'updateTransitWandOverlay', 'onSatelliteToggle', 'stopAddAgainButton');
         $(window).resize(this.sizeContent);
@@ -454,7 +434,7 @@ var GtfsEditor = GtfsEditor || {};
 
         this.stopIcons[model.id] = this.patternStopIcon;
       }
-      else if (model.get('agencyId') == this.model.get('agencyId')) {
+      else {
 
         $popupContent = ich['trippattern-stop-add-form-tpl'](model.toJSON());
 
@@ -463,12 +443,6 @@ var GtfsEditor = GtfsEditor || {};
         else
           this.stopIcons[model.id] = this.agencyMinorStopIcon;
 
-      }
-      else {
-
-        $popupContent = ich['stop-view-tpl'](model.toJSON());
-
-        this.stopIcons[model.id] = this.otherStopIcon;
       }
 
       markerLayer = L.marker([model.get('lat'),
