@@ -45,6 +45,16 @@ public class TripPatternStop implements Serializable {
 		this.stopId = stop.id;
 		this.defaultTravelTime = defaultTravelTime;
 	}
+	
+	public TripPatternStop clone () {
+		TripPatternStop ret = new TripPatternStop();
+		ret.stopId = stopId;
+		ret.defaultDwellTime = defaultDwellTime;
+		ret.defaultTravelTime = defaultTravelTime;
+		ret.timepoint = timepoint;
+		ret.shapeDistTraveled = shapeDistTraveled;
+		return ret;
+	}
 }
 
 

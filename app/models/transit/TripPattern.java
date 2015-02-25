@@ -53,6 +53,12 @@ public class TripPattern extends Model implements Serializable {
     // if true, use straight-line rather than shape-based distances
     public boolean useStraightLineDistances;
     
+    public String routeId;
+    
+    public String agencyId;
+
+    public List<TripPatternStop> patternStops;
+    
     /**
      * Lines showing how stops are being snapped to the shape.
      * @return
@@ -90,14 +96,6 @@ public class TripPattern extends Model implements Serializable {
     	}
     	
     }
-    
-    public String routeId;
-    
-    public String agencyId;
-
-    public List<TripPatternStop> patternStops;
-
-    public Integer headway;
 
     public TripPattern()
     {
@@ -111,6 +109,26 @@ public class TripPattern extends Model implements Serializable {
     	this.shape = shape;
     	this.routeId = route.id;
     }
+    
+    public TripPattern clone() {
+    	TripPattern ret = new TripPattern();
+    	ret.name = this.name;
+    	ret.headsign = this.headsign;
+    	ret.shape = (LineString) this.shape.clone();
+    	ret.routeId = this.routeId;
+    	ret.agencyId = this.agencyId;
+    	ret.useStraightLineDistances = this.useStraightLineDistances;
+    	ret.patternStops = new ArrayList<TripPatternStop>();
+    	ret.id = id;
+    	
+    	for (TripPatternStop ps : this.patternStops) {
+    		ret.patternStops.add(ps.clone());
+    	}
+    	
+    	return ret;
+    }
+    
+    
     
     /**
      * update the trip pattern stops and the associated stop times
