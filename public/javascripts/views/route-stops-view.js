@@ -7,7 +7,6 @@ var GtfsEditor = GtfsEditor || {};
       'click .stop-find-duplicates-btn': 'findDuplicateStops',
       'click .stop-find-duplicates-cancel-btn': 'cancelFindDuplicateStops',
       'change .stops-toggle': 'onStopVisibilityChange',
-      'change input[name="stopFilterRadio"]': 'onStopFilterChange',
       'change input[name="stop-use-satellite"]': 'onSatelliteToggle',
     },
 
@@ -67,7 +66,7 @@ var GtfsEditor = GtfsEditor || {};
         shadowSize: [41, 41]
       });
 
-        _.bindAll(this, 'sizeContent', 'onStopFilterChange', 'destroy', 'save', 'cancelFindDuplicateStops', 'findDuplicateStops', 'finishedFindDuplicateStops', 'addStopGroup', 'resetDuplicateStops', 'mergeStops', 'onSatelliteToggle');
+        _.bindAll(this, 'sizeContent', 'destroy', 'save', 'cancelFindDuplicateStops', 'findDuplicateStops', 'finishedFindDuplicateStops', 'addStopGroup', 'resetDuplicateStops', 'mergeStops', 'onSatelliteToggle');
 
         $(window).resize(this.sizeContent);
     },
@@ -175,20 +174,16 @@ var GtfsEditor = GtfsEditor || {};
        if(this.collection.length > 750)
           this.collection.remove(this.collection.slice(0, 200));
 
-       var agencyId = null;
-       if($('input[name="stopFilterRadio"]:checked').val() != 'all' )
-          agencyId = this.model.get('agencyId');
-
        if(G.config.showStandardStops && this.map.getZoom() >= 14) {
         var bounds = this.map.getBounds();
         var nw = bounds.getNorthWest();
         var se = bounds.getSouthEast();
-        this.collection.fetch({remove: false, data: {agencyId: agencyId, west: nw.lng, east: se.lng, north: nw.lat, south: se.lat}});
+        this.collection.fetch({remove: false, data: {west: nw.lng, east: se.lng, north: nw.lat, south: se.lat}});
       }
 
 
       if(G.config.showMajorStops)
-        this.collection.fetch({remove: false, data: {agencyId: agencyId, majorStops: true}});
+        this.collection.fetch({remove: false, data: {majorStops: true}});
     },
 
     clearStops: function() {
@@ -322,12 +317,6 @@ var GtfsEditor = GtfsEditor || {};
 
       });*/
 
-    },
-
-    onStopFilterChange: function(evt) {
-
-        this.clearStops();
-        this.updateStops();
     },
 
     onMapRightClick: function(evt) {
