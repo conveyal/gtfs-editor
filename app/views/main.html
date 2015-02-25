@@ -144,6 +144,7 @@ cf = play.Play.configuration
         <li><a href="@{Application.search()}"><i class="icon-map-marker"></i> &{'shared.explore-search-routes'}</a></li>
         <li><a href="@{Application.route()}"><i class="icon-pencil"></i> &{'shared.new-route'}</a></li>
         <li><a href="@{Application.exceptions()}"><i class="icon-calendar"></i> &{'shared.schedule-exceptions'}</a></li>
+        <li><a href="@{Application.snapshots()}"><i class="icon-camera"></i> &{'snapshot.snapshots'}</a></li>
       </ul>
 
       #{doLayout /}
@@ -219,7 +220,7 @@ cf = play.Play.configuration
 
 
   </script>
-  
+
     #{get 'scripts' /}
 
   </body>

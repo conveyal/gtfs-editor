@@ -141,6 +141,14 @@ snapshot.new=Take snapshot
 snapshot.restore=Restore snapshot
 snapshot.name=Name
 snapshot.date=Snapshot date
+snapshot.snapshots=Snapshots
+snapshot.take-before-restore=You must create a snapshot of the current state of the database before you can restore a previous version.
+# dialog title
+snapshot.take-snapshot=Take snapshot
+# button
+snapshot.take=Take snapshot
+snapshot.take-and-restore=Take snapshot and restore
+snapshot.current=Current?
 
 # /index
 

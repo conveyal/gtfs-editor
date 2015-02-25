@@ -53,6 +53,10 @@
       <h3>&{'snapshot.take-snapshot'}</h3>
     </div>
     <div class="modal-body">
+      {{#restore}}
+        <div class="alert">&{'snapshot.take-before-restore'}</div>
+      {{/restore}}
+
       <div class="form-inline">
         <label for="snapshot-name">&{'snapshot.name'}</label>
         <input type="text" id="snapshot-name" />
