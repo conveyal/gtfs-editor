@@ -43,6 +43,8 @@ public class SnapshotTx extends DatabaseTx {
 		Logger.info("Snapshotted %s patterns", tpcount);
 		int tcount = pump("trips", (BTreeMap) master.trips);
 		Logger.info("Snapshotted %s trips", tcount);
+		int scount = pump("stops", (BTreeMap) master.stops);
+		Logger.info("Snapshotted %s stops", scount);
 		this.commit();
 		Logger.info("Snapshot finished");
 	}
@@ -59,16 +61,43 @@ public class SnapshotTx extends DatabaseTx {
 				targetTx.delete(obj);
 		}
 		
-		int rcount = pump(targetTx, "routes", (BTreeMap) this.<String, Route>getMap("routes"));
+		int rcount, ccount, ecount, pcount, tcount, scount;
+		
+		if (tx.exists("routes"))
+			rcount = pump(targetTx, "routes", (BTreeMap) this.<String, Route>getMap("routes"));
+		else
+			rcount = 0;
 		Logger.info("Restored %s routes", rcount);
-		int ccount = pump(targetTx, "calendars", (BTreeMap) this.<String, Calendar>getMap("calendars"));
-		Logger.info("Restored %s schedule exceptions", ccount);
-		int ecount = pump(targetTx, "exceptions", (BTreeMap) this.<String, ScheduleException>getMap("exceptions"));
+		
+		if (tx.exists("calendars"))
+			ccount = pump(targetTx, "calendars", (BTreeMap) this.<String, Calendar>getMap("calendars"));
+		else
+			ccount = 0;
+		Logger.info("Restored %s calendars", ccount);
+		
+		if (tx.exists("exceptions"))
+			ecount = pump(targetTx, "exceptions", (BTreeMap) this.<String, ScheduleException>getMap("exceptions"));
+		else
+			ecount = 0;
 		Logger.info("Restored %s schedule exceptions", ecount);
-		int pcount = pump(targetTx, "tripPatterns", (BTreeMap) this.<String, TripPattern>getMap("tripPatterns"));
+		
+		if (tx.exists("tripPatterns"))
+			pcount = pump(targetTx, "tripPatterns", (BTreeMap) this.<String, TripPattern>getMap("tripPatterns"));
+		else
+			pcount = 0;
 		Logger.info("Restored %s patterns", pcount);
-		int tcount = pump(targetTx, "trips", (BTreeMap) this.<String, Trip>getMap("trips"));
+		
+		if (tx.exists("trips"))
+			tcount = pump(targetTx, "trips", (BTreeMap) this.<String, Trip>getMap("trips"));
+		else
+			tcount = 0;
 		Logger.info("Restored %s trips", tcount);
+		
+		if (tx.exists("stops"))
+			scount = pump(targetTx, "stops", (BTreeMap) this.<String, Trip>getMap("stops"));
+		else
+			scount = 0;
+		Logger.info("Restored %s stops", scount);
 		
 		// make an agencytx to build indices
 		Logger.info("Rebuilding indices, this could take a little while . . . ");
