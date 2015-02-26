@@ -6,9 +6,7 @@ import java.util.List;
 
 import models.Model;
 
-import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.joda.time.LocalDate;
-
 
 /**
  * Represents an exception to the schedule, which could be "On January 18th, run a Sunday schedule"

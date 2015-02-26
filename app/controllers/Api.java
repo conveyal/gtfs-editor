@@ -27,7 +27,6 @@ import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.deser.std.JacksonDeserializers;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.common.base.Function;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -41,7 +40,6 @@ import com.vividsolutions.jts.linearref.LinearLocation;
 import com.vividsolutions.jts.linearref.LocationIndexedLine;
 
 import models.*;
-import models.MixIns.Tuple2MixIn;
 import models.transit.Agency;
 import models.transit.Route;
 import models.transit.RouteType;

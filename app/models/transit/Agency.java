@@ -12,8 +12,6 @@ import javax.persistence.ManyToOne;
 
 import models.Model;
 
-import org.codehaus.jackson.annotate.JsonCreator;
-import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.hibernate.annotations.Type;
 
 import play.Logger;
