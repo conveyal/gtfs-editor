@@ -10,8 +10,8 @@ require:
     - com.vividsolutions -> jts 1.12
     - org.geotools -> gt-main 12.2
     - org.geotools -> gt-geojson 12.2
-    - org.codehaus.jackson -> jackson-core-asl 1.9.5
-    - org.codehaus.jackson -> jackson-mapper-asl 1.9.5
+    - com.fasterxml.jackson.core -> jackson-core 2.4.4
+    - com.fasterxml.jackson.core -> jackson-databind 2.4.4
     - org.opentripplanner -> otp 1.0.0-SNAPSHOT
     - net.sf.opencsv -> opencsv 2.0
     - org.mapdb -> mapdb 1.0.7
