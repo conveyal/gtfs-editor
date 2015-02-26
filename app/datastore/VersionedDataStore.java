@@ -154,7 +154,7 @@ public class VersionedDataStore {
 			}
 			
 			// re-throw
-			throw e;
+			throw new RuntimeException(e);
 		} finally {
 			tx.rollbackIfOpen();
 			gtx.rollbackIfOpen();
