@@ -18,14 +18,27 @@ import models.transit.Stop;
 import models.transit.TripPattern;
 import models.transit.TripPatternStop;
 import controllers.Api;
+import controllers.Application;
+import controllers.Secure;
+import controllers.Security;
 import datastore.VersionedDataStore;
 import datastore.AgencyTx;
 import datastore.GlobalTx;
 import play.data.binding.As;
+import play.mvc.Before;
 import play.mvc.Controller;
+import play.mvc.With;
 import utils.JacksonSerializers;
 
+@With(Secure.class)
 public class StopController extends Controller {
+	@Before
+	static void initSession() throws Throwable {
+		 
+		if(!Security.isConnected() && !Application.checkOAuth(request, session))
+			Secure.login();
+	}
+	
     public static void getStop(String id, String patternId, String agencyId, Double west, Double east, Double north, Double south) {    	
     	if (agencyId == null)
     		agencyId = session.get("agencyId");

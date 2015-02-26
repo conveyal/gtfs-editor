@@ -5,11 +5,24 @@ import java.util.List;
 import models.transit.Agency;
 import models.transit.ScheduleException;
 import controllers.Api;
+import controllers.Application;
+import controllers.Secure;
+import controllers.Security;
 import datastore.VersionedDataStore;
 import datastore.AgencyTx;
+import play.mvc.Before;
 import play.mvc.Controller;
+import play.mvc.With;
 
+@With(Secure.class)
 public class ScheduleExceptionController extends Controller {
+	@Before
+	static void initSession() throws Throwable {
+		 
+		if(!Security.isConnected() && !Application.checkOAuth(request, session))
+			Secure.login();
+	}
+	
     /** Get all of the schedule exceptions for an agency */
     public static void getScheduleException (String exceptionId, String agencyId) {
     	if (agencyId == null)

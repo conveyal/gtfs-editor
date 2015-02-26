@@ -8,12 +8,25 @@ import org.mapdb.Fun.Tuple2;
 import models.transit.Agency;
 import models.transit.Route;
 import controllers.Api;
+import controllers.Application;
+import controllers.Secure;
+import controllers.Security;
 import datastore.VersionedDataStore;
 import datastore.AgencyTx;
 import datastore.GlobalTx;
+import play.mvc.Before;
 import play.mvc.Controller;
+import play.mvc.With;
 
+@With(Secure.class)
 public class RouteController extends Controller {
+	@Before
+	static void initSession() throws Throwable {
+		 
+		if(!Security.isConnected() && !Application.checkOAuth(request, session))
+			Secure.login();
+	}
+	
     public static void getRoute(String id, String agencyId) {
         try {
         	if (agencyId == null) {

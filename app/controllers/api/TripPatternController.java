@@ -33,14 +33,27 @@ import com.vividsolutions.jts.linearref.LinearLocation;
 import com.vividsolutions.jts.linearref.LocationIndexedLine;
 
 import controllers.Api;
+import controllers.Application;
+import controllers.Secure;
+import controllers.Security;
 import datastore.VersionedDataStore;
 import datastore.AgencyTx;
 import datastore.GlobalTx;
 import play.Logger;
 import play.db.jpa.JPA;
+import play.mvc.Before;
 import play.mvc.Controller;
+import play.mvc.With;
 
+@With(Secure.class)
 public class TripPatternController extends Controller {
+	@Before
+	static void initSession() throws Throwable {
+		 
+		if(!Security.isConnected() && !Application.checkOAuth(request, session))
+			Secure.login();
+	}
+	
     public static void getTripPattern(String id, String routeId, String agencyId) {
     	if (agencyId == null)
     		agencyId = session.get("agencyId");

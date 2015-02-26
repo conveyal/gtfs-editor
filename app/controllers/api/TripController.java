@@ -10,12 +10,25 @@ import models.transit.Trip;
 import models.transit.TripPattern;
 import models.transit.TripPatternStop;
 import controllers.Api;
+import controllers.Application;
+import controllers.Secure;
+import controllers.Security;
 import datastore.VersionedDataStore;
 import datastore.AgencyTx;
 import play.Logger;
+import play.mvc.Before;
 import play.mvc.Controller;
+import play.mvc.With;
 
+@With(Secure.class)
 public class TripController extends Controller {
+	@Before
+	static void initSession() throws Throwable {
+		 
+		if(!Security.isConnected() && !Application.checkOAuth(request, session))
+			Secure.login();
+	}
+	
     public static void getTrip(String id, String patternId, String calendarId, String agencyId) {
     	if (agencyId == null)
     		agencyId = session.get("agencyId");

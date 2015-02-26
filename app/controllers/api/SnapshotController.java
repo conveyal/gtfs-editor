@@ -12,13 +12,26 @@ import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
 import controllers.Api;
+import controllers.Application;
+import controllers.Secure;
+import controllers.Security;
 import datastore.AgencyTx;
 import datastore.GlobalTx;
 import datastore.VersionedDataStore;
+import play.mvc.Before;
 import play.mvc.Controller;
+import play.mvc.With;
 import utils.JacksonSerializers;
 
+@With(Secure.class)
 public class SnapshotController extends Controller {
+	@Before
+	static void initSession() throws Throwable {
+		 
+		if(!Security.isConnected() && !Application.checkOAuth(request, session))
+			Secure.login();
+	}
+	
 	public static void getSnapshot(String agencyId, String id) throws IOException {
 		GlobalTx gtx = VersionedDataStore.getGlobalTx();
 		

@@ -19,12 +19,24 @@ import models.transit.ServiceCalendar.ServiceCalendarForPattern;
 import models.transit.Trip;
 import models.transit.TripPattern;
 import controllers.Api;
+import controllers.Application;
+import controllers.Secure;
+import controllers.Security;
 import datastore.VersionedDataStore;
 import datastore.AgencyTx;
+import play.mvc.Before;
 import play.mvc.Controller;
+import play.mvc.With;
 
+@With(Secure.class)
 public class CalendarController extends Controller {
-
+	@Before
+	static void initSession() throws Throwable {
+		 
+		if(!Security.isConnected() && !Application.checkOAuth(request, session))
+			Secure.login();
+	}
+	
     public static void getCalendar(String id, String agencyId, final String patternId) {
     	if (agencyId == null) {
     		agencyId = session.get("agencyId");
