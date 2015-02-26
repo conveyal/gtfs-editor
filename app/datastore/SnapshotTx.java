@@ -45,6 +45,12 @@ public class SnapshotTx extends DatabaseTx {
 		Logger.info("Snapshotted %s trips", tcount);
 		int scount = pump("stops", (BTreeMap) master.stops);
 		Logger.info("Snapshotted %s stops", scount);
+		
+		// while we don't snapshot indices, we do need to snapshot histograms as they aren't restored
+		// (mapdb ticket 453)
+		pump("tripCountByCalendar", (BTreeMap) master.tripCountByCalendar);
+		pump("tripCountByPatternAndCalendar", (BTreeMap) master.tripCountByPatternAndCalendar);
+		
 		this.commit();
 		Logger.info("Snapshot finished");
 	}
@@ -98,6 +104,13 @@ public class SnapshotTx extends DatabaseTx {
 		else
 			scount = 0;
 		Logger.info("Restored %s stops", scount);
+		
+		if (tx.exists("tripCountByCalendar"))
+			pump(targetTx, "tripCountByCalendar", (BTreeMap) this.<String, Long>getMap("tripCountByCalendar"));
+		
+		if (tx.exists("tripCountByPatternAndCalendar"))
+			pump(targetTx, "tripCountByPatternAndCalendar",
+					(BTreeMap) this.<Tuple2<String, String>, Long>getMap("tripCountByPatternAndCalendar"));
 		
 		// make an agencytx to build indices
 		Logger.info("Rebuilding indices, this could take a little while . . . ");
