@@ -2,6 +2,9 @@ bin
 conf/application.conf
 precompiled
 tmp
+lib
+data
+logs
 eclipse
 .classpath
 *.zip
