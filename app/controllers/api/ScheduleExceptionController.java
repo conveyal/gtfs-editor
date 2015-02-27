@@ -2,6 +2,8 @@ package controllers.api;
 
 import java.util.List;
 
+import org.joda.time.LocalDate;
+
 import models.transit.Agency;
 import models.transit.ScheduleException;
 import controllers.Api;
@@ -81,6 +83,14 @@ public class ScheduleExceptionController extends Controller {
 				tx.rollback();
 				badRequest();
 				return;
+			}
+			
+			for (LocalDate date : ex.dates) {
+				if (tx.scheduleExceptionCountByDate.containsKey(date) && tx.scheduleExceptionCountByDate.get(date) > 0) {
+					tx.rollback();
+					badRequest();
+					return;
+				}
 			}
 			
 			tx.exceptions.put(ex.id, ex);

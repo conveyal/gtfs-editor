@@ -110,7 +110,9 @@ var GtfsEditor = GtfsEditor || {};
     },
 
     /** save the model with the updates from the form */
-    save: function () {
+    save: function (e) {
+      e.preventDefault();
+
       // don't let them save an exception with no dates
       if (this.model.get('dates').length === 0)
         this.$('#enter-date').removeClass("hidden");
@@ -131,7 +133,15 @@ var GtfsEditor = GtfsEditor || {};
 
       this.model.set('customSchedule', customSchedule);
 
-      this.model.save();
+      this.model.save({}, {
+        success: function () {
+          G.Utils.success('Exception saved');
+          window.location.hash = '#';
+        },
+        error: function () {
+          G.Utils.error('Exception save failed. Exception dates must be unique.');
+        }
+      });
     }
   });
 

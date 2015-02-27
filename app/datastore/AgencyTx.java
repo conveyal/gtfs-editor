@@ -12,6 +12,7 @@ import models.transit.Stop;
 import models.transit.Trip;
 import models.transit.TripPattern;
 
+import org.joda.time.LocalDate;
 import org.mapdb.Atomic;
 import org.mapdb.BTreeMap;
 import org.mapdb.Bind;
@@ -59,11 +60,14 @@ public class AgencyTx extends DatabaseTx {
 	/** <<patternId, calendarId>, trip id> */
 	public NavigableSet<Tuple2<Tuple2<String, String>, String>> tripsByPatternAndCalendar;
 	
-	/** number of trip patterns using each stop */
-	public NavigableSet<Tuple2<String, String>> tripPatternsByStop;
-	
 	/** major stops for this agency */
 	public NavigableSet<String> majorStops;
+	
+	/** number of trip patterns using each stop */
+	public ConcurrentMap<String, Long> tripPatternCountByStop;
+	
+	/** number of schedule exceptions on each date - this will always be null, 0, or 1, as we prevent save of others */
+	public ConcurrentMap<LocalDate, Long> scheduleExceptionCountByDate;
 	
 	/** number of trips on each tuple2<patternId, calendar id> */
 	public ConcurrentMap<Tuple2<String, String>, Long> tripCountByPatternAndCalendar;
@@ -164,8 +168,18 @@ public class AgencyTx extends DatabaseTx {
 			}
 		});
 		
-		tripPatternsByStop = getSet("tripPatternsByStop");
-		Bind.secondaryKeys(tripPatterns, tripPatternsByStop, new Fun.Function2<String[], String, TripPattern>() {
+		majorStops = getSet("majorStops");
+		BindUtils.subsetIndex(stops, majorStops, new Fun.Function2<Boolean, String, Stop>  (){
+			@Override
+			public Boolean run(String key, Stop val) {
+				// TODO Auto-generated method stub
+				return val.majorStop != null && val.majorStop;
+			}
+			
+		});
+		
+		tripPatternCountByStop = getMap("tripPatternCountByStop");
+		BindUtils.multiHistogram(tripPatterns, tripPatternCountByStop, new Fun.Function2<String[], String, TripPattern>() {
 			@Override
 			public String[] run(String key, TripPattern tp) {
 				String[] stops = new String[tp.patternStops.size()];
@@ -178,16 +192,6 @@ public class AgencyTx extends DatabaseTx {
 			}
 		});
 		
-		majorStops = getSet("majorStops");
-		BindUtils.subsetIndex(stops, majorStops, new Fun.Function2<Boolean, String, Stop>  (){
-			@Override
-			public Boolean run(String key, Stop val) {
-				// TODO Auto-generated method stub
-				return val.majorStop != null && val.majorStop;
-			}
-			
-		});
-		
 		tripCountByPatternAndCalendar = getMap("tripCountByPatternAndCalendar");
 		Bind.histogram(trips, tripCountByPatternAndCalendar, new Fun.Function2<Tuple2<String, String>, String, Trip>() {
 
@@ -195,6 +199,16 @@ public class AgencyTx extends DatabaseTx {
 			public Tuple2<String, String> run(String tripId, Trip trip) {
 				return new Tuple2(trip.patternId, trip.calendarId);
 			}
+		});
+		
+		scheduleExceptionCountByDate = getMap("scheduleExceptionCountByDate");
+		BindUtils.multiHistogram(exceptions, scheduleExceptionCountByDate, new Fun.Function2<LocalDate[], String, ScheduleException> () {
+
+			@Override
+			public LocalDate[] run(String id, ScheduleException ex) {
+				return ex.dates.toArray(new LocalDate[ex.dates.size()]);
+			}
+			
 		});
 		
 		tripCountByCalendar = getMap("tripCountByCalendar");
@@ -269,11 +283,6 @@ public class AgencyTx extends DatabaseTx {
 				return trips.get(input.b);
 			}	
 		});
-	}
-	
-	/** how many trip patterns stop at the given stop */
-	public int countTripPatternsAtStop (String stopId) {
-		return tripPatternsByStop.subSet(new Tuple2(stopId, null), new Tuple2(stopId, Fun.HI)).size();
 	}
 	
 	/** return the version number of the next snapshot */

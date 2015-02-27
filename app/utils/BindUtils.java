@@ -35,4 +35,41 @@ public class BindUtils {
 			}
 		});
 	}
+	
+	/**
+	 * Make a histogram where each item can be a member of multiple categories.
+	 */
+	public static <K, V, C> void multiHistogram (MapWithModificationListener<K, V> map,
+			final Map<C, Long> histogram, final Function2<C[], K, V> categories) {
+		if (histogram.isEmpty()) {
+			for (Map.Entry<K, V> e : map.entrySet()) {
+				for (C cat : categories.run(e.getKey(), e.getValue())) {
+					if (!histogram.containsKey(cat))
+						histogram.put(cat, 1L);
+					else
+						histogram.put(cat, histogram.get(cat) + 1);
+				}
+			}
+		}
+		
+		map.modificationListenerAdd(new MapListener<K, V>() {
+			@Override
+			public void update(K key, V oldVal, V newVal) {
+				if (oldVal != null) {
+					for (C cat : categories.run(key, oldVal)) {
+						histogram.put(cat, histogram.get(cat) - 1);
+					}
+				}
+				
+				if (newVal != null) {
+					for (C cat : categories.run(key, newVal)) {
+						if (!histogram.containsKey(cat))
+							histogram.put(cat, 1L);
+						else
+							histogram.put(cat, histogram.get(cat) + 1);
+					}
+				}
+			}
+		});
+	}
 }

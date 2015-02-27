@@ -198,7 +198,7 @@ public class StopController extends Controller {
     			return;
     		}
     		
-    		if (tx.countTripPatternsAtStop(id) > 0) {
+    		if (tx.tripPatternCountByStop.containsKey(id) && tx.tripPatternCountByStop.get(id) > 0) {
     			badRequest();
     			return;
     		}
