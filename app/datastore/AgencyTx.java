@@ -21,6 +21,8 @@ import org.mapdb.Fun;
 import org.mapdb.Fun.Function2;
 import org.mapdb.Fun.Tuple2;
 
+import utils.BindUtils;
+
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 
@@ -59,6 +61,9 @@ public class AgencyTx extends DatabaseTx {
 	
 	/** number of trip patterns using each stop */
 	public NavigableSet<Tuple2<String, String>> tripPatternsByStop;
+	
+	/** major stops for this agency */
+	public NavigableSet<String> majorStops;
 	
 	/** number of trips on each tuple2<patternId, calendar id> */
 	public ConcurrentMap<Tuple2<String, String>, Long> tripCountByPatternAndCalendar;
@@ -171,6 +176,16 @@ public class AgencyTx extends DatabaseTx {
 				
 				return stops;
 			}
+		});
+		
+		majorStops = getSet("majorStops");
+		BindUtils.subsetIndex(stops, majorStops, new Fun.Function2<Boolean, String, Stop>  (){
+			@Override
+			public Boolean run(String key, Stop val) {
+				// TODO Auto-generated method stub
+				return val.majorStop != null && val.majorStop;
+			}
+			
 		});
 		
 		tripCountByPatternAndCalendar = getMap("tripCountByPatternAndCalendar");

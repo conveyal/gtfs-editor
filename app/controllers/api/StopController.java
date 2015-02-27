@@ -39,7 +39,7 @@ public class StopController extends Controller {
 			Secure.login();
 	}
 	
-    public static void getStop(String id, String patternId, String agencyId, Double west, Double east, Double north, Double south) {    	
+    public static void getStop(String id, String patternId, String agencyId, Boolean majorStops, Double west, Double east, Double north, Double south) {    	
     	if (agencyId == null)
     		agencyId = session.get("agencyId");
     	
@@ -60,6 +60,18 @@ public class StopController extends Controller {
 	    		
 	    		renderJSON(Api.toJson(tx.stops.get(id), false));
 	    	}
+	      	else if (Boolean.TRUE.equals(majorStops)) {
+	      		// get the major stops for the agency
+	      		Collection<Stop> stops = Collections2.transform(tx.majorStops, new Function<String, Stop> () {
+					@Override
+					public Stop apply(String input) {
+						// TODO Auto-generated method stub
+						return tx.stops.get(input);
+					}	      			
+	      		});
+	      		
+	      		renderJSON(Api.toJson(stops, false));
+	      	}
 	    	else if (west != null && east != null && south != null && north != null) {
 	    		// find all the stops in this bounding box
 	    		// avert your gaze please as I write these generic types
