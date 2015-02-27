@@ -1,13 +1,17 @@
 package datastore;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import models.transit.Route;
 import models.transit.ScheduleException;
+import models.transit.Stop;
 import models.transit.Trip;
 import models.transit.TripPattern;
+import models.transit.TripPatternStop;
 
 import org.mapdb.BTreeMap;
 import org.mapdb.DB;
@@ -55,19 +59,23 @@ public class SnapshotTx extends DatabaseTx {
 		Logger.info("Snapshot finished");
 	}
 	
-	/** restore into an agency. this will OVERWRITE ALL DATA IN THE AGENCY's MASTER BRANCH. */
-	public void restore (String agencyId) {
+	/**
+	 * restore into an agency. this will OVERWRITE ALL DATA IN THE AGENCY's MASTER BRANCH, with the exception of stops
+	 * @return any stop IDs that had been deleted and were restored so that this snapshot would be valid.
+	 */
+	public List<Stop> restore (String agencyId) {
 		DB targetTx = VersionedDataStore.getRawAgencyTx(agencyId);
 
 		for (String obj : targetTx.getAll().keySet()) {
-			if (obj.equals("snapshotVersion"))
+			if (obj.equals("snapshotVersion") || obj.equals("stops"))
 				// except don't overwrite the counter that keeps track of snapshot versions
+				// we also don't overwrite the stops completely, as we need to merge them
 				continue;
 			else
 				targetTx.delete(obj);
 		}
 		
-		int rcount, ccount, ecount, pcount, tcount, scount;
+		int rcount, ccount, ecount, pcount, tcount;
 		
 		if (tx.exists("routes"))
 			rcount = pump(targetTx, "routes", (BTreeMap) this.<String, Route>getMap("routes"));
@@ -99,12 +107,7 @@ public class SnapshotTx extends DatabaseTx {
 			tcount = 0;
 		Logger.info("Restored %s trips", tcount);
 		
-		if (tx.exists("stops"))
-			scount = pump(targetTx, "stops", (BTreeMap) this.<String, Trip>getMap("stops"));
-		else
-			scount = 0;
-		Logger.info("Restored %s stops", scount);
-		
+		// restore histograms, see jankotek/mapdb#453
 		if (tx.exists("tripCountByCalendar"))
 			pump(targetTx, "tripCountByCalendar", (BTreeMap) this.<String, Long>getMap("tripCountByCalendar"));
 		
@@ -112,12 +115,33 @@ public class SnapshotTx extends DatabaseTx {
 			pump(targetTx, "tripCountByPatternAndCalendar",
 					(BTreeMap) this.<Tuple2<String, String>, Long>getMap("tripCountByPatternAndCalendar"));
 		
-		// make an agencytx to build indices
+		// make an agencytx to build indices and restore stops
 		Logger.info("Rebuilding indices, this could take a little while . . . ");
 		AgencyTx atx = new AgencyTx(targetTx);
 		Logger.info("done.");
 		
+		Logger.info("Restoring deleted stops");
+		
+		// restore any stops that have been deleted
+		List<Stop> restoredStops = new ArrayList<Stop>();
+		if (tx.exists("stops")) {
+			BTreeMap<String, Stop> oldStops = this.<String, Stop>getMap("stops");
+			
+			for (TripPattern tp : atx.tripPatterns.values()) {
+				for (TripPatternStop ps : tp.patternStops) {
+					if (!atx.stops.containsKey(ps.stopId)) {
+						Stop stop = oldStops.get(ps.stopId);
+						atx.stops.put(ps.stopId, stop);
+						restoredStops.add(stop);
+					}
+				}
+			}
+		}
+		Logger.info("Restored %s deleted stops", restoredStops.size());
+		
 		atx.commit();
+		
+		return restoredStops;
 	}
 	
 	/** close the underlying data store */

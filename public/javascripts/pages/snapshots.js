@@ -25,12 +25,17 @@ var GtfsEditor = GtfsEditor || {};
       this.$('#modal-container').html(ich['snapshot-new-tpl']({restore: false})).find('.modal').modal('show');
     },
 
+    showRestoredStopsDialog: function (stops) {
+      this.$('#modal-container').html(ich['snapshot-stops-tpl']({stops: stops})).find('.modal').modal('show');
+    },
+
     takeSnapshot: function () {
       var instance = this;
       var name = this.$('#snapshot-name').val();
       this.$('#modal-container button.snapshot').prop('disabled', true).text('Saving . . .');
       this.collection.create({name: name, agencyId: G.session.agencyId}, {wait: true,
       success: function () {
+        this.$('#modal-container > .modal').modal('hide').remove();
         instance.collection.fetch({reset: true, data: {agencyId: G.session.agencyId}});
       }});
     },
@@ -45,10 +50,20 @@ var GtfsEditor = GtfsEditor || {};
           instance.$('.restore-snapshot').prop('disabled', true);
           var originalHtml = this.$('.restore-snapshot[data-snapshot="' + id + '"]').html();
           instance.$('.restore-snapshot[data-snapshot="' + id + '"]').text('Restoring . . .');
-          instance.collection.get(id).restore().done(function () {
+          instance.collection.get(id).restore().done(function (stops) {
+            instance.$('#modal-container > .modal').modal('hide').remove();
             G.Utils.success('Snapshot restored');
-            // this will restore all of the buttons when it completes
-            instance.collection.fetch({reset: true, data: {agencyId: G.session.agencyId}});
+
+            if (stops.length > 0) {
+              instance.showRestoredStopsDialog(stops);
+              instance.$('#modal-container .modal').on('hide', function () {
+                // don't pull down the data and re-render until the modal is no longer shown
+                instance.collection.fetch({reset: true, data: {agencyId: G.session.agencyId}});
+              });
+            } else {
+              // this will restore all of the buttons when it completes
+              instance.collection.fetch({reset: true, data: {agencyId: G.session.agencyId}});
+            }
           });
         }});
     },
@@ -58,8 +73,8 @@ var GtfsEditor = GtfsEditor || {};
     },
 
     render: function () {
-      // if there is a modal displayed clear it
-      this.$('.modal').modal('hide');
+      // if there is a modal displayed, hide it and save it to be reshown
+      this.$('#modal-container > .modal').modal('hide');
 
       var snapshots = this.collection.toJSON();
 

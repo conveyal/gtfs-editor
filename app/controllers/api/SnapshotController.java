@@ -2,14 +2,18 @@ package controllers.api;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 
 import models.Snapshot;
+import models.transit.Stop;
 
 import org.mapdb.Fun;
 import org.mapdb.Fun.Tuple2;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.google.common.base.Function;
+import com.google.common.collect.Collections2;
 
 import controllers.Api;
 import controllers.Application;
@@ -107,7 +111,7 @@ public class SnapshotController extends Controller {
 			
 			local = gtx.snapshots.get(decodedId);
 			
-			VersionedDataStore.restore(local);
+			List<Stop> stops = VersionedDataStore.restore(local);
 			
 			// the snapshot we have just taken is now current; make the others not current
 			for (Snapshot o : gtx.snapshots.subMap(new Tuple2(local.agencyId, null), new Tuple2(local.agencyId, Fun.HI)).values()) {
@@ -123,16 +127,13 @@ public class SnapshotController extends Controller {
 			clone.current = true;
 			gtx.snapshots.put(local.id, clone);
 			gtx.commit();
-		} finally {
-			gtx.rollbackIfOpen();
-		}
-		
-		
-		try {
-			renderJSON(Api.toJson(local, false));
+			
+			renderJSON(Api.toJson(stops, false));
 		} catch (IOException e) {
 			e.printStackTrace();
 			badRequest();
+		} finally {
+			gtx.rollbackIfOpen();
 		}
 	}
 }

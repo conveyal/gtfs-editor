@@ -72,3 +72,22 @@
     </div>
   </div>
 </script>
+
+<script id="snapshot-stops-tpl" type="text/html">
+  <div class="modal hide fade">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+      <h3>&{'snapshot.restore-stops'}</h3>
+    </div>
+    <div class="modal-body">
+      <ul>
+        {{#stops}}
+          <li>{{ stopName }}</li>
+        {{/stops}}
+      </ul>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-primary" data-dismiss="modal">&{'shared.button.continue'}</button>
+    </div>
+  </div>
+</script>

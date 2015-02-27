@@ -2,6 +2,7 @@ package datastore;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.NavigableSet;
 import java.util.Set;
@@ -161,14 +162,18 @@ public class VersionedDataStore {
 		}
 	}
 	
-	/** restore a snapshot */
-	public static void restore (Snapshot s) {
+	/**
+	 * restore a snapshot.
+	 * @return a list of stops that were restored from deletion to make this snapshot valid.
+	 */
+	public static List<Stop> restore (Snapshot s) {
 		SnapshotTx tx = new SnapshotTx(getSnapshotDb(s.agencyId, s.version, true));
 		try {
 			Logger.info("Restoring snapshot %s of agency %s", s.version, s.agencyId);
 			long startTime = System.currentTimeMillis();
-			tx.restore(s.agencyId);
+			List<Stop> ret = tx.restore(s.agencyId);
 			Logger.info("Restored snapshot in %.2f seconds", (System.currentTimeMillis() - startTime) / 1000D);
+			return ret;
 		} finally {
 			tx.close();
 		}

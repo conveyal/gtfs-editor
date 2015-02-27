@@ -89,6 +89,7 @@ shared.details=Details
 shared.button.save=Save
 shared.button.delete=Delete
 shared.button.save-continue=Save & Continue
+shared.button.continue=Continue
 shared.button.edit=Edit
 shared.button.close=Close
 shared.button.cancel=Cancel
@@ -149,6 +150,7 @@ snapshot.take-snapshot=Take snapshot
 snapshot.take=Take snapshot
 snapshot.take-and-restore=Take snapshot and restore
 snapshot.current=Current?
+snapshot.restore-stops=The following stops had been deleted and were restored
 
 # /index
 
