@@ -1,5 +1,6 @@
 package controllers;
 
+import jobs.GisExport;
 import play.*;
 import play.i18n.Lang;
 import play.i18n.Messages;
@@ -368,7 +369,7 @@ public class Application extends Controller {
         redirect(Play.configuration.getProperty("application.appBase") + "/public/data/"  + out.getName());
     }
     
-    public static void exportGis(List<Long> agencySelect) {
+    public static void exportGis() {
     	GlobalTx tx = VersionedDataStore.getGlobalTx();
     	
     	try {
@@ -380,40 +381,25 @@ public class Application extends Controller {
     }
     
     
-    public static void createGis(List<Long> agencySelect, String exportType) {
-    	/*
-    	List<Agency> agencyObjects = new ArrayList<Agency>(); 
-        
-        if(agencySelect != null || agencySelect.size() > 0) {
+    public static void createGis(List<String> agencySelect, String exportType) {
+		if (agencySelect.isEmpty()) {
+			badRequest();
+			return;
+		}
 
-            for(Long agencyId : agencySelect) {
-                
-            	Agency a = Agency.findById(agencyId);
-                if(a != null)
-                	agencyObjects.add(a);
-            
-            }
-        }
-        else 
-            agencyObjects = Agency.findAll();
-    	
-    	GisUploadType typeEnum = null;
+    	GisExport.Type typeEnum = null;
     	
     	if(exportType.equals("routes"))
-    		typeEnum = GisUploadType.ROUTES;
+    		typeEnum = GisExport.Type.ROUTES;
     	else
-    		typeEnum = GisUploadType.STOPS;
-    	
-    	GisExport gisExport = new GisExport(agencyObjects, typeEnum, "");
-    	
-    	ProcessGisExport exportJob = new ProcessGisExport(gisExport.id);
-    	
-    	exportJob.doJob();
-    	
-    	redirect(Play.configuration.getProperty("application.appBase") + "/public/data/"  + gisExport.getFilename());
-    	*/
-             
-    }
+    		typeEnum = GisExport.Type.STOPS;
+
+		File outFile = new File(Play.configuration.getProperty("application.publicDataDirectory"), "gis_" + nextExportId.incrementAndGet() + ".zip");
+
+    	new GisExport(typeEnum, outFile, agencySelect).run();
+
+		redirect(Play.configuration.getProperty("application.appBase") + "/public/data/"  + outFile.getName());
+	}
     
     public static void importGtfs() {
     	
