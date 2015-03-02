@@ -495,9 +495,16 @@ G.Trip = Backbone.Model.extend({
 
     comparator: function (trip) {
       var sts = trip.get('stopTimes');
-      if (!_.isUndefined(sts) && sts != null && sts.length > 0) {
-        return sts[0].departureTime;
+
+      if (!_.isUndefined(sts) && !_.isNull(sts)) {
+        // return the earliest time on this trip
+        for (var i = 0; i < sts.length; i++) {
+          if (!_.isUndefined(sts[i]) && !_.isNull(sts[i])) {
+            return sts[i].departureTime;
+          }
+        }
       }
+
       // 500 hours past midnight should put these trips at the end
       // the longest train journey is Moscow to Pyongyang (210 h), per Wikipedia
       return 500 * 60 * 60;

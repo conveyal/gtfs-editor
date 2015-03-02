@@ -27,7 +27,7 @@ public class ServiceCalendar extends Model implements Serializable {
 	
     public String agencyId;
 	public String gtfsServiceId;
-	public String description;
+	public String description;	
     public Boolean monday;
     public Boolean tuesday;
     public Boolean wednesday;
