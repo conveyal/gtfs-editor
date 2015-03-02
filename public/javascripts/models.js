@@ -173,10 +173,10 @@ G.RouteTypes = Backbone.Collection.extend({
 
         if(this.get('mergedStop') != null && this.get('stops').length > 0) {
 
-          var ids = _.without(_.pluck(this.get('stops'), 'id'), this.get('mergedStop').id);
+          var ids = _.pluck(this.get('stops'), 'id');
           var idList = ids.join(',');
 
-          $.get(G.config.baseUrl + 'api/mergeStops', {stop1Id: this.get('mergedStop').id, mergedStopIds: idList}, this.onFinishedMerge);
+          $.get(G.config.baseUrl + 'api/stop/mergeStops', {mergedStopIds: idList}, this.onFinishedMerge);
         }
 
     }

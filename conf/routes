@@ -47,6 +47,7 @@ GET     /timetable/{patternId}/{calendar}       Application.timetable
 
 GET     /api/stop/?                             api.StopController.getStop
 GET     /api/stop/findDuplicateStops            api.StopController.findDuplicateStops
+GET     /api/stop/mergeStops                    api.StopController.mergeStops
 GET     /api/stop/{id}                          api.StopController.getStop
 POST    /api/stop/                              api.StopController.createStop
 PUT     /api/stop/{id}                          api.StopController.updateStop

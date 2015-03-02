@@ -236,7 +236,7 @@ public class StopController extends Controller {
 				gc.setStartingGeographicPoint(stop.getLon(), stop.getLat());
 				for (Stop other : candidateStops) {
 					gc.setDestinationGeographicPoint(other.getLon(), other.getLat());
-					if (gc.getOrthodromicDistance() < 5) {
+					if (gc.getOrthodromicDistance() < 10) {
 						duplicatesOfThis.add(other);
 					}
 				}
