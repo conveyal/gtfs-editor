@@ -136,5 +136,35 @@ public class Trip extends Model implements Serializable {
 		ret.trip = trip;
 		
 		return ret;
-	}    
+	}
+
+	public Trip clone () {
+		Trip ret = new Trip();
+		ret.id = this.id;
+		ret.agencyId = this.agencyId;
+		ret.blockId = this.blockId;
+		ret.calendarId = this.calendarId;
+		ret.routeId = this.routeId;
+		ret.endTime = this.endTime;
+		ret.startTime = this.startTime;
+		ret.headway = this.headway;
+		ret.invalid = this.invalid;
+		ret.patternId = this.patternId;
+		ret.tripDescription = this.tripDescription;
+		ret.tripDirection = this.tripDirection;
+		ret.gtfsTripId = this.gtfsTripId;
+		ret.tripHeadsign = this.tripHeadsign;
+		ret.tripShortName = this.tripShortName;
+		ret.wheelchairBoarding = this.wheelchairBoarding;
+		ret.useFrequency = this.useFrequency;
+
+		// duplicate the stop times
+		ret.stopTimes = new ArrayList<StopTime>();
+
+		for (StopTime st : stopTimes) {
+			ret.stopTimes.add(st.clone());
+		}
+
+		return ret;
+	}
 }   

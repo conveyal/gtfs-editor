@@ -4,13 +4,9 @@ import java.io.Serializable;
 import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
+import datastore.AgencyTx;
 import org.mapdb.Fun;
 import org.mapdb.Fun.Tuple2;
 
@@ -139,6 +135,62 @@ public class Stop extends Model implements Serializable {
 		
 		return ret;
 	}
+
+    /** Merge the given stops IDs within the given AgencyTx, deleting stops and updating trip patterns and trips */
+    public static void merge (List<String> stopIds, AgencyTx tx) {
+        Stop target = tx.stops.get(stopIds.get(0));
+        for (int i = 1; i < stopIds.size(); i++) {
+            Stop source = tx.stops.get(stopIds.get(i));
+
+            // find all the patterns that stop at this stop
+            Collection<TripPattern> tps = tx.getTripPatternsByStop(source.id);
+
+            List<TripPattern> tpToSave = new ArrayList<TripPattern>();
+
+            // update them
+            for (TripPattern tp : tps) {
+                tp = tp.clone();
+                for (TripPatternStop ps : tp.patternStops) {
+                    if (source.id.equals(ps.stopId)) {
+                        ps.stopId = target.id;
+                    }
+                }
+
+                // batch them for save at the end, as all of the sets we are working with still refer to the db,
+                // so changing it midstream is a bad idea
+                tpToSave.add(tp);
+
+                // update the trips
+                List<Trip> tripsToSave = new ArrayList<Trip>();
+                for (Trip trip : tx.getTripsByPattern(tp.id)) {
+                    trip = trip.clone();
+
+                    for (StopTime st : trip.stopTimes) {
+                        if (source.id.equals(st.stopId)) {
+                            // stop times have been cloned, so this is safe
+                            st.stopId = target.id;
+                        }
+                    }
+
+                    tripsToSave.add(trip);
+                }
+
+                for (Trip trip : tripsToSave) {
+                    tx.trips.put(trip.id, trip);
+                }
+            }
+
+            for (TripPattern tp : tpToSave) {
+                tx.tripPatterns.put(tp.id, tp);
+            }
+
+            if (!tx.getTripPatternsByStop(source.id).isEmpty()) {
+                throw new IllegalStateException("Tried to move all trip patterns when merging stops but was not successful");
+            }
+
+            tx.stops.remove(source.id);
+        }
+    }
 
 	@JsonIgnore
 	public String getGtfsId() {

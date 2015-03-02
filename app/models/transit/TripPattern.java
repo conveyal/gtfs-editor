@@ -114,7 +114,12 @@ public class TripPattern extends Model implements Serializable {
     	TripPattern ret = new TripPattern();
     	ret.name = this.name;
     	ret.headsign = this.headsign;
-    	ret.shape = (LineString) this.shape.clone();
+
+		if (this.shape != null)
+    		ret.shape = (LineString) this.shape.clone();
+		else
+			ret.shape = null;
+
     	ret.routeId = this.routeId;
     	ret.agencyId = this.agencyId;
     	ret.useStraightLineDistances = this.useStraightLineDistances;

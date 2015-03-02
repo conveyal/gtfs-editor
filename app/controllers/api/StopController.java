@@ -2,10 +2,13 @@ package controllers.api;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import models.transit.*;
+import org.geotools.referencing.GeodeticCalculator;
 import org.mapdb.Fun;
 import org.mapdb.Fun.Tuple2;
 
@@ -13,10 +16,6 @@ import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Sets;
 
-import models.transit.Agency;
-import models.transit.Stop;
-import models.transit.TripPattern;
-import models.transit.TripPatternStop;
 import controllers.Api;
 import controllers.Application;
 import controllers.Secure;
@@ -28,6 +27,8 @@ import play.data.binding.As;
 import play.mvc.Before;
 import play.mvc.Controller;
 import play.mvc.With;
+import sun.misc.Version;
+import sun.org.mozilla.javascript.NativeArray;
 import utils.JacksonSerializers;
 
 @With(Secure.class)
@@ -73,24 +74,7 @@ public class StopController extends Controller {
 	      		renderJSON(Api.toJson(stops, false));
 	      	}
 	    	else if (west != null && east != null && south != null && north != null) {
-	    		// find all the stops in this bounding box
-	    		// avert your gaze please as I write these generic types
-	    		Tuple2<Double, Double> min = new Tuple2<Double, Double>(west, south);
-	    		Tuple2<Double, Double> max = new Tuple2<Double, Double>(east, north);
-	    		
-	    		Set<Tuple2<Tuple2<Double, Double>, String>> matchedKeys =
-	    				tx.stopsGix.subSet(new Tuple2(min, null), new Tuple2(max, Fun.HI));
-	    		
-	    		Collection<Stop> matchedStops =
-	    				Collections2.transform(matchedKeys, new Function<Tuple2<Tuple2<Double, Double>, String>, Stop> () {
-
-					@Override
-					public Stop apply(
-							Tuple2<Tuple2<Double, Double>, String> input) {
-						return tx.stops.get(input.b);
-					}
-	    		});
-	    		
+				Collection<Stop> matchedStops = tx.getStopsWithinBoundingBox(north, east, south, west);
 	    		renderJSON(Api.toJson(matchedStops, false));
 	    	}
 	    	else if (patternId != null) {
@@ -198,7 +182,7 @@ public class StopController extends Controller {
     			return;
     		}
     		
-    		if (tx.tripPatternCountByStop.containsKey(id) && tx.tripPatternCountByStop.get(id) > 0) {
+    		if (!tx.getTripPatternsByStop(id).isEmpty()) {
     			badRequest();
     			return;
     		}
@@ -215,36 +199,84 @@ public class StopController extends Controller {
     }
     
     
-    /*public static void findDuplicateStops(String agencyId) {
+    public static void findDuplicateStops(String agencyId) {
+		if (agencyId == null)
+			agencyId = session.get("agencyId");
 
-    	try {    	
-    		
-    		List<List<Stop>> duplicateStopPairs = Stop.findDuplicateStops(BigInteger.valueOf(agencyId.longValue()));
-    		renderJSON(Api.toJson(duplicateStopPairs, false));
-    		
+		if (agencyId == null) {
+			badRequest();
+			return;
+		}
+
+		AgencyTx atx = VersionedDataStore.getAgencyTx(agencyId);
+
+    	try {
+			List<List<Stop>> ret = new ArrayList<List<Stop>>();
+
+			for (Stop stop : atx.stops.values()) {
+				// find nearby stops, within 5m
+				// at the equator, 1 degree is 111 km
+				// everywhere else this will overestimate, which is why we have a distance check as well (below)
+				double thresholdDegrees = 5 / 111000d;
+
+				Collection<Stop> candidateStops = atx.getStopsWithinBoundingBox(
+						stop.getLat() + thresholdDegrees,
+						stop.getLon() + thresholdDegrees,
+						stop.getLat() - thresholdDegrees,
+						stop.getLon() - thresholdDegrees);
+
+				// we will always find a single stop, this one.
+				if (candidateStops.size() <= 1)
+					continue;
+
+				List<Stop> duplicatesOfThis = new ArrayList<Stop>();
+
+				// note: this stop will be added implicitly because it is distance zero from itself
+				GeodeticCalculator gc = new GeodeticCalculator();
+				gc.setStartingGeographicPoint(stop.getLon(), stop.getLat());
+				for (Stop other : candidateStops) {
+					gc.setDestinationGeographicPoint(other.getLon(), other.getLat());
+					if (gc.getOrthodromicDistance() < 5) {
+						duplicatesOfThis.add(other);
+					}
+				}
+
+				if (duplicatesOfThis.size() > 1) {
+					ret.add(duplicatesOfThis);
+				}
+			}
+
+			renderJSON(Api.toJson(ret, false));
     	 } catch (Exception e) {
              e.printStackTrace();
              badRequest();
          }
-    }
+		finally {
+			atx.rollback();
+		}
+	}
 
-    public static void mergeStops(Long stop1Id, @As(",") List<String> mergedStopIds) {
-        
-        if(stop1Id == null)
-            badRequest();
+    public static void mergeStops(String agencyId, @As(",") List<String> mergedStopIds) {
+		if (mergedStopIds.size() <= 1) {
+			badRequest();
+			return;
+		}
 
-        Stop stop1 = Stop.findById(stop1Id);
+		if (agencyId == null)
+			agencyId = session.get("agencyId");
 
-        for(String stopIdStr : mergedStopIds) {
+		if (agencyId == null) {
+			badRequest();
+			return;
+		}
 
-            Stop stop2 = Stop.findById(Long.parseLong(stopIdStr));
+		AgencyTx tx = VersionedDataStore.getAgencyTx(agencyId);
 
-            if(stop1 == null && stop2 == null)
-                badRequest();
-
-            stop1.merge(stop2);
-
-            ok();
-        }
-    }*/
+		try {
+			Stop.merge(mergedStopIds, tx);
+			tx.commit();
+		} finally {
+			tx.rollbackIfOpen();
+		}
+	}
 }

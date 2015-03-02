@@ -1,9 +1,10 @@
+package datastore;
+
+import datastore.AgencyTx;
+import datastore.GlobalTx;
 import org.junit.*;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
-
-import datastore.VersionedDataStore.AgencyTx;
-import datastore.VersionedDataStore.GlobalTx;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -29,7 +30,7 @@ import static models.transit.TripPattern.reconcilePatternStops;
  * Test that reconciling trip patterns does the right thing with stop times, etc.
  * 
  * When running this test, note that the Play test runner tends to time out and you have to open the test results
- * test-result/TripPatternReconciliationTest.(passed|failed).html
+ * test-result/datastore.TripPatternReconciliationTest.(passed|failed).html
  * 
  * @author mattwigway
  *
@@ -72,7 +73,7 @@ public class TripPatternReconciliationTest extends UnitTest {
         for (int i = 0; i < 20; i++) {
             // proceeding east along North Ave west of Wicker Park, Chicago, Ill.
             ret[i] = new Stop(agency, "stop_" + i, null, null, null, 41.9100, -87.713 + i * 0.001);
-            gtx.stops.put(ret[i].id, ret[i]);
+            atx.stops.put(ret[i].id, ret[i]);
         }
         
         return ret;

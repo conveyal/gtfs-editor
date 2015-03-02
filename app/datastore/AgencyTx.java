@@ -63,8 +63,8 @@ public class AgencyTx extends DatabaseTx {
 	/** major stops for this agency */
 	public NavigableSet<String> majorStops;
 	
-	/** number of trip patterns using each stop */
-	public ConcurrentMap<String, Long> tripPatternCountByStop;
+	/** <Stop ID, Pattern ID> </Stop>trip patterns using each stop */
+	public NavigableSet<Tuple2<String, String>> tripPatternsByStop;
 	
 	/** number of schedule exceptions on each date - this will always be null, 0, or 1, as we prevent save of others */
 	public ConcurrentMap<LocalDate, Long> scheduleExceptionCountByDate;
@@ -178,16 +178,16 @@ public class AgencyTx extends DatabaseTx {
 			
 		});
 		
-		tripPatternCountByStop = getMap("tripPatternCountByStop");
-		BindUtils.multiHistogram(tripPatterns, tripPatternCountByStop, new Fun.Function2<String[], String, TripPattern>() {
+		tripPatternsByStop = getSet("tripPatternsByStop");
+		Bind.secondaryKeys(tripPatterns, tripPatternsByStop, new Fun.Function2<String[], String, TripPattern>() {
 			@Override
 			public String[] run(String key, TripPattern tp) {
 				String[] stops = new String[tp.patternStops.size()];
-				
+
 				for (int i = 0; i < stops.length; i++) {
 					stops[i] = tp.patternStops.get(i).stopId;
 				}
-				
+
 				return stops;
 			}
 		});
@@ -284,7 +284,38 @@ public class AgencyTx extends DatabaseTx {
 			}	
 		});
 	}
-	
+
+	public Collection<Stop> getStopsWithinBoundingBox (double north, double east, double south, double west) {
+		// find all the stops in this bounding box
+		// avert your gaze please as I write these generic types
+		Tuple2<Double, Double> min = new Tuple2<Double, Double>(west, south);
+		Tuple2<Double, Double> max = new Tuple2<Double, Double>(east, north);
+
+		Set<Tuple2<Tuple2<Double, Double>, String>> matchedKeys =
+				stopsGix.subSet(new Tuple2(min, null), new Tuple2(max, Fun.HI));
+
+		Collection<Stop> matchedStops =
+				Collections2.transform(matchedKeys, new Function<Tuple2<Tuple2<Double, Double>, String>, Stop> () {
+
+					@Override
+					public Stop apply(
+							Tuple2<Tuple2<Double, Double>, String> input) {
+						return stops.get(input.b);
+					}
+				});
+
+		return matchedStops;
+	}
+
+	public Collection<TripPattern> getTripPatternsByStop (String id) {
+		Collection<Tuple2<String, String>> matchedPatterns = tripPatternsByStop.subSet(new Tuple2(id, null), new Tuple2(id, Fun.HI));
+		return Collections2.transform(matchedPatterns, new Function<Tuple2<String, String>, TripPattern>() {
+			public TripPattern apply(Tuple2<String, String> input) {
+				return tripPatterns.get(input.b);
+			}
+		});
+	}
+
 	/** return the version number of the next snapshot */
 	public int getNextSnapshotId () {
 		return snapshotVersion.incrementAndGet();

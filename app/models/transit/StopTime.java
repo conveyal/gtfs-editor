@@ -70,4 +70,16 @@ public class StopTime implements Serializable {
 			return null;
     	}
     }
+
+	public StopTime clone () {
+		StopTime ret = new StopTime();
+		ret.arrivalTime = arrivalTime;
+		ret.departureTime = departureTime;
+		ret.pickupType = pickupType;
+		ret.dropOffType = dropOffType;
+		ret.stopHeadsign = stopHeadsign;
+		ret.shapeDistTraveled = shapeDistTraveled;
+		ret.stopId = stopId;
+		return ret;
+	}
 }

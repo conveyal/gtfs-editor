@@ -207,7 +207,7 @@ G.RouteTypes = Backbone.Collection.extend({
       this.reset();
       this.groupMap = {};
 
-      $.get(G.config.baseUrl + 'api/findDuplicateStops', {agencyId: this.agencyId}, this.loadGroups);
+      $.get(G.config.baseUrl + 'api/stop/findDuplicateStops', {agencyId: this.agencyId}, this.loadGroups);
     },
 
     loadGroups: function(pairs) {
