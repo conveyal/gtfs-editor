@@ -5,6 +5,9 @@
 # /usr/local/Cellar/tomcat/7.0.47/libexec/webapps/gtfs-editor/WEB-INF/application/public/data/
 application.publicDataDirectory=public/data/
 
+# Where the database is stored on the filesystem
+application.database-directory=data
+
 # if installing as stand-alone this should be blank. if installed as tomcat app this should be /gtfs-editor
 application.appBase=
 
