@@ -26,10 +26,8 @@ public class ServiceCalendar extends Model implements Serializable {
 	public static final long serialVersionUID = 1;
 	
     public String agencyId;
-	
-	public String description;
-	
 	public String gtfsServiceId;
+	public String description;
     public Boolean monday;
     public Boolean tuesday;
     public Boolean wednesday;
@@ -109,11 +107,11 @@ public class ServiceCalendar extends Model implements Serializable {
 	public void jsonSetRoutes(Collection<String> routes) { }
 
     /**
-     * Infer the name of this calendar 
+     * Infer the name of this calendar
      */
     public void inferName () {
         StringBuilder sb = new StringBuilder(14);
-        
+
         if (monday)
             sb.append("Mo");
         
@@ -140,7 +138,7 @@ public class ServiceCalendar extends Model implements Serializable {
         if (this.description.equals("") && this.gtfsServiceId != null)
         	this.description = gtfsServiceId;
     }
-    
+
     public String toString() {
 
     	String str = "";
@@ -172,7 +170,7 @@ public class ServiceCalendar extends Model implements Serializable {
     /**
      * Convert this service to a GTFS service calendar.
      * @param startDate int, in GTFS format: YYYYMMDD
-     * @param endDate int, again in GTFS format 
+     * @param endDate int, again in GTFS format
      */
 	public Service toGtfs(int startDate, int endDate) {
 		Service ret = new Service(id);
@@ -187,26 +185,26 @@ public class ServiceCalendar extends Model implements Serializable {
 		ret.calendar.thursday   = thursday  ? 1 : 0;
 		ret.calendar.friday     = friday    ? 1 : 0;
 		ret.calendar.saturday   = saturday  ? 1 : 0;
-		
+
 		// TODO: calendar dates
 		return ret;
 	}
-	
+
 	// equals and hashcode use DB ID; they are used to put service calendar dates into a HashMultimap in ProcessGtfsSnapshotExport
 	public int hashCode () {
 		return id.hashCode();
 	}
-    
+
 	public boolean equals(Object o) {
 		if (o instanceof ServiceCalendar) {
 			ServiceCalendar c = (ServiceCalendar) o;
-			
+
 			return id.equals(c.id);
 		}
-		
+
 		return false;
 	}
-	
+
 	/**
 	 * Used to represent a service calendar and its service on a particular route.
 	 */
@@ -214,7 +212,7 @@ public class ServiceCalendar extends Model implements Serializable {
 		public String description;
 		public String id;
 		public long routeTrips;
-		
+
 		public ServiceCalendarForPattern(ServiceCalendar cal, TripPattern patt, long routeTrips	) {
 			this.description = cal.description;
 			this.id = cal.id;
