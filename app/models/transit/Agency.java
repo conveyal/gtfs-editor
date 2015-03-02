@@ -27,8 +27,6 @@ public class Agency extends Model implements Serializable {
     public String phone;
     
     public String color;
-    
-    public Boolean systemMap;
 
     public Double defaultLat;
     public Double defaultLon;
