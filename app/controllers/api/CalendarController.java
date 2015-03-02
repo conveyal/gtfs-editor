@@ -1,10 +1,7 @@
 package controllers.api;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
-
-import javax.persistence.Query;
 
 import org.mapdb.Fun;
 
@@ -12,13 +9,11 @@ import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Sets;
 
-import models.transit.Agency;
 import models.transit.ScheduleException;
 import models.transit.ServiceCalendar;
 import models.transit.ServiceCalendar.ServiceCalendarForPattern;
 import models.transit.Trip;
-import models.transit.TripPattern;
-import controllers.Api;
+import controllers.Base;
 import controllers.Application;
 import controllers.Secure;
 import controllers.Security;
@@ -60,7 +55,7 @@ public class CalendarController extends Controller {
     			else {
     				ServiceCalendar c = tx.calendars.get(id);
     				c.addDerivedInfo(tx);
-    				renderJSON(Api.toJson(c, false));
+    				renderJSON(Base.toJson(c, false));
     			}
     		}
     		else if (patternId != null) {
@@ -91,14 +86,14 @@ public class CalendarController extends Controller {
     						
     					});
     			
-    			renderJSON(Api.toJson(ret, false));
+    			renderJSON(Base.toJson(ret, false));
     		}
     		else {
     			Collection<ServiceCalendar> cals = tx.calendars.values();
     			for (ServiceCalendar c : cals) {
     				c.addDerivedInfo(tx);
     			}
-    			renderJSON(Api.toJson(cals, false));
+    			renderJSON(Base.toJson(cals, false));
     		}
     		
     		tx.rollback();
@@ -115,7 +110,7 @@ public class CalendarController extends Controller {
     	AgencyTx tx = null;
 
         try {
-            cal = Api.mapper.readValue(params.get("body"), ServiceCalendar.class);
+            cal = Base.mapper.readValue(params.get("body"), ServiceCalendar.class);
 
             if (!VersionedDataStore.agencyExists(cal.agencyId)) {
                 badRequest();
@@ -140,7 +135,7 @@ public class CalendarController extends Controller {
             tx.calendars.put(cal.id, cal);
             tx.commit();
 
-            renderJSON(Api.toJson(cal, false));
+            renderJSON(Base.toJson(cal, false));
         } catch (Exception e) {
         	if (tx != null) tx.rollback();
             e.printStackTrace();
@@ -153,7 +148,7 @@ public class CalendarController extends Controller {
     	AgencyTx tx = null;
 
         try {
-            cal = Api.mapper.readValue(params.get("body"), ServiceCalendar.class);
+            cal = Base.mapper.readValue(params.get("body"), ServiceCalendar.class);
 
             if (!VersionedDataStore.agencyExists(cal.agencyId)) {
                 badRequest();
@@ -178,7 +173,7 @@ public class CalendarController extends Controller {
             tx.calendars.put(cal.id, cal);
             tx.commit();
 
-            renderJSON(Api.toJson(cal, false));
+            renderJSON(Base.toJson(cal, false));
         } catch (Exception e) {
         	if (tx != null) tx.rollback();
             e.printStackTrace();

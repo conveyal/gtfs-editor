@@ -7,48 +7,22 @@ import play.i18n.Messages;
 import play.mvc.*;
 import play.mvc.Http.Request;
 import play.mvc.Scope.Session;
-import utils.tags.TimeExtensions;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.StringWriter;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.ArrayUtils;
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
-import org.mapdb.Fun;
-
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 
 import datastore.VersionedDataStore;
 import datastore.AgencyTx;
 import datastore.GlobalTx;
-import au.com.bytecode.opencsv.CSVReader;
-import au.com.bytecode.opencsv.CSVWriter;
-import jobs.ProcessGisExport;
 import jobs.ProcessGtfsSnapshotExport;
 import jobs.ProcessGtfsSnapshotMerge;
 import models.*;
-import models.transit.Route;
 import models.transit.RouteType;
-import models.transit.ServiceCalendar;
-import models.transit.Stop;
-import models.transit.StopTime;
-import models.transit.StopTimePickupDropOffType;
-import models.transit.StopType;
 import models.transit.Agency;
-import models.transit.Trip;
-import models.transit.TripPattern;
-import models.transit.TripPatternStop;
 
 @With(Secure.class)
 public class Application extends Controller {
@@ -119,7 +93,7 @@ public class Application extends Controller {
 	        // used to render agency names in templates
 	        // note that we do need to include all agencies here; it is possible to see stops from agencies you do
 	        // not have permission to edit.
-	        renderArgs.put("agenciesJson", Api.toJson(tx.agencies, false));
+	        renderArgs.put("agenciesJson", Base.toJson(tx.agencies, false));
     	}
     	finally {
     		tx.rollback();

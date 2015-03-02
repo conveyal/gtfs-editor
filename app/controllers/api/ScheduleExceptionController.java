@@ -1,12 +1,9 @@
 package controllers.api;
 
-import java.util.List;
-
 import org.joda.time.LocalDate;
 
-import models.transit.Agency;
 import models.transit.ScheduleException;
-import controllers.Api;
+import controllers.Base;
 import controllers.Application;
 import controllers.Secure;
 import controllers.Security;
@@ -44,10 +41,10 @@ public class ScheduleExceptionController extends Controller {
     			if (!tx.exceptions.containsKey(exceptionId))
     				badRequest();
     			else
-    				renderJSON(Api.toJson(tx.exceptions.get(exceptionId), false));
+    				renderJSON(Base.toJson(tx.exceptions.get(exceptionId), false));
     		}
     		else {
-    			renderJSON(Api.toJson(tx.exceptions.values(), false));
+    			renderJSON(Base.toJson(tx.exceptions.values(), false));
     		}
     		tx.rollback();
     	} catch (Exception e) {
@@ -60,7 +57,7 @@ public class ScheduleExceptionController extends Controller {
     public static void createScheduleException () {
     	AgencyTx tx = null;
     	try {
-			ScheduleException ex = Api.mapper.readValue(params.get("body"), ScheduleException.class);
+			ScheduleException ex = Base.mapper.readValue(params.get("body"), ScheduleException.class);
 			
 			if (!VersionedDataStore.agencyExists(ex.agencyId)) {
 				badRequest();
@@ -97,7 +94,7 @@ public class ScheduleExceptionController extends Controller {
 			
 			tx.commit();
 			
-			renderJSON(Api.toJson(ex, false));			
+			renderJSON(Base.toJson(ex, false));
 		} catch (Exception e) {
 			if (tx != null) tx.rollback();
 			e.printStackTrace();
@@ -108,7 +105,7 @@ public class ScheduleExceptionController extends Controller {
     public static void updateScheduleException () {
     	AgencyTx tx = null;
     	try {
-			ScheduleException ex = Api.mapper.readValue(params.get("body"), ScheduleException.class);
+			ScheduleException ex = Base.mapper.readValue(params.get("body"), ScheduleException.class);
 			
 			if (!VersionedDataStore.agencyExists(ex.agencyId)) {
 				badRequest();
@@ -137,7 +134,7 @@ public class ScheduleExceptionController extends Controller {
 			
 			tx.commit();
 			
-			renderJSON(Api.toJson(ex, false));			
+			renderJSON(Base.toJson(ex, false));
 		} catch (Exception e) {
 			if (tx != null) tx.rollback();
 			e.printStackTrace();

@@ -51,7 +51,7 @@ import models.transit.Trip;
 import models.transit.TripPattern;
 import models.transit.TripPatternStop;
 
-public class Api {
+public class Base {
     public static ObjectMapper mapper = new ObjectMapper();
     private static JsonFactory jf = new JsonFactory();
     

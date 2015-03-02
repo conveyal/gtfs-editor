@@ -1,35 +1,25 @@
 package controllers.api;
 
-import java.io.IOException;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import models.transit.*;
 import org.geotools.referencing.GeodeticCalculator;
-import org.mapdb.Fun;
-import org.mapdb.Fun.Tuple2;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
-import com.google.common.collect.Sets;
 
-import controllers.Api;
+import controllers.Base;
 import controllers.Application;
 import controllers.Secure;
 import controllers.Security;
 import datastore.VersionedDataStore;
 import datastore.AgencyTx;
-import datastore.GlobalTx;
 import play.data.binding.As;
 import play.mvc.Before;
 import play.mvc.Controller;
 import play.mvc.With;
-import sun.misc.Version;
-import sun.org.mozilla.javascript.NativeArray;
-import utils.JacksonSerializers;
 
 @With(Secure.class)
 public class StopController extends Controller {
@@ -59,7 +49,7 @@ public class StopController extends Controller {
 	    			return;
 	    		}
 	    		
-	    		renderJSON(Api.toJson(tx.stops.get(id), false));
+	    		renderJSON(Base.toJson(tx.stops.get(id), false));
 	    	}
 	      	else if (Boolean.TRUE.equals(majorStops)) {
 	      		// get the major stops for the agency
@@ -71,11 +61,11 @@ public class StopController extends Controller {
 					}	      			
 	      		});
 	      		
-	      		renderJSON(Api.toJson(stops, false));
+	      		renderJSON(Base.toJson(stops, false));
 	      	}
 	    	else if (west != null && east != null && south != null && north != null) {
 				Collection<Stop> matchedStops = tx.getStopsWithinBoundingBox(north, east, south, west);
-	    		renderJSON(Api.toJson(matchedStops, false));
+	    		renderJSON(Base.toJson(matchedStops, false));
 	    	}
 	    	else if (patternId != null) {
 	    		if (!tx.tripPatterns.containsKey(patternId)) {
@@ -93,7 +83,7 @@ public class StopController extends Controller {
 					}
 	    		});
 	    		
-	    		renderJSON(Api.toJson(ret, false));
+	    		renderJSON(Base.toJson(ret, false));
 	    	}
 	    	else {
 	    		badRequest();
@@ -111,7 +101,7 @@ public class StopController extends Controller {
     public static void createStop() {
     	AgencyTx tx = null;
         try {
-            Stop stop = Api.mapper.readValue(params.get("body"), Stop.class);
+            Stop stop = Base.mapper.readValue(params.get("body"), Stop.class);
             
             if (!VersionedDataStore.agencyExists(stop.agencyId)) {
             	badRequest();
@@ -127,7 +117,7 @@ public class StopController extends Controller {
             
             tx.stops.put(stop.id, stop);
             tx.commit();
-            renderJSON(Api.toJson(stop, false));
+            renderJSON(Base.toJson(stop, false));
         } catch (Exception e) {
             e.printStackTrace();
             badRequest();
@@ -141,7 +131,7 @@ public class StopController extends Controller {
     public static void updateStop() {
     	AgencyTx tx = null;
         try {
-            Stop stop = Api.mapper.readValue(params.get("body"), Stop.class);
+            Stop stop = Base.mapper.readValue(params.get("body"), Stop.class);
             
             if (!VersionedDataStore.agencyExists(stop.agencyId)) {
             	badRequest();
@@ -157,7 +147,7 @@ public class StopController extends Controller {
             
             tx.stops.put(stop.id, stop);
             tx.commit();
-            renderJSON(Api.toJson(stop, false));
+            renderJSON(Base.toJson(stop, false));
         } catch (Exception e) {
             e.printStackTrace();
             badRequest();
@@ -189,7 +179,7 @@ public class StopController extends Controller {
     		
     		Stop s = tx.stops.remove(id);
     		tx.commit();
-    		renderJSON(Api.toJson(s, false));
+    		renderJSON(Base.toJson(s, false));
     	} catch (Exception e) {
     		badRequest();
     		e.printStackTrace();
@@ -246,7 +236,7 @@ public class StopController extends Controller {
 				}
 			}
 
-			renderJSON(Api.toJson(ret, false));
+			renderJSON(Base.toJson(ret, false));
     	 } catch (Exception e) {
              e.printStackTrace();
              badRequest();

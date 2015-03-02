@@ -10,16 +10,10 @@ import models.transit.Stop;
 import org.mapdb.Fun;
 import org.mapdb.Fun.Tuple2;
 
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.google.common.base.Function;
-import com.google.common.collect.Collections2;
-
-import controllers.Api;
+import controllers.Base;
 import controllers.Application;
 import controllers.Secure;
 import controllers.Security;
-import datastore.AgencyTx;
 import datastore.GlobalTx;
 import datastore.VersionedDataStore;
 import play.mvc.Before;
@@ -43,7 +37,7 @@ public class SnapshotController extends Controller {
 			if (id != null) {
 				Tuple2<String, Integer> sid = JacksonSerializers.Tuple2IntDeserializer.deserialize(id);
 				if (gtx.snapshots.containsKey(sid))
-					renderJSON(Api.toJson(gtx.snapshots.get(sid), false));
+					renderJSON(Base.toJson(gtx.snapshots.get(sid), false));
 				else
 					notFound();
 				
@@ -59,7 +53,7 @@ public class SnapshotController extends Controller {
 				}
 				
 				Collection<Snapshot> snapshots = gtx.snapshots.subMap(new Tuple2(agencyId, null), new Tuple2(agencyId, Fun.HI)).values();
-				renderJSON(Api.toJson(snapshots, false));
+				renderJSON(Base.toJson(snapshots, false));
 			} 
 		} finally {
 			gtx.rollback();
@@ -69,7 +63,7 @@ public class SnapshotController extends Controller {
 	public static void createSnapshot () {
 		GlobalTx gtx = null;
 		try {
-			Snapshot s = Api.mapper.readValue(params.get("body"), Snapshot.class);
+			Snapshot s = Base.mapper.readValue(params.get("body"), Snapshot.class);
 			s = VersionedDataStore.takeSnapshot(s.agencyId, s.name);
 			gtx = VersionedDataStore.getGlobalTx();
 			
@@ -85,7 +79,7 @@ public class SnapshotController extends Controller {
 			
 			gtx.commit();
 			
-			renderJSON(Api.toJson(s, false));
+			renderJSON(Base.toJson(s, false));
 		} catch (IOException e) {
 			badRequest();
 			if (gtx != null) gtx.rollbackIfOpen();
@@ -128,7 +122,7 @@ public class SnapshotController extends Controller {
 			gtx.snapshots.put(local.id, clone);
 			gtx.commit();
 			
-			renderJSON(Api.toJson(stops, false));
+			renderJSON(Base.toJson(stops, false));
 		} catch (IOException e) {
 			e.printStackTrace();
 			badRequest();

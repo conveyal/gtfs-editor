@@ -1,9 +1,7 @@
 package controllers.api;
 
-import java.util.List;
-
 import models.transit.Agency;
-import controllers.Api;
+import controllers.Base;
 import controllers.Application;
 import controllers.Secure;
 import controllers.Security;
@@ -33,10 +31,10 @@ public class AgencyController extends Controller {
 	            	return;
 	            }
 	               
-	            renderJSON(Api.toJson(tx.agencies.get(id), false));
+	            renderJSON(Base.toJson(tx.agencies.get(id), false));
             }
             else {
-                renderJSON(Api.toJson(tx.agencies.values(), false));
+                renderJSON(Base.toJson(tx.agencies.values(), false));
             }
             
             tx.rollback();
@@ -50,7 +48,7 @@ public class AgencyController extends Controller {
         Agency agency;
 
         try {
-            agency = Api.mapper.readValue(params.get("body"), Agency.class);
+            agency = Base.mapper.readValue(params.get("body"), Agency.class);
             
             // check if gtfsAgencyId is specified, if not create from DB id
             if(agency.gtfsAgencyId == null) {
@@ -68,7 +66,7 @@ public class AgencyController extends Controller {
             tx.agencies.put(agency.id, agency);
             tx.commit();
 
-            renderJSON(Api.toJson(agency, false));
+            renderJSON(Base.toJson(agency, false));
         } catch (Exception e) {
             e.printStackTrace();
             badRequest();
@@ -80,7 +78,7 @@ public class AgencyController extends Controller {
         Agency agency;
 
         try {
-            agency = Api.mapper.readValue(params.get("body"), Agency.class);
+            agency = Base.mapper.readValue(params.get("body"), Agency.class);
             
             GlobalTx tx = VersionedDataStore.getGlobalTx();
 
@@ -97,7 +95,7 @@ public class AgencyController extends Controller {
             tx.agencies.put(agency.id, agency);
             tx.commit();
 
-            renderJSON(Api.toJson(agency, false));
+            renderJSON(Base.toJson(agency, false));
         } catch (Exception e) {
             e.printStackTrace();
             badRequest();

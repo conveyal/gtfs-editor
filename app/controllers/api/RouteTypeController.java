@@ -1,7 +1,7 @@
 package controllers.api;
 
 import models.transit.RouteType;
-import controllers.Api;
+import controllers.Base;
 import controllers.Application;
 import controllers.Secure;
 import controllers.Security;
@@ -26,14 +26,14 @@ public class RouteTypeController extends Controller {
 			
 			if(id != null) {
 				if(tx.routeTypes.containsKey(id))
-					renderJSON(Api.toJson(tx.routeTypes.get(id), false));
+					renderJSON(Base.toJson(tx.routeTypes.get(id), false));
 				else
 					notFound();
 				
 				tx.rollback();
 			}
 			else {
-				renderJSON(Api.toJson(tx.routeTypes.values(), false));
+				renderJSON(Base.toJson(tx.routeTypes.values(), false));
 				tx.rollback();
 			}
 		} catch (Exception e) {
@@ -47,7 +47,7 @@ public class RouteTypeController extends Controller {
 		RouteType routeType;
 
 		try {
-			routeType = Api.mapper.readValue(params.get("body"), RouteType.class);
+			routeType = Base.mapper.readValue(params.get("body"), RouteType.class);
 			
 			GlobalTx tx = VersionedDataStore.getGlobalTx();
 			
@@ -60,7 +60,7 @@ public class RouteTypeController extends Controller {
 			tx.routeTypes.put(routeType.id, routeType);
 			tx.commit();
 			
-			renderJSON(Api.toJson(routeType, false));
+			renderJSON(Base.toJson(routeType, false));
 		} catch (Exception e) {
 			e.printStackTrace();
 			badRequest();
@@ -72,7 +72,7 @@ public class RouteTypeController extends Controller {
 		RouteType routeType;
 
 		try {
-			routeType = Api.mapper.readValue(params.get("body"), RouteType.class);
+			routeType = Base.mapper.readValue(params.get("body"), RouteType.class);
 
 			if(routeType.id == null) {
 				badRequest();
@@ -89,7 +89,7 @@ public class RouteTypeController extends Controller {
 			tx.routeTypes.put(routeType.id, routeType);
 			tx.commit();
 
-			renderJSON(Api.toJson(routeType, false));
+			renderJSON(Base.toJson(routeType, false));
 		} catch (Exception e) {
 			e.printStackTrace();
 			badRequest();

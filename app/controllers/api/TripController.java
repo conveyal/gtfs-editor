@@ -1,15 +1,10 @@
 package controllers.api;
 
-import java.util.List;
-
-import models.transit.Agency;
-import models.transit.Route;
-import models.transit.ServiceCalendar;
 import models.transit.StopTime;
 import models.transit.Trip;
 import models.transit.TripPattern;
 import models.transit.TripPatternStop;
-import controllers.Api;
+import controllers.Base;
 import controllers.Application;
 import controllers.Secure;
 import controllers.Security;
@@ -43,7 +38,7 @@ public class TripController extends Controller {
         try {
             if (id != null) {
             	if (tx.trips.containsKey(id))
-            		renderJSON(Api.toJson(tx.trips.get(id), false));
+            		renderJSON(Base.toJson(tx.trips.get(id), false));
             	else
             		notFound();
             }
@@ -52,15 +47,15 @@ public class TripController extends Controller {
             		notFound();
             	}
             	else {
-            		renderJSON(Api.toJson(tx.getTripsByPatternAndCalendar(patternId, calendarId), false));
+            		renderJSON(Base.toJson(tx.getTripsByPatternAndCalendar(patternId, calendarId), false));
             	}
             }
 
             else if(patternId != null) {
-            	renderJSON(Api.toJson(tx.getTripsByPattern(patternId), false));
+            	renderJSON(Base.toJson(tx.getTripsByPattern(patternId), false));
             }
             else {
-            	renderJSON(Api.toJson(tx.trips.values(), false));
+            	renderJSON(Base.toJson(tx.trips.values(), false));
             }
                 
         } catch (Exception e) {
@@ -75,7 +70,7 @@ public class TripController extends Controller {
     	AgencyTx tx = null;
     	
         try {
-        	Trip trip = Api.mapper.readValue(params.get("body"), Trip.class);
+        	Trip trip = Base.mapper.readValue(params.get("body"), Trip.class);
         	
         	if (!VersionedDataStore.agencyExists(trip.agencyId)) {
         		badRequest();
@@ -99,7 +94,7 @@ public class TripController extends Controller {
         	tx.trips.put(trip.id, trip);
         	tx.commit();
         	
-        	renderJSON(Api.toJson(trip, false));
+        	renderJSON(Base.toJson(trip, false));
         } catch (Exception e) {
             e.printStackTrace();
             if (tx != null) tx.rollbackIfOpen();
@@ -111,7 +106,7 @@ public class TripController extends Controller {
     	AgencyTx tx = null;
     	
         try {
-        	Trip trip = Api.mapper.readValue(params.get("body"), Trip.class);
+        	Trip trip = Base.mapper.readValue(params.get("body"), Trip.class);
         	
         	if (!VersionedDataStore.agencyExists(trip.agencyId)) {
         		badRequest();
@@ -155,7 +150,7 @@ public class TripController extends Controller {
         	tx.trips.put(trip.id, trip);
         	tx.commit();
         	
-        	renderJSON(Api.toJson(trip, false));
+        	renderJSON(Base.toJson(trip, false));
         } catch (Exception e) {
         	if (tx != null) tx.rollbackIfOpen();
             e.printStackTrace();

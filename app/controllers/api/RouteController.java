@@ -5,9 +5,8 @@ import java.util.Set;
 import org.mapdb.Fun;
 import org.mapdb.Fun.Tuple2;
 
-import models.transit.Agency;
 import models.transit.Route;
-import controllers.Api;
+import controllers.Base;
 import controllers.Application;
 import controllers.Secure;
 import controllers.Security;
@@ -45,10 +44,10 @@ public class RouteController extends Controller {
         		
         		Route route = tx.routes.get(id);
         		
-        		renderJSON(Api.toJson(route, false));
+        		renderJSON(Base.toJson(route, false));
         	}
         	else {
-        		renderJSON(Api.toJson(tx.routes.values(), false));
+        		renderJSON(Base.toJson(tx.routes.values(), false));
         	}
         	
         	tx.rollback();
@@ -62,7 +61,7 @@ public class RouteController extends Controller {
         Route route;
 
         try {
-            route = Api.mapper.readValue(params.get("body"), Route.class);
+            route = Base.mapper.readValue(params.get("body"), Route.class);
             
             GlobalTx gtx = VersionedDataStore.getGlobalTx();
             if (!gtx.agencies.containsKey(route.agencyId)) {
@@ -89,7 +88,7 @@ public class RouteController extends Controller {
             tx.routes.put(route.id, route);
             tx.commit();
 
-            renderJSON(Api.toJson(route, false));
+            renderJSON(Base.toJson(route, false));
         } catch (Exception e) {
             e.printStackTrace();
             badRequest();
@@ -101,7 +100,7 @@ public class RouteController extends Controller {
         Route route;
 
         try {
-            route = Api.mapper.readValue(params.get("body"), Route.class);
+            route = Base.mapper.readValue(params.get("body"), Route.class);
    
             AgencyTx tx = VersionedDataStore.getAgencyTx(route.agencyId);
             
@@ -119,7 +118,7 @@ public class RouteController extends Controller {
             tx.routes.put(route.id, route);
             tx.commit();
 
-            renderJSON(Api.toJson(route, false));
+            renderJSON(Base.toJson(route, false));
         } catch (Exception e) {
             e.printStackTrace();
             badRequest();

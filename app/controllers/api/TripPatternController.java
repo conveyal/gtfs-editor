@@ -2,45 +2,24 @@ package controllers.api;
 
 import static java.util.Collections.sort;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
-import models.transit.Route;
-import models.transit.StopTime;
 import models.transit.Trip;
 import models.transit.TripPattern;
-import models.transit.TripPatternStop;
 
-import org.geotools.geometry.jts.JTS;
 import org.mapdb.Fun;
 import org.mapdb.Fun.Tuple2;
-import org.opengis.referencing.operation.MathTransform;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.LineString;
-import com.vividsolutions.jts.geom.Point;
-import com.vividsolutions.jts.geom.PrecisionModel;
-import com.vividsolutions.jts.linearref.LengthLocationMap;
-import com.vividsolutions.jts.linearref.LinearLocation;
-import com.vividsolutions.jts.linearref.LocationIndexedLine;
 
-import controllers.Api;
+import controllers.Base;
 import controllers.Application;
 import controllers.Secure;
 import controllers.Security;
 import datastore.VersionedDataStore;
 import datastore.AgencyTx;
-import datastore.GlobalTx;
-import play.Logger;
-import play.db.jpa.JPA;
 import play.mvc.Before;
 import play.mvc.Controller;
 import play.mvc.With;
@@ -71,7 +50,7 @@ public class TripPatternController extends Controller {
                if (!tx.tripPatterns.containsKey(id))
             	   notFound();
                else            	   
-            	   renderJSON(Api.toJson(tx.tripPatterns.get(id), false));
+            	   renderJSON(Base.toJson(tx.tripPatterns.get(id), false));
             }
             else if (routeId != null) {
             	
@@ -88,7 +67,7 @@ public class TripPatternController extends Controller {
 						}
 	            	});
 	            	
-	            	renderJSON(Api.toJson(patts, false));     	
+	            	renderJSON(Base.toJson(patts, false));
             	}
             }
             else {
@@ -108,7 +87,7 @@ public class TripPatternController extends Controller {
         TripPattern tripPattern;
         
         try {
-            tripPattern = Api.mapper.readValue(params.get("body"), TripPattern.class);
+            tripPattern = Base.mapper.readValue(params.get("body"), TripPattern.class);
             
             if (!VersionedDataStore.agencyExists(tripPattern.agencyId)) {
             	badRequest();
@@ -127,7 +106,7 @@ public class TripPatternController extends Controller {
             tx.tripPatterns.put(tripPattern.id, tripPattern);
             tx.commit();
 
-            renderJSON(Api.toJson(tripPattern, false));
+            renderJSON(Base.toJson(tripPattern, false));
         } catch (Exception e) {
             e.printStackTrace();
             badRequest();
@@ -138,7 +117,7 @@ public class TripPatternController extends Controller {
         TripPattern tripPattern;
         AgencyTx tx = null;
         try {
-            tripPattern = Api.mapper.readValue(params.get("body"), TripPattern.class);
+            tripPattern = Base.mapper.readValue(params.get("body"), TripPattern.class);
             
             if (!VersionedDataStore.agencyExists(tripPattern.agencyId)) {
             	badRequest();
@@ -174,7 +153,7 @@ public class TripPatternController extends Controller {
             tx.tripPatterns.put(tripPattern.id, tripPattern);
             tx.commit();
 
-            renderJSON(Api.toJson(tripPattern, false));
+            renderJSON(Base.toJson(tripPattern, false));
         } catch (Exception e) {
         	if (tx != null) tx.rollback();
             e.printStackTrace();
