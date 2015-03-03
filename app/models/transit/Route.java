@@ -37,12 +37,6 @@ public class Route extends Model implements Serializable {
     public String comments;
 
     public StatusType status;
-    
-    public Boolean publiclyVisible;
-
-    public Boolean weekday;
-    public Boolean saturday;
-    public Boolean sunday;
 
     public String agencyId;
 
@@ -52,15 +46,7 @@ public class Route extends Model implements Serializable {
     
     public AttributeAvailabilityType wheelchairBoarding;
 
-    /*@JsonCreator
-    public static Route factory(long id) {
-      return Route.findById(id);
-    }
-
-    @JsonCreator
-    public static Route factory(String id) {
-      return Route.findById(Long.parseLong(id));
-    }*/
+    public Route () {}
 
     public Route(com.conveyal.gtfs.model.Route route,  Agency agency, String routeTypeId) {	
         this.gtfsRouteId = route.route_id;

@@ -1,5 +1,6 @@
 package controllers;
 
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -11,6 +12,7 @@ import java.util.ListIterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import datastore.MigrateToMapDB;
 import org.geotools.geometry.jts.JTS;
 import org.opengis.referencing.operation.TransformException;
 
@@ -152,5 +154,16 @@ public class Bootstrap extends Controller {
     	
     	Bootstrap.index();
     }
+
+	// TODO wrong place to have this.
+	public static void migrate () {
+		try {
+			new MigrateToMapDB().migrate(new File("dump"));
+			ok();
+		} catch (Exception e) {
+			e.printStackTrace();
+			badRequest();
+		}
+	}
 }
 
