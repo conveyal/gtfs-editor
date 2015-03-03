@@ -389,6 +389,13 @@ var GtfsEditor = GtfsEditor || {};
         .find('#wheelchairBoarding option[value="' + model.get('wheelchairBoarding') + '"]')
         .attr('selected', true);
 
+      $popupContent
+        .find('#pickupType option[value="' + model.get('pickupType') + '"]')
+        .attr('selected', true);
+
+      $popupContent
+        .find('#dropOffType option[value="' + model.get('dropOffType') + '"]')
+        .attr('selected', true);
 
       this.stopLayers[model.id].on('click', function(evt) {
         evt.target
@@ -444,6 +451,14 @@ var GtfsEditor = GtfsEditor || {};
 
       $popupContent
         .find('#wheelchairBoarding option[value="' + model.get('wheelchairBoarding') + '"]')
+        .attr('selected', true);
+
+      $popupContent
+        .find('#pickupType option[value="' + model.get('pickupType') + '"]')
+        .attr('selected', true);
+
+      $popupContent
+        .find('#dropOffType option[value="' + model.get('dropOffType') + '"]')
         .attr('selected', true);
 
       this.stopLayers[model.id] = markerLayer = L.marker([model.get('lat'),
