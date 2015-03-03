@@ -118,6 +118,7 @@ public class MigrateToMapDB {
             a.color = reader.get("color");
             a.defaultLon = reader.getDouble("defaultlon");
             a.defaultLat = reader.getDouble("defaultlat");
+            a.gtfsAgencyId = reader.get("gtfsagencyid");
             a.lang = reader.get("lang");
             a.name = reader.get("name");
             a.phone = reader.get("phone");
@@ -173,7 +174,7 @@ public class MigrateToMapDB {
             s.bikeParking = reader.getAvail("bikeparking");
             s.carParking = reader.getAvail("carparking");
             s.dropOffType = reader.getPdType("dropofftype");
-            s.pickupType = reader.getPdType("pickupType");
+            s.pickupType = reader.getPdType("pickuptype");
             s.gtfsStopId = reader.get("gtfsstopid");
             s.locationType = reader.getLocationType("locationtype");
             s.majorStop = reader.getBoolean("majorstop");
@@ -259,8 +260,10 @@ public class MigrateToMapDB {
 
         while (reader.readRecord()) {
             TripPatternStop tps = new TripPatternStop();
-            tps.defaultTravelTime = reader.getInteger("defaulttraveltime");
-            tps.defaultDwellTime = reader.getInteger("defaultdwelltime");
+            Integer dtt = reader.getInteger("defaulttraveltime");
+            tps.defaultTravelTime = dtt != null ? dtt : 0;
+            Integer ddt = reader.getInteger("defaultdwelltime");
+            tps.defaultDwellTime = ddt != null ? ddt : 0;
             tps.timepoint = reader.getBoolean("timepoint");
             tps.stopId = reader.get("stop_id");
             // note: not reading shape_dist_traveled as it was incorrectly computed. We'll recompute at the end.
@@ -303,6 +306,8 @@ public class MigrateToMapDB {
             p.agencyId = routeAgencyMap.get(Long.parseLong(p.routeId)) + "";
             patternAgencyMap.put(Long.parseLong(p.id), Long.parseLong(p.agencyId));
 
+            p.calcShapeDistTraveled(getAgencyTx(p.agencyId));
+
             getAgencyTx(p.agencyId).tripPatterns.put(p.id, p);
             count++;
         }
@@ -336,7 +341,7 @@ public class MigrateToMapDB {
             Fun.Tuple2<String, Integer> key = new Fun.Tuple2(reader.get("trip_id"), reader.getInteger("stopsequence"));
 
             if (stopTimeCache.containsKey(key)) {
-                throw new IllegalStateException("Duplicate stop timees!");
+                throw new IllegalStateException("Duplicate stop times!");
             }
 
             stopTimeCache.put(key, st);
@@ -406,6 +411,7 @@ public class MigrateToMapDB {
 
         while (reader.readRecord()) {
             RouteType rt = new RouteType();
+            rt.id = reader.get("id");
             rt.description = reader.get("description");
             String grt = reader.get("gtfsroutetype");
             rt.gtfsRouteType = grt != null ? GtfsRouteType.valueOf(grt) : null;

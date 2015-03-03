@@ -32,8 +32,6 @@ public class StopTime implements Serializable {
     public StopTimePickupDropOffType pickupType;
     
     public StopTimePickupDropOffType dropOffType;
-    
-    public double shapeDistTraveled;
 
     public String stopId;
     
@@ -49,8 +47,7 @@ public class StopTime implements Serializable {
     	this.stopHeadsign = stopTime.stop_headsign;
     	this.pickupType = mapGtfsPickupDropOffType(stopTime.pickup_type);
     	this.dropOffType = mapGtfsPickupDropOffType(stopTime.drop_off_type);
-    	this.shapeDistTraveled = stopTime.shape_dist_traveled;
-    	
+
     	this.stopId = stopId;
     } 
 
@@ -78,7 +75,6 @@ public class StopTime implements Serializable {
 		ret.pickupType = pickupType;
 		ret.dropOffType = dropOffType;
 		ret.stopHeadsign = stopHeadsign;
-		ret.shapeDistTraveled = shapeDistTraveled;
 		ret.stopId = stopId;
 		return ret;
 	}

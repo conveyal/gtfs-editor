@@ -13,3 +13,5 @@ eclipse
 .project
 test-result
 dropAndRecreateDatabase.sh
+dump
+.idea

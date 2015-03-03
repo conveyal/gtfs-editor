@@ -155,8 +155,19 @@ public class Bootstrap extends Controller {
     	Bootstrap.index();
     }
 
-	// TODO wrong place to have this.
+	/**
+	 * Migrate a Postgres database dump. This is a bit on the hacky side. The dump must live in the dump/ subdirectory
+	 * of the application working directory. This is not a strict Postgres db dump, but rather one produced by the
+	 * export-database.sql script, which makes a bunch of CSV's of the tables.
+	 */
+	/*
 	public static void migrate () {
+		GlobalTx gtx = VersionedDataStore.getGlobalTx();
+		if (!gtx.accounts.isEmpty()) {
+			badRequest();
+			return;
+		}
+
 		try {
 			new MigrateToMapDB().migrate(new File("dump"));
 			ok();
@@ -164,6 +175,6 @@ public class Bootstrap extends Controller {
 			e.printStackTrace();
 			badRequest();
 		}
-	}
+	}*/
 }
 
