@@ -145,7 +145,7 @@ public class MigrateToMapDB {
             String username = reader.get("username");
             Boolean admin = reader.getBoolean("admin");
             String email = reader.get("email");
-            String agencyId = reader.get("agencyId");
+            String agencyId = reader.get("agency_id");
             Account a = new Account(username, "password", email, admin, agencyId);
             a.password = reader.get("password");
             a.active = reader.getBoolean("active");
