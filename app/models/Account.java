@@ -103,6 +103,7 @@ public class Account extends Model implements Serializable {
 		ret.username = this.username;
 		ret.id = this.id;
 		ret.active = this.active;
+		ret.admin = this.admin;
 		ret.agencyId = this.agencyId;
 		ret.lastLogin = this.lastLogin;
 		ret.password = this.password;
