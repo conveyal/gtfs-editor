@@ -834,7 +834,7 @@
   <select id="trip-pattern-stop-select">
     <option value="">-- &{'route.trip-pattern-pattern-stops'} --</option>
     {{#stops}}
-      <option value="{{stop.id}}">{{stopSequence}}. {{#stop.stopName}}{{stop.stopName}}{{/stop.stopName}}{{^stop.stopName}}Unnamed Stop{{/stop.stopName}}</option>
+      <option value="{{stopId}}">{{stopSequence}}. {{#stopName}}{{stopName}}{{/stopName}}{{^stopName}}&{'route.unnamed-stop'}{{/stopName}}</option>
       <hr/>
     {{/stops}}
   </select>

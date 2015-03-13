@@ -318,7 +318,10 @@ var GtfsEditor = GtfsEditor || {};
 
       var selectedPatternId  = this.$('#trip-pattern-select').val();
       if(this.model.tripPatterns.get(selectedPatternId) != undefined) {
-          this.options.stops.fetch({remove: false, data: {patternId: this.model.tripPatterns.get(selectedPatternId).id}});
+          this.options.stops.fetch({remove: false, data: {patternId: this.model.tripPatterns.get(selectedPatternId).id}})
+          .done(function () {
+            instance.updatePatternList();
+          });
       }
 
       var agencyId = null;
@@ -332,7 +335,7 @@ var GtfsEditor = GtfsEditor || {};
         this.options.stops.fetch({remove: false, data: {agencyId: agencyId, west: nw.lng, east: se.lng, north: nw.lat, south: se.lat}});
       }
 
-      this.updatePatternList();
+
 
       if(G.config.showMajorStops)
         this.options.stops.fetch({remove: false, data: {agencyId: agencyId, majorStops: true}});
@@ -794,8 +797,6 @@ var GtfsEditor = GtfsEditor || {};
 
       this.clearStops();
       this.updateStops();
-
-      this.updatePatternList();
       this.updatePatternLine();
 
     },
@@ -833,7 +834,8 @@ var GtfsEditor = GtfsEditor || {};
     },
 
     updatePatternList: function() {
-       var selectedPatternId  = this.$('#trip-pattern-select').val();
+      var instance = this;
+      var selectedPatternId  = this.$('#trip-pattern-select').val();
 
       if( this.model.tripPatterns.get(selectedPatternId) == undefined) {
 
@@ -850,8 +852,17 @@ var GtfsEditor = GtfsEditor || {};
 
 
       var data = {
-        stops : this.model.tripPatterns.get(selectedPatternId).attributes.patternStops
-      }
+        stops : this.model.tripPatterns.get(selectedPatternId).toJSON().patternStops
+      };
+
+      data.stops = _.map(data.stops, function (patternStop, idx) {
+        var stop = instance.options.stops.get(patternStop.stopId);
+        return {
+          stopId: patternStop.stopId,
+          stopName: stop.get('stopName'),
+          stopSequence: idx + 1
+        }
+      });
 
       this.$('#trippattern-stop-list').html(ich['trippattern-stop-list-tpl'](data));
 
