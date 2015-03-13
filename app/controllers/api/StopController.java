@@ -49,7 +49,9 @@ public class StopController extends Controller {
 	    			return;
 	    		}
 	    		
-	    		renderJSON(Base.toJson(tx.stops.get(id), false));
+	    		String stopJson = Base.toJson(tx.stops.get(id), false);
+	    		tx.rollback();
+	    		renderJSON(stopJson);
 	    	}
 	      	else if (Boolean.TRUE.equals(majorStops)) {
 	      		// get the major stops for the agency
@@ -61,16 +63,19 @@ public class StopController extends Controller {
 					}	      			
 	      		});
 	      		
-	      		renderJSON(Base.toJson(stops, false));
+	      		String stopsJson = Base.toJson(stops, false);
+	      		tx.rollback();
+	      		renderJSON(stopsJson);
 	      	}
 	    	else if (west != null && east != null && south != null && north != null) {
 				Collection<Stop> matchedStops = tx.getStopsWithinBoundingBox(north, east, south, west);
-	    		renderJSON(Base.toJson(matchedStops, false));
+				String stp = Base.toJson(matchedStops, false);
+				tx.rollback();
+	    		renderJSON(stp);
 	    	}
 	    	else if (patternId != null) {
 	    		if (!tx.tripPatterns.containsKey(patternId)) {
 	    			notFound();
-	    			tx.rollback();
 	    			return;
 	    		}
 	    		
@@ -83,19 +88,21 @@ public class StopController extends Controller {
 					}
 	    		});
 	    		
-	    		renderJSON(Base.toJson(ret, false));
+	    		String json = Base.toJson(ret, false);
+	    		tx.rollback();
+	    		renderJSON(json);
 	    	}
 	    	else {
+	    		tx.rollback();
 	    		badRequest();
 	    	}
 	    	
-    		tx.rollback();
     	} catch (Exception e) {
-    		tx.rollbackIfOpen();
     		e.printStackTrace();
     		badRequest();
-    		return;
-    	}   	
+    		tx.rollback();
+    	}
+    	
     }
 
     public static void createStop() {
