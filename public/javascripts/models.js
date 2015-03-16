@@ -47,7 +47,6 @@ G.RouteTypes = Backbone.Collection.extend({
     defaults: {
       id: null,
       status: 'IN_PROGRESS',
-      publiclyVisible: false,
       gtfsRouteId: null,
       routeShortName: null,
       routeLongName: null,
