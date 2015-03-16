@@ -15,6 +15,10 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
+
 import datastore.VersionedDataStore;
 import datastore.AgencyTx;
 import datastore.GlobalTx;
@@ -23,6 +27,10 @@ import jobs.ProcessGtfsSnapshotMerge;
 import models.*;
 import models.transit.RouteType;
 import models.transit.Agency;
+import models.transit.StopTime;
+import models.transit.Trip;
+import models.transit.TripPattern;
+import models.transit.TripPatternStop;
 
 @With(Secure.class)
 public class Application extends Controller {
@@ -93,9 +101,7 @@ public class Application extends Controller {
 	        }
 	        
 	        // used to render agency names in templates
-	        // note that we do need to include all agencies here; it is possible to see stops from agencies you do
-	        // not have permission to edit.
-	        renderArgs.put("agenciesJson", Base.toJson(tx.agencies, false));
+	        renderArgs.put("agenciesJson", Base.toJson(agencies, false));
     	}
     	finally {
     		tx.rollback();
@@ -421,6 +427,85 @@ public class Application extends Controller {
     /** schedule exceptions page */
     public static void exceptions () {
     	render();
+    }
+    
+    /** check database integrity */
+    public static void checkIntegrity () {
+    	Map<String, Set<Object>> ret = Maps.newHashMap();
+    	
+    	ret.put("tripsDontMatchPattRoute", new HashSet<Object> ());
+    	ret.put("tripsDontMatchPatt", new HashSet<Object> ());
+    	ret.put("tripsWithoutStartEndTimes", new HashSet<Object> ());
+    	ret.put("tripsWithLessThanTwoStops", new HashSet<Object> ());
+    	
+    	GlobalTx gtx = VersionedDataStore.getGlobalTx();
+    	
+    	for (String agencyId : gtx.agencies.keySet()) {
+    		AgencyTx tx = VersionedDataStore.getAgencyTx(agencyId);
+    		
+    		for (Trip trip : tx.trips.values()) {
+    			TripPattern p = tx.tripPatterns.get(trip.patternId);
+    			
+    			if (!p.routeId.equals(trip.routeId))
+    				ret.get("tripsDontMatchPattRoute").add(trip);
+    			
+    			if (trip.stopTimes.size() != p.patternStops.size()) {
+    				ret.get("tripsDontMatchPatt").add(trip);
+    			}
+    			else {
+    				STOPTIMES: for (int i = 0; i < trip.stopTimes.size(); i++) {
+    					StopTime st = trip.stopTimes.get(i);
+    					TripPatternStop ps = p.patternStops.get(i);
+    					
+    					if (st == null)
+    						continue;
+
+    					if (!ps.stopId.equals(st.stopId)) {
+    	    				ret.get("tripsDontMatchPatt").add(trip);
+    	    				break STOPTIMES;
+    					}
+    				}
+    			}
+    			
+    			int stopTimesSize = 0;
+    			
+    			StopTime lastSt = null;
+    			boolean foundFirstSt = false;
+    			
+    			for (StopTime st : trip.stopTimes) {
+    				if (st == null)
+    					continue;
+    				
+    				if (!foundFirstSt) {
+    					foundFirstSt = true;
+    					if (st.arrivalTime == null || st.departureTime == null) {
+    				    	ret.get("tripsWithoutStartEndTimes").add(trip);
+    					}
+    				}
+    				
+					lastSt = st;
+					stopTimesSize++;
+    			}
+    			
+    			if (stopTimesSize < 2) {
+			    	ret.get("tripsWithLessThanTwoStops").add(trip);
+    			}
+    			
+    			if (lastSt != null && (lastSt.departureTime == null || lastSt.arrivalTime == null)) {
+			    	ret.get("tripsWithoutStartEndTimes").add(trip);
+    			}
+    		}
+    		
+    		tx.rollback();
+    	}
+    	
+    	gtx.rollback();
+    	
+    	try {
+    		renderJSON(Base.toJson(ret, true));
+    	} catch (Exception e) {
+    		badRequest();
+    	}
     }
 
 }
