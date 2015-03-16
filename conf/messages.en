@@ -40,6 +40,14 @@ shared.friday=Friday
 shared.saturday=Saturday
 shared.sunday=Sunday
 
+shared.monday.short=Mo
+shared.tuesday.short=Tu
+shared.wednesday.short=We
+shared.thursday.short=Th
+shared.friday.short=Fr
+shared.saturday.short=Sa
+shared.sunday.short=Su
+
 shared.trips=trips
 shared.routes=routes
 
@@ -410,6 +418,7 @@ timetable.copy=Copy
 # /search
 
 search.title=Routes for
+search.active-days=Service on
 
 
 # /manage/routeTypes

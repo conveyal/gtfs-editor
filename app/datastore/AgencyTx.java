@@ -112,7 +112,6 @@ public class AgencyTx extends DatabaseTx {
 
 			@Override
 			public String[] run(String tripId, Trip trip) {
-				// TODO Auto-generated method stub
 				return new String[] { trip.routeId };
 			}
 		});

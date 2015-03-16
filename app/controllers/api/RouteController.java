@@ -1,9 +1,13 @@
 package controllers.api;
 
+import java.util.Collection;
 import java.util.Set;
 
 import org.mapdb.Fun;
 import org.mapdb.Fun.Tuple2;
+
+import com.google.common.base.Function;
+import com.google.common.collect.Collections2;
 
 import models.transit.Route;
 import controllers.Base;
@@ -27,14 +31,14 @@ public class RouteController extends Controller {
 	}
 	
     public static void getRoute(String id, String agencyId) {
-        try {
-        	if (agencyId == null) {
-        		badRequest();
-        		return;
-        	}
-        	
-        	AgencyTx tx = VersionedDataStore.getAgencyTx(agencyId);
-        	
+    	if (agencyId == null) {
+    		badRequest();
+    		return;
+    	}
+    	
+    	final AgencyTx tx = VersionedDataStore.getAgencyTx(agencyId);
+    	
+        try {      	
         	if (id != null) {
         		if (!tx.routes.containsKey(id)) {
         			tx.rollback();
@@ -44,14 +48,23 @@ public class RouteController extends Controller {
         		
         		Route route = tx.routes.get(id);
         		
+        		route.addDerivedInfo(tx);
+        		
         		renderJSON(Base.toJson(route, false));
         	}
         	else {
-        		renderJSON(Base.toJson(tx.routes.values(), false));
+        		Route[] ret = tx.routes.values().toArray(new Route[tx.routes.size()]);
+        				
+        		for (Route r : ret) {
+        			r.addDerivedInfo(tx);
+        		}
+        		
+        		String json = Base.toJson(ret, false);
+        		tx.rollback();
+        		renderJSON(json);
         	}
-        	
-        	tx.rollback();
         } catch (Exception e) {
+        	tx.rollbackIfOpen();
         	e.printStackTrace();
         	badRequest();
         }		

@@ -15,6 +15,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.vividsolutions.jts.geom.MultiLineString;
 
+import datastore.AgencyTx;
 import datastore.GlobalTx;
 import play.Logger;
 
@@ -45,8 +46,48 @@ public class Route extends Model implements Serializable {
     //public GisUpload gisUpload;
     
     public AttributeAvailabilityType wheelchairBoarding;
+    
+    /** on which days does this route have service? Derived from calendars on render */
+    public transient Boolean monday, tuesday, wednesday, thursday, friday, saturday, sunday;
 
-    public Route () {}
+    // add getters so Jackson will serialize
+    
+    @JsonProperty("monday")
+    public Boolean jsonGetMonday() {
+		return monday;
+	}
+
+    @JsonProperty("tuesday")
+	public Boolean jsonGetTuesday() {
+		return tuesday;
+	}
+
+    @JsonProperty("wednesday")
+	public Boolean jsonGetWednesday() {
+		return wednesday;
+	}
+    
+    @JsonProperty("thursday")
+	public Boolean jsonGetThursday() {
+		return thursday;
+	}
+
+    @JsonProperty("friday")
+    public Boolean jsonGetFriday() {
+		return friday;
+	}
+
+    @JsonProperty("saturday")
+    public Boolean jsonGetSaturday() {
+		return saturday;
+	}
+
+    @JsonProperty("sunday")
+	public Boolean jsonGetSunday() {
+		return sunday;
+	}
+
+	public Route () {}
 
     public Route(com.conveyal.gtfs.model.Route route,  Agency agency, String routeTypeId) {	
         this.gtfsRouteId = route.route_id;
@@ -121,4 +162,37 @@ public class Route extends Model implements Serializable {
 	
 	}
 
+	// Add information about the days of week this route is active
+	public void addDerivedInfo(AgencyTx tx) {
+		monday = tuesday = wednesday = thursday = friday = saturday = sunday = false;
+		
+		for (Trip trip : tx.getTripsByRoute(this.id)) {
+			ServiceCalendar cal = tx.calendars.get(trip.calendarId);
+			
+			if (cal.monday)
+				monday = true;
+			
+			if (cal.tuesday)
+				tuesday = true;
+			
+			if (cal.wednesday)
+				wednesday = true;
+			
+			if (cal.thursday)
+				thursday = true;
+			
+			if (cal.friday)
+				friday = true;
+			
+			if (cal.saturday)
+				saturday = true;
+			
+			if (cal.sunday)
+				sunday = true;
+			
+			if (monday && tuesday && wednesday && thursday && friday && saturday && sunday)
+				// optimization: no point in continuing
+				break;
+		}
+	}
 }
