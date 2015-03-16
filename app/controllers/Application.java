@@ -100,6 +100,13 @@ public class Application extends Controller {
 	            
 	        }
 	        
+	        // Make a map for the user interface
+	        Map<String, Agency> agencyMap = new HashMap<String, Agency>();
+	        
+	        for (Agency agency : agencies) {
+	        	agencyMap.put(agency.id, agency);
+	        }
+	        
 	        // used to render agency names in templates
 	        renderArgs.put("agenciesJson", Base.toJson(agencies, false));
     	}
