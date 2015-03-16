@@ -77,6 +77,8 @@ public class Application extends Controller {
 	        	
 	        	return;
 	        }
+	    	
+	    	Arrays.sort(agencies);
 
 	        if(session.get("agencyId") == null) {
 	            

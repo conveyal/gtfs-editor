@@ -16,7 +16,7 @@ import org.hibernate.annotations.Type;
 
 import play.Logger;
 
-public class Agency extends Model implements Serializable {
+public class Agency extends Model implements Serializable, Comparable {
 	public static final long serialVersionUID = 1;
 	
 	public String gtfsAgencyId;
@@ -86,5 +86,20 @@ public class Agency extends Model implements Serializable {
 		ret.agency_phone = phone;
 		
 		return ret;
+	}
+	
+	public int compareTo (Object other) {
+		if (!(other instanceof Agency))
+			return -1;
+		
+		Agency o = (Agency) other;
+		
+		if (this.name == null)
+			return -1;
+		
+		if (o.name == null)
+			return 1;
+		
+		return this.name.compareTo(o.name);
 	}
 }
