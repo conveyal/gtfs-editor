@@ -1,0 +1,3 @@
+/* the active days of week display in the route list */
+.active-days { color: #ddd }
+.active-days .active-day { color: #000 }
