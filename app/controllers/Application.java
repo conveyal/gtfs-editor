@@ -108,7 +108,7 @@ public class Application extends Controller {
 	        }
 	        
 	        // used to render agency names in templates
-	        renderArgs.put("agenciesJson", Base.toJson(agencies, false));
+	        renderArgs.put("agenciesJson", Base.toJson(agencyMap, false));
     	}
     	finally {
     		tx.rollback();
