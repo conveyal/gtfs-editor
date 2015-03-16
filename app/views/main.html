@@ -59,7 +59,7 @@ cf = play.Play.configuration
 
               <li class="dropdown">
                 <a href="#" role="button" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-wrench"></i> ${session.agencyName} <b class="caret"></b></a>
-                <ul class="dropdown-menu" role="menu">
+                <ul class="dropdown-menu scrollable-menu" role="menu">
                   #{list items:agencies, as:'agency' }
                     <li><a href="#" class="agency-select" data-agency="${agency.id}"> ${agency.name}</a></li>
                   #{/list}
