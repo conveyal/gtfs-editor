@@ -7,6 +7,14 @@
 #{/set}
 
 <script id="route-table-tpl" type="text/html">
+<div id="modal-container">
+</div>
+
+<h3>&{'search.title'} ${session.agencyName} </h3>
+
+<table class="table table">
+<tr><th>&{'route.route-info-tpl.gtfs-id'}</th><th>&{'route.review-publicly-visible'}</th><th>&{'route.review-status'}</th><th>&{'route.route-info-tpl.short-name'}</th><th>&{'route.route-info-tpl.long-name'}</th><th>&{'route.route-info-tpl.route-type'}</th><th>&{'route.route-info-tpl.description'}</th><th>&{'search.active-days'}<th></th></tr>
+
   {{#routes}}
 <tr class="route">
   <td><a href="#" class="route-edit" data-id="{{id}}">{{gtfsRouteId}}</a></td>
@@ -18,13 +26,13 @@
   <td>{{routeDesc}}</td>
   <td>
     <span class="active-days">
-      <span class="{{#monday}}active-day{{/monday}}">&{'shared.monday.short'}</span>
-      <span class="{{#tuesday}}active-day{{/tuesday}}">&{'shared.tuesday.short'}</span>
-      <span class="{{#wednesday}}active-day{{/wednesday}}">&{'shared.wednesday.short'}</span>
-      <span class="{{#thursday}}active-day{{/thursday}}">&{'shared.thursday.short'}</span>
-      <span class="{{#friday}}active-day{{/friday}}">&{'shared.friday.short'}</span>
-      <span class="{{#saturday}}active-day{{/saturday}}">&{'shared.saturday.short'}</span>
-      <span class="{{#sunday}}active-day{{/sunday}}">&{'shared.sunday.short'}</span>
+      <span class="{{#monday}}active-day{{/monday}}" {{^monday}}aria-hidden="true"{{/monday}}>&{'shared.monday.short'}</span>
+      <span class="{{#tuesday}}active-day{{/tuesday}}" {{^tuesday}}aria-hidden="true"{{/tuesday}}>&{'shared.tuesday.short'}</span>
+      <span class="{{#wednesday}}active-day{{/wednesday}}" {{^wednesday}}aria-hidden="true"{{/wednesday}}>&{'shared.wednesday.short'}</span>
+      <span class="{{#thursday}}active-day{{/thursday}}" {{^thursday}}aria-hidden="true"{{/thursday}}>&{'shared.thursday.short'}</span>
+      <span class="{{#friday}}active-day{{/friday}}" {{^friday}}aria-hidden="true"{{/friday}}>&{'shared.friday.short'}</span>
+      <span class="{{#saturday}}active-day{{/saturday}}" {{^saturday}}aria-hidden="true"{{/saturday}}>&{'shared.saturday.short'}</span>
+      <span class="{{#sunday}}active-day{{/sunday}}" {{^sunday}}aria-hidden="true"{{/sunday}}>&{'shared.sunday.short'}</span>
     </span>
   </td>
 
@@ -33,15 +41,42 @@
 </tr>
 
   {{/routes}}
+  </table>
+
+  <button role="button" id="show-merge-routes" class="btn btn-link"><i class="icon-resize-small"></i>&nbsp;&{'search.merge-routes'}</button>
+
 </script>
 
+<script id="merge-routes-tpl" type="text/html">
+  <div class="modal hide fade">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+      &{'search.merge-routes'}
+    </div>
+    <div class="modal-body form-group">
+      <label for="merge-from">&{'search.merge-from'}</label>
+      <select id="merge-from" class="form-control">
+        {{#routes}}
+          <option value="{{id}}">{{routeShortName}} {{routeLongName}}</option>
+        {{/routes}}
+      </select>
 
-<h3>&{'search.title'} ${session.agencyName} </h3>
+      <label for="merge-into">&{'search.merge-into'}</label>
+      <select id="merge-into" class="form-control">
+        {{#routes}}
+          <option value="{{id}}">{{routeShortName}} {{routeLongName}}</option>
+        {{/routes}}
+      </select>
+    </div>
+    <div class="modal-footer">
+      <span class="text-warning">&{'shared.cannot-undo'}</span>
+      <input type="button" role="button" class="btn btn-default" value="&{'shared.button.cancel'}" />
+      <input type="button" id="merge-routes" role="button" data-dismiss="modal" class="btn btn-danger" value="&{'search.merge-routes'}" />
+    </div>
+  </div>
+</script>
 
-<table id="route-list-content" class="table table">
-    <tr><th>&{'route.route-info-tpl.gtfs-id'}</th><th>&{'route.review-publicly-visible'}</th><th>&{'route.review-status'}</th><th>&{'route.route-info-tpl.short-name'}</th><th>&{'route.route-info-tpl.long-name'}</th><th>&{'route.route-info-tpl.route-type'}</th><th>&{'route.route-info-tpl.description'}</th><th>&{'search.active-days'}<th></th></tr>
-
-</table>
+<div id="route-list-content"></div>
 
 #{set 'scripts'}
 

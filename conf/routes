@@ -32,6 +32,7 @@ PUT     /api/agency/{id}                        api.AgencyController.updateAgenc
 DELETE  /api/agency/{id}                        api.AgencyController.deleteAgency
 
 GET     /api/route/?                            api.RouteController.getRoute
+POST    /api/route/merge                        api.RouteController.mergeRoutes
 GET     /api/route/{id}                         api.RouteController.getRoute
 POST    /api/route/                             api.RouteController.createRoute
 PUT     /api/route/{id}                         api.RouteController.updateRoute

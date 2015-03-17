@@ -10,6 +10,8 @@ import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 
 import models.transit.Route;
+import models.transit.Trip;
+import models.transit.TripPattern;
 import controllers.Base;
 import controllers.Application;
 import controllers.Secure;
@@ -31,6 +33,9 @@ public class RouteController extends Controller {
 	}
 	
     public static void getRoute(String id, String agencyId) {
+    	if (agencyId == null)
+    		agencyId = session.get("agencyId");
+    	
     	if (agencyId == null) {
     		badRequest();
     		return;
@@ -179,5 +184,65 @@ public class RouteController extends Controller {
         	e.printStackTrace();
         	error(e);
         }
+    }
+    
+    /** merge route from into route into, for the given agency ID */
+    public static void mergeRoutes (String from, String into, String agencyId) {
+    	if (agencyId == null)
+    		agencyId = session.get("agencyId");
+    	
+    	if (agencyId == null || from == null || into == null)
+    		badRequest();
+    	
+    	final AgencyTx tx = VersionedDataStore.getAgencyTx(agencyId);
+    	
+    	try {
+    		// ensure the routes exist
+    		if (!tx.routes.containsKey(from) || !tx.routes.containsKey(into)) {
+    			tx.rollback();
+    			badRequest();
+    		}
+    		
+    		// get all the trip patterns for route from
+    		// note that we clone them here so we can later modify them
+    		Collection<TripPattern> tps = Collections2.transform(
+    				tx.tripPatternsByRoute.subSet(new Tuple2(from, null), new Tuple2(from, Fun.HI)),
+    				new Function<Tuple2<String, String>, TripPattern> () {
+						@Override
+						public TripPattern apply(Tuple2<String, String> input) {
+							return tx.tripPatterns.get(input.b).clone();
+						}
+    				});
+    		
+    		 for (TripPattern tp : tps) {
+    			 tp.routeId = into;
+    			 tx.tripPatterns.put(tp.id, tp);
+    		 }
+    		 
+    		 // now move all the trips
+    		 Collection<Trip> ts = Collections2.transform(
+     				tx.tripsByRoute.subSet(new Tuple2(from, null), new Tuple2(from, Fun.HI)),
+     				new Function<Tuple2<String, String>, Trip> () {
+ 						@Override
+ 						public Trip apply(Tuple2<String, String> input) {
+ 							return tx.trips.get(input.b).clone();
+ 						}
+     				});
+    		 
+    		 for (Trip t : ts) {
+    			 t.routeId = into;
+    			 tx.trips.put(t.id, t);
+    		 }
+    		 
+    		 tx.routes.remove(from);
+    		 
+    		 tx.commit();
+    		 ok();
+    	}
+    	catch (Exception e) {
+    		e.printStackTrace();
+    		tx.rollback();
+    		throw e;
+    	}
     }
 }

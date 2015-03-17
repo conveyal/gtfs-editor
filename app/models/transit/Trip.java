@@ -162,7 +162,7 @@ public class Trip extends Model implements Serializable {
 		ret.stopTimes = new ArrayList<StopTime>();
 
 		for (StopTime st : stopTimes) {
-			ret.stopTimes.add(st.clone());
+			ret.stopTimes.add(st == null ? null : st.clone());
 		}
 
 		return ret;
