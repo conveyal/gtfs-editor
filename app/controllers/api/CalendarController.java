@@ -117,6 +117,9 @@ public class CalendarController extends Controller {
                 return;
             }
 
+            if (session.contains("agencyId") && !session.get("agencyId").equals(cal.agencyId))
+            	badRequest();
+            
             tx = VersionedDataStore.getAgencyTx(cal.agencyId);
             
             if (tx.calendars.containsKey(cal.id)) {
@@ -154,6 +157,9 @@ public class CalendarController extends Controller {
                 badRequest();
                 return;
             }
+            
+            if (session.contains("agencyId") && !session.get("agencyId").equals(cal.agencyId))
+            	badRequest();
 
             tx = VersionedDataStore.getAgencyTx(cal.agencyId);
             

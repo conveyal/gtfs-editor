@@ -110,6 +110,9 @@ public class StopController extends Controller {
         try {
             Stop stop = Base.mapper.readValue(params.get("body"), Stop.class);
             
+            if (session.contains("agencyId") && !session.get("agencyId").equals(stop.agencyId))
+            	badRequest();
+            
             if (!VersionedDataStore.agencyExists(stop.agencyId)) {
             	badRequest();
             	return;
@@ -139,6 +142,9 @@ public class StopController extends Controller {
     	AgencyTx tx = null;
         try {
             Stop stop = Base.mapper.readValue(params.get("body"), Stop.class);
+            
+            if (session.contains("agencyId") && !session.get("agencyId").equals(stop.agencyId))
+            	badRequest();
             
             if (!VersionedDataStore.agencyExists(stop.agencyId)) {
             	badRequest();

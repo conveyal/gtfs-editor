@@ -88,6 +88,9 @@ public class RouteController extends Controller {
             	return;
             }
             
+            if (session.contains("agencyId") && !session.get("agencyId").equals(route.agencyId))
+            	badRequest();
+            
             gtx.rollback();
    
             AgencyTx tx = VersionedDataStore.getAgencyTx(route.agencyId);
@@ -127,6 +130,9 @@ public class RouteController extends Controller {
             	notFound();
             	return;
             }
+            
+            if (session.contains("agencyId") && !session.get("agencyId").equals(route.agencyId))
+            	badRequest();
 
             // check if gtfsRouteId is specified, if not create from DB id
             if(route.gtfsRouteId == null) {

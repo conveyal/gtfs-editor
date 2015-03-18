@@ -64,6 +64,9 @@ public class ScheduleExceptionController extends Controller {
 				return;
 			}
 			
+            if (session.contains("agencyId") && !session.get("agencyId").equals(ex.agencyId))
+            	badRequest();
+			
 			tx = VersionedDataStore.getAgencyTx(ex.agencyId);
 			
 			if (ex.customSchedule != null) {
@@ -106,6 +109,9 @@ public class ScheduleExceptionController extends Controller {
     	AgencyTx tx = null;
     	try {
 			ScheduleException ex = Base.mapper.readValue(params.get("body"), ScheduleException.class);
+			
+            if (session.contains("agencyId") && !session.get("agencyId").equals(ex.agencyId))
+            	badRequest();
 			
 			if (!VersionedDataStore.agencyExists(ex.agencyId)) {
 				badRequest();

@@ -89,6 +89,9 @@ public class TripPatternController extends Controller {
         try {
             tripPattern = Base.mapper.readValue(params.get("body"), TripPattern.class);
             
+            if (session.contains("agencyId") && !session.get("agencyId").equals(tripPattern.agencyId))
+            	badRequest();
+            
             if (!VersionedDataStore.agencyExists(tripPattern.agencyId)) {
             	badRequest();
             	return;
@@ -118,6 +121,9 @@ public class TripPatternController extends Controller {
         AgencyTx tx = null;
         try {
             tripPattern = Base.mapper.readValue(params.get("body"), TripPattern.class);
+            
+            if (session.contains("agencyId") && !session.get("agencyId").equals(tripPattern.agencyId))
+            	badRequest();
             
             if (!VersionedDataStore.agencyExists(tripPattern.agencyId)) {
             	badRequest();
