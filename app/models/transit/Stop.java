@@ -7,6 +7,7 @@ import java.net.URL;
 import java.util.*;
 
 import datastore.AgencyTx;
+
 import org.mapdb.Fun;
 import org.mapdb.Fun.Tuple2;
 
@@ -26,7 +27,7 @@ import com.vividsolutions.jts.geom.PrecisionModel;
 import play.Logger;
 import utils.JacksonSerializers;
 
-public class Stop extends Model implements Serializable {
+public class Stop extends Model implements Cloneable, Serializable {
 	public static final long serialVersionUID = 1;
 	
 	private static GeometryFactory geometryFactory = new GeometryFactory();
@@ -149,7 +150,14 @@ public class Stop extends Model implements Serializable {
 
             // update them
             for (TripPattern tp : tps) {
-                tp = tp.clone();
+                try {
+					tp = tp.clone();
+				} catch (CloneNotSupportedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					tx.rollback();
+					throw new RuntimeException(e);
+				}
                 for (TripPatternStop ps : tp.patternStops) {
                     if (source.id.equals(ps.stopId)) {
                         ps.stopId = target.id;
@@ -163,7 +171,14 @@ public class Stop extends Model implements Serializable {
                 // update the trips
                 List<Trip> tripsToSave = new ArrayList<Trip>();
                 for (Trip trip : tx.getTripsByPattern(tp.id)) {
-                    trip = trip.clone();
+                    try {
+						trip = trip.clone();
+					} catch (CloneNotSupportedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+						tx.rollback();
+						throw new RuntimeException(e);
+					}
 
                     for (StopTime st : trip.stopTimes) {
                         if (source.id.equals(st.stopId)) {
@@ -198,5 +213,11 @@ public class Stop extends Model implements Serializable {
 			return gtfsStopId;
 		else
 			return "STOP_" + id;
+	}
+	
+	public Stop clone () throws CloneNotSupportedException {
+		Stop s = (Stop) super.clone();
+		s.location = (Point) location.clone();
+		return s;
 	}
 }

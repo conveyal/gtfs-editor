@@ -26,6 +26,7 @@ GET     /manage/agencies                      	Application.manageAgencies
 GET     /bootstrap/index                      	Bootstrap.index
 
 GET     /api/agency/?                           api.AgencyController.getAgency
+POST    /api/agency/{id}/duplicate              api.AgencyController.duplicateAgency
 GET     /api/agency/{id}                        api.AgencyController.getAgency
 POST    /api/agency/                            api.AgencyController.createAgency
 PUT     /api/agency/{id}                        api.AgencyController.updateAgency

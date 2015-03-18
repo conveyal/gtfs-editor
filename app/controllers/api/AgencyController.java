@@ -5,6 +5,7 @@ import controllers.Base;
 import controllers.Application;
 import controllers.Secure;
 import controllers.Security;
+import datastore.AgencyTx;
 import datastore.VersionedDataStore;
 import datastore.GlobalTx;
 import play.mvc.Before;
@@ -120,5 +121,18 @@ public class AgencyController extends Controller {
         
         ok();
     }
-
+    
+    /** duplicate an agency */
+    public static void duplicateAgency(String id) {
+    	// make sure the agency exists
+    	GlobalTx gtx = VersionedDataStore.getGlobalTx();
+    	if (!gtx.agencies.containsKey(id)) {
+    		gtx.rollback();
+    		notFound();
+    	}
+    	gtx.rollback();
+    	
+    	AgencyTx.duplicate(id);
+    	ok();
+    }
 }

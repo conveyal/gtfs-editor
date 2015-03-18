@@ -42,7 +42,7 @@ import play.Logger;
 import utils.GeoUtils;
 import utils.JacksonSerializers;
 
-public class TripPattern extends Model implements Serializable {
+public class TripPattern extends Model implements Cloneable, Serializable {
 	public static final long serialVersionUID = 1;
 
     public String name;
@@ -110,21 +110,15 @@ public class TripPattern extends Model implements Serializable {
     	this.routeId = route.id;
     }
     
-    public TripPattern clone() {
-    	TripPattern ret = new TripPattern();
-    	ret.name = this.name;
-    	ret.headsign = this.headsign;
+    public TripPattern clone() throws CloneNotSupportedException {
+    	TripPattern ret = (TripPattern) super.clone();
 
 		if (this.shape != null)
     		ret.shape = (LineString) this.shape.clone();
 		else
 			ret.shape = null;
 
-    	ret.routeId = this.routeId;
-    	ret.agencyId = this.agencyId;
-    	ret.useStraightLineDistances = this.useStraightLineDistances;
     	ret.patternStops = new ArrayList<TripPatternStop>();
-    	ret.id = id;
     	
     	for (TripPatternStop ps : this.patternStops) {
     		ret.patternStops.add(ps.clone());

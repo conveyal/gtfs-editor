@@ -70,11 +70,27 @@ public class DatabaseTx {
 		return pump(tx, mapName, source);
 	}
 	
+	/** from a descending order iterator fill a new map in the specified database */
+	protected static <K, V> int pump(DB tx, String mapName, Iterator<Tuple2<K, V>> pumpSource) {
+		if (!pumpSource.hasNext())
+			return 0;
+		
+		return getMapMaker(tx, mapName)
+				.pumpSource(pumpSource)
+				.make()
+				.size();
+	}
+	
 	/** efficiently create a BTreeMap in the specified database from another BTreeMap */
 	protected static <K, V> int pump (DB tx, String mapName, BTreeMap<K, V> source) {
 		if (source.size() == 0)
 			return 0;
 		
+		return pump(tx, mapName, pumpSourceForMap(source));
+	}
+	
+	/** get a pump source from a map */
+	protected static <K, V> Iterator<Tuple2<K, V>> pumpSourceForMap(BTreeMap source) {
 		Iterator<Entry<K, V>> values = source.descendingMap().entrySet().iterator();
 		Iterator<Tuple2<K, V>> valueTuples = Iterators.transform(values, new Function<Entry<K, V>, Tuple2<K, V>> () {
 			@Override
@@ -83,10 +99,7 @@ public class DatabaseTx {
 			}			
 		});
 		
-		return getMapMaker(tx, mapName)
-			.pumpSource(valueTuples)
-			.make()
-			.size();
+		return valueTuples;
 	}
 	
 	protected final void finalize () {

@@ -18,7 +18,7 @@ import play.Logger;
 import utils.JacksonSerializers;
 
 /** A stop on a trip pattern. This is not a model, as it is stored in a list within trippattern */
-public class TripPatternStop implements Serializable {
+public class TripPatternStop implements Cloneable, Serializable {
 	public static final long serialVersionUID = 1;
 
     public String stopId;
@@ -46,14 +46,8 @@ public class TripPatternStop implements Serializable {
 		this.defaultTravelTime = defaultTravelTime;
 	}
 	
-	public TripPatternStop clone () {
-		TripPatternStop ret = new TripPatternStop();
-		ret.stopId = stopId;
-		ret.defaultDwellTime = defaultDwellTime;
-		ret.defaultTravelTime = defaultTravelTime;
-		ret.timepoint = timepoint;
-		ret.shapeDistTraveled = shapeDistTraveled;
-		return ret;
+	public TripPatternStop clone () throws CloneNotSupportedException {
+		return (TripPatternStop) super.clone();
 	}
 }
 

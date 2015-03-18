@@ -1,10 +1,11 @@
 (function(G, $, ich) {
-  
+
   G.AgencyListView = Backbone.View.extend({
 
       events: {
         'click .agency-edit': 'editAgency',
         'click .agency-delete': 'deleteAgency',
+        'click .agency-duplicate': 'duplicateAgency'
       },
 
       initialize: function (opts) {
@@ -17,7 +18,7 @@
         this.collection.fetch().complete(function() {
 
           self.render();
-          
+
         });
 
         this.clickMarkerIcon = L.icon({
@@ -56,13 +57,13 @@
           if(data.id == "" ) {
 
 
-            view.collection.create(_.omit(data, 'id'), {error: function(){ 
+            view.collection.create(_.omit(data, 'id'), {error: function(){
 
               $('#agency-modal').modal('hide');
               G.Utils.error('Route type save failed');
 
             },
-            success: function(){ 
+            success: function(){
 
               $('#agency-modal').modal('hide');
               //G.Utils.error('Route type save failed');
@@ -75,13 +76,13 @@
           else {
 
             var agency = new GtfsEditor.Agency();
-            agency.save(data, {error: function(){ 
+            agency.save(data, {error: function(){
 
               $('#agency-modal').modal('hide');
               G.Utils.error('Route type save failed');
 
             },
-            success: function(){ 
+            success: function(){
 
               $('#agency-modal').modal('hide');
               //G.Utils.error('Route type save failed');
@@ -92,14 +93,14 @@
           }
   });
 
-      }, 
+      },
 
       editAgency: function(evt) {
 
         var id = $(evt.currentTarget).data("id");
 
         var agency = this.collection.get(id);
-        
+
 
         var $tpl = ich['agency-dialog-tpl'](agency.attributes);
 
@@ -122,7 +123,7 @@
       },
 
       createAgency: function(evt) {
-        
+
         $('#agency-modal-body').html(ich['agency-dialog-tpl']());
 
         this.buildMap();
@@ -147,10 +148,10 @@
         }
         else {
             mapCenter = [0.0,0.0];
-            mapZoom = 1;  
+            mapZoom = 1;
         }
 
-        
+
 
         this.map = L.map($('#map').get(0), {
           center: mapCenter,
@@ -159,7 +160,7 @@
         });
         this.map.addLayer(baseLayer);
 
-       
+
         var view = this;
 
         if($('#defaultLat').val() != '' && $('#defaultLon').val() != '') {
@@ -173,7 +174,7 @@
            view.clickMarker = L.marker([lat, lon], {icon: view.clickMarkerIcon}).addTo(view.map);
            view.map.panTo([lat, lon]);
         }
-      
+
 
         this.map.on('click', function(evt) {
 
@@ -181,7 +182,7 @@
             view.map.removeLayer(view.clickMarker);
 
 
-          var latlng = evt.latlng.wrap();              
+          var latlng = evt.latlng.wrap();
            view.clickMarker = L.marker(latlng, {icon: view.clickMarkerIcon}).addTo(view.map);
            $('#defaultLat').val(latlng.lat);
            $('#defaultLon').val(latlng.lng);
@@ -199,14 +200,30 @@
 
       deleteAgency: function(evt) {
         var id = $(evt.currentTarget).data("id");
-        
+
         var view = this;
         if (G.Utils.confirm('Delete route?')) {
           view.collection.get(id).destroy();
         }
       },
 
-
+      duplicateAgency: function(evt) {
+        var instance = this;
+        var id = $(evt.currentTarget).data("id");
+        $.ajax({
+          url: G.config.baseUrl + 'api/agency/' + id + '/duplicate',
+          method: 'POST'
+        })
+        .done(function () {
+          G.Utils.success("Agency duplicated");
+          instance.collection.fetch().done(function () {
+            instance.render();
+          });
+        })
+        .error(function () {
+          G.Utils.error("Agency duplicate failed");
+        });
+      },
   });
 
 

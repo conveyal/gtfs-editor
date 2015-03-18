@@ -19,7 +19,7 @@ import datastore.AgencyTx;
 import play.Logger;
 
 
-public class Trip extends Model implements Serializable {
+public class Trip extends Model implements Cloneable, Serializable {
 	public static final long serialVersionUID = 1;
 
     public String gtfsTripId;
@@ -138,25 +138,8 @@ public class Trip extends Model implements Serializable {
 		return ret;
 	}
 
-	public Trip clone () {
-		Trip ret = new Trip();
-		ret.id = this.id;
-		ret.agencyId = this.agencyId;
-		ret.blockId = this.blockId;
-		ret.calendarId = this.calendarId;
-		ret.routeId = this.routeId;
-		ret.endTime = this.endTime;
-		ret.startTime = this.startTime;
-		ret.headway = this.headway;
-		ret.invalid = this.invalid;
-		ret.patternId = this.patternId;
-		ret.tripDescription = this.tripDescription;
-		ret.tripDirection = this.tripDirection;
-		ret.gtfsTripId = this.gtfsTripId;
-		ret.tripHeadsign = this.tripHeadsign;
-		ret.tripShortName = this.tripShortName;
-		ret.wheelchairBoarding = this.wheelchairBoarding;
-		ret.useFrequency = this.useFrequency;
+	public Trip clone () throws CloneNotSupportedException {
+		Trip ret = (Trip) super.clone();
 
 		// duplicate the stop times
 		ret.stopTimes = new ArrayList<StopTime>();

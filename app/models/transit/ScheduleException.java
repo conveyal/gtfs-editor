@@ -1,6 +1,7 @@
 package models.transit;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -20,7 +21,7 @@ import org.joda.time.LocalDate;
  * @author mattwigway
  */
 
-public class ScheduleException extends Model implements Serializable {
+public class ScheduleException extends Model implements Cloneable, Serializable {
 	public static final long serialVersionUID = 1;
 	
 	/** The agency whose service this schedule exception describes */
@@ -74,5 +75,12 @@ public class ScheduleException extends Model implements Serializable {
 	 */
 	public static enum ExemplarServiceDescriptor {
 		MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY, NO_SERVICE, CUSTOM;
+	}
+	
+	public ScheduleException clone () throws CloneNotSupportedException {
+		ScheduleException c = (ScheduleException) super.clone();
+		c.dates = new ArrayList<LocalDate>(this.dates);
+		c.customSchedule = new ArrayList<String>(this.customSchedule);
+		return c;
 	}
 }

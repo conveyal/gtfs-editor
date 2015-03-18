@@ -9,9 +9,19 @@
 <script id="agency-table-tpl" type="text/html">
 	<tr><th>&{'manage.agencies.gtfs-agency-id'}</th><th>&{'manage.agencies.name'}</th><th>&{'manage.agencies.url'}</th><th></th></tr>
 
-  {{#routes}}
-	<tr><td>{{gtfsAgencyId}}</td><td>{{name}}</td><td>{{url}}</td><td> <i class="icon-pencil agency-edit" data-id="{{id}}"></i> <i class="icon-trash agency-delete" data-id="{{id}}"></i></td></tr>
-  {{/routes}}
+{{#routes}}
+<tr>
+  <td>{{gtfsAgencyId}}</td>
+  <td>{{name}}</td>
+  <td>{{url}}</td>
+  <td>
+    <i class="icon-pencil agency-edit" title="&{'shared.button.edit'}" data-id="{{id}}"></i>
+    <i class="icon-trash agency-delete" title="&{'shared.button.delete'}" data-id="{{id}}"></i>
+    <i class="icon-resize-full agency-duplicate" title="&{'shared.button.duplicate'}" data-id="{{id}}"></i>
+  </td>
+</tr>
+{{/routes}}
+
 </script>
 
 <script id="agency-dialog-tpl" type="text/html">

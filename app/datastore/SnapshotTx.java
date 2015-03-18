@@ -53,6 +53,7 @@ public class SnapshotTx extends DatabaseTx {
 		// while we don't snapshot indices, we do need to snapshot histograms as they aren't restored
 		// (mapdb ticket 453)
 		pump("tripCountByCalendar", (BTreeMap) master.tripCountByCalendar);
+		pump("scheduleExceptionCountByDate", (BTreeMap) master.scheduleExceptionCountByDate);
 		pump("tripCountByPatternAndCalendar", (BTreeMap) master.tripCountByPatternAndCalendar);
 		
 		this.commit();

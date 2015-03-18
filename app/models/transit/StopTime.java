@@ -19,7 +19,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
  * @author mattwigway
  *
  */
-public class StopTime implements Serializable {
+public class StopTime implements Cloneable, Serializable {
 	public static final long serialVersionUID = 1;
 	
     public Integer arrivalTime;
@@ -68,14 +68,7 @@ public class StopTime implements Serializable {
     	}
     }
 
-	public StopTime clone () {
-		StopTime ret = new StopTime();
-		ret.arrivalTime = arrivalTime;
-		ret.departureTime = departureTime;
-		ret.pickupType = pickupType;
-		ret.dropOffType = dropOffType;
-		ret.stopHeadsign = stopHeadsign;
-		ret.stopId = stopId;
-		return ret;
+	public StopTime clone () throws CloneNotSupportedException {
+		return (StopTime) super.clone(); 
 	}
 }

@@ -16,7 +16,7 @@ import org.hibernate.annotations.Type;
 
 import play.Logger;
 
-public class Agency extends Model implements Serializable, Comparable {
+public class Agency extends Model implements Cloneable, Serializable, Comparable {
 	public static final long serialVersionUID = 1;
 	
 	public String gtfsAgencyId;
@@ -101,5 +101,9 @@ public class Agency extends Model implements Serializable, Comparable {
 			return 1;
 		
 		return this.name.compareTo(o.name);
+	}
+	
+	public Agency clone () throws CloneNotSupportedException {
+		return (Agency) super.clone();
 	}
 }

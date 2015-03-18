@@ -6,7 +6,9 @@ import java.util.UUID;
 import javax.persistence.MappedSuperclass;
 
 @MappedSuperclass
-public class Model implements Serializable {
+public class Model implements Cloneable, Serializable {
+	private static final long serialVersionUID = -2490147875977011741L;
+	
 	/** not final for purposes of deserialization, but don't change it once data has been persisted */
 	public String id;
 	

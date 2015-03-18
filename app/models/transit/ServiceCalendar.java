@@ -22,7 +22,7 @@ import com.google.common.collect.Collections2;
 import datastore.AgencyTx;
 import models.Model;
 
-public class ServiceCalendar extends Model implements Serializable {
+public class ServiceCalendar extends Model implements Cloneable, Serializable {
 	public static final long serialVersionUID = 1;
 	
     public String agencyId;
@@ -54,23 +54,8 @@ public class ServiceCalendar extends Model implements Serializable {
     	inferName();
     }
     
-    public ServiceCalendar clone () {
-    	ServiceCalendar r = new ServiceCalendar();
-    	r.id = id;
-    	r.agencyId = agencyId;
-    	r.description = description;
-    	r.gtfsServiceId = gtfsServiceId;
-    	r.monday = monday;
-    	r.tuesday = tuesday;
-    	r.wednesday = wednesday;
-    	r.thursday = thursday;
-    	r.friday = friday;
-    	r.saturday = saturday;
-    	r.sunday = sunday;
-    	r.startDate = startDate;
-    	r.endDate = endDate;
-  
-    	return r;
+    public ServiceCalendar clone () throws CloneNotSupportedException {
+    	return (ServiceCalendar) super.clone();
     }
 
     // TODO: time zones

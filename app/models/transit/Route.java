@@ -19,7 +19,7 @@ import datastore.AgencyTx;
 import datastore.GlobalTx;
 import play.Logger;
 
-public class Route extends Model implements Serializable {
+public class Route extends Model implements Cloneable, Serializable {
 	public static final long serialVersionUID = 1;
 	
 	public String gtfsRouteId;
@@ -150,6 +150,7 @@ public class Route extends Model implements Serializable {
 	 * Get a name for this combining the short name and long name as available.
 	 * @return
 	 */
+	@JsonIgnore
 	public String getName() {
 		if (routeShortName == null && routeLongName == null)
 			return id;
@@ -194,5 +195,9 @@ public class Route extends Model implements Serializable {
 				// optimization: no point in continuing
 				break;
 		}
+	}
+	
+	public Route clone () throws CloneNotSupportedException {
+		return (Route) super.clone();
 	}
 }

@@ -210,7 +210,13 @@ public class RouteController extends Controller {
     				new Function<Tuple2<String, String>, TripPattern> () {
 						@Override
 						public TripPattern apply(Tuple2<String, String> input) {
-							return tx.tripPatterns.get(input.b).clone();
+							try {
+								return tx.tripPatterns.get(input.b).clone();
+							} catch (CloneNotSupportedException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+								throw new RuntimeException(e);
+							}
 						}
     				});
     		
@@ -225,7 +231,12 @@ public class RouteController extends Controller {
      				new Function<Tuple2<String, String>, Trip> () {
  						@Override
  						public Trip apply(Tuple2<String, String> input) {
- 							return tx.trips.get(input.b).clone();
+ 							try {
+								return tx.trips.get(input.b).clone();
+							} catch (CloneNotSupportedException e) {
+								e.printStackTrace();
+								throw new RuntimeException(e);
+							}
  						}
      				});
     		 

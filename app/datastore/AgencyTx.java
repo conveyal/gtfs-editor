@@ -1,10 +1,13 @@
 package datastore;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.NavigableSet;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
 
+import models.transit.Agency;
 import models.transit.Route;
 import models.transit.ScheduleException;
 import models.transit.ServiceCalendar;
@@ -22,16 +25,19 @@ import org.mapdb.Fun;
 import org.mapdb.Fun.Function2;
 import org.mapdb.Fun.Tuple2;
 
+import play.i18n.Messages;
 import utils.BindUtils;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
+import com.google.common.collect.Iterators;
 
 /** a transaction in an agency database */
 public class AgencyTx extends DatabaseTx {
 	// primary datastores
 	// if you add another, you MUST update SnapshotTx.java
 	// if you don't, not only will your new data not be backed up, IT WILL BE THROWN AWAY WHEN YOU RESTORE! 
+	// AND ALSO the duplicate() function below
 	public BTreeMap<String, TripPattern> tripPatterns;
 	public BTreeMap<String, Route> routes;
 	public BTreeMap<String, Trip> trips;
@@ -318,5 +324,169 @@ public class AgencyTx extends DatabaseTx {
 	/** return the version number of the next snapshot */
 	public int getNextSnapshotId () {
 		return snapshotVersion.incrementAndGet();
+	}
+	
+	/** duplicate an agency in its entirety. Return the new agency ID */
+	public static String duplicate (String agencyId) {
+		final String newId = UUID.randomUUID().toString();
+		
+		AgencyTx atx = VersionedDataStore.getAgencyTx(agencyId);
+		
+		DB newDb = VersionedDataStore.getRawAgencyTx(newId);
+		
+		copy(atx, newDb, newId);
+		
+		// rebuild indices
+		AgencyTx newTx = new AgencyTx(newDb);
+		newTx.commit();
+		
+		atx.rollback();
+		
+		GlobalTx gtx = VersionedDataStore.getGlobalTx();
+		Agency a2;
+		
+		try {
+			a2 = gtx.agencies.get(agencyId).clone();
+		} catch (CloneNotSupportedException e) {
+			// not likely
+			e.printStackTrace();
+			gtx.rollback();
+			return null;
+		}
+		
+		a2.id = newId;
+		a2.name = Messages.get("agency.copy-of", a2.name);
+		
+		gtx.agencies.put(a2.id, a2);
+		
+		gtx.commit();
+		
+		return newId;
+	}
+	
+	/** copy an agency database */
+	static void copy (AgencyTx atx, DB newDb, final String newAgencyId) {
+		// copy everything
+		try {
+			Iterator<Tuple2<String, Stop>> stopSource = Iterators.transform(
+					AgencyTx.<String, Stop>pumpSourceForMap(atx.stops),
+					new Function<Tuple2<String, Stop>, Tuple2<String, Stop>> () {
+						@Override
+						public Tuple2<String, Stop> apply(Tuple2<String, Stop> input) {
+							Stop st;
+							try {
+								st = input.b.clone();
+							} catch (CloneNotSupportedException e) {
+								e.printStackTrace();
+								throw new RuntimeException(e);
+							}
+							st.agencyId = newAgencyId;
+							return new Tuple2(input.a, st);
+						}
+			});
+			pump(newDb, "stops", stopSource);
+			
+			Iterator<Tuple2<String, Trip>> tripSource = Iterators.transform(
+					AgencyTx.<String, Trip>pumpSourceForMap(atx.trips),
+					new Function<Tuple2<String, Trip>, Tuple2<String, Trip>> () {
+						@Override
+						public Tuple2<String, Trip> apply(Tuple2<String, Trip> input) {
+							Trip st;
+							try {
+								st = input.b.clone();
+							} catch (CloneNotSupportedException e) {
+								e.printStackTrace();
+								throw new RuntimeException(e);
+							}
+							st.agencyId = newAgencyId;
+							return new Tuple2(input.a, st);
+						}
+			});
+			pump(newDb, "trips", tripSource);
+			
+			Iterator<Tuple2<String, TripPattern>> pattSource = Iterators.transform(
+					AgencyTx.<String, TripPattern>pumpSourceForMap(atx.tripPatterns),
+					new Function<Tuple2<String, TripPattern>, Tuple2<String, TripPattern>> () {
+						@Override
+						public Tuple2<String, TripPattern> apply(Tuple2<String, TripPattern> input) {
+							TripPattern st;
+							try {
+								st = input.b.clone();
+							} catch (CloneNotSupportedException e) {
+								e.printStackTrace();
+								throw new RuntimeException(e);
+							}
+							st.agencyId = newAgencyId;
+							return new Tuple2(input.a, st);
+						}
+			});
+			pump(newDb, "tripPatterns", pattSource);
+			
+			Iterator<Tuple2<String, Route>> routeSource = Iterators.transform(
+					AgencyTx.<String, Route>pumpSourceForMap(atx.routes),
+					new Function<Tuple2<String, Route>, Tuple2<String, Route>> () {
+						@Override
+						public Tuple2<String, Route> apply(Tuple2<String, Route> input) {
+							Route st;
+							try {
+								st = input.b.clone();
+							} catch (CloneNotSupportedException e) {
+								e.printStackTrace();
+								throw new RuntimeException(e);
+							}
+							st.agencyId = newAgencyId;
+							return new Tuple2(input.a, st);
+						}
+			});
+			pump(newDb, "routes", routeSource);
+			
+			Iterator<Tuple2<String, ServiceCalendar>> calSource = Iterators.transform(
+					AgencyTx.<String, ServiceCalendar>pumpSourceForMap(atx.calendars),
+					new Function<Tuple2<String, ServiceCalendar>, Tuple2<String, ServiceCalendar>> () {
+						@Override
+						public Tuple2<String, ServiceCalendar> apply(Tuple2<String, ServiceCalendar> input) {
+							ServiceCalendar st;
+							try {
+								st = input.b.clone();
+							} catch (CloneNotSupportedException e) {
+								e.printStackTrace();
+								throw new RuntimeException(e);
+							}
+							st.agencyId = newAgencyId;
+							return new Tuple2(input.a, st);
+						}
+			});
+			pump(newDb, "calendars", calSource);
+			
+			Iterator<Tuple2<String, ScheduleException>> exSource = Iterators.transform(
+					AgencyTx.<String, ScheduleException>pumpSourceForMap(atx.exceptions),
+					new Function<Tuple2<String, ScheduleException>, Tuple2<String, ScheduleException>> () {
+						@Override
+						public Tuple2<String, ScheduleException> apply(Tuple2<String, ScheduleException> input) {
+							ScheduleException st;
+							try {
+								st = input.b.clone();
+							} catch (CloneNotSupportedException e) {
+								e.printStackTrace();
+								throw new RuntimeException(e);
+							}
+							st.agencyId = newAgencyId;
+							return new Tuple2(input.a, st);
+						}
+			});
+			pump(newDb, "exceptions", exSource);
+			
+			
+			// copy histograms
+			pump(newDb, "tripCountByCalendar", (BTreeMap) atx.tripCountByCalendar);
+			pump(newDb, "scheduleExceptionCountByDate", (BTreeMap) atx.scheduleExceptionCountByDate);
+			pump(newDb, "tripCountByPatternAndCalendar", (BTreeMap) atx.tripCountByPatternAndCalendar);
+		
+		}
+		catch (Exception e) {
+			newDb.rollback();
+			atx.rollback();
+			throw new RuntimeException(e);
+		}
 	}
 }

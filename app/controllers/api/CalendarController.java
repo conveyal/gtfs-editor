@@ -171,9 +171,12 @@ public class CalendarController extends Controller {
             cal.addDerivedInfo(tx);
             
             tx.calendars.put(cal.id, cal);
+            
+            String json = Base.toJson(cal, false);
+            
             tx.commit();
 
-            renderJSON(Base.toJson(cal, false));
+            renderJSON(json);
         } catch (Exception e) {
         	if (tx != null) tx.rollback();
             e.printStackTrace();

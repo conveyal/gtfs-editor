@@ -105,6 +105,7 @@ shared.button.cancel=Cancel
 shared.button.add=Add
 shared.button.update=Update
 shared.button.remove=Remove
+shared.button.duplicate=Duplicate
 
 shared.export-data-btn=Export
 

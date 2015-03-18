@@ -60,6 +60,12 @@ G.RouteTypes = Backbone.Collection.extend({
 
     initialize: function() {
       this.tripPatterns = new G.TripPatterns();
+    },
+
+    blacklist: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'],
+
+    toJSON: function () {
+      return _.omit(this.attributes, this.blacklist);
     }
   });
 
@@ -435,6 +441,12 @@ G.RouteTypes = Backbone.Collection.extend({
       }
 
       return routes.join(', ');
+    },
+
+    blacklist: ['routesText'],
+
+    toJSON: function () {
+      return _.omit(this.attributes, this.blacklist);
     }
   });
 
