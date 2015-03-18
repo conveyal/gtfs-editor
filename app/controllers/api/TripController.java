@@ -1,5 +1,10 @@
 package controllers.api;
 
+import java.io.IOException;
+
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+
 import models.transit.StopTime;
 import models.transit.Trip;
 import models.transit.TripPattern;
@@ -174,9 +179,16 @@ public class TripController extends Controller {
         }
 
         AgencyTx tx = VersionedDataStore.getAgencyTx(agencyId);
-        tx.trips.remove(id);
+        Trip trip = tx.trips.remove(id);
+        String json;
+		try {
+			json = Base.toJson(trip, false);
+		} catch (IOException e) {
+			badRequest();
+			return;
+		}
         tx.commit();
         
-        ok();
+        renderJSON(json);
     }
 }
