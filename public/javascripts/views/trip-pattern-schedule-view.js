@@ -18,7 +18,11 @@ var GtfsEditor = GtfsEditor || {};
     // delete trip (also requires shift key, as coded in the function)
     deleteTrip: 46,
     // also backspace, for laptop users with no delete key...
-    deleteTripAlternate: 8
+    deleteTripAlternate: 8,
+    // pickup only
+    pickup: 80,
+    // dropoff only
+    dropoff: 68
   };
 
   /**
@@ -74,6 +78,8 @@ var GtfsEditor = GtfsEditor || {};
     // TODO: single-time view
     // time is seconds since midnight
     var text;
+
+    console.log(value.get('stopTime'));
     if (value.get('stopTime') === null) {
       text = '<span class="time no-stop">-</span>';
     } else {
@@ -82,7 +88,9 @@ var GtfsEditor = GtfsEditor || {};
       var st = value.get('stopTime');
       var time = arr ? st.arrivalTime : st.departureTime;
       var spTime = splitTime(time);
-
+      if (time < 30000){
+        td.style.backgroundColor = 'yellow';
+      }
       if (spTime === null) {
         // time is to be interpolated by consumer
         text = '';
@@ -550,6 +558,33 @@ var GtfsEditor = GtfsEditor || {};
           return;
 
         this.getInput('Offset amount', function(input) {
+          instance.offsetTimes(sel, input);
+          instance.collection.trigger('change');
+        });
+
+      // p: specify pickup only
+      } 
+      else if (e.keyCode == keyCodes.pickup) {
+        if (_.isUndefined(sel) || sel[1] < 4)
+          return;
+
+        this.getInput('Pickup only?', function(input) {
+          instance.offsetTimes(sel, input);
+          instance.collection.trigger('change');
+        });
+        console.log('pickup!')
+        console.log(sel)
+      // d: specify dropoff only
+      } else if (e.keyCode == keyCodes.dropoff) {
+        if (_.isUndefined(sel) || sel[1] < 4)
+          return;
+        console.log('dropoff!')
+        console.log(sel)
+        // console.log(trip.get('stopTimes'))
+        console.log(this.collection);
+        console.log(instance);
+        // stopTime = instance.get('stopTime');
+        this.getInput('Dropoff only?', function(input) {
           instance.offsetTimes(sel, input);
           instance.collection.trigger('change');
         });
