@@ -88,8 +88,14 @@ var GtfsEditor = GtfsEditor || {};
       var st = value.get('stopTime');
       var time = arr ? st.arrivalTime : st.departureTime;
       var spTime = splitTime(time);
-      if (time < 30000){
+      if (st.dropOffType === 'NONE'){
         td.style.backgroundColor = 'yellow';
+      }
+      if (st.pickupType === 'NONE'){
+        td.style.backgroundColor = 'blue';
+        if (st.dropOffType === 'NONE'){
+          td.style.backgroundColor = 'red';
+        }
       }
       if (spTime === null) {
         // time is to be interpolated by consumer
@@ -514,7 +520,53 @@ var GtfsEditor = GtfsEditor || {};
 
       this.$container.handsontable('render');
     },
+    modifyStopTimeType: function(coords, type) {
+      var instance = this;
 
+      // get the affected trips
+      // [0] and [2] are the first and last selected rows. Javascript's slice excludes the end, so we add one.
+      var trips = this.collection.slice(coords[0], coords[2] + 1);
+
+      _.each(trips, function(trip) {
+        // find the affected stoptimes
+        var fromCell = coords[1] - 4;
+        var toCell = coords[3] - 4;
+        var from = Math.floor(fromCell / 2);
+        var to = Math.floor(toCell / 2) + 1;
+        var affectedStopTimes = trip.get('stopTimes').slice(from, to);
+
+        _.each(affectedStopTimes, function(st, idx) {
+          if (st === null || _.isUndefined(st))
+            return;
+
+          // if we're not looking at the first stoptime, and/or the first cell is even, update arrival time
+          // if the first cell is odd and this is the first stoptime, we're only updating the departureTime.
+          // but don't update interpolated times, leave them interpolated
+          if ((idx !== 0 || fromCell % 2 === 0)){
+            if(type === 'p'){
+              if(st.pickupType === 'SCHEDULED' || st.pickupType === null){
+                st.pickupType = 'NONE';
+              }
+              else{
+                st.pickupType = 'SCHEDULED';
+              }
+            }
+            else if (type === 'd'){
+              if(st.dropOffType === 'SCHEDULED' || st.dropOffType === null){
+                st.dropOffType = 'NONE';
+              }
+              else{
+                st.dropOffType = 'SCHEDULED';
+              }
+            }
+          }            
+        });
+
+        trip.modified = true;
+      });
+
+      this.$container.handsontable('render');
+    },
     /** sort the trips by first stop time, nulls first */
     sort: function () {
       this.collection.sort();
@@ -527,7 +579,7 @@ var GtfsEditor = GtfsEditor || {};
 
       st.stopId = patternStop.stopId;
       st.pickupType = this.stops.get(patternStop.stopId).get('pickupType');
-      st.dropOffType = this.stops.get(patternStop.stopId).get('dropoffType');
+      st.dropOffType = this.stops.get(patternStop.stopId).get('dropOffType');
 
       st.arrivalTime = st.departureTime = null;
 
@@ -562,33 +614,18 @@ var GtfsEditor = GtfsEditor || {};
           instance.collection.trigger('change');
         });
 
-      // p: specify pickup only
+      // p: specify pickup or dropoff only
       } 
-      else if (e.keyCode == keyCodes.pickup) {
+      else if (e.keyCode == keyCodes.pickup || e.keyCode == keyCodes.dropoff) {
         if (_.isUndefined(sel) || sel[1] < 4)
           return;
 
-        this.getInput('Pickup only?', function(input) {
-          instance.offsetTimes(sel, input);
+        this.getInput('[p]ickup or [d]ropoff only?', function(input) {
+          instance.modifyStopTimeType(sel, input);
           instance.collection.trigger('change');
         });
         console.log('pickup!')
         console.log(sel)
-      // d: specify dropoff only
-      } else if (e.keyCode == keyCodes.dropoff) {
-        if (_.isUndefined(sel) || sel[1] < 4)
-          return;
-        console.log('dropoff!')
-        console.log(sel)
-        // console.log(trip.get('stopTimes'))
-        console.log(this.collection);
-        console.log(instance);
-        // stopTime = instance.get('stopTime');
-        this.getInput('Dropoff only?', function(input) {
-          instance.offsetTimes(sel, input);
-          instance.collection.trigger('change');
-        });
-
       // i: insert new trip
       // basically, duplicate this trip or these trips, with the entered offset
       } else if (e.keyCode == keyCodes.insert) {
