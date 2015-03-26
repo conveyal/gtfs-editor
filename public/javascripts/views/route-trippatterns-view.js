@@ -668,8 +668,7 @@ var GtfsEditor = GtfsEditor || {};
       originalTpData.id = null;
       originalTpData.name = this.$('[name=name]').val();
       originalTpData.patternStops = _.map(originalTpData.patternStops, function(data){
-        data.id = null;
-        return data;
+        return _.clone(data);
       });
 
       var view = this;
