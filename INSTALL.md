@@ -35,6 +35,8 @@ Install dependencies
 
 Run application
 
+	[path to play1.2.5]/play deps --sync
+
 	[path to play1.2.5]/play run
 
 
