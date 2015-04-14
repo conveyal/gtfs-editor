@@ -217,12 +217,14 @@ public class AgencyTx extends DatabaseTx {
 		});
 		
 		tripCountByCalendar = getMap("tripCountByCalendar");
-		Bind.histogram(trips, tripCountByCalendar, new Fun.Function2<String, String, Trip>() {
+		BindUtils.multiHistogram(trips, tripCountByCalendar, new Fun.Function2<String[], String, Trip>() {
 
 			@Override
-			public String run(String key, Trip trip) {
-				// TODO Auto-generated method stub
-				return trip.calendarId;
+			public String[] run(String key, Trip trip) {
+				if (trip.calendarId == null)
+					return new String[] {};
+				else
+					return new String[] { trip.calendarId };
 			}
 		});
 		
