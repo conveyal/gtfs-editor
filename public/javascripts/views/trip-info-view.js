@@ -199,6 +199,7 @@ var GtfsEditor = GtfsEditor || {};
       var tripData = {
         useFrequency: true,
         patternId: selectedPatternId,
+        agencyId: G.session.agencyId,
         tripDescription: this.$('[name=name]').val()
       };
 
