@@ -394,13 +394,11 @@ G.RouteTypes = Backbone.Collection.extend({
 
     useFrequency: function() {
       this.trips.clearTrips();
-      this.set('useFrequency', true);
       this.save();
     },
 
     useTimetable: function() {
       this.trips.clearTrips();
-      this.set('useFrequency', false);
       this.save()
     }
 
