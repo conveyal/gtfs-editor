@@ -100,7 +100,7 @@ var GtfsEditor = GtfsEditor || {};
       data.startTime = this.calcTime(data.startTimeString);
       data.endTime = this.calcTime(data.endTimeString);
       data.headway = this.calcTime(data.serviceFrequencyString);
-      data.routeId = this.tripPatterns.get(selectedPatternId).get('routeId');
+      data.routeId = this.model.tripPatterns.get(selectedPatternId).get('routeId');
 
       delete data.startTimeString;
       delete data.endTimeString;
