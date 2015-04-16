@@ -12,7 +12,7 @@ require:
     - org.geotools -> gt-geojson 12.2
     - com.fasterxml.jackson.core -> jackson-core 2.4.4
     - com.fasterxml.jackson.core -> jackson-databind 2.4.4
-    - org.opentripplanner -> otp 1.0.0-SNAPSHOT
+    - org.opentripplanner -> otp 0.14.0
     - net.sf.opencsv -> opencsv 2.0
     - org.mapdb -> mapdb 1.0.7
     
