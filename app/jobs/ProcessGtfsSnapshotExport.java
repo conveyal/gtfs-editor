@@ -123,127 +123,144 @@ public class ProcessGtfsSnapshotExport implements Runnable {
 				
 				// write the routes
 				for (Route route : atx.routes.values()) {
-					com.conveyal.gtfs.model.Route gtfsRoute = route.toGtfs(gtfsAgency, gtx);
-					feed.routes.put(route.getGtfsId(), gtfsRoute);
 					
-					// write the trips on those routes
-					for (Trip trip : atx.getTripsByRoute(route.id)) {
-						com.conveyal.gtfs.model.Trip gtfsTrip = new com.conveyal.gtfs.model.Trip();
+					if (route.publiclyVisible) {
+											
+						com.conveyal.gtfs.model.Route gtfsRoute = route.toGtfs(gtfsAgency, gtx);
+						feed.routes.put(route.getGtfsId(), gtfsRoute);
 						
-						gtfsTrip.block_id = trip.blockId;
-						gtfsTrip.route = gtfsRoute;
-						gtfsTrip.trip_id = trip.getGtfsId();
-						// not using custom ids
-						gtfsTrip.service = feed.services.get(trip.calendarId);
-						gtfsTrip.trip_headsign = trip.tripHeadsign;
-						gtfsTrip.trip_short_name = trip.tripShortName;
-						gtfsTrip.direction_id = trip.tripDirection == TripDirection.A ? 0 : 1;
-						
-						TripPattern pattern = atx.tripPatterns.get(trip.patternId);
-						
-						Tuple2<String, Integer> nextKey = feed.shapePoints.ceilingKey(new Tuple2(pattern.id, null));
-						if ((nextKey == null || !pattern.id.equals(nextKey.a)) && pattern.shape != null && !pattern.useStraightLineDistances) {
-							// this shape has not yet been saved
-							double[] coordDistances = GeoUtils.getCoordDistances(pattern.shape);
+						// write the trips on those routes
+						for (Trip trip : atx.getTripsByRoute(route.id)) {
+							com.conveyal.gtfs.model.Trip gtfsTrip = new com.conveyal.gtfs.model.Trip();
 							
-							for (int i = 0; i < coordDistances.length; i++) {
-								Coordinate coord = pattern.shape.getCoordinateN(i);
-								Shape shape = new Shape(pattern.id, coord.y, coord.x, i + 1, coordDistances[i]);
-								feed.shapePoints.put(new Tuple2(pattern.id, shape.shape_pt_sequence), shape);
-							}
-						}
-						
-						if (pattern.shape != null && !pattern.useStraightLineDistances)
-							gtfsTrip.shape_id = pattern.id;
-						
-						if (trip.wheelchairBoarding != null) {
-							if (trip.wheelchairBoarding.equals(AttributeAvailabilityType.AVAILABLE))
-								gtfsTrip.wheelchair_accessible = 1;
+							gtfsTrip.block_id = trip.blockId;
+							gtfsTrip.route = gtfsRoute;
+							gtfsTrip.trip_id = trip.getGtfsId();
+							// not using custom ids
+							gtfsTrip.service = feed.services.get(trip.calendarId);
+							gtfsTrip.trip_headsign = trip.tripHeadsign;
+							gtfsTrip.trip_short_name = trip.tripShortName;
+							gtfsTrip.direction_id = trip.tripDirection == TripDirection.A ? 0 : 1;
 							
-							else if (trip.wheelchairBoarding.equals(AttributeAvailabilityType.UNAVAILABLE))
-								gtfsTrip.wheelchair_accessible = 2;
+							TripPattern pattern = atx.tripPatterns.get(trip.patternId);
 							
-							else
-								gtfsTrip.wheelchair_accessible = 0;
-							
-						}
-						else if (route.wheelchairBoarding != null) {
-							if (route.wheelchairBoarding.equals(AttributeAvailabilityType.AVAILABLE))
-								gtfsTrip.wheelchair_accessible = 1;
-							
-							else if (route.wheelchairBoarding.equals(AttributeAvailabilityType.UNAVAILABLE))
-								gtfsTrip.wheelchair_accessible = 2;
-							
-							else
-								gtfsTrip.wheelchair_accessible = 0;
-							
-						}
-						
-						feed.trips.put(gtfsTrip.trip_id, gtfsTrip);
-						
-						TripPattern patt = atx.tripPatterns.get(trip.patternId);
-						
-						Iterator<TripPatternStop> psi = patt.patternStops.iterator();
-						
-						int stopSequence = 1;
-						
-						// write the stop times
-						for (StopTime st : trip.stopTimes) {
-							TripPatternStop ps = psi.next();
-							if (st == null)
-								continue;
-							
-							Stop stop = atx.stops.get(st.stopId);
-							
-							if (!st.stopId.equals(ps.stopId)) {
-								throw new IllegalStateException("Trip " + trip.id + " does not match its pattern!");
+							Tuple2<String, Integer> nextKey = feed.shapePoints.ceilingKey(new Tuple2(pattern.id, null));
+							if ((nextKey == null || !pattern.id.equals(nextKey.a)) && pattern.shape != null && !pattern.useStraightLineDistances) {
+								// this shape has not yet been saved
+								double[] coordDistances = GeoUtils.getCoordDistances(pattern.shape);
+								
+								for (int i = 0; i < coordDistances.length; i++) {
+									Coordinate coord = pattern.shape.getCoordinateN(i);
+									Shape shape = new Shape(pattern.id, coord.y, coord.x, i + 1, coordDistances[i]);
+									feed.shapePoints.put(new Tuple2(pattern.id, shape.shape_pt_sequence), shape);
+								}
 							}
 							
-							com.conveyal.gtfs.model.StopTime gst = new com.conveyal.gtfs.model.StopTime();
-							gst.arrival_time = st.arrivalTime != null ? st.arrivalTime : Entity.INT_MISSING;
-							gst.departure_time = st.departureTime != null ? gst.departure_time : Entity.INT_MISSING;
+							if (pattern.shape != null && !pattern.useStraightLineDistances)
+								gtfsTrip.shape_id = pattern.id;
 							
-							if (st.dropOffType != null)
-								gst.drop_off_type = st.dropOffType.toGtfsValue();
-							else if (stop.dropOffType != null)
-								gst.drop_off_type = stop.dropOffType.toGtfsValue();
-							
-							if (st.pickupType != null)
-								gst.pickup_type = st.pickupType.toGtfsValue();
-							else if (stop.dropOffType != null)
-								gst.drop_off_type = stop.dropOffType.toGtfsValue();
-							
-							gst.shape_dist_traveled = ps.shapeDistTraveled;
-							gst.stop_headsign = st.stopHeadsign;
-							gst.stop_id = stop.getGtfsId();
-							
-							// write the stop as needed 
-							if (!feed.stops.containsKey(gst.stop_id)) {
-								feed.stops.put(gst.stop_id, stop.toGtfs());
+							if (trip.wheelchairBoarding != null) {
+								if (trip.wheelchairBoarding.equals(AttributeAvailabilityType.AVAILABLE))
+									gtfsTrip.wheelchair_accessible = 1;
+								
+								else if (trip.wheelchairBoarding.equals(AttributeAvailabilityType.UNAVAILABLE))
+									gtfsTrip.wheelchair_accessible = 2;
+								
+								else
+									gtfsTrip.wheelchair_accessible = 0;
+								
+							}
+							else if (route.wheelchairBoarding != null) {
+								if (route.wheelchairBoarding.equals(AttributeAvailabilityType.AVAILABLE))
+									gtfsTrip.wheelchair_accessible = 1;
+								
+								else if (route.wheelchairBoarding.equals(AttributeAvailabilityType.UNAVAILABLE))
+									gtfsTrip.wheelchair_accessible = 2;
+								
+								else
+									gtfsTrip.wheelchair_accessible = 0;
+								
 							}
 							
-							gst.stop_sequence = stopSequence++;
+							feed.trips.put(gtfsTrip.trip_id, gtfsTrip);
 							
-							if (ps.timepoint != null)
-								gst.timepoint = ps.timepoint ? 1 : 0;
-							else
-								gst.timepoint = Entity.INT_MISSING;
-		
-							gst.trip_id = gtfsTrip.trip_id;
+							TripPattern patt = atx.tripPatterns.get(trip.patternId);
 							
-							feed.stop_times.put(new Tuple2(gtfsTrip.trip_id, gst.stop_sequence), gst);
+							Iterator<TripPatternStop> psi = patt.patternStops.iterator();
+							
+							int stopSequence = 1;
+							
+							// write the stop times
+							for (StopTime st : trip.stopTimes) {
+								TripPatternStop ps = psi.next();
+								if (st == null)
+									continue;
+								
+								Stop stop = atx.stops.get(st.stopId);
+								
+								if (!st.stopId.equals(ps.stopId)) {
+									throw new IllegalStateException("Trip " + trip.id + " does not match its pattern!");
+								}
+								
+								com.conveyal.gtfs.model.StopTime gst = new com.conveyal.gtfs.model.StopTime();
+								gst.arrival_time = st.arrivalTime != null ? st.arrivalTime : Entity.INT_MISSING;
+								gst.departure_time = st.departureTime != null ? st.departureTime : Entity.INT_MISSING;
+								
+								if (st.dropOffType != null)
+									gst.drop_off_type = st.dropOffType.toGtfsValue();
+								else if (stop.dropOffType != null)
+									gst.drop_off_type = stop.dropOffType.toGtfsValue();
+								
+								if (st.pickupType != null)
+									gst.pickup_type = st.pickupType.toGtfsValue();
+								else if (stop.dropOffType != null)
+									gst.drop_off_type = stop.dropOffType.toGtfsValue();
+								
+								gst.shape_dist_traveled = ps.shapeDistTraveled;
+								gst.stop_headsign = st.stopHeadsign;
+								gst.stop_id = stop.getGtfsId();
+								
+								// write the stop as needed 
+								if (!feed.stops.containsKey(gst.stop_id)) {
+									feed.stops.put(gst.stop_id, stop.toGtfs());
+								}
+								
+								gst.stop_sequence = stopSequence++;
+								
+								if (ps.timepoint != null)
+									gst.timepoint = ps.timepoint ? 1 : 0;
+								else
+									gst.timepoint = Entity.INT_MISSING;
+			
+								gst.trip_id = gtfsTrip.trip_id;
+								
+								feed.stop_times.put(new Tuple2(gtfsTrip.trip_id, gst.stop_sequence), gst);
+							}
+							
+							// create frequencies as needed
+							try 
+							{
+								if (trip.useFrequency != null && trip.useFrequency) {
+									Frequency f = new Frequency();
+									f.trip = gtfsTrip;
+									f.start_time = trip.startTime;
+									f.end_time = trip.endTime;
+									f.exact_times = 0;
+									f.headway_secs = trip.headway;
+									feed.frequencies.put(gtfsTrip.trip_id, f);
+								}
+							} catch (NullPointerException e) {
+								e.printStackTrace();
+								Logger.error("Error writing frequencies for " + gtfsTrip.trip_id + " "
+																				+ trip.tripHeadsign + " "
+																				+ trip.tripShortName
+																				+ " ...omitted.");
+							}
+	
 						}
-						
-						// create frequencies as needed
-						if (trip.useFrequency != null && trip.useFrequency) {
-							Frequency f = new Frequency();
-							f.trip = gtfsTrip;
-							f.start_time = trip.startTime;
-							f.end_time = trip.endTime;
-							f.exact_times = 0;
-							f.headway_secs = trip.headway;
-							feed.frequencies.put(gtfsTrip.trip_id, f);
-						}
+					}
+					else {
+						Logger.info ("Route " + route.gtfsRouteId + " not marked as publicly visible");
 					}
 				}
 			}
