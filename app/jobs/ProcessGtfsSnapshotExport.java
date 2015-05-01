@@ -201,7 +201,7 @@ public class ProcessGtfsSnapshotExport implements Runnable {
 							
 							com.conveyal.gtfs.model.StopTime gst = new com.conveyal.gtfs.model.StopTime();
 							gst.arrival_time = st.arrivalTime != null ? st.arrivalTime : Entity.INT_MISSING;
-							gst.departure_time = st.departureTime != null ? gst.departure_time : Entity.INT_MISSING;
+							gst.departure_time = st.departureTime != null ? st.departureTime : Entity.INT_MISSING;
 							
 							if (st.dropOffType != null)
 								gst.drop_off_type = st.dropOffType.toGtfsValue();
