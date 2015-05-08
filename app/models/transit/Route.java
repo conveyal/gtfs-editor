@@ -39,6 +39,8 @@ public class Route extends Model implements Cloneable, Serializable {
 
     public StatusType status;
 
+    public Boolean publiclyVisible;
+
     public String agencyId;
 
     //public GisRoute gisRoute;
