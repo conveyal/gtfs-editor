@@ -53,6 +53,8 @@ public class TripPattern extends Model implements Cloneable, Serializable {
     // if true, use straight-line rather than shape-based distances
     public boolean useStraightLineDistances;
     
+    public boolean useFrequency;
+    
     public String routeId;
     
     public String agencyId;

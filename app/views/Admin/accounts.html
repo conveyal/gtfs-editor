@@ -118,7 +118,7 @@
 </script>
 
 <script id="resetPassword" type="text/html">
-<form method="POST" id="resetPasswordForm" action="@{Admin.changePassword()}" class="form-horizontal">
+<form method="POST" id="resetPasswordForm" action="@{Admin.resetPassword()}" class="form-horizontal">
   <div class="control-group">
     <label class="control-label" for="username">Username</label>
     <div class="controls">
@@ -157,7 +157,7 @@
 	 		<td>#{if account.lastLogin}${account.lastLogin.format('yyyy-MM-dd hh:mm')}#{/if}#{else}--#{/else}</td>
 	 		<td>#{if account.active}<i class="icon-ok"></i>#{/if}#{else}<i class="icon-remove"></i>#{/else}</td>
 	 		<td>#{if account.admin}<i class="icon-ok"></i>#{/if}#{else}<i class="icon-remove"></i>#{/else}</td>
-	 		<td>#{if account.agency}${account.agency.name}#{/if}</td>	 	
+	 		<td>#{if account.agencyId}${account.agencyId}#{/if}</td>	 	
 	 		<td><a href="#editAccountModal" onclick="editAccount('${account.username}');">Edit</a> <!-- | <a href="#resetPasswordModal" onclick="resetPassword('${account.username}');">Reset Password</a> --></td>
 	 		
 	 	</tr>

@@ -92,14 +92,15 @@ var GtfsEditor = GtfsEditor || {};
 
       var data = G.Utils.serializeForm($(evt.target));
 
-      data.serviceCalendar = data.frequencyServiceCalendar;
+      data.calendarId = data.frequencyServiceCalendar;
 
       data = _.omit(data, ['file', 'scheduleType', 'frequencyServiceCalendar', 'timetableServiceCalendar']);
 
-      data.pattern = selectedPatternId;
+      data.patternId = selectedPatternId;
       data.startTime = this.calcTime(data.startTimeString);
       data.endTime = this.calcTime(data.endTimeString);
       data.headway = this.calcTime(data.serviceFrequencyString);
+      data.routeId = this.model.tripPatterns.get(selectedPatternId).get('routeId');
 
       delete data.startTimeString;
       delete data.endTimeString;
@@ -198,9 +199,23 @@ var GtfsEditor = GtfsEditor || {};
 
       var tripData = {
         useFrequency: true,
-        pattern: selectedPatternId,
+        patternId: selectedPatternId,
+        agencyId: G.session.agencyId,
         tripDescription: this.$('[name=name]').val()
       };
+
+      var arrivalTime = 0, departureTime = 0;
+
+      tripData.stopTimes = _.map(this.model.tripPatterns.get(selectedPatternId).get('patternStops'), function (ps) {
+        arrivalTime = departureTime + ps.defaultTravelTime;
+        departureTime = arrivalTime + ps.defaultDwellTime;
+
+        return {
+          stopId: ps.stopId,
+          arrivalTime: arrivalTime,
+          departureTime: departureTime
+        };
+      });
 
       var view = this;
 
@@ -237,7 +252,7 @@ var GtfsEditor = GtfsEditor || {};
 
       var tripData = {
         useFrequency: true,
-        pattern: selectedPatternId,
+        patternId: selectedPatternId,
         tripDescription: this.$('[name=name]').val(),
         serviceCalendar: serviceCalendarId,
         startTime: existingTrip.startTime,

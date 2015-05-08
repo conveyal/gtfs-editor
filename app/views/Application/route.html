@@ -276,7 +276,7 @@
       <label class="control-label" for="tripPattern"><strong>&{'route.trip-info-tpl.trip-pattern'}</strong><br>(&{'shared.required'})</label>
       <div class="controls">
         <p>
-          <select required name="pattern" id="tripPattern" class="input" title="&{'route.trip-info-tpl.trip-pattern'}" data-content="&{'route.trip-info-tpl.trip-pattern-content'}">
+          <select required name="patternId" id="tripPattern" class="input" title="&{'route.trip-info-tpl.trip-pattern'}" data-content="&{'route.trip-info-tpl.trip-pattern-content'}">
             <option value="">-- &{'route.trip-pattern-select-pattern'} --</option>
 
             {{#items}}<option value="{{attributes.id}}">{{attributes.name}}</option>{{/items}}
@@ -344,7 +344,7 @@
       <label class="control-label" for="trip"><strong>&{'route.trip-info-tpl.trip'}</strong><br>(&{'shared.required'})</label>
       <div class="controls">
         <p>
-          <select required name="pattern" id="trip" class="input" title="&{'route.trip-info-tpl.trip'}" data-content="&{'route.trip-info-tpl.trip-content'}">
+          <select required name="patternId" id="trip" class="input" title="&{'route.trip-info-tpl.trip'}" data-content="&{'route.trip-info-tpl.trip-content'}">
             <option value="">-- &{'route.trip-pattern-select-trip'} --</option>
 
             {{#items}}<option value="{{attributes.id}}">{{attributes.tripDescription}}</option>{{/items}}
