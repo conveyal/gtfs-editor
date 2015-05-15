@@ -278,6 +278,7 @@ route.trip-pattern-clear-pattern=Clear Pattern
 route.trip-pattern-kmh=km/h
 route.trip-pattern-dwell=Dwell time
 route.trip-pattern-calculate-times=Calculate Times
+route.trip-pattern-calculate-time=Calculate Time
 
 
 route.trip-pattern-alignment=Alignment

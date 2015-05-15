@@ -84,7 +84,7 @@ var GtfsEditor = GtfsEditor || {};
      });
 
 
-      _.bindAll(this, 'sizeContent', 'duplicateTripPattern', 'addDuplicateTripPattern', 'cancelDuplicateTripPattern', 'editTripPattern', 'submitEditTripPattern', 'cancelEditTripPattern', 'onStopFilterChange', 'loadTransitWand', 'calcTimesFromVelocity', 'saveTripPatternLine', 'onTripPatternChange', 'onTripPatternStopSelectChange', 'updateStops', 'zoomToPatternExtent', 'clearPatternButton', 'deletePatternButton', 'stopUpdateButton', 'stopRemoveButton', 'updateTransitWandOverlay', 'onSatelliteToggle', 'stopAddAgainButton');
+      _.bindAll(this, 'sizeContent', 'duplicateTripPattern', 'addDuplicateTripPattern', 'cancelDuplicateTripPattern', 'editTripPattern', 'submitEditTripPattern', 'cancelEditTripPattern', 'onStopFilterChange', 'loadTransitWand', 'calcTimesFromVelocity', 'saveTripPatternLine', 'onTripPatternChange', 'onTripPatternStopSelectChange', 'updateStops', 'zoomToPatternExtent', 'clearPatternButton', 'deletePatternButton', 'stopUpdateButton', 'stopRemoveButton', 'updateTransitWandOverlay', 'onSatelliteToggle', 'stopAddAgainButton', 'stopCalcSpeedButton');
         $(window).resize(this.sizeContent);
     },
 
@@ -296,6 +296,10 @@ var GtfsEditor = GtfsEditor || {};
         $(this.map.getPanes().popupPane)
           .find('.trippattern-stop-add-again-btn')
           .on('click', this.stopAddAgainButton);
+
+        $(this.map.getPanes().popupPane)
+          .find('.calc-stop-speed')
+          .on('click', this.stopCalcSpeedButton);
     },
 
     sizeContent: function() {
@@ -924,6 +928,7 @@ var GtfsEditor = GtfsEditor || {};
 
       this.onTripPatternChange();
     },
+
     stopUpdateButton: function(evt) {
 
       var selectedPatternId  = this.$('#trip-pattern-select').val();
@@ -949,6 +954,37 @@ var GtfsEditor = GtfsEditor || {};
       //.addStop({stop: data.id, defaultTravelTime: this.calcTime(travelTimeString), defaultDwellTime: this.calcTime(dwellTimeString)});
 
       //$(evt.target).closest('form').find('#oringal').val();
+    },
+
+    // calculate the travel for a single stop given a speed
+    stopCalcSpeedButton: function (evt) {
+      var patternId = this.$('#trip-pattern-select').val();
+      var form = $(evt.target).closest('form');
+
+      // index in trip pattern
+      var idx = form.find('input[name="stopSequence"]').val() - 1;
+
+      // doesn't make sense to calculate speed to first stop
+      if (idx === 0)
+        return;
+
+      var patt = this.model.tripPatterns.get(patternId);
+
+      // figure out the distance (in meters)
+      var pss = patt.get('patternStops');
+
+      var dist = pss[idx].shapeDistTraveled - pss[idx - 1].shapeDistTraveled;
+      var speedKmh = Number(form.find('input[name="speed"]').val());
+      var speedMs = speedKmh * 1000 / 3600;
+
+      var time = Math.round(dist / speedMs);
+
+      // figure out the human-readable time
+      var secs = time % 60;
+      var hsecs = secs < 10 ? '0' + secs : '' + secs;
+      var htime = ((time - secs) / 60) + ':' + hsecs;
+
+      form.find('input[name="travelTime"]').val(htime);
     },
 
     /**
