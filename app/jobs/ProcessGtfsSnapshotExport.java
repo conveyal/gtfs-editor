@@ -136,12 +136,7 @@ public class ProcessGtfsSnapshotExport implements Runnable {
 						// not using custom ids
 						gtfsTrip.service = feed.services.get(trip.calendarId);
 						gtfsTrip.trip_headsign = trip.tripHeadsign;
-						
-						if (trip.tripShortName == null || trip.tripShortName.isEmpty())
-							gtfsTrip.trip_short_name = trip.tripDescription;
-						else
-							gtfsTrip.trip_short_name = trip.tripShortName;
-						
+						gtfsTrip.trip_short_name = trip.tripShortName;
 						gtfsTrip.direction_id = trip.tripDirection == TripDirection.A ? 0 : 1;
 						
 						TripPattern pattern = atx.tripPatterns.get(trip.patternId);
