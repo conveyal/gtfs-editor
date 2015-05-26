@@ -1,50 +1,38 @@
-Installation Instructions
-=========================
+# GTFS Editor Installation
 
-The following instructions assume installation on an Ubuntu server with sudo permissions. These steps assume Ubuntu 12.04.5 LTS, if using different version of Ubuntu the available versions of software may change requiring slight modifications to these steps.
+![Editor Home](screenshots/GTFS_Editor___Home.png)
 
-Install java jre
+## Generic Ubuntu
 
-	sudo apt-get install openjdk-7-jre
+If you just want to install the GTFS Editor on a generic Ubuntu machine, you can just execute [this script](cloudfront/install.sh):
 
+```
+#!/bin/bash -xe
+sudo apt-get --yes update
+sudo apt-get --yes install git unzip openjdk-7-jre
+wget http://downloads.typesafe.com/releases/play-1.2.5.zip
+unzip play-1.2.5.zip
+git clone https://github.com/conveyal/gtfs-editor.git
+cd gtfs-editor
+cp conf/application.conf.template conf/application.conf
+../play-1.2.5/play dependencies
+../play-1.2.5/play run
+```
 
-Install play framework 1.2.5 (this software depends on v1.2.x, version 2.x+ is not compatable)
+## Ubuntu on Amazon AWS
 
-	wget http://downloads.typesafe.com/releases/play-1.2.5.zip
+To install the GTFS Editor you have two options described here:
 
+* You can install it [from scratch](docs/Install.md) creating a new VM.
 
-Unzip play framework
+* Or you can simplify the process [using Amazon CloudFrount](docs/Install_CloudFront.md).
 
-	unzip play-1.2.5.zip
+We have created [installation scripts](cloudfront/) to make this process as straightforward as possible.
 
-Download gtfs-editor software
+## Next steps
 
-	git clone https://github.com/conveyal/gtfs-editor.git
+In order to test the instance we've included some information on how to import some popular GTFS feeds:
 
-	cd gtfs-editor
+* [Importing a GTFS feed](docs/Import.md).
 
-
-Configure gtfs-editor application.conf
-
-	cp conf/application.conf.template conf/application.conf
-
-Install dependencies
-
- [path to play1.2.5]/play dependencies
-
-
-Run application
-
-	[path to play1.2.5]/play run
-
-
-Request site via web browser
-
-http://localhost:9000/
-
-
-Follow setup instructions
-
-Troubleshooting:
-
-1) Ensure that you have access to port 9000 and that it is allowed through any firewall or routing configuration. For example, Amazon AWS won’t allow access by unless explicitly granted for port 9000.
+You can see the results in [these screenshots](docs/Screenshots.md)
