@@ -25,9 +25,9 @@ To install the GTFS Editor you have two options described here:
 
 * You can install it [from scratch](docs/Install.md) creating a new VM.
 
-* Or you can simplify the process [using Amazon CloudFrount](docs/Install_CloudFront.md).
+* Or you can simplify the process [using Amazon CloudFormation](docs/Install_CloudFormation.md).
 
-We have created [installation scripts](cloudfront/) to make this process as straightforward as possible.
+We have created [installation scripts](cloudformation/) to make this process as straightforward as possible.
 
 ## Next steps
 

@@ -16,9 +16,9 @@ This is the step by step process:
 
 5. Click Next and then Create. Your new GTFS Editor instance is now being created.
 
-You can see the creation process in the `Events` tab. Once this process is finished, you can switch to the `Outputs` tab where you can find the public IP of this instance.
+You can see the creation process in the `Events` tab. Once this process is finished, you can switch to the `Outputs` tab where you can find the public IP of this instance. If it fails, you might to accept the ToS of the OS Image (follow the weblink on the error message).
 
-Finally, point your browser to `http://[your-ip-here]:9000` to configure the GTFS Editor (it might a take a couple of minutes for the instance to download the GTFS Editor code and its dependencies).
+Finally, point your browser to `http://[public-AWS-ip-]:9000` or `https://[public-aws-DNS]:9000`to configure the GTFS Editor (it might a take a couple of minutes for the instance to download the GTFS Editor code and its dependencies).
 
 ## Create the admin user and default agency
 
