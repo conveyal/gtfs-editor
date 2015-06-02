@@ -50,13 +50,18 @@ public class SnapshotController extends Controller {
 			else {
 				if (agencyId == null)
 					agencyId = session.get("agencyId");
-				
+
+				Collection<Snapshot> snapshots;
 				if (agencyId == null) {
-					badRequest();
-					return;
+					// if it's still null just give them everything
+					// this is used in GTFS Data Manager to get snapshots in bulk
+					// TODO this allows any authenticated user to fetch GTFS data for any agency
+					snapshots = gtx.snapshots.values();
 				}
-				
-				Collection<Snapshot> snapshots = gtx.snapshots.subMap(new Tuple2(agencyId, null), new Tuple2(agencyId, Fun.HI)).values();
+				else {
+					snapshots = gtx.snapshots.subMap(new Tuple2(agencyId, null), new Tuple2(agencyId, Fun.HI)).values();
+				}
+
 				renderJSON(Base.toJson(snapshots, false));
 			} 
 		} finally {
