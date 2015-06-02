@@ -1,14 +1,12 @@
 package models;
 
-import java.io.File;
-import java.io.Serializable;
-
-import org.mapdb.Fun.Tuple2;
-
-import utils.JacksonSerializers;
-
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.joda.time.LocalDate;
+import org.mapdb.Fun.Tuple2;
+import utils.JacksonSerializers;
+
+import java.io.Serializable;
 
 /**
  * Represents a snapshot of an agency database.
@@ -37,6 +35,17 @@ public class Snapshot implements Serializable {
 	
 	/** the date/time this snapshot was taken (millis since epoch) */
 	public long snapshotTime;
+
+	// TODO: these should become java.time.LocalDate
+	/** When is the earliest date that schedule information contained in this snapshot is valid? */
+	@JsonSerialize(using = JacksonSerializers.LocalDateIsoSerializer.class)
+	@JsonDeserialize(using = JacksonSerializers.LocalDateIsoDeserializer.class)
+	public LocalDate validFrom;
+
+	/** When is the last date that schedule information contained in this snapshot is valid? */
+	@JsonSerialize(using = JacksonSerializers.LocalDateIsoSerializer.class)
+	@JsonDeserialize(using = JacksonSerializers.LocalDateIsoDeserializer.class)
+	public LocalDate validTo;
 	
 	/** Used for Jackson deserialization */
 	public Snapshot () {}

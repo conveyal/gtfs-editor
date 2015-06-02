@@ -1,36 +1,18 @@
 package datastore;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.NavigableSet;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentMap;
-
-import models.transit.Agency;
-import models.transit.Route;
-import models.transit.ScheduleException;
-import models.transit.ServiceCalendar;
-import models.transit.Stop;
-import models.transit.Trip;
-import models.transit.TripPattern;
-
-import org.joda.time.LocalDate;
-import org.mapdb.Atomic;
-import org.mapdb.BTreeMap;
-import org.mapdb.Bind;
-import org.mapdb.Bind.MapWithModificationListener;
-import org.mapdb.DB;
-import org.mapdb.Fun;
-import org.mapdb.Fun.Function2;
-import org.mapdb.Fun.Tuple2;
-
-import play.i18n.Messages;
-import utils.BindUtils;
-
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Iterators;
+import models.transit.*;
+import org.joda.time.LocalDate;
+import org.mapdb.*;
+import org.mapdb.Fun.Function2;
+import org.mapdb.Fun.Tuple2;
+import play.i18n.Messages;
+import utils.BindUtils;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentMap;
 
 /** a transaction in an agency database */
 public class AgencyTx extends DatabaseTx {
@@ -94,7 +76,12 @@ public class AgencyTx extends DatabaseTx {
 	/**
 	 * Create an agency tx.
 	 */
-    AgencyTx (DB tx) {
+    public AgencyTx (DB tx) {
+		this(tx, true);
+	}
+
+	/** Create an agency tx, optionally without secondary indices */
+	public AgencyTx (DB tx, boolean buildSecondaryIndices) {
 		super(tx);
 		
 		tripPatterns = getMap("tripPatterns");
@@ -104,7 +91,9 @@ public class AgencyTx extends DatabaseTx {
 		exceptions = getMap("exceptions");
 		snapshotVersion = tx.getAtomicInteger("snapshotVersion");
 		stops = getMap("stops");
-		buildSecondaryIndices();
+
+		if (buildSecondaryIndices)
+			buildSecondaryIndices();
 	}
 	
 	public void buildSecondaryIndices () {

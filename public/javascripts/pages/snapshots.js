@@ -19,10 +19,30 @@ var GtfsEditor = GtfsEditor || {};
     showRestoreSnapshotDialog: function (e) {
       this.$('#modal-container').html(ich['snapshot-new-tpl']({restore: $(e.target).attr('data-snapshot')}))
         .find('.modal').modal('show');
+
+        var dfrom = new Date();
+        dfrom.setDate(dfrom.getDate() - 7);
+        this.$('#valid-from').datepicker()
+        .datepicker('setValue', dfrom);
+
+        var date = new Date();
+        date.setYear(date.getYear() + 1);
+        this.$('#valid-to').datepicker()
+        .datepicker('setValue', date);
     },
 
     showNewSnapshotDialog: function () {
       this.$('#modal-container').html(ich['snapshot-new-tpl']({restore: false})).find('.modal').modal('show');
+
+      var dfrom = new Date();
+      dfrom.setDate(dfrom.getDate() - 7);
+      this.$('#valid-from').datepicker()
+        .datepicker('setValue', dfrom);
+
+      var date = new Date();
+      date.setYear(date.getYear() + 1);
+      this.$('#valid-to').datepicker()
+        .datepicker('setValue', date);
     },
 
     showRestoredStopsDialog: function (stops) {
@@ -32,12 +52,29 @@ var GtfsEditor = GtfsEditor || {};
     takeSnapshot: function () {
       var instance = this;
       var name = this.$('#snapshot-name').val();
+      var dfrom = this.toIso(this.$('#valid-from').data('datepicker').getDate());
+      var dto = this.toIso(this.$('#valid-to').data('datepicker').getDate());
+
       this.$('#modal-container button.snapshot').prop('disabled', true).text('Saving . . .');
-      this.collection.create({name: name, agencyId: G.session.agencyId}, {wait: true,
+
+      this.collection.create({
+            name: name,
+            validFrom: dfrom,
+            validTo: dto,
+            agencyId: G.session.agencyId
+          }, {
+            wait: true,
+
+
       success: function () {
         this.$('#modal-container > .modal').modal('hide').remove();
         instance.collection.fetch({reset: true, data: {agencyId: G.session.agencyId}});
       }});
+    },
+
+    /** convert a local date to an iso date */
+    toIso: function (dfrom) {
+      return dfrom.getFullYear() + '-' + (dfrom.getMonth() + 1) + '-' + dfrom.getDate();
     },
 
     takeSnapshotAndRestore: function (e) {
@@ -80,7 +117,7 @@ var GtfsEditor = GtfsEditor || {};
 
       _.each(snapshots, function (snapshot) {
         var date = new Date(snapshot.snapshotTime);
-        snapshot.renderedDate = moment([date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()]).format('MM/DD/YYYY');
+        snapshot.renderedDate = moment([date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()]).format('YYYY-MM-DD');
       });
 
       this.$el.html(ich['snapshot-list-tpl']({snapshots: snapshots, agencyName: G.session.agencies[G.session.agencyId].name}));

@@ -1,21 +1,10 @@
 package utils;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.util.List;
-
-import org.joda.time.DateTimeZone;
-import org.joda.time.LocalDate;
-import org.joda.time.LocalTime;
-import org.mapdb.Fun.Tuple2;
-
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.deser.std.StdScalarDeserializer;
 import com.fasterxml.jackson.databind.ser.std.StdScalarSerializer;
@@ -23,6 +12,16 @@ import com.google.common.io.BaseEncoding;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
+import org.joda.time.DateTimeZone;
+import org.joda.time.LocalDate;
+import org.joda.time.LocalTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+import org.mapdb.Fun.Tuple2;
+
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.List;
 
 public class JacksonSerializers {
 	private static final BaseEncoding encoder = BaseEncoding.base64Url();
@@ -171,5 +170,32 @@ public class JacksonSerializers {
 				JsonProcessingException {
 			return new LocalDate(jp.getLongValue(), DateTimeZone.UTC);
 		}	
+	}
+
+	public static final DateTimeFormatter format = DateTimeFormat.forPattern("yyyy-MM-dd");
+
+	/** Serialize a local date to an ISO date (year-month-day) */
+	public static class LocalDateIsoSerializer extends StdScalarSerializer<LocalDate> {
+		public LocalDateIsoSerializer () {
+			super(LocalDate.class, false);
+		}
+
+		@Override
+		public void serialize(LocalDate localDate, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException, JsonGenerationException {
+			jsonGenerator.writeString(localDate.toString(format));
+		}
+	}
+
+	/** Deserialize an ISO date (year-month-day) */
+	public static class LocalDateIsoDeserializer extends StdScalarDeserializer<LocalDate> {
+		public LocalDateIsoDeserializer () {
+			super(LocalDate.class);
+		}
+
+		@Override
+		public LocalDate deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+			return LocalDate.parse(jsonParser.getValueAsString(), format);
+		}
+
 	}
 }

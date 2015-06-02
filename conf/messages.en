@@ -161,6 +161,9 @@ snapshot.take=Take snapshot
 snapshot.take-and-restore=Take snapshot and restore
 snapshot.current=Current?
 snapshot.restore-stops=The following stops had been deleted and were restored
+snapshot.valid-from=Valid from
+snapshot.valid-to=Valid to
+snapshot.download=Export GTFS
 
 # /index
 

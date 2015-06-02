@@ -29,16 +29,19 @@
   </p>
   <table class="table table-striped">
     <thead>
-      <th>&{'snapshot.name'}</th><th>&{'snapshot.version'}</th><th>&{'snapshot.date'}</th><th>&{'snapshot.current'}<th>&{'snapshot.restore'}</th>
+      <th>&{'snapshot.name'}</th><th>&{'snapshot.version'}</th><th>&{'snapshot.valid-from'}</th><th>&{'snapshot.valid-to'}</th><th>&{'snapshot.date'}</th><th>&{'snapshot.current'}<th>&{'snapshot.restore'}</th>
     </thead>
     <tbody>
       {{#snapshots}}
         <tr>
           <td>{{name}}</td>
           <td>{{version}}</td>
+          <td>{{validFrom}}</td>
+          <td>{{validTo}}</td>
           <td>{{renderedDate}}</td>
           <td>{{#current}}<i class="icon-ok"></i>{{/current}}</td>
           <td><button class="btn btn-link restore-snapshot" data-snapshot="{{id}}"><i class="icon-refresh"></i>&nbsp;&{'snapshot.restore'}</button></td>
+          <td><a class="btn btn-link export-snapshot" href="api/snapshot/{{id}}.zip"><i class="icon-download"></i>&nbsp;&{'snapshot.download'}</button></td>
         </tr>
       {{/snapshots}}
     </tbody>
@@ -60,6 +63,16 @@
       <div class="form-inline">
         <label for="snapshot-name">&{'snapshot.name'}</label>
         <input type="text" id="snapshot-name" />
+
+        <div class="input-append date" id="valid-from">
+          <input size="96" type="text" />
+          <span class="add-on"><i class="icon-th"></i></span>
+        </div>
+
+        <div class="input-append date" id="valid-to">
+          <input size="96" type="text" />
+          <span class="add-on"><i class="icon-th"></i></span>
+        </div>
       </div>
     </div>
     <div class="modal-footer">

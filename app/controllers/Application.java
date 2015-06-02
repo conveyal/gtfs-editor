@@ -1,41 +1,34 @@
 package controllers;
 
+import com.google.common.collect.Maps;
+import datastore.AgencyTx;
+import datastore.GlobalTx;
+import datastore.VersionedDataStore;
 import jobs.GisExport;
-import play.*;
+import jobs.ProcessGtfsSnapshotExport;
+import jobs.ProcessGtfsSnapshotMerge;
+import models.Account;
+import models.OAuthToken;
+import models.transit.*;
+import org.joda.time.DateTimeZone;
+import org.joda.time.LocalDate;
+import play.Play;
 import play.i18n.Lang;
 import play.i18n.Messages;
-import play.mvc.*;
+import play.mvc.Before;
+import play.mvc.Controller;
 import play.mvc.Http.Request;
 import play.mvc.Scope.Session;
+import play.mvc.With;
 
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.joda.time.DateTimeZone;
-import org.joda.time.LocalDate;
-
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
-
-import datastore.VersionedDataStore;
-import datastore.AgencyTx;
-import datastore.GlobalTx;
-import jobs.ProcessGtfsSnapshotExport;
-import jobs.ProcessGtfsSnapshotMerge;
-import models.*;
-import models.transit.RouteType;
-import models.transit.Agency;
-import models.transit.StopTime;
-import models.transit.Trip;
-import models.transit.TripPattern;
-import models.transit.TripPatternStop;
-
 @With(Secure.class)
 public class Application extends Controller {
 	/** used to give almost-friendly names to exported files */
-	private static AtomicLong nextExportId = new AtomicLong(1);
+	public static AtomicLong nextExportId = new AtomicLong(1);
 	
     @Before
     static void initSession() throws Throwable {
@@ -358,7 +351,7 @@ public class Application extends Controller {
         
         File out = new File(Play.configuration.getProperty("application.publicDataDirectory"), "gtfs_" + nextExportId.incrementAndGet() + ".zip");
         
-        new ProcessGtfsSnapshotExport(agencySelect, out, startDate, endDate).run();
+        new ProcessGtfsSnapshotExport(agencySelect, out, startDate, endDate, false).run();
         
         redirect(Play.configuration.getProperty("application.appBase") + "/public/data/"  + out.getName());
     }
