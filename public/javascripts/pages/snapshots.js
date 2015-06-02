@@ -29,9 +29,10 @@ var GtfsEditor = GtfsEditor || {};
     },
 
     edit: function (e, which) {
-      var snap = this.collection.get($(e.target).attr('data-snapshot'));
+      var target = $(e.target).closest('button');
+      var snap = this.collection.get(target.attr('data-snapshot'));
       var _this = this;
-      var td = $(e.target).parent().empty();
+      var td = target.parent().empty();
 
       var din = td.append('<div class="input-append date" id="valid-to"><input size="96" type="text" /><span class="add-on"><i class="icon-th"></i></span></div>').find('div');
       var ok = td.append('<button class="btn btn-link"><i class="icon-ok"></i><span class="sr-only">OK</span></button>').find('button');
@@ -50,8 +51,11 @@ var GtfsEditor = GtfsEditor || {};
         _this.render();
       });
 
+      din.datepicker();
+
       var date = this.fromIso(snap.get(which == 'from' ? 'validFrom' : 'validTo'));
-      din.datepicker().datepicker('setDate', date);
+      if (date !== null)
+        din.datepicker('setDate', date);
     },
 
     showRestoreSnapshotDialog: function (e) {
@@ -119,6 +123,9 @@ var GtfsEditor = GtfsEditor || {};
 
     /** convert an ISO date to a local date */
     fromIso: function (isodate) {
+      if (!isodate)
+        return null;
+
       var sp = isodate.split('-');
 
       return new Date(Number(sp[0]), Number(sp[1] - 1), Number(sp[2]));
