@@ -8,12 +8,50 @@ var GtfsEditor = GtfsEditor || {};
       'click #new-snapshot': 'showNewSnapshotDialog',
       'click .restore-snapshot': 'showRestoreSnapshotDialog',
       'click #take-snapshot': 'takeSnapshot',
-      'click #take-restore': 'takeSnapshotAndRestore'
+      'click #take-restore': 'takeSnapshotAndRestore',
+      'click .edit-from': 'editFrom',
+      'click .edit-to': 'editTo'
     },
 
     initialize: function () {
       _.bindAll(this, 'showNewSnapshotDialog', 'showRestoreSnapshotDialog', 'takeSnapshot', 'takeSnapshotAndRestore');
       this.listenTo(this.collection, 'reset', this.render);
+    },
+
+    /** edit the valid from date */
+    editFrom: function (e) {
+      this.edit(e, 'from');
+    },
+
+    /** edit the valid to date */
+    editTo: function (e) {
+      this.edit(e, 'to');
+    },
+
+    edit: function (e, which) {
+      var snap = this.collection.get($(e.target).attr('data-snapshot'));
+      var _this = this;
+      var td = $(e.target).parent().empty();
+
+      var din = td.append('<div class="input-append date" id="valid-to"><input size="96" type="text" /><span class="add-on"><i class="icon-th"></i></span></div>').find('div');
+      var ok = td.append('<button class="btn btn-link"><i class="icon-ok"></i><span class="sr-only">OK</span></button>').find('button');
+
+      ok.click(function (e) {
+        var isodate = _this.toIso(din.data('datepicker').getDate());
+
+        if (which == 'from') {
+          snap.set('validFrom', isodate);
+        } else {
+          snap.set('validTo', isodate);
+        }
+
+        snap.save();
+        // re-render to clear the date picker
+        _this.render();
+      });
+
+      var date = this.fromIso(snap.get(which == 'from' ? 'validFrom' : 'validTo'));
+      din.datepicker().datepicker('setDate', date);
     },
 
     showRestoreSnapshotDialog: function (e) {
@@ -23,12 +61,12 @@ var GtfsEditor = GtfsEditor || {};
         var dfrom = new Date();
         dfrom.setDate(dfrom.getDate() - 7);
         this.$('#valid-from').datepicker()
-        .datepicker('setValue', dfrom);
+        .datepicker('setDate', dfrom);
 
         var date = new Date();
         date.setYear(date.getYear() + 1);
         this.$('#valid-to').datepicker()
-        .datepicker('setValue', date);
+        .datepicker('setDate', date);
     },
 
     showNewSnapshotDialog: function () {
@@ -37,12 +75,12 @@ var GtfsEditor = GtfsEditor || {};
       var dfrom = new Date();
       dfrom.setDate(dfrom.getDate() - 7);
       this.$('#valid-from').datepicker()
-        .datepicker('setValue', dfrom);
+        .datepicker('setDate', dfrom);
 
       var date = new Date();
-      date.setYear(date.getYear() + 1);
+      date.setYear(date.getFullYear() + 1);
       this.$('#valid-to').datepicker()
-        .datepicker('setValue', date);
+        .datepicker('setDate', date);
     },
 
     showRestoredStopsDialog: function (stops) {
@@ -74,7 +112,16 @@ var GtfsEditor = GtfsEditor || {};
 
     /** convert a local date to an iso date */
     toIso: function (dfrom) {
-      return dfrom.getFullYear() + '-' + (dfrom.getMonth() + 1) + '-' + dfrom.getDate();
+      var month = dfrom.getMonth() + 1;
+      var date = dfrom.getDate();
+      return dfrom.getFullYear() + '-' + (month < 10 ? '0' + month : month) + '-' + (date < 10 ? '0' + date : date);
+    },
+
+    /** convert an ISO date to a local date */
+    fromIso: function (isodate) {
+      var sp = isodate.split('-');
+
+      return new Date(Number(sp[0]), Number(sp[1] - 1), Number(sp[2]));
     },
 
     takeSnapshotAndRestore: function (e) {

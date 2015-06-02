@@ -82,6 +82,7 @@ DELETE  /api/scheduleexception/{id}           api.ScheduleExceptionController.de
 GET     /api/snapshot/?                       api.SnapshotController.getSnapshot
 GET     /api/snapshot/{id}.zip                api.SnapshotController.exportSnapshot
 GET     /api/snapshot/{id}                    api.SnapshotController.getSnapshot
+PUT     /api/snapshot/{id}                    api.SnapshotController.updateSnapshot
 POST    /api/snapshot                         api.snapshotController.createSnapshot
 POST    /api/snapshot/{id}/restore            api.snapshotController.restoreSnapshot
 

@@ -36,8 +36,8 @@
         <tr>
           <td>{{name}}</td>
           <td>{{version}}</td>
-          <td>{{validFrom}}</td>
-          <td>{{validTo}}</td>
+          <td>{{validFrom}} <button class="btn btn-link edit-from" data-snapshot="{{id}}"><i class="icon-pencil"></i><span class="sr-only">&{'shared.button.edit'}</span></button></td>
+          <td>{{validTo}} <button class="btn btn-link edit-to" data-snapshot="{{id}}"><i class="icon-pencil"></i><span class="sr-only">&{'shared.button.edit'}</span></button></td>
           <td>{{renderedDate}}</td>
           <td>{{#current}}<i class="icon-ok"></i>{{/current}}</td>
           <td><button class="btn btn-link restore-snapshot" data-snapshot="{{id}}"><i class="icon-refresh"></i>&nbsp;&{'snapshot.restore'}</button></td>

@@ -18,6 +18,7 @@ import controllers.Secure;
 import controllers.Security;
 import datastore.GlobalTx;
 import datastore.VersionedDataStore;
+import play.Logger;
 import play.Play;
 import play.mvc.Before;
 import play.mvc.Controller;
@@ -90,6 +91,37 @@ public class SnapshotController extends Controller {
 			e.printStackTrace();
 			badRequest();
 			if (gtx != null) gtx.rollbackIfOpen();
+		}
+	}
+
+	public static void updateSnapshot (String id) {
+		GlobalTx gtx = null;
+		try {
+			Snapshot s = Base.mapper.readValue(params.get("body"), Snapshot.class);
+
+			Tuple2<String, Integer> sid = JacksonSerializers.Tuple2IntDeserializer.deserialize(id);
+
+			if (s == null || s.id == null || !s.id.equals(sid)) {
+				Logger.warn("snapshot ID not matched, not updating: %s, %s", s.id, id);
+				badRequest();
+			}
+
+			gtx = VersionedDataStore.getGlobalTx();
+
+			if (!gtx.snapshots.containsKey(s.id)) {
+				gtx.rollback();
+				notFound();
+			}
+
+			gtx.snapshots.put(s.id, s);
+
+			gtx.commit();
+
+			renderJSON(Base.toJson(s, false));
+		} catch (IOException e) {
+			e.printStackTrace();
+			if (gtx != null) gtx.rollbackIfOpen();
+			badRequest();
 		}
 	}
 	
