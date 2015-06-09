@@ -403,7 +403,6 @@ route.trip-info-clear-all-trips-confirm=Changing the schedule type will clear al
 route.route-review-instructions=Review route and approve for publication.
 
 route.review-status=Status
-route.review-publicly-visible=Publicly Visible
 
 route.review.status.in-progress=In-Progress
 route.review.status.pending-approval=Pending Approval
