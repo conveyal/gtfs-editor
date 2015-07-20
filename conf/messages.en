@@ -26,6 +26,12 @@ nav-bar.admin=Admin
 
 nav-bar.logout=Logout
 
+nav-bar.help=Guide
+nav-bar.user-guide=User Guide
+nav-bar.video-tutorial=Video Tutorial
+
+nav-bar.language=Language
+
 # shared
 
 shared.optional=Optional
