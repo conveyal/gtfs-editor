@@ -406,8 +406,10 @@ public class Application extends Controller {
     		importGtfs();
         }
     	else {
+			ProcessGtfsSnapshotMerge merge;
 			try {
-				new ProcessGtfsSnapshotMerge(gtfsUpload).run();
+				merge = new ProcessGtfsSnapshotMerge(gtfsUpload);
+				merge.run();
 			}	
 			catch (Exception e) {
 				e.printStackTrace();
@@ -415,7 +417,11 @@ public class Application extends Controller {
 				params.flash();
 	    		validation.keep();
 	    		importGtfs();
+				return;
 			}
+
+			// if there are multiple agencies this will pick one randomly
+			search(merge.agencyId);
     	}    	
     }
     

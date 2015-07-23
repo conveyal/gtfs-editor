@@ -1,36 +1,5 @@
 package jobs;
 
-import gnu.trove.map.TIntObjectMap;
-import gnu.trove.map.TObjectLongMap;
-import gnu.trove.map.hash.TIntObjectHashMap;
-import gnu.trove.map.hash.TObjectLongHashMap;
-
-import java.io.File;
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.SortedMap;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeMap;
-
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
-
-import org.apache.commons.lang.StringUtils;
-import org.geotools.referencing.GeodeticCalculator;
-import org.hibernate.StatelessSession;
-import org.joda.time.DateTimeConstants;
-import org.joda.time.LocalDate;
-import org.mapdb.DBMaker;
-import org.mapdb.Fun;
-import org.opentripplanner.routing.core.RouteMatcher;
-
 import com.conveyal.gtfs.GTFSFeed;
 import com.conveyal.gtfs.model.CalendarDate;
 import com.conveyal.gtfs.model.Entity;
@@ -38,42 +7,27 @@ import com.conveyal.gtfs.model.Service;
 import com.conveyal.gtfs.model.Shape;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.primitives.Ints;
-import com.mchange.v2.c3p0.impl.DbAuth;
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.LineString;
-import com.vividsolutions.jts.geom.Point;
-import com.vividsolutions.jts.geom.PrecisionModel;
-
-import controllers.Bootstrap;
-import datastore.VersionedDataStore;
+import com.vividsolutions.jts.geom.*;
 import datastore.AgencyTx;
 import datastore.GlobalTx;
-import models.transit.Agency;
-import models.transit.GtfsRouteType;
-import models.transit.Route;
-import models.transit.RouteType;
-import models.transit.ServiceCalendar;
-import models.transit.Stop;
-import models.transit.StopTime;
-import models.transit.TripPattern;
-import models.transit.TripPatternStop;
-import models.transit.Trip;
-import play.Logger;
-import play.Play;
-import play.db.jpa.NoTransaction;
-import play.i18n.Messages;
-import play.jobs.Job;
-import play.jobs.OnApplicationStart;
-
+import datastore.VersionedDataStore;
+import gnu.trove.map.TIntObjectMap;
+import gnu.trove.map.hash.TIntObjectHashMap;
+import models.transit.*;
+import org.joda.time.DateTimeConstants;
+import org.joda.time.LocalDate;
+import org.mapdb.DBMaker;
+import org.mapdb.Fun;
 import org.mapdb.Fun.Tuple2;
+import play.Logger;
+import play.i18n.Messages;
+
+import java.io.File;
+import java.util.*;
+import java.util.Map.Entry;
 
 
 public class ProcessGtfsSnapshotMerge implements Runnable {
@@ -87,6 +41,9 @@ public class ProcessGtfsSnapshotMerge implements Runnable {
 	
 	private GTFSFeed input;	
 	private File gtfsFile;
+
+	/** once the merge runs this will have the ID of the created agency */
+	public String agencyId;
 	
 	public ProcessGtfsSnapshotMerge (File gtfsFile)	{
 		this.gtfsFile = gtfsFile;
@@ -113,6 +70,7 @@ public class ProcessGtfsSnapshotMerge implements Runnable {
         	// store agencies
         	for (com.conveyal.gtfs.model.Agency gtfsAgency : input.agency.values()) {
    	       		Agency agency = new Agency(gtfsAgency);
+				agencyId = agency.id;
         		// don't save the agency until we've come up with the stop centroid, below.
         		agencyCount++;
         		// we do want to use the modified agency ID here, because everything that refers to it has a reference
