@@ -1,9 +1,11 @@
 package controllers.api;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
+import jobs.ProcessGtfsSnapshotExport;
 import models.Snapshot;
 import models.transit.Stop;
 
@@ -16,6 +18,8 @@ import controllers.Secure;
 import controllers.Security;
 import datastore.GlobalTx;
 import datastore.VersionedDataStore;
+import play.Logger;
+import play.Play;
 import play.mvc.Before;
 import play.mvc.Controller;
 import play.mvc.With;
@@ -46,13 +50,18 @@ public class SnapshotController extends Controller {
 			else {
 				if (agencyId == null)
 					agencyId = session.get("agencyId");
-				
+
+				Collection<Snapshot> snapshots;
 				if (agencyId == null) {
-					badRequest();
-					return;
+					// if it's still null just give them everything
+					// this is used in GTFS Data Manager to get snapshots in bulk
+					// TODO this allows any authenticated user to fetch GTFS data for any agency
+					snapshots = gtx.snapshots.values();
 				}
-				
-				Collection<Snapshot> snapshots = gtx.snapshots.subMap(new Tuple2(agencyId, null), new Tuple2(agencyId, Fun.HI)).values();
+				else {
+					snapshots = gtx.snapshots.subMap(new Tuple2(agencyId, null), new Tuple2(agencyId, Fun.HI)).values();
+				}
+
 				renderJSON(Base.toJson(snapshots, false));
 			} 
 		} finally {
@@ -63,8 +72,11 @@ public class SnapshotController extends Controller {
 	public static void createSnapshot () {
 		GlobalTx gtx = null;
 		try {
-			Snapshot s = Base.mapper.readValue(params.get("body"), Snapshot.class);
-			s = VersionedDataStore.takeSnapshot(s.agencyId, s.name);
+			// create a dummy snapshot from which to get values
+			Snapshot original = Base.mapper.readValue(params.get("body"), Snapshot.class);
+			Snapshot s = VersionedDataStore.takeSnapshot(original.agencyId, original.name);
+			s.validFrom = original.validFrom;
+			s.validTo = original.validTo;
 			gtx = VersionedDataStore.getGlobalTx();
 			
 			// the snapshot we have just taken is now current; make the others not current
@@ -81,8 +93,40 @@ public class SnapshotController extends Controller {
 			
 			renderJSON(Base.toJson(s, false));
 		} catch (IOException e) {
+			e.printStackTrace();
 			badRequest();
 			if (gtx != null) gtx.rollbackIfOpen();
+		}
+	}
+
+	public static void updateSnapshot (String id) {
+		GlobalTx gtx = null;
+		try {
+			Snapshot s = Base.mapper.readValue(params.get("body"), Snapshot.class);
+
+			Tuple2<String, Integer> sid = JacksonSerializers.Tuple2IntDeserializer.deserialize(id);
+
+			if (s == null || s.id == null || !s.id.equals(sid)) {
+				Logger.warn("snapshot ID not matched, not updating: %s, %s", s.id, id);
+				badRequest();
+			}
+
+			gtx = VersionedDataStore.getGlobalTx();
+
+			if (!gtx.snapshots.containsKey(s.id)) {
+				gtx.rollback();
+				notFound();
+			}
+
+			gtx.snapshots.put(s.id, s);
+
+			gtx.commit();
+
+			renderJSON(Base.toJson(s, false));
+		} catch (IOException e) {
+			e.printStackTrace();
+			if (gtx != null) gtx.rollbackIfOpen();
+			badRequest();
 		}
 	}
 	
@@ -107,7 +151,7 @@ public class SnapshotController extends Controller {
 			
 			List<Stop> stops = VersionedDataStore.restore(local);
 			
-			// the snapshot we have just taken is now current; make the others not current
+			// the snapshot we have just restored is now current; make the others not current
 			for (Snapshot o : gtx.snapshots.subMap(new Tuple2(local.agencyId, null), new Tuple2(local.agencyId, Fun.HI)).values()) {
 				if (o.id.equals(local.id))
 					continue;
@@ -126,6 +170,36 @@ public class SnapshotController extends Controller {
 		} catch (IOException e) {
 			e.printStackTrace();
 			badRequest();
+		} finally {
+			gtx.rollbackIfOpen();
+		}
+	}
+
+	/** Export a snapshot as GTFS */
+	public static void exportSnapshot (String id) {
+		Tuple2<String, Integer> decodedId;
+		try {
+			decodedId = JacksonSerializers.Tuple2IntDeserializer.deserialize(id);
+		} catch (IOException e1) {
+			badRequest();
+			return;
+		}
+
+		GlobalTx gtx = VersionedDataStore.getGlobalTx();
+		Snapshot local;
+		try {
+			if (!gtx.snapshots.containsKey(decodedId)) {
+				notFound();
+				return;
+			}
+
+			local = gtx.snapshots.get(decodedId);
+
+			File out = new File(Play.configuration.getProperty("application.publicDataDirectory"), "gtfs_" + Application.nextExportId.incrementAndGet() + ".zip");
+
+			new ProcessGtfsSnapshotExport(local, out).run();
+
+			redirect(Play.configuration.getProperty("application.appBase") + "/public/data/"  + out.getName());
 		} finally {
 			gtx.rollbackIfOpen();
 		}

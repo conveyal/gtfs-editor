@@ -363,7 +363,6 @@ route.stops-wheelchair-boarding=Acceso con silla de ruedas
 route.route-review-instructions=Revisar ruta/línea y aprobar para publicación.
 
 route.review-status=Estado
-route.review-publicly-visible=Visible públicamente
 
 route.review.status.in-progress=En curso
 route.review.status.pending-approval=Aprobación pendiente

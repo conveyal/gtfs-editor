@@ -30,7 +30,7 @@ Configure gtfs-editor application.conf
 
 Install dependencies
 
- [path to play1.2.5]/play dependencies
+        [path to play1.2.5]/play dependencies
 
 
 Run application

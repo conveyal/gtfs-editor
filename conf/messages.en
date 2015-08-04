@@ -26,6 +26,12 @@ nav-bar.admin=Admin
 
 nav-bar.logout=Logout
 
+nav-bar.help=Guide
+nav-bar.user-guide=User Guide
+nav-bar.video-tutorial=Video Tutorial
+
+nav-bar.language=Language
+
 # shared
 
 shared.optional=Optional
@@ -161,6 +167,9 @@ snapshot.take=Take snapshot
 snapshot.take-and-restore=Take snapshot and restore
 snapshot.current=Current?
 snapshot.restore-stops=The following stops had been deleted and were restored
+snapshot.valid-from=Valid from
+snapshot.valid-to=Valid to
+snapshot.download=Export GTFS
 
 # /index
 
@@ -278,6 +287,7 @@ route.trip-pattern-clear-pattern=Clear Pattern
 route.trip-pattern-kmh=km/h
 route.trip-pattern-dwell=Dwell time
 route.trip-pattern-calculate-times=Calculate Times
+route.trip-pattern-calculate-time=Calculate Time
 
 
 route.trip-pattern-alignment=Alignment
@@ -399,7 +409,6 @@ route.trip-info-clear-all-trips-confirm=Changing the schedule type will clear al
 route.route-review-instructions=Review route and approve for publication.
 
 route.review-status=Status
-route.review-publicly-visible=Publicly Visible
 
 route.review.status.in-progress=In-Progress
 route.review.status.pending-approval=Pending Approval

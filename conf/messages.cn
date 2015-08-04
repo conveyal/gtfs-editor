@@ -298,7 +298,6 @@ route.trip-info-delete-pattern-confirm=是否确定删除服务时刻表？
 route.route-review-instructions=回顾并发布线路信息
 
 route.review-status=状态
-route.review-publicly-visible=公开可见
 
 route.review.status.in-progress=审核中
 route.review.status.pending-approval=待定

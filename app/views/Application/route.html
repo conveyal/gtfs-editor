@@ -520,15 +520,6 @@
         </div>
       </div>
 
-      <div class="control-group">
-        <label class="control-label" for="publiclyVisible">&{'route.review-publicly-visible'}</label>
-        <div class="controls">
-          <label class="checkbox" for="publiclyVisible">
-            <input name="publiclyVisible" id="publiclyVisible" type="checkbox" value="true" {{#publiclyVisible}}checked{{/publiclyVisible}}>
-          </label>
-        </div>
-      </div>
-
     <div class="control-group">
       <label class="control-label" for="comments">&{'route.route-info-tpl.comments'}</label>
       <div class="controls">
@@ -743,6 +734,12 @@
               &{'route.trip-pattern.timepoint'}
             </label>
           </p>
+
+          <div class="well">
+            <input name="speed" type="text" placeholder="&{'route.trip-pattern-kmh'}"/>
+            <button type="button" class="calc-stop-speed">&{'route.trip-pattern-calculate-time'}</button>
+          </div>
+
           <p>
             <button type="button" class="trippattern-stop-update-btn btn btn-primary">&{'shared.button.update'}</button>
             <button type="button" class="trippattern-stop-remove-btn btn btn-danger">&{'shared.button.remove'}</button>
