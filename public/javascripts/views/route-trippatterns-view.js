@@ -1073,12 +1073,14 @@ var GtfsEditor = GtfsEditor || {};
       // TODO: find the correct form control here
       var selectedStopId  = this.$('#trip-pattern-stop-select').val();
 
-      var selectedPatternStop = this.model.tripPatterns.get(selectedPatternId).getPatternStop(selectedStopId);
+      var selectedPatternStops = this.model.tripPatterns.get(selectedPatternId).getPatternStops(selectedStopId);
 
-      if(selectedPatternStop == undefined)
+      if(selectedPatternStops == undefined || selectedPatternStops.length == 0)
         return;
 
-      this.map.setView(new L.LatLng(selectedPatternStop.stop.location.lat, selectedPatternStop.stop.location.lng), 15);
+      var stop = this.options.stops.get(selectedPatternStops[0].stopId);
+
+      this.map.panTo(new L.LatLng(stop.get("lat"), stop.get("lon")));
     },
 
     deletePatternButton: function(evt) {
