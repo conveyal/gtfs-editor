@@ -78,7 +78,7 @@ public class VersionedDataStore {
 	}
 	
 	/** Take a snapshot of an agency database. The snapshot will be saved in the global database. */
-	public static Snapshot takeSnapshot (String agencyId, String name) {
+	public static Snapshot takeSnapshot (String agencyId, String name, String comment) {
 		AgencyTx tx = getAgencyTx(agencyId);
 		GlobalTx gtx = getGlobalTx();
 		int version = -1;
@@ -97,6 +97,7 @@ public class VersionedDataStore {
 
 			ret.snapshotTime = System.currentTimeMillis();
 			ret.name = name;
+			ret.comment = comment;
 			ret.current = true;
 			
 			snapshot = getSnapshotDb(agencyId, version, false);

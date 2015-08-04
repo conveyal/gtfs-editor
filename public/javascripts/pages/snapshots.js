@@ -94,6 +94,7 @@ var GtfsEditor = GtfsEditor || {};
     takeSnapshot: function () {
       var instance = this;
       var name = this.$('#snapshot-name').val();
+      var comment = this.$('#snapshot-comment').val();
       var dfrom = this.toIso(this.$('#valid-from').data('datepicker').getDate());
       var dto = this.toIso(this.$('#valid-to').data('datepicker').getDate());
 
@@ -101,17 +102,18 @@ var GtfsEditor = GtfsEditor || {};
 
       this.collection.create({
             name: name,
+            comment: comment,
             validFrom: dfrom,
             validTo: dto,
             agencyId: G.session.agencyId
           }, {
             wait: true,
-
-
-      success: function () {
-        this.$('#modal-container > .modal').modal('hide').remove();
-        instance.collection.fetch({reset: true, data: {agencyId: G.session.agencyId}});
-      }});
+            success: function () {
+              this.$('#modal-container > .modal').modal('hide').remove();
+              instance.collection.fetch({reset: true, data: {agencyId: G.session.agencyId}});
+            }
+        }
+      );
     },
 
     /** convert a local date to an iso date */
@@ -134,8 +136,9 @@ var GtfsEditor = GtfsEditor || {};
     takeSnapshotAndRestore: function (e) {
       var instance = this;
       var name = this.$('#snapshot-name').val();
+      var comment = this.$('#snapshot-comment').val();
       this.$('#modal-container button.snapshot').prop('disabled', true).text('Saving . . .');
-      this.collection.create({name: name, agencyId: G.session.agencyId},
+      this.collection.create({name: name, comment: comment, agencyId: G.session.agencyId},
         {wait: true, success: function () {
           var id = $(e.target).attr('data-snapshot');
           instance.$('.restore-snapshot').prop('disabled', true);

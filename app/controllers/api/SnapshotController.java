@@ -74,7 +74,7 @@ public class SnapshotController extends Controller {
 		try {
 			// create a dummy snapshot from which to get values
 			Snapshot original = Base.mapper.readValue(params.get("body"), Snapshot.class);
-			Snapshot s = VersionedDataStore.takeSnapshot(original.agencyId, original.name);
+			Snapshot s = VersionedDataStore.takeSnapshot(original.agencyId, original.name, original.comment);
 			s.validFrom = original.validFrom;
 			s.validTo = original.validTo;
 			gtx = VersionedDataStore.getGlobalTx();

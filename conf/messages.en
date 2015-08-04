@@ -157,6 +157,7 @@ snapshot.for=Snapshots for
 snapshot.new=Take snapshot
 snapshot.restore=Restore snapshot
 snapshot.name=Name
+snapshot.comment=Comment
 snapshot.date=Snapshot date
 snapshot.snapshots=Snapshots
 snapshot.take-before-restore=You must create a snapshot of the current state of the database before you can restore a previous version.

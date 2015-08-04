@@ -24,7 +24,10 @@ public class Snapshot implements Cloneable, Serializable {
 	
 	/** The name of this snapshot */
 	public String name;
-	
+
+	/** The comment of this snapshot */
+	public String comment;
+
 	/** ID: agency ID, version */
     @JsonSerialize(using=JacksonSerializers.Tuple2IntSerializer.class)
     @JsonDeserialize(using=JacksonSerializers.Tuple2IntDeserializer.class)
