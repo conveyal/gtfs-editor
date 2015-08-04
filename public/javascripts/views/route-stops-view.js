@@ -408,7 +408,7 @@ var GtfsEditor = GtfsEditor || {};
 
     onSatelliteToggle: function(evt) {
 
-      if($('input[name="stop-use-satellite"]').attr('checked')) {
+      if($('input[name="stop-use-satellite"]').is(':checked')) {
           G.session.useSatellite  = true;
       }
       else {
