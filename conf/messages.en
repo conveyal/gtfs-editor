@@ -413,6 +413,7 @@ route.review-status=Status
 route.review.status.in-progress=In-Progress
 route.review.status.pending-approval=Pending Approval
 route.review.status.approved=Approved
+route.review.status.disabled=Disabled
 
 # /timetable
 timetable.save-changes=Save changes
