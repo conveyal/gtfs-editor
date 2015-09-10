@@ -32,7 +32,7 @@ var GtfsEditor = GtfsEditor || {};
       this.agencyMajorStopIcon = L.divIcon({
         iconSize: [10, 10],
         iconAnchor: [5, 5],
-        popupAnchor: [5, 5],
+        popupAnchor: [0, -8],
         className: 'stop stop-major'
       });
 
@@ -40,14 +40,14 @@ var GtfsEditor = GtfsEditor || {};
       this.agencyMinorStopIcon = L.divIcon({
         iconSize: [10, 10],
         iconAnchor: [5, 5],
-        popupAnchor: [5, 5],
+        popupAnchor: [0, -8],
         className: 'stop stop-minor'
       });
 
       this.selectedStopIcon = L.divIcon({
         iconSize: [8, 8],
         iconAnchor: [4, 4],
-        popupAnchor: [4, 4],
+        popupAnchor: [0, -8],
         className: 'stop stop-selected'
       });
 
