@@ -155,7 +155,7 @@ public class GisExport implements Runnable {
 						featureBuilder.add(r.routeDesc);
 
 						if (r.routeTypeId != null)
-							featureBuilder.add(gtx.routeTypes.get(r.routeTypeId).toString());
+							featureBuilder.add(gtx.routeTypes.get(r.routeTypeId).hvtRouteType);
 						else
 							featureBuilder.add("");
 
