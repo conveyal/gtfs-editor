@@ -156,7 +156,7 @@
         this.map = L.map($('#map').get(0), {
           center: mapCenter,
           zoom: mapZoom,
-          maxZoom: 17
+          maxZoom: 19
         });
         this.map.addLayer(baseLayer);
 

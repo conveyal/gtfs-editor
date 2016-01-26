@@ -95,7 +95,7 @@ var GtfsEditor = GtfsEditor || {};
       this.map = L.map(this.$('#map').get(0), {
         center: G.session.mapCenter, //TODO: add to the config file for now
         zoom: G.session.mapZoom,
-        maxZoom: 17
+        maxZoom: 19
       });
       this.map.addLayer(baseLayer);
 
