@@ -1,10 +1,17 @@
 package controllers;
 
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
 import java.util.List;
 import java.util.Date;
+import java.util.Map;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import datastore.VersionedDataStore;
 import datastore.GlobalTx;
 import models.OAuthToken;
@@ -17,6 +24,15 @@ import play.data.validation.*;
 import play.libs.*;
 import play.utils.*;
 
+import com.auth0.jwt.JWTVerifier;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import play.mvc.Controller;
+import play.mvc.Http.Request;
+import utils.Auth0UserProfile;
+
+import javax.net.ssl.HttpsURLConnection;
+
 public class Secure extends Controller {
 
     @Before(unless={"login", "authenticate", "logout", "get_token"})
@@ -26,7 +42,6 @@ public class Secure extends Controller {
         if (request.params.get("oauth_token") != null && !session.contains("username"))
             // persist the token
             session.put("oauth_token", request.params.get("oauth_token"));
-        
         if(!session.contains("username") && !Application.checkOAuth(request, session)) {
             flash.put("url", "GET".equals(request.method) ? request.url : Play.ctxPath + "/"); // seems a good default
             login();
@@ -81,6 +96,7 @@ public class Secure extends Controller {
     public static void authenticate(@Required String username, String password, boolean remember) throws Throwable {
         // Check tokens
         Boolean allowed = false;
+
         try {
             // This is the deprecated method name
             allowed = (Boolean)Security.invoke("authentify", username, password);
@@ -99,13 +115,24 @@ public class Secure extends Controller {
         // Remember if needed
         if(remember) {
             Date expiration = new Date();
-            String duration = "30d";  // maybe make this override-able 
+            String duration = "30d";  // maybe make this override-able
             expiration.setTime(expiration.getTime() + Time.parseDuration(duration));
             response.setCookie("rememberme", Crypto.sign(username + "-" + expiration.getTime()) + "-" + username + "-" + expiration.getTime(), duration);
 
         }
         // Redirect to the original URL (or /)
         redirectToOriginalURL();
+    }
+    public static void authenticateAuth0(@Required String token, Auth0UserProfile profile) throws Throwable {
+        // Check tokens
+//        Auth0UserProfile user = new Auth0UserProfile;
+//        user = profile;
+//        session.put("username", profile.getEmail());
+        // Mark user as connected
+//        session.put("username", username);
+        // Remember if needed
+
+        // Redirect to the original URL (or /)
     }
 
     public static void logout() throws Throwable {
@@ -138,6 +165,76 @@ public class Secure extends Controller {
             Logger.info("Invalid client ID or secret");
             badRequest();
         }
+    }
+    protected static Auth0UserProfile verifyUser(String token) {
+        org.apache.commons.codec.binary.Base64 clientSecret = new org.apache.commons.codec.binary.Base64(true);
+        JWTVerifier jwtVerifier = new JWTVerifier(
+                clientSecret.decode("DxDDNzdWeWl3B-BQkgfZF2YUPqIbQFg7yCjIPJdhu5ZdlibKSUBuhT7phAtrpMyG"),
+                "dR7GdOhtI3HFNxfm4HySDL4Ke8uyGfTe"
+        );
+
+        try {
+            Map<String, Object> decoded = jwtVerifier.verify(token);
+
+            String userInfo = getUserInfo(token);
+
+            ObjectMapper m = new ObjectMapper();
+            return m.readValue(userInfo, Auth0UserProfile.class);
+
+        } catch (Exception e) {
+            System.out.println("error validating token");
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+    protected static String getToken() {
+        String token = null;
+        final String authorizationHeader = request.params.get("authorization");
+        if (authorizationHeader == null) return null;
+
+        // check format (Authorization: Bearer [token])
+        String[] parts = authorizationHeader.split(" ");
+        if (parts.length != 2) return null;
+
+        String scheme = parts[0];
+        String credentials = parts[1];
+
+        Pattern pattern = Pattern.compile("^Bearer$", Pattern.CASE_INSENSITIVE);
+        if (pattern.matcher(scheme).matches()) {
+            token = credentials;
+        }
+        return token;
+    }
+    protected static String getUserInfo(String token) throws Exception {
+
+        URL url = new URL("https://conveyal.eu.auth0.com/tokeninfo");
+        HttpsURLConnection con = (HttpsURLConnection) url.openConnection();
+
+        //add request header
+        con.setRequestMethod("POST");
+        con.setRequestProperty("User-Agent", "USER_AGENT");
+        con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
+
+        String urlParameters = "id_token=" + token;
+
+        // Send post request
+        con.setDoOutput(true);
+        DataOutputStream wr = new DataOutputStream(con.getOutputStream());
+        wr.writeBytes(urlParameters);
+        wr.flush();
+        wr.close();
+
+        BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+        String inputLine;
+        StringBuffer response = new StringBuffer();
+
+        while ((inputLine = in.readLine()) != null) {
+            response.append(inputLine);
+        }
+        in.close();
+
+        return response.toString();
     }
 
     // ~~~ Utils

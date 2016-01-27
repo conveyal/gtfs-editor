@@ -19,6 +19,11 @@ application.allowBootstrapAdminCreate=false
 # If you set this to true, be sure to change the client_id and secret below!
 application.oauthEnabled=false
 
+# Auth0 configuration
+application.auth0.domain="yourdomain.auth0.com"
+application.auth0.client_id="your-client-id"
+application.auth0.client_secret="your-client-secret"
+
 # how long (in milliseconds) are OAuth keys good for?
 # 604,800,000 milliseconds is one week
 application.oauthKeyTimeout=604800000
