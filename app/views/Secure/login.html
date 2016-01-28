@@ -1,56 +1,10 @@
 #{extends 'Secure/layout.html' /}
 
-<script src="https://cdn.auth0.com/js/lock-8.2.min.js"></script>
-<script type="text/javascript">
+#{set 'scripts'}
+	<script src="https://cdn.auth0.com/js/lock-8.2.min.js"></script>
+	#{script 'pages/auth0.js' /}
+#{/set}
 
-  var lock = new Auth0Lock('dR7GdOhtI3HFNxfm4HySDL4Ke8uyGfTe', 'conveyal.eu.auth0.com');
-
-
-  function signinDavid() {
-    lock.show(
-		function(err, profile, token) {
-		  if(err) {
-			console.log(err)
-		  }
-		  else {
-			// save profile and token to localStorage
-			localStorage.setItem('userToken', token);
-			console.log(token)
-			console.log(profile)
-
-			//app.initBB(token);
-
-
-			document.location = '/authenticate'
-		  }
-		}
-	);
-  }
-function signin() {
-    lock.show({
-        callbackURL: 'http://localhost:9000/secure/login'
-      , responseType: 'code'
-      , authParams: {
-        scope: 'openid profile'
-      }
-    });
-  }
-  window.onload = function(){
-  	// if code exists from callback
-  	if (window.location.search){
-		$.ajaxSetup({
-      beforeSend(jqXHR) {
-        jqXHR.setRequestHeader('Authorization', 'Bearer ' + localStorage.getItem('userToken'));
-        return true;
-      }
-    });
-  	}
-  	else{
-  		signin();
-  	}
-
-  };
-</script>
 
 <div class="container fill">
   <div class="row" style="padding-top: 100px;">

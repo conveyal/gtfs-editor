@@ -167,14 +167,14 @@ public class Secure extends Controller {
         }
     }
     protected static Auth0UserProfile verifyUser(String token) {
-        org.apache.commons.codec.binary.Base64 clientSecret = new org.apache.commons.codec.binary.Base64(true);
+        /*org.apache.commons.codec.binary.Base64 clientSecret = new org.apache.commons.codec.binary.Base64(true);
         JWTVerifier jwtVerifier = new JWTVerifier(
                 clientSecret.decode("DxDDNzdWeWl3B-BQkgfZF2YUPqIbQFg7yCjIPJdhu5ZdlibKSUBuhT7phAtrpMyG"),
                 "dR7GdOhtI3HFNxfm4HySDL4Ke8uyGfTe"
-        );
+        );*/
 
         try {
-            Map<String, Object> decoded = jwtVerifier.verify(token);
+            //Map<String, Object> decoded = jwtVerifier.verify(token);
 
             String userInfo = getUserInfo(token);
 
