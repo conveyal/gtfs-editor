@@ -20,6 +20,7 @@ import play.mvc.Controller;
 import play.mvc.Http.Request;
 import play.mvc.Scope.Session;
 import play.mvc.With;
+import utils.Auth0UserProfile;
 
 import java.io.File;
 import java.util.*;
@@ -42,18 +43,24 @@ public class Application extends Controller {
 	            renderArgs.put("user", Security.connected());
 	            
 	            Account account = tx.accounts.get(Security.connected());
-	            
-	            if(account == null && tx.accounts.size() == 0) {
+				String projectID = Play.configuration.getProperty("application.projectId");
+				System.out.println("application can see token: " + session.get("token"));
+
+				Auth0UserProfile userProfile = Auth0Controller.getUserInfo(session.get("token"));
+
+				if(userProfile == null) {
+//	            if(account == null && tx.accounts.size() == 0) {
 	            	Bootstrap.index();
 	            }
-	            
-	            if(account.admin != null && account.admin)
+	            if(userProfile.canAdministerProject(projectID))
+//	            if(account.admin != null && account.admin)
 	            	agencies = tx.agencies.values().toArray(new Agency[tx.agencies.size()]);
 	            else {
-	            	agencies = new Agency[] { tx.agencies.get(account.agencyId) };           	
+//					agencies = new Agency[] { tx.agencies.get(account.agencyId) };
+	            	agencies = new Agency[] { tx.agencies.get(userProfile.getManagedFeeds(projectID)) };
 	            }
 	            
-	            renderArgs.put("agencies", agencies);
+//	            renderArgs.put("agencies", agencies);
 	        }
 	    	else if (checkOAuth(request, session, tx)) {
 	    	    renderArgs.put("user", Messages.get("secure.anonymous"));

@@ -28,7 +28,7 @@ function signin() {
           console.log('auth0login success');
 
           console.log('redirecting to main');
-          document.location = ''
+          window.location = '/';
         }
       })
 
