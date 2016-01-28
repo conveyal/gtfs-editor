@@ -207,7 +207,7 @@ public class TripPattern extends Model implements Cloneable, Serializable {
 
 				// the removed stop can be null if it was skipped. trip.stopTimes.remove will throw an exception
 				// rather than returning null if we try to do a remove out of bounds.
-            	if (!removed.stopId.equals(removedStopId)) {
+            	if (removed != null && !removed.stopId.equals(removedStopId)) {
             		throw new IllegalStateException("Attempted to remove wrong stop!");
             	}
             	
