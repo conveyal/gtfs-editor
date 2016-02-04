@@ -138,6 +138,17 @@ public class ProcessGtfsSnapshotExport implements Runnable {
 						continue;
 					}
 
+					TripPattern pattern = atx.tripPatterns.get(trip.patternId);
+
+					if (!trip.useFrequency.equals(pattern.useFrequency)) {
+						if (pattern.useFrequency)
+							Logger.warn("Schedule-based trip %s on frequency-based pattern %s, skipping", trip.id, pattern.id);
+						else
+							Logger.warn("Frequency-based trip %s on schedule-based pattern %s, skipping", trip.id, pattern.id);
+
+						continue;
+					}
+
 					com.conveyal.gtfs.model.Route  gtfsRoute = gtfsRoutes.get(trip.routeId);
 					Route route = atx.routes.get(trip.routeId);
 
@@ -151,8 +162,6 @@ public class ProcessGtfsSnapshotExport implements Runnable {
 					gtfsTrip.trip_headsign = trip.tripHeadsign;
 					gtfsTrip.trip_short_name = trip.tripShortName;
 					gtfsTrip.direction_id = trip.tripDirection == TripDirection.A ? 0 : 1;
-
-					TripPattern pattern = atx.tripPatterns.get(trip.patternId);
 
 					Tuple2<String, Integer> nextKey = feed.shapePoints.ceilingKey(new Tuple2(pattern.id, null));
 					if ((nextKey == null || !pattern.id.equals(nextKey.a)) && pattern.shape != null && !pattern.useStraightLineDistances) {
@@ -210,6 +219,7 @@ public class ProcessGtfsSnapshotExport implements Runnable {
 
 						if (!st.stopId.equals(ps.stopId)) {
 							throw new IllegalStateException("Trip " + trip.id + " does not match its pattern!");
+							//Logger.error("Trip " + trip.id + " does not match its pattern!");
 						}
 
 						com.conveyal.gtfs.model.StopTime gst = new com.conveyal.gtfs.model.StopTime();
