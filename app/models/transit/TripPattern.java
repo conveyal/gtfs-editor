@@ -471,6 +471,7 @@ public class TripPattern extends Model implements Cloneable, Serializable {
 			gc.setStartingGeographicPoint(prev.location.getX(), prev.location.getY());
 			gc.setDestinationGeographicPoint(stop.location.getX(), stop.location.getY());
 			previousDistance = ps.shapeDistTraveled = previousDistance + gc.getOrthodromicDistance();
+			prev = stop;
 		}
 	}
 
