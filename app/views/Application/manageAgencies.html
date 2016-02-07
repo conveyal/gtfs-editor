@@ -7,11 +7,12 @@
 #{/set}
 
 <script id="agency-table-tpl" type="text/html">
-	<tr><th>&{'manage.agencies.gtfs-agency-id'}</th><th>&{'manage.agencies.name'}</th><th>&{'manage.agencies.url'}</th><th></th></tr>
+	<tr><th>&{'manage.agencies.gtfs-agency-id'}</th><th>Manager Link</th><th>&{'manage.agencies.name'}</th><th>&{'manage.agencies.url'}</th><th></th></tr>
 
 {{#routes}}
 <tr>
   <td>{{gtfsAgencyId}}</td>
+  <td><a href="http://localhost:9000/#feed/{{sourceId}}">Link</a></td>
   <td>{{name}}</td>
   <td>{{url}}</td>
   <td>
@@ -24,6 +25,35 @@
 
 </script>
 
+
+<script id="available-agency-table-tpl" type="text/html">
+<tr>
+  <th>Feed Source</th>
+  <th>Agency ID</th>
+  <th></th>
+</tr>
+
+{{#agencies}}
+<tr>
+  <td>{{sourceName}}</td>
+  <td>{{agencyId}}</a></td>
+  <td>
+    <button 
+      type="button"
+      data-source-id="{{sourceId}}"
+      data-agency-id="{{agencyId}}"
+      class="btn btn-primary load-agency-button"
+      aria-hidden="true"
+      data-toggle="modal"
+      data-target="#agency-modal">
+        Load Agency for Editing
+    </button>
+  </td>
+</tr>
+{{/agencies}}
+
+</script>
+
 <script id="agency-dialog-tpl" type="text/html">
 
 	<input type="hidden" name="id" value="{{id}}"/>
@@ -32,6 +62,13 @@
 					<label class="control-label" for="gtfsAgencyId"><strong>&{'manage.agencies.gtfs-agency-id'}</strong><br>(&{'shared.optional'})</label>
 					<div class="controls">
 					  <input type="text" name="gtfsAgencyId" id="gtfsAgencyId" class="input-xlarge" value="{{gtfsAgencyId}}" title="&{'manage.agencies.gtfs-agency-id'}" data-content="&{'manage.agencies.gtfs-agency-id-content'}">
+					</div>
+				</div>
+
+				<div class="control-group">
+					<label class="control-label" for="sourceId"><strong>Manager Source ID</strong><br>(&{'shared.optional'})</label>
+					<div class="controls">
+					  <input type="text" name="sourceId" id="sourceId" class="input-xlarge" value="{{sourceId}}" title="Source ID" data-content="Source ID">
 					</div>
 				</div>
 
@@ -722,15 +759,26 @@
 	</div>
 </form>
 
-<h3>&{'manage.agencies.title'}</h3>
+<h3>Agencies Available for Editing</h3>
 
 <table id="agency-list-content" class="table table">
 
-    <tr><th>&{'manage.agencies.gtfs-agency-id'}</th><th>&{'manage.agencies.name'}</th><th>&{'manage.agencies.url'}</th><th></th></tr>
+    <tr><th>&{'manage.agencies.gtfs-agency-id'}</th><th>Manager ID</th><th>&{'manage.agencies.name'}</th><th>&{'manage.agencies.url'}</th><th></th></tr>
 
 </table>
 
+<!-- 
 <button type="button" id="agency-dialog-button" class="btn btn-primary" aria-hidden="true" data-toggle="modal" data-target="#agency-modal">&{'manage.route-types.create-new-type-button'}</button>
+-->
+
+<h3>Available Data Manager Agencies</h3>
+
+<table id="available-agency-list-content" class="table table">
+
+<!--<tr><th>Feed Source</th><th>Agency Id</th><th></th></tr>-->
+
+</table>
+
 
 #{set 'scripts'}
 
@@ -745,8 +793,16 @@
 
     $(function(){
 
-         var agencyListView = new GtfsEditor.AgencyListView({el: $('#agency-list-content')});
-      });
+         var agencyListView = new GtfsEditor.AgencyListView({
+           el: $('#agency-list-content')
+         });
+
+         var availableAgencyListView = new GtfsEditor.AvailableAgencyListView({
+           el: $('#available-agency-list-content'),
+           agencyListView: agencyListView
+         });
+
+    });
 
   </script>
 

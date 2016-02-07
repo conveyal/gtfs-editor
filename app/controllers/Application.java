@@ -1,6 +1,7 @@
 package controllers;
 
 import com.google.common.collect.Maps;
+
 import datastore.AgencyTx;
 import datastore.GlobalTx;
 import datastore.VersionedDataStore;
@@ -10,8 +11,10 @@ import jobs.ProcessGtfsSnapshotMerge;
 import models.Account;
 import models.OAuthToken;
 import models.transit.*;
+
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
+
 import play.Play;
 import play.i18n.Lang;
 import play.i18n.Messages;
@@ -28,42 +31,60 @@ import java.util.concurrent.atomic.AtomicLong;
 
 @With(Secure.class)
 public class Application extends Controller {
-	/** used to give almost-friendly names to exported files */
-	public static AtomicLong nextExportId = new AtomicLong(1);
-	
+    /** used to give almost-friendly names to exported files */
+    public static AtomicLong nextExportId = new AtomicLong(1);
+
     @Before
     static void initSession() throws Throwable {
 
-    	GlobalTx tx = VersionedDataStore.getGlobalTx();
-    	
-    	try {
-    		Agency[] agencies;
-    		
-	    	if(Security.isConnected()) {
-	            renderArgs.put("user", Security.connected());
-	            
-	            Account account = tx.accounts.get(Security.connected());
-				String projectID = Play.configuration.getProperty("application.projectId");
-				System.out.println("application can see token: " + session.get("token"));
+        GlobalTx tx = VersionedDataStore.getGlobalTx();
+        try {
+            Agency[] agencies = new Agency[0];
+            
+            if(Security.isConnected()) {
+                renderArgs.put("user", Security.connected());
 
-				Auth0UserProfile userProfile = Auth0Controller.getUserInfo(session.get("token"));
+                Account account = tx.accounts.get(Security.connected());
+                String projectID = Play.configuration.getProperty("application.projectId");
+                System.out.println("application can see token: " + session.get("token"));
 
-				if(userProfile == null) {
-//	            if(account == null && tx.accounts.size() == 0) {
+                Auth0UserProfile userProfile = Auth0Controller.getUserInfo(session.get("token"));
+
+                agencies = tx.agencies.values().toArray(new Agency[tx.agencies.size()]);
+
+                String editableFeeds = session.get("editableFeeds");
+
+                List<Agency> filteredAgencies= new ArrayList<Agency>();
+
+                if(editableFeeds != null) {
+                    System.out.println("filtering agencies" + editableFeeds);
+                    
+                    String[] edIds = editableFeeds.split(",");
+                    for(Agency agency : agencies) {
+                        if(Arrays.asList(edIds).contains(agency.sourceId) || Arrays.asList(edIds).contains("*")) {
+                            filteredAgencies.add(agency);
+                        }
+                    }
+                }
+                
+                agencies = filteredAgencies.toArray(new Agency[filteredAgencies.size()]);
+				
+                /*if(userProfile == null) {
+	            if(account == null && tx.accounts.size() == 0) {
 	            	Bootstrap.index();
 	            }
 	            if(userProfile.canAdministerProject(projectID))
-//	            if(account.admin != null && account.admin)
+					if(account.admin != null && account.admin)
 	            	agencies = tx.agencies.values().toArray(new Agency[tx.agencies.size()]);
 	            else {
-//					agencies = new Agency[] { tx.agencies.get(account.agencyId) };
+					agencies = new Agency[] { tx.agencies.get(account.agencyId) };
 	            	agencies = new Agency[] { tx.agencies.get(userProfile.getManagedFeeds(projectID)) };
-	            }
-	            
-//	            renderArgs.put("agencies", agencies);
-	        }
-	    	else if (checkOAuth(request, session, tx)) {
-	    	    renderArgs.put("user", Messages.get("secure.anonymous"));
+	            }*/
+
+                renderArgs.put("agencies", agencies);
+            }
+            else if (checkOAuth(request, session, tx)) {
+                renderArgs.put("user", Messages.get("secure.anonymous"));
 	    	    
 	    	    OAuthToken token = getToken(request, session, tx);
 	    	    
@@ -88,7 +109,7 @@ public class Application extends Controller {
 	    	
 	    	Arrays.sort(agencies);
 
-	        if(session.get("agencyId") == null) {
+	        if(session.get("agencyId") == null && agencies.length >0) {
 	            
 	        	Agency agency = agencies[0];
 	

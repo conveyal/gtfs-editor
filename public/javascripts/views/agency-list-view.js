@@ -1,5 +1,70 @@
 (function(G, $, ich) {
 
+  G.AvailableAgencyListView = Backbone.View.extend({
+
+      events: {
+        'click .load-agency-button': 'loadAgency'
+      },
+
+      initialize: function (opts) {
+        var self = this;
+        var token = localStorage.getItem('userToken');
+        $.ajax({
+            url : "http://localhost:9000/api/feedsources",
+            data : {
+              feedcollection: G.config.projectId
+            },
+            headers: {
+              'Authorization' : 'Bearer ' + token
+            },
+            success: function(data) {
+              self.agencies = [];
+              data.forEach(function(feed) {
+                if(!feed.latestValidation || !feed.latestValidation.agencies) return;
+                feed.latestValidation.agencies.forEach(function(agency) {
+                  self.agencies.push({
+                    sourceId: feed.id,
+                    sourceName: feed.name,
+                    agencyId: agency
+                  });
+                });
+              });
+              self.render();
+            },
+            error: (err) => {
+              console.log('error getting feed sources', err)
+            }
+          })
+      },
+
+      render: function() {
+        this.$el.html(ich['available-agency-table-tpl']({
+          agencies: this.agencies
+        }));
+      },
+
+      loadAgency : function (evt) {
+        var sourceId = $(evt.currentTarget).data("source-id");
+        var agencyId = $(evt.currentTarget).data("agency-id");
+        var agency = this.getAgency(sourceId, agencyId);
+        if(agency != null) {
+          this.options.agencyListView.createAgency(null, {
+            gtfsAgencyId: agency.agencyId,
+            name : agency.sourceName,
+            sourceId: agency.sourceId
+          });
+        }
+      },
+
+      getAgency : function (sourceId, agencyId) {
+        for(var i=0; i < this.agencies.length; i++) {
+          var agency = this.agencies[i];
+          if(agency.sourceId == sourceId && agency.agencyId === agencyId) return agency;
+        }
+        return null;
+      }
+  });
+
   G.AgencyListView = Backbone.View.extend({
 
       events: {
@@ -16,20 +81,18 @@
         this.collection.on('remove', this.render, this);
 
         this.collection.fetch().complete(function() {
-
           self.render();
-
         });
 
         this.clickMarkerIcon = L.icon({
-        iconUrl: G.config.baseUrl + 'public/images/markers/marker-0d85e9.png',
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
-        shadowUrl: G.config.baseUrl + 'public/images/markers/marker-shadow.png',
-        shadowSize: [41, 41],
-        labelAnchor: [10, -16]
-      });
+          iconUrl: G.config.baseUrl + 'public/images/markers/marker-0d85e9.png',
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+          popupAnchor: [1, -34],
+          shadowUrl: G.config.baseUrl + 'public/images/markers/marker-shadow.png',
+          shadowSize: [41, 41],
+          labelAnchor: [10, -16]
+        });
 
         _.bindAll(this, 'editAgency', 'createAgency', 'deleteAgency');
       },
@@ -56,7 +119,6 @@
 
           if(data.id == "" ) {
 
-
             view.collection.create(_.omit(data, 'id'), {error: function(){
 
               $('#agency-modal').modal('hide');
@@ -70,8 +132,6 @@
               location.reload();
 
             }});
-
-
           }
           else {
 
@@ -91,8 +151,7 @@
             }});
 
           }
-  });
-
+        });
       },
 
       editAgency: function(evt) {
@@ -122,9 +181,9 @@
 
       },
 
-      createAgency: function(evt) {
+      createAgency: function(evt, values) {
 
-        $('#agency-modal-body').html(ich['agency-dialog-tpl']());
+        $('#agency-modal-body').html(ich['agency-dialog-tpl'](values));
 
         this.buildMap();
 

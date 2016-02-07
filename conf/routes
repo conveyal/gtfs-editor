@@ -13,6 +13,7 @@ GET     /get_token								Secure.get_token
 GET     /snapshots                              Application.snapshots
 
 GET     /auth0login                             Auth0Controller.auth0Login
+GET     /auth0logout                            Auth0Controller.auth0Logout
 
 GET     /export/gtfs                      		Application.exportGtfs
 GET     /export/creategtfs                      Application.createGtfs

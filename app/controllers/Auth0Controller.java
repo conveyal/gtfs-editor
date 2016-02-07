@@ -1,14 +1,19 @@
 package controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import play.Play;
 import play.mvc.Controller;
 import utils.Auth0UserProfile;
 
 import javax.net.ssl.HttpsURLConnection;
+
+import org.apache.commons.lang.StringUtils;
+
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.InputStreamReader;
+import java.lang.Exception;
 import java.net.URL;
 import java.util.regex.Pattern;
 
@@ -18,11 +23,33 @@ public class Auth0Controller extends Controller {
 
         // get user profile from Auth0 tokeninfo API
 
-        session.put("username", "test");
         session.put("token", token);
-        System.out.println("user=" + session.get("username"));
+
+        try {
+            Auth0UserProfile profile = getUserInfo(token);
+            System.out.println("got userinfo for " + profile.getEmail());
+            session.put("username", profile.getEmail());
+            
+            String projectID = Play.configuration.getProperty("application.projectId");
+            
+            String editableFeeds = StringUtils.join(profile.getEditableFeeds(projectID), ",");
+            session.put("editableFeeds", editableFeeds);
+
+            String manageableFeeds = StringUtils.join(profile.getManageableFeeds(projectID), ",");
+            session.put("manageableFeeds", manageableFeeds);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            badRequest();
+        }
 
         ok();
+    }
+
+    public static void auth0Logout(String token) {
+        System.out.println("logging out");
+        session.clear();
+        redirect("/");
     }
 
     protected static String getToken() {

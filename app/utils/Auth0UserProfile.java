@@ -1,6 +1,8 @@
 package utils;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import java.security.Permissions;
 import java.util.*;
 
 /**
@@ -200,4 +202,28 @@ public class Auth0UserProfile {
         }
         return false;
     }
+
+    public String[] getFeedsForPermission(String projectID, String permissionType) {
+        if(canAdministerProject(projectID)) {
+            String[] all = { "*" };
+            return all;
+        }
+        for(Project project : app_metadata.datatools.projects) {
+            for(Permission permission : project.permissions) {
+                if(permission.type.equals(permissionType)) {
+                    return permission.feeds;
+                }
+            }
+        }
+        return new String[0];
+    }
+
+    public String[] getEditableFeeds(String projectID) {
+        return getFeedsForPermission(projectID, "edit-gtfs");
+    }
+
+    public String[] getManageableFeeds(String projectID) {
+        return getFeedsForPermission(projectID, "manage-feed");
+    }
+
 }
