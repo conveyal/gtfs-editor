@@ -40,7 +40,9 @@ public class Application extends Controller {
         GlobalTx tx = VersionedDataStore.getGlobalTx();
         try {
             Agency[] agencies = new Agency[0];
-            
+
+            System.out.println("app username = " + session.get("username"));
+            System.out.println("app path = " + request.path);
             if(Security.isConnected()) {
                 renderArgs.put("user", Security.connected());
 
@@ -83,26 +85,12 @@ public class Application extends Controller {
 
                 renderArgs.put("agencies", agencies);
             }
-            else if (checkOAuth(request, session, tx)) {
-                renderArgs.put("user", Messages.get("secure.anonymous"));
-	    	    
-	    	    OAuthToken token = getToken(request, session, tx);
-	    	    
-	    	    if (token.agencyId != null) {
-	            	agencies = new Agency[] { tx.agencies.get(token.agencyId) };           	
-	    	    }
-	    	    else {
-	            	agencies = tx.agencies.values().toArray(new Agency[tx.agencies.size()]);
-	    	    }
-	    	    
-	    	    renderArgs.put("agencies", agencies);
-	    	}
 	        else {
 	
 	        	if(tx.accounts.size() == 0)
 	        		Bootstrap.index();
 	        	else
-	        	    Secure.login();
+	        	    Secure.login(request.path);
 	        	
 	        	return;
 	        }

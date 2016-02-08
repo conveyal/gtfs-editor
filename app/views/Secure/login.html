@@ -1,67 +1,10 @@
 #{extends 'Secure/layout.html' /}
 
 #{set 'scripts'}
+  <script>
+    var redirectTo = "${redirectTo}";
+    console.log("redirectTo = " + redirectTo);
+  </script>
 	<script src="https://cdn.auth0.com/js/lock-8.2.min.js"></script>
 	#{script 'pages/auth0.js' /}
 #{/set}
-
-
-<!-- 
-<div class="container fill">
-  <div class="row" style="padding-top: 100px;">
-    <div class="offset4 span4">
-
-            <div class="">
-				<img style="padding-bottom: 25px;" src="@{'/public/images/tdm_logo.png'}"/>
-
-				#{form @authenticate()}
-
-					#{if flash.error}
-						<p class="alert alert-error">
-							&{flash.error}
-						</p>
-					#{/if}
-					#{if flash.success}
-						<p class="alert alert-info">
-							&{flash.success}
-						</p>
-					#{/if}
-
-
-				 <div class="control-group">
-				    <label for="username">&{'secure.username'}</label>
-				    <div class="controls">
-				      <input type="text" name="username" id="username" value="${flash.username}" />
-				    </div>
-				  </div>
-
-
-				  <div class="control-group">
-				    <label for="password">&{'secure.password'}</label>
-				    <div class="controls">
-				      <input type="password" name="password" id="password" value="" />
-				    </div>
-				  </div>
-
-				 <div class="control-group">
-
-				    <div class="controls">
-				     <input type="checkbox" name="remember" id="remember" value="true" ${flash.remember ? 'checked="true"' : ''} /> &{'secure.remember'}
-				    </div>
-				  </div>
-
-
-
-					</p>
-					<p id="signin-field">
-						<button type="submit" class="btn" id="signin"/>&{'secure.signin'}</button>
-					</p>
-				#{/form}
-			</div>
-
-
-
-    </div>
-  </div>
-</div>
--->

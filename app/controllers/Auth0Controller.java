@@ -36,6 +36,7 @@ public class Auth0Controller extends Controller {
             session.put("editableFeeds", editableFeeds);
 
             String manageableFeeds = StringUtils.join(profile.getManageableFeeds(projectID), ",");
+            System.out.println("manageableFeeds = " + manageableFeeds);
             session.put("manageableFeeds", manageableFeeds);
         }
         catch (Exception e) {

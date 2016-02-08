@@ -1,42 +1,9 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-    <head>
-        <title>Login</title>		
-        <meta http-equiv="Content-Type" content="text/html; charset=${_response_encoding}"/>
-        <link rel="stylesheet" type="text/css" media="screen" href="@{'/public/stylesheets/secure.css'}" />
-        <link rel="stylesheet" media="screen" href="@{'/public/lib/bootstrap-2.3.1/css/bootstrap.css'}">
-
-        <style type="text/css">
-        
-        html, body {
-			height: 100%;
-		}
-
-        .fill { 
-		    min-height: 100%;
-		    height: 100%;
-		}
-
-		</style>
-
-         #{get 'styles' /}
-         
-    </head>
     <body>
-        #{doLayout /} 
-
         <script src="@{'/public/javascripts/lib/jquery.min.js'}"></script> <!-- http://cdnjs.cloudflare.com/ajax/libs/jquery/1.8.2/jquery.min.js -->
-        <script src="@{'/public/javascripts/lib/underscore-min.js'}"></script> <!--http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.2/underscore-min.js -->
-        <script src="@{'/public/javascripts/lib/backbone-min.js'}"></script> <!-- http://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.0.0/backbone-min.js -->
-        <script src="@{'/public/javascripts/lib/ICanHaz.min.js'}"></script> <!--http://cdnjs.cloudflare.com/ajax/libs/ICanHaz.js/0.10/ICanHaz.min.js -->
-        <script src="@{'/public/lib/bootstrap-2.3.1/js/bootstrap.min.js'}"></script>
-        <script src="@{'/public/lib/pnotify-1.2.0/jquery.pnotify.min.js'}"></script>
-
         #{script 'config.js' /}
-
         #{get 'scripts' /}
-
-
     </body>
 </html>
