@@ -132,7 +132,7 @@ cf = play.Play.configuration
                 </a>
                 <ul class="dropdown-menu" role="menu">
                   <li><a href="@{Application.changePassword}">Change Password</a></li>
-                  <li><a href="@{Secure.logout}">&{'nav-bar.logout'}</a></li>
+                  <li><a id="logoutLink" href="#">&{'nav-bar.logout'}</a></li>
                 </ul>
               </li>
             </ul>
@@ -199,6 +199,13 @@ cf = play.Play.configuration
 
     })(GtfsEditor, jQuery);
 
+    $("#logoutLink").click(function () {
+      console.log("logout!");
+      localStorage.removeItem('userToken');
+      var redirect = window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port: '') + '/auth0logout';
+      console.log(redirect);
+      window.location = 'https://conveyal.eu.auth0.com/v2/logout?returnTo=' + redirect;
+    });
 
     $(document).ready(function() {
       // page init scripts
