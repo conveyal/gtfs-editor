@@ -17,6 +17,7 @@ Unzip play framework
 
 	unzip play-1.2.5.zip
 
+
 Download gtfs-editor software
 
 	git clone https://github.com/conveyal/gtfs-editor.git
@@ -30,12 +31,12 @@ Configure gtfs-editor application.conf
 
 Install dependencies
 
-        [path to play1.2.5]/play dependencies
+        [path to gtfs-editor]/play dependencies
 
 
 Run application
 
-	[path to play1.2.5]/play run
+	[path to gtfs-editor]/play run
 
 
 Request site via web browser
