@@ -8,33 +8,53 @@
 
       initialize: function (opts) {
         var self = this;
+        var managerUrl = 'http://localhost:9000';
         var token = localStorage.getItem('userToken');
+
         $.ajax({
-            url : "http://localhost:9000/api/feedsources",
-            data : {
-              feedcollection: G.config.projectId
-            },
-            headers: {
-              'Authorization' : 'Bearer ' + token
-            },
-            success: function(data) {
-              self.agencies = [];
-              data.forEach(function(feed) {
-                if(!feed.latestValidation || !feed.latestValidation.agencies) return;
-                feed.latestValidation.agencies.forEach(function(agency) {
-                  self.agencies.push({
-                    sourceId: feed.id,
-                    sourceName: feed.name,
-                    agencyId: agency
+          url : managerUrl + "/api/feedcollections/" + G.config.projectId,
+          headers: {
+            'Authorization' : 'Bearer ' + token
+          },
+          success: function(feedColl) {
+            console.log("read feed coll", feedColl);
+
+            $.ajax({
+              url : managerUrl + "/api/feedsources",
+              data : {
+                feedcollection: G.config.projectId
+              },
+              headers: {
+                'Authorization' : 'Bearer ' + token
+              },
+              success: function(data) {
+                self.agencies = [];
+                data.forEach(function(feed) {
+                  if(!feed.latestValidation || !feed.latestValidation.agencies) return;
+                  feed.latestValidation.agencies.forEach(function(agency) {
+                    self.agencies.push({
+                      sourceId: feed.id,
+                      sourceName: feed.name,
+                      agencyId: agency,
+                      defaultLat: feedColl.defaultLocationLat,
+                      defaultLon: feedColl.defaultLocationLon,
+                      defaultLanguage: feedColl.defaultLanguage,
+                      defaultTimeZone: feedColl.defaultTimeZone
+                    });
                   });
                 });
-              });
-              self.render();
-            },
-            error: (err) => {
-              console.log('error getting feed sources', err)
-            }
-          })
+                self.render();
+              },
+              error: (err) => {
+                console.log('error getting feed sources', err)
+              }
+            });
+          },
+          error: (err) => {
+            console.log('error getting feed collection', err);
+          }
+        });
+
       },
 
       render: function() {
@@ -51,7 +71,11 @@
           this.options.agencyListView.createAgency(null, {
             gtfsAgencyId: agency.agencyId,
             name : agency.sourceName,
-            sourceId: agency.sourceId
+            sourceId: agency.sourceId,
+            defaultLat: agency.defaultLat,
+            defaultLon: agency.defaultLon,
+            defaultLanguage: agency.defaultLanguage,
+            defaultTimeZone: agency.defaultTimeZone
           });
         }
       },
@@ -184,6 +208,9 @@
       createAgency: function(evt, values) {
 
         $('#agency-modal-body').html(ich['agency-dialog-tpl'](values));
+
+        $('#agency-modal-body').find('#timezone').val(values.defaultTimeZone);
+        $('#agency-modal-body').find('#lang').val(values.defaultLanguage);
 
         this.buildMap();
 

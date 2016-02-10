@@ -38,7 +38,7 @@
   <td>{{sourceName}}</td>
   <td>{{agencyId}}</a></td>
   <td>
-    <button 
+    <button
       type="button"
       data-source-id="{{sourceId}}"
       data-agency-id="{{agencyId}}"
@@ -65,12 +65,7 @@
 					</div>
 				</div>
 
-				<div class="control-group">
-					<label class="control-label" for="sourceId"><strong>Manager Source ID</strong><br>(&{'shared.optional'})</label>
-					<div class="controls">
-					  <input type="text" name="sourceId" id="sourceId" class="input-xlarge" value="{{sourceId}}" title="Source ID" data-content="Source ID">
-					</div>
-				</div>
+			  <input type="hidden" name="sourceId" id="sourceId" class="input-xlarge" value="{{sourceId}}" title="Source ID" data-content="Source ID">
 
 				<div class="control-group">
 					<label class="control-label" for="name"><strong>&{'manage.agencies.name'}</strong><br>(&{'shared.required'})</label>
@@ -767,7 +762,7 @@
 
 </table>
 
-<!-- 
+<!--
 <button type="button" id="agency-dialog-button" class="btn btn-primary" aria-hidden="true" data-toggle="modal" data-target="#agency-modal">&{'manage.route-types.create-new-type-button'}</button>
 -->
 
