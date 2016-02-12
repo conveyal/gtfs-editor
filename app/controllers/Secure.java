@@ -35,37 +35,6 @@ import javax.net.ssl.HttpsURLConnection;
 
 public class Secure extends Controller {
 
-    @Before(unless={"login", "authenticate", "logout", "get_token"})
-    static void checkAccess() throws Throwable {
-        // Authent, or OAuth
-        // don't persist an OAuth key if the user is authenticated
-        if (request.params.get("oauth_token") != null && !session.contains("username"))
-            // persist the token
-            session.put("oauth_token", request.params.get("oauth_token"));
-        if(!session.contains("username") && !Application.checkOAuth(request, session)) {
-            flash.put("url", "GET".equals(request.method) ? request.url : Play.ctxPath + "/"); // seems a good default
-            login();
-        }
-        // Checks
-        Check check = getActionAnnotation(Check.class);
-        if(check != null) {
-            check(check);
-        }
-        check = getControllerInheritedAnnotation(Check.class);
-        if(check != null) {
-            check(check);
-        }
-    }
-
-    private static void check(Check check) throws Throwable {
-        for(String profile : check.value()) {
-            boolean hasProfile = (Boolean)Security.invoke("check", profile);
-            if(!hasProfile) {
-                Security.invoke("onCheckFailed", profile);
-            }
-        }
-    }
-
     // ~~~ Login
 
     public static void login(String redirectTo) throws Throwable {
