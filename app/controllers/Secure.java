@@ -37,14 +37,13 @@ public class Secure extends Controller {
 
     // ~~~ Login
 
+    //public static void loginAndRedirect(String redirectTo) throws Throwable {
+    //}
+
     public static void login(String redirectTo) throws Throwable {
         System.out.println("redirectTo = " + redirectTo);
         System.out.println("login path = " + request.path);
         render(redirectTo);
-    }
-
-    public static void login() throws Throwable {
-        login("");
     }
 
     public static void logout() throws Throwable {
@@ -53,7 +52,7 @@ public class Secure extends Controller {
         response.removeCookie("rememberme");
         Security.invoke("onDisconnected");
         flash.success("secure.logout");
-        login();
+        //login();
     }
 
     public static class Security extends Controller {

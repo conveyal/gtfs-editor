@@ -40,11 +40,12 @@ function loginWithToken(token, redirectTo) {
     url: '/auth0login',
     data: { token : token },
     success: function() {
-      window.location = redirectTo;
+      window.location.replace(redirectTo);
     }
   });
 }
 
 window.onload = function(){
+  console.log('signin');
   signin();
 };

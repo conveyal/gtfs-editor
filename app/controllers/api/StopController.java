@@ -27,7 +27,7 @@ public class StopController extends Controller {
 	static void initSession() throws Throwable {
 		 
 		if(!Security.isConnected() && !Application.checkOAuth(request, session))
-			Secure.login();
+			Secure.login("");
 	}
 	
     public static void getStop(String id, String patternId, String agencyId, Boolean majorStops, Double west, Double east, Double north, Double south) {    	

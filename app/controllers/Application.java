@@ -89,8 +89,10 @@ public class Application extends Controller {
 	
 	        	if(tx.accounts.size() == 0)
 	        		Bootstrap.index();
-	        	else
+	        	else {
+	        	    System.out.println("logging in to " + request.path);
 	        	    Secure.login(request.path);
+	        	}
 	        	
 	        	return;
 	        }
