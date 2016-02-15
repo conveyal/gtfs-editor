@@ -6,7 +6,7 @@ cf = play.Play.configuration
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>#{get 'title' /}</title>
+    <title>Test #{get 'title' /}</title>
     <meta charset="${_response_encoding}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
@@ -37,6 +37,8 @@ cf = play.Play.configuration
     <![endif]-->
 
     <link rel="shortcut icon" type="image/png" href="@{'/public/images/favicon.png'}">
+
+	<script src="https://cdn.auth0.com/js/lock-8.2.min.js"></script>
 
   </head>
   <body>
@@ -117,32 +119,6 @@ cf = play.Play.configuration
             </ul>
             #{/secure.check}
 
-            <ul class="nav pull-right">
-              <li class="dropdown">
-                <a href="#" role="button" class="dropdown-toggle" data-toggle="dropdown">&{'nav-bar.export'}<b class="caret"></b></a>
-                <ul class="dropdown-menu" role="menu">
-                  <li><a href="@{Application.exportGtfs}" class="manage-route-types">&{'export.gtfs.title'}</a></li>
-                  <li><a href="@{Application.exportGis}" class="manage-route-types">&{'export.gis.title'}</a></li>
-                  <!-- <li><a href="#export" class="manage-route-types">&{'export.kml.title'}</a></li> -->
-                  <!-- <li><a href="@{Application.manageStopTypes}" class="manage-stop-types">&{'manage.stop-types.title'}</a></li>  -->
-                  <!-- <li><a href="@{Application.manageRouteTypes}" class="manage-users" data-lang="en">Manage Users</a></li> -->
-                  <!-- <li><a href="@{Application.exportGis}" class="manage-agenices">&{'export.shapefile-stops.title'}</a></li>  -->
-                  <!-- <li><a href="@{Application.exportGis}" class="manage-agenices">&{'export.shapefile-routes.title'}</a></li>  -->
-
-                </ul>
-              </li>
-            </ul>
-
-            <ul class="nav pull-right">
-              <li class="dropdown">
-                <a href="#" role="button" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-wrench"></i> ${session.agencyName} <b class="caret"></b></a>
-                <ul class="dropdown-menu scrollable-menu" role="menu">
-                  #{list items:agencies, as:'agency' }
-                    <li><a href="#" class="agency-select" data-agency="${agency.id}"> ${agency.name}</a></li>
-                  #{/list}
-                </ul>
-              </li>
-            </ul>
           </div><!--/.nav-collapse -->
         </div>
       </div>
@@ -150,11 +126,24 @@ cf = play.Play.configuration
 
     <div class="container-fluid">
       <ul class="nav nav-pills" id="tools-nav">
+      	<li class="dropdown active"><a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-wrench"></i> ${session.agencyName} <b class="caret"></b></a>
+          <ul class="dropdown-menu scrollable-menu" role="menu">
+            #{list items:agencies, as:'agency' }
+              <li><a href="#" class="agency-select" data-agency="${agency.id}"> ${agency.name}</a></li>
+            #{/list}
+          </ul>
+      	</li>
         <!--<li><a href="/"><i class="icon-list-alt"></i> News &amp; Updates</a></li>-->
         <li><a href="@{Application.search()}"><i class="icon-map-marker"></i> &{'shared.explore-search-routes'}</a></li>
         <li><a href="@{Application.route()}"><i class="icon-pencil"></i> &{'shared.new-route'}</a></li>
         <li><a href="@{Application.exceptions()}"><i class="icon-calendar"></i> &{'shared.schedule-exceptions'}</a></li>
         <li><a href="@{Application.snapshots()}"><i class="icon-camera"></i> &{'snapshot.snapshots'}</a></li>
+      	<li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-download"></i> &{'nav-bar.export'}<b class="caret"></b></a>
+      	  <ul class="dropdown-menu" role="menu">
+      	  	<li><a href="@{Application.exportGtfs}" class="manage-route-types">&{'export.gtfs.title'}</a></li>
+            <li><a href="@{Application.exportGis}" class="manage-route-types">&{'export.gis.title'}</a></li>
+          </ul>
+      	</li>
       </ul>
 
       #{doLayout /}
@@ -181,7 +170,7 @@ cf = play.Play.configuration
         agencyId: "${session.agencyId}",
         agencies: ${agenciesJson.raw()},
         mapCenter: [${session.lat}, ${session.lon}],
-        mapZoom: ${session.zoom},
+        mapZoom: 10, //${session.zoom},
         tripPattern: null,
         trip: null
       };
@@ -214,6 +203,7 @@ cf = play.Play.configuration
     });
 
     $(document).ready(function() {
+
       // page init scripts
 
       // add language select handler
@@ -231,10 +221,25 @@ cf = play.Play.configuration
         e.preventDefault();
 
       });
+
+      // set up single logout
+      var lock = new Auth0Lock('dR7GdOhtI3HFNxfm4HySDL4Ke8uyGfTe', 'conveyal.eu.auth0.com');
+      setInterval(function() {
+        console.log('sso signout check')
+        // if the token is not in local storage, there is nothing to check (i.e. the user is already logged out)
+        if (!localStorage.getItem('userToken')) return;
+
+        lock.$auth0.getSSOData(function(err, data) {
+          // if there is still a session, do nothing
+          if (err || (data && data.sso)) return;
+
+          // if we get here, it means there is no session on Auth0,
+          // then remove the token and redirect to #login
+          localStorage.removeItem('userToken');
+          window.location.href = '/'
+        });
+      }, 5000)
     });
-
-
-
 
   </script>
 
