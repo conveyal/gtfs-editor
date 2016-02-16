@@ -41,7 +41,8 @@ public class Auth0Controller extends Controller {
         }
         catch (Exception e) {
             e.printStackTrace();
-            badRequest();
+            System.out.println("Error in user auth, redirecting to /auth0logout");
+            redirect("/auth0logout");
         }
 
         ok();
