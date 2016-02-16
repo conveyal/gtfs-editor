@@ -194,13 +194,7 @@ cf = play.Play.configuration
 
     })(GtfsEditor, jQuery);
 
-    $("#logoutLink").click(function () {
-      console.log("logout!");
-      localStorage.removeItem('userToken');
-      var redirect = window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port: '') + '/auth0logout';
-      console.log(redirect);
-      window.location = 'https://conveyal.eu.auth0.com/v2/logout?returnTo=' + redirect;
-    });
+    $("#logoutLink").click(logout);
 
     $(document).ready(function() {
 
@@ -235,11 +229,16 @@ cf = play.Play.configuration
 
           // if we get here, it means there is no session on Auth0,
           // then remove the token and redirect to #login
-          localStorage.removeItem('userToken');
-          window.location.href = '/'
+          logout();
         });
       }, 5000)
     });
+
+    function logout() {
+      localStorage.removeItem('userToken');
+      var redirect = window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port: '') + '/auth0logout';
+      window.location = 'https://conveyal.eu.auth0.com/v2/logout?returnTo=' + redirect;
+    }
 
   </script>
 
