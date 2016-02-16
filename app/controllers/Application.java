@@ -41,6 +41,9 @@ public class Application extends Controller {
         try {
             Agency[] agencies = new Agency[0];
 
+            renderArgs.put("managerUrl", Play.configuration.getProperty("application.managerUrl"));
+            renderArgs.put("userAdminUrl", Play.configuration.getProperty("application.userAdminUrl"));
+
             System.out.println("app username = " + session.get("username"));
             System.out.println("app path = " + request.path);
             if(Security.isConnected()) {
