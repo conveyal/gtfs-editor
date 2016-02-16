@@ -74,7 +74,7 @@ public class Auth0Controller extends Controller {
 
     protected static Auth0UserProfile getUserInfo(String token) throws Exception {
 
-        URL url = new URL("https://conveyal.eu.auth0.com/tokeninfo");
+        URL url = new URL("https://" + Play.configuration.getProperty("application.auth0Domain") + "/tokeninfo");
         HttpsURLConnection con = (HttpsURLConnection) url.openConnection();
 
         //add request header

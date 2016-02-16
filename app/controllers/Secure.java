@@ -43,7 +43,9 @@ public class Secure extends Controller {
     public static void login(String redirectTo) throws Throwable {
         System.out.println("redirectTo = " + redirectTo);
         System.out.println("login path = " + request.path);
-        render(redirectTo);
+        String auth0Domain = Play.configuration.getProperty("application.auth0Domain");
+        String auth0ClientId = Play.configuration.getProperty("application.auth0ClientId");
+        render(redirectTo, auth0Domain, auth0ClientId);
     }
 
     public static void logout() throws Throwable {

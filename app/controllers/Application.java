@@ -41,8 +41,12 @@ public class Application extends Controller {
         try {
             Agency[] agencies = new Agency[0];
 
+            // pass auth-related config args to client
             renderArgs.put("managerUrl", Play.configuration.getProperty("application.managerUrl"));
             renderArgs.put("userAdminUrl", Play.configuration.getProperty("application.userAdminUrl"));
+            renderArgs.put("auth0Domain", Play.configuration.getProperty("application.auth0Domain"));
+            renderArgs.put("auth0ClientId", Play.configuration.getProperty("application.auth0ClientId"));
+            renderArgs.put("projectId", Play.configuration.getProperty("application.projectId"));
 
             System.out.println("app username = " + session.get("username"));
             System.out.println("app path = " + request.path);
@@ -287,7 +291,8 @@ public class Application extends Controller {
     	
     	try {
     		Collection<RouteType> routeTypes = tx.routeTypes.values();
-    		render(routeTypes);
+    		String managerUrl = Play.configuration.getProperty("application.managerUrl");
+    		render(routeTypes, managerUrl);
     	} finally {
     		tx.rollback();
     	}

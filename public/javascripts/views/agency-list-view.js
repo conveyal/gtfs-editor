@@ -8,7 +8,7 @@
 
       initialize: function (opts) {
         var self = this;
-        var managerUrl = 'http://localhost:9000';
+        var managerUrl = GtfsEditor.config.managerUrl;
         var token = localStorage.getItem('userToken');
 
         $.ajax({

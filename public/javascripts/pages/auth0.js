@@ -1,5 +1,5 @@
 function signin() {
-  var lock = new Auth0Lock('dR7GdOhtI3HFNxfm4HySDL4Ke8uyGfTe', 'conveyal.eu.auth0.com');
+  var lock = new Auth0Lock(auth0ClientId, auth0Domain);
 
   // check if this is an SSO callback
   var hash = lock.parseHash(window.location.hash);

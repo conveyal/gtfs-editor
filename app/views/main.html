@@ -174,6 +174,11 @@ cf = play.Play.configuration
         tripPattern: null,
         trip: null
       };
+      
+      G.config.auth0Domain = "&{auth0Domain}";
+      G.config.auth0ClientId = "&{auth0ClientId}";
+      G.config.projectId = "&{projectId}";
+      G.config.managerUrl = "&{managerUrl}";
 
       G.strings = {
         stopsDeleteStopConfirm: "&{'route.stops-delete-stop-confirm'}",
@@ -217,7 +222,7 @@ cf = play.Play.configuration
       });
 
       // set up single logout
-      var lock = new Auth0Lock('dR7GdOhtI3HFNxfm4HySDL4Ke8uyGfTe', 'conveyal.eu.auth0.com');
+      var lock = new Auth0Lock(GtfsEditor.config.auth0ClientId, GtfsEditor.config.auth0Domain);
       setInterval(function() {
         console.log('sso signout check')
         // if the token is not in local storage, there is nothing to check (i.e. the user is already logged out)
@@ -237,7 +242,7 @@ cf = play.Play.configuration
     function logout() {
       localStorage.removeItem('userToken');
       var redirect = window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port: '') + '/auth0logout';
-      window.location = 'https://conveyal.eu.auth0.com/v2/logout?returnTo=' + redirect;
+      window.location = 'https://' + GtfsEditor.config.auth0Domain + '/v2/logout?returnTo=' + redirect;
     }
 
   </script>

@@ -250,3 +250,10 @@ mail.smtp=mock
 %test.db.url=jdbc:h2:mem:play;MODE=MYSQL;LOCK_MODE=0
 %test.jpa.ddl=create
 %test.mail.smtp=mock
+
+# auth0 / datatools suite integration settings
+application.projectId=your-project-id
+application.managerUrl=http://localhost:9000
+application.userAdminUrl=http://localhost:3000
+application.auth0Domain=your-domain.auth0.com
+application.auth0ClientId=your-client-id
