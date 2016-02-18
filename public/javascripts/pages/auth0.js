@@ -19,7 +19,12 @@ function signin() {
       });
     } else { // assume that we are not logged in
 
-      lock.show(function(err, profile, token) {
+      var lockOptions = {
+          connections: ['Username-Password-Authentication'],
+          closable: false
+      };
+      if (typeof logo != 'undefined') lockOptions.icon = logo;
+      lock.show(lockOptions, function(err, profile, token) {
         if(err) {
           console.log(err)
         } else {

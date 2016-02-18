@@ -257,3 +257,4 @@ application.managerUrl=http://localhost:9000
 application.userAdminUrl=http://localhost:3000
 application.auth0Domain=your-domain.auth0.com
 application.auth0ClientId=your-client-id
+application.logo=http://gtfs-assets-dev.conveyal.com/data_manager.png
