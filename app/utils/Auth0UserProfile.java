@@ -76,18 +76,19 @@ public class Auth0UserProfile {
 
     }
 
-
     public static class Project {
 
         String project_id;
         Permission[] permissions;
+        String[] defaultFeeds;
 
         public Project() {
         }
 
-        public Project(String project_id, Permission[] permissions) {
+        public Project(String project_id, Permission[] permissions, String[] defaultFeeds) {
             this.project_id = project_id;
             this.permissions = permissions;
+            this.defaultFeeds = defaultFeeds;
         }
 
         public void setProject_id(String project_id) {
@@ -97,7 +98,13 @@ public class Auth0UserProfile {
         public void setPermissions(Permission[] permissions) {
             this.permissions = permissions;
         }
+
+        public void setDefaultFeeds(String[] defaultFeeds) {
+            this.defaultFeeds = defaultFeeds;
+        }
+
     }
+
 
     public static class Permission {
 
@@ -121,15 +128,28 @@ public class Auth0UserProfile {
         }
     }
 
+    private String[] getDefaultFeeds(String projectID) {
+        if(app_metadata.datatools.projects == null) return null;
+        for(Project project : app_metadata.datatools.projects) {
+            if (project.project_id.equals(projectID)) {
+                if(project.defaultFeeds != null) return project.defaultFeeds;
+            }
+        }
+        return new String[0];
+    }
+    
     public List<String> getManagedFeeds(String projectID){
         List<String> feeds = new ArrayList<String>();
         for(Project project : app_metadata.datatools.projects) {
             if (project.project_id.equals(projectID)) {
                 for(Permission permission : project.permissions) {
                     if(permission.type.equals("manage-feed")) {
-                        for(String thisFeedID : permission.feeds) {
-//                            if(thisFeedID.equals(feedID) || thisFeedID.equals("*"))
-                                feeds.add(thisFeedID);
+                        String[] feedArr = new String[0];
+                        if(permission.feeds != null) feedArr = permission.feeds;
+                        else feedArr = getDefaultFeeds(projectID);
+                                
+                        for(String thisFeedID : feedArr) {
+                            feeds.add(thisFeedID);
                         }
                     }
                 }
@@ -143,6 +163,7 @@ public class Auth0UserProfile {
     }
 
     public boolean hasProject(String projectID) {
+        if(app_metadata.datatools.projects == null) return false;
         for(Project project : app_metadata.datatools.projects) {
             if (project.project_id.equals(projectID)) return true;
         }
@@ -161,6 +182,7 @@ public class Auth0UserProfile {
     }
 
     public boolean canAdministerProject(String projectID) {
+        if(canAdministerApplication()) return true;
         for(Project project : app_metadata.datatools.projects) {
             if (project.project_id.equals(projectID)) {
                 for(Permission permission : project.permissions) {
