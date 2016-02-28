@@ -355,7 +355,7 @@ public class TripPattern extends Model implements Cloneable, Serializable {
 			if (lastPos > 0) {
 				if (pos > lastPos)
 					backwards--;
-				else if (pos > lastPos)
+				else if (pos < lastPos)
 					backwards++;				
 			}
 			
