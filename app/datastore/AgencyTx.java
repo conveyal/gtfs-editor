@@ -287,20 +287,35 @@ public class AgencyTx extends DatabaseTx {
 		Tuple2<Double, Double> min = new Tuple2<Double, Double>(west, south);
 		Tuple2<Double, Double> max = new Tuple2<Double, Double>(east, north);
 
-		Set<Tuple2<Tuple2<Double, Double>, String>> matchedKeys =
-				stopsGix.subSet(new Tuple2(min, null), new Tuple2(max, Fun.HI));
+		Set<Tuple2<Tuple2<Double, Double>, String>> matchedKeys
+                	= stopsGix.subSet(new Tuple2(min, null), new Tuple2(max, Fun.HI));
+        
+	        List<Stop> matchedStops = new ArrayList<Stop>();
+	        
+	        for (Tuple2<Tuple2<Double, Double>, String> value : matchedKeys) {
+	            Tuple2<Double, Double> lonLat = value.a;
+	            if (lonLat.a >= west &&
+	                    lonLat.a <= east &&
+	                    lonLat.b >= south &&
+	                    lonLat.b <= north
+	                    ) {
+	                Stop mStop = stops.get(value.b);
+	                matchedStops.add(mStop);
+	            }
+	        }
+	
+	        /*
+	        Collection<Stop> matchedStops
+	                = Collections2.transform(matchedKeys, new Function<Tuple2<Tuple2<Double, Double>, String>, Stop>() {
+	
+	                    @Override
+	                    public Stop apply(
+	                            Tuple2<Tuple2<Double, Double>, String> input) {
+	                        return stops.get(input.b);
+	                    }
+                });*/
 
-		Collection<Stop> matchedStops =
-				Collections2.transform(matchedKeys, new Function<Tuple2<Tuple2<Double, Double>, String>, Stop> () {
-
-					@Override
-					public Stop apply(
-							Tuple2<Tuple2<Double, Double>, String> input) {
-						return stops.get(input.b);
-					}
-				});
-
-		return matchedStops;
+        	return matchedStops;
 	}
 
 	public Collection<TripPattern> getTripPatternsByStop (String id) {
