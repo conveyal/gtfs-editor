@@ -89,6 +89,10 @@ PUT     /api/snapshot/{id}                    api.SnapshotController.updateSnaps
 POST    /api/snapshot                         api.snapshotController.createSnapshot
 POST    /api/snapshot/{id}/restore            api.snapshotController.restoreSnapshot
 
+OPTIONS /api/mgrsnapshot                      api.ManagerApiController.options
+GET     /api/mgrsnapshot/?                    api.ManagerApiController.getSnapshot
+GET     /api/mgrsnapshot/{id}.zip             api.ManagerApiController.exportSnapshot
+
 # Ignore favicon requests
 GET     /favicon.ico                            404
 

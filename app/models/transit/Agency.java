@@ -20,7 +20,6 @@ public class Agency extends Model implements Cloneable, Serializable, Comparable
 	public static final long serialVersionUID = 1;
 	
 	public String gtfsAgencyId;
-	public String feedId;
     public String name;
     public String url;
     public String timezone;
