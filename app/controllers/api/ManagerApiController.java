@@ -71,7 +71,7 @@ public class ManagerApiController extends Controller {
                 allSnapshots = gtx.snapshots.values();
                 for(Snapshot snapshot : allSnapshots) {
                     Agency agency = gtx.agencies.get(snapshot.agencyId);
-                    System.out.println("agency.sourceId = " + agency.sourceId);
+                    if(agency == null) continue;
                     if(agency.sourceId.equals(sourceId)) {
                         System.out.println("found!");
                         snapshots.add(snapshot);

@@ -12,34 +12,37 @@
         var token = localStorage.getItem('userToken');
 
         $.ajax({
-          url : managerUrl + "/api/feedcollections/" + G.config.projectId,
+          url : managerUrl + "/api/manager/secure/project/" + G.config.projectId,
           headers: {
             'Authorization' : 'Bearer ' + token
           },
-          success: function(feedColl) {
-            console.log("read feed coll", feedColl);
+          success: function(project) {
+            project = JSON.parse(project)
+            console.log("read project", project);
 
             $.ajax({
-              url : managerUrl + "/api/feedsources",
+              url : managerUrl + "/api/manager/secure/feedsource",
               data : {
-                feedcollection: G.config.projectId
+                projectId: G.config.projectId
               },
               headers: {
                 'Authorization' : 'Bearer ' + token
               },
               success: function(data) {
+                var feedSources = JSON.parse(data);
+                console.log('feedSources', feedSources);
                 self.agencies = [];
-                data.forEach(function(feed) {
+                feedSources.forEach(function(feed) {
                   if(!feed.latestValidation || !feed.latestValidation.agencies) return;
                   feed.latestValidation.agencies.forEach(function(agency) {
                     self.agencies.push({
-                      sourceId: feed.id,
+                      sourceId: feed.id.toString(),
                       sourceName: feed.name,
-                      agencyId: agency,
-                      defaultLat: feedColl.defaultLocationLat,
-                      defaultLon: feedColl.defaultLocationLon,
-                      defaultLanguage: feedColl.defaultLanguage,
-                      defaultTimeZone: feedColl.defaultTimeZone
+                      agencyId: agency.toString(),
+                      defaultLat: project.defaultLocationLat,
+                      defaultLon: project.defaultLocationLon,
+                      defaultLanguage: project.defaultLanguage,
+                      defaultTimeZone: project.defaultTimeZone
                     });
                   });
                 });
@@ -64,8 +67,8 @@
       },
 
       loadAgency : function (evt) {
-        var sourceId = $(evt.currentTarget).data("source-id");
-        var agencyId = $(evt.currentTarget).data("agency-id");
+        var sourceId = $(evt.currentTarget).data("source-id").toString();
+        var agencyId = $(evt.currentTarget).data("agency-id").toString();
         var agency = this.getAgency(sourceId, agencyId);
         if(agency != null) {
           this.options.agencyListView.createAgency(null, {
@@ -83,7 +86,7 @@
       getAgency : function (sourceId, agencyId) {
         for(var i=0; i < this.agencies.length; i++) {
           var agency = this.agencies[i];
-          if(agency.sourceId == sourceId && agency.agencyId === agencyId) return agency;
+          if(agency.sourceId === sourceId && agency.agencyId === agencyId) return agency;
         }
         return null;
       }
