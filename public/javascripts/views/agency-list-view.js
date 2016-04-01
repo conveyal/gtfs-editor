@@ -33,17 +33,16 @@
                 console.log('feedSources', feedSources);
                 self.agencies = [];
                 feedSources.forEach(function(feed) {
-                  if(!feed.latestValidation || !feed.latestValidation.agencies) return;
-                  feed.latestValidation.agencies.forEach(function(agency) {
-                    self.agencies.push({
-                      sourceId: feed.id.toString(),
-                      sourceName: feed.name,
-                      agencyId: agency.toString(),
-                      defaultLat: project.defaultLocationLat,
-                      defaultLon: project.defaultLocationLon,
-                      defaultLanguage: project.defaultLanguage,
-                      defaultTimeZone: project.defaultTimeZone
-                    });
+                  var hasFeed = feed.latestValidation && feed.latestValidation.agencies ? "Yes" : "No";
+                  self.agencies.push({
+                    sourceId: feed.id.toString(),
+                    sourceName: feed.name,
+                    agencyId: feed.name,
+                    hasFeed: hasFeed,
+                    defaultLat: project.defaultLocationLat,
+                    defaultLon: project.defaultLocationLon,
+                    defaultLanguage: project.defaultLanguage,
+                    defaultTimeZone: project.defaultTimeZone
                   });
                 });
                 self.render();
@@ -70,6 +69,7 @@
         var sourceId = $(evt.currentTarget).data("source-id").toString();
         var agencyId = $(evt.currentTarget).data("agency-id").toString();
         var agency = this.getAgency(sourceId, agencyId);
+        console.log('loadAgency', agency);
         if(agency != null) {
           this.options.agencyListView.createAgency(null, {
             gtfsAgencyId: agency.agencyId,
@@ -291,7 +291,7 @@
         var id = $(evt.currentTarget).data("id");
 
         var view = this;
-        if (G.Utils.confirm('Delete route?')) {
+        if (G.Utils.confirm('Delete feed?')) {
           view.collection.get(id).destroy();
         }
       },
