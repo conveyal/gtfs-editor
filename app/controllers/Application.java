@@ -26,6 +26,11 @@ import play.mvc.With;
 import utils.Auth0UserProfile;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -418,39 +423,95 @@ public class Application extends Controller {
     	
     	render();
     }
-    
-    public static void uploadGtfs(File gtfsUpload) {
-   
-    	validation.required(gtfsUpload).message("GTFS file required.");
-    	
-    	if(gtfsUpload != null && !gtfsUpload.getName().contains(".zip"))
-    		validation.addError("gtfsUpload", "GTFS must have .zip extension.");
-    	
-    	if(validation.hasErrors()) {
-    		params.flash();
-    		validation.keep();
-    		importGtfs();
-        }
-    	else {
+
+	public static void uploadGtfs(File gtfsUpload) {
+
+		System.out.println("uploadGtfs " + gtfsUpload);
+
+		validation.required(gtfsUpload).message("GTFS file required.");
+
+		if(gtfsUpload != null && !gtfsUpload.getName().contains(".zip"))
+			validation.addError("gtfsUpload", "GTFS must have .zip extension.");
+
+		if(validation.hasErrors()) {
+			params.flash();
+			validation.keep();
+			importGtfs();
+		}
+		else {
 			ProcessGtfsSnapshotMerge merge;
 			try {
 				merge = new ProcessGtfsSnapshotMerge(gtfsUpload);
 				merge.run();
-			}	
+			}
 			catch (Exception e) {
 				e.printStackTrace();
 				validation.addError("gtfsUpload", "Unable to process file.");
 				params.flash();
-	    		validation.keep();
-	    		importGtfs();
+				validation.keep();
+				importGtfs();
 				return;
 			}
 
 			// if there are multiple agencies this will pick one randomly
 			search(merge.agencyId);
-    	}    	
-    }
-    
+		}
+	}
+
+	public static void fetchGtfs(String gtfsUrl) {
+		String feedVersionId = request.params.get("feedVersionId");
+		String feedSourceId = request.params.get("feedSourceId");
+		System.out.println("fetchGtfs " + feedVersionId);
+
+		InputStream is = null;
+		FileOutputStream fos = null;
+
+		String tempDir = System.getProperty("java.io.tmpdir");
+		String outputPath = tempDir + "/" + feedVersionId;
+
+		try {
+			//connect
+			URL url = new URL("http://localhost:9000/api/manager/secure/feedversion/" + feedVersionId + "/download");
+			System.out.println("downloading " + url);
+
+			System.out.println("token= " + session.get("token"));
+
+			URLConnection urlConn = url.openConnection();
+			urlConn.setRequestProperty("Authorization", "Bearer " + session.get("token"));
+
+			//get inputstream from connection
+			is = urlConn.getInputStream();
+			fos = new FileOutputStream(outputPath);
+
+			// 4KB buffer
+			byte[] buffer = new byte[4096];
+			int length;
+
+			// read from source and write into local file
+			while ((length = is.read(buffer)) > 0) {
+				fos.write(buffer, 0, length);
+			}
+
+			is.close();
+			fos.close();
+
+			System.out.println("wrote path " + outputPath);
+			File file = new File(outputPath);
+			System.out.println("qfile = " + file);
+
+			ProcessGtfsSnapshotMerge merge;
+			merge = new ProcessGtfsSnapshotMerge(file, feedSourceId);
+			merge.run();
+
+			// if there are multiple agencies this will pick one randomly
+			search(merge.agencyId);
+
+
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+
     /** snapshots page */
     public static void snapshots() {
     	render();

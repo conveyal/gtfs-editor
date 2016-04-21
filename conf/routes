@@ -26,6 +26,8 @@ GET     /export/schedule                      	Application.createCsvSchedule
 GET     /manage/routetypes                      Application.manageRouteTypes
 GET     /manage/agencies                      	Application.manageAgencies
 
+GET     /fetchgtfs                              Application.fetchGtfs
+
 GET     /bootstrap/index                      	Bootstrap.index
 
 GET     /api/agency/?                           api.AgencyController.getAgency

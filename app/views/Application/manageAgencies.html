@@ -46,8 +46,14 @@
       aria-hidden="true"
       data-toggle="modal"
       data-target="#agency-modal">
-        Load Agency for Editing
+        Create New GTFS For Agency
     </button>
+
+	{{#latestVersionId}}
+	  <a class="btn btn-success" href="/fetchgtfs?feedVersionId={{latestVersionId}}&feedSourceId={{sourceId}}">
+	    Import Latest GTFS for Editing
+	  </a>
+    {{/latestVersionId}}
   </td>
 </tr>
 {{/agencies}}
