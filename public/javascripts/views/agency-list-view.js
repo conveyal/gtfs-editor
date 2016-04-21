@@ -11,13 +11,14 @@
         var managerUrl = GtfsEditor.config.managerUrl;
         var token = localStorage.getItem('userToken');
 
+        console.log('querying project');
         $.ajax({
           url : managerUrl + "/api/manager/secure/project/" + G.config.projectId,
           headers: {
             'Authorization' : 'Bearer ' + token
           },
           success: function(project) {
-            project = JSON.parse(project)
+            //project = JSON.parse(project)
             console.log("read project", project);
 
             $.ajax({
@@ -28,17 +29,30 @@
               headers: {
                 'Authorization' : 'Bearer ' + token
               },
-              success: function(data) {
-                var feedSources = JSON.parse(data);
+              success: function(feedSources) {
+                //var feedSources = JSON.parse(data);
                 console.log('feedSources', feedSources);
                 self.agencies = [];
+                feedSources.sort(function(a,b) {
+                  if(a.name < b.name) return -1;
+                  if(a.name > b.name) return 1;
+                  return 0;
+                })
+
+
                 feedSources.forEach(function(feed) {
+                  var agencyId = feed.name;
+                  if(feed.externalProperties && feed.externalProperties.MTC) {
+                    agencyId = feed.externalProperties.MTC.AgencyId;
+                  }
                   var hasFeed = feed.latestValidation && feed.latestValidation.agencies ? "Yes" : "No";
+                  console.log('hasfeed', feed)
                   self.agencies.push({
                     sourceId: feed.id.toString(),
                     sourceName: feed.name,
-                    agencyId: feed.name,
+                    agencyId: agencyId,
                     hasFeed: hasFeed,
+                    latestVersionId: feed.latestVersionId,
                     defaultLat: project.defaultLocationLat,
                     defaultLon: project.defaultLocationLon,
                     defaultLanguage: project.defaultLanguage,
