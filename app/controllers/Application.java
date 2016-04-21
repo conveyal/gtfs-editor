@@ -43,7 +43,6 @@ public class Application extends Controller {
 
             // pass auth-related config args to client
             renderArgs.put("managerUrl", Play.configuration.getProperty("application.managerUrl"));
-            renderArgs.put("userAdminUrl", Play.configuration.getProperty("application.userAdminUrl"));
             renderArgs.put("auth0Domain", Play.configuration.getProperty("application.auth0Domain"));
             renderArgs.put("auth0ClientId", Play.configuration.getProperty("application.auth0ClientId"));
             renderArgs.put("projectId", Play.configuration.getProperty("application.projectId"));
