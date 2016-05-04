@@ -57,6 +57,7 @@ public class Auth0UserProfile {
 
         Project[] projects;
         Permission[] permissions;
+        Subscription[] subscriptions;
 
         public DatatoolsInfo() {
         }
@@ -64,6 +65,7 @@ public class Auth0UserProfile {
         public DatatoolsInfo(Project[] projects, Permission[] permissions) {
             this.projects = projects;
             this.permissions = permissions;
+            this.subscriptions = subscriptions;
         }
 
         public void setProjects(Project[] projects) {
@@ -72,6 +74,10 @@ public class Auth0UserProfile {
 
         public void setPermissions(Permission[] permissions) {
             this.permissions = permissions;
+        }
+
+        public void setSubscriptions(Subscription[] subscriptions) {
+            this.subscriptions = subscriptions;
         }
 
     }
@@ -95,16 +101,13 @@ public class Auth0UserProfile {
             this.project_id = project_id;
         }
 
-        public void setPermissions(Permission[] permissions) {
-            this.permissions = permissions;
-        }
+        public void setPermissions(Permission[] permissions) { this.permissions = permissions; }
 
         public void setDefaultFeeds(String[] defaultFeeds) {
             this.defaultFeeds = defaultFeeds;
         }
 
     }
-
 
     public static class Permission {
 
@@ -128,6 +131,28 @@ public class Auth0UserProfile {
         }
     }
 
+    public static class Subscription {
+
+        String type;
+        String[] target;
+
+        public Subscription() {
+        }
+
+        public Subscription(String type, String[] target) {
+            this.type = type;
+            this.target = target;
+        }
+
+        public void setType(String type) {
+            this.type = type;
+        }
+
+        public void setTarget(String[] target) {
+            this.target = target;
+        }
+    }
+
     private String[] getDefaultFeeds(String projectID) {
         if(app_metadata.datatools.projects == null) return null;
         for(Project project : app_metadata.datatools.projects) {
@@ -137,7 +162,7 @@ public class Auth0UserProfile {
         }
         return new String[0];
     }
-    
+
     public List<String> getManagedFeeds(String projectID){
         List<String> feeds = new ArrayList<String>();
         for(Project project : app_metadata.datatools.projects) {
@@ -147,7 +172,7 @@ public class Auth0UserProfile {
                         String[] feedArr = new String[0];
                         if(permission.feeds != null) feedArr = permission.feeds;
                         else feedArr = getDefaultFeeds(projectID);
-                                
+
                         for(String thisFeedID : feedArr) {
                             feeds.add(thisFeedID);
                         }
