@@ -21,7 +21,8 @@ function signin() {
 
       var lockOptions = {
           connections: ['Username-Password-Authentication'],
-          closable: false
+          closable: false,
+          disableSignupAction: true
       };
       if (typeof logo != 'undefined') lockOptions.icon = logo;
       lock.show(lockOptions, function(err, profile, token) {
