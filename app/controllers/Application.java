@@ -59,9 +59,19 @@ public class Application extends Controller {
 
                 Account account = tx.accounts.get(Security.connected());
                 String projectID = Play.configuration.getProperty("application.projectId");
-                System.out.println("application can see token: " + session.get("token"));
+				String token = session.get("token");
+                System.out.println("application can see token: " + token);
 
-                Auth0UserProfile userProfile = Auth0Controller.getUserInfo(session.get("token"));
+                Auth0UserProfile userProfile = null;
+				try {
+					userProfile = Auth0Controller.getUserInfo(token);
+					System.out.println("got userinfo for " + userProfile.getEmail());
+				}
+				catch (Exception e) {
+					e.printStackTrace();
+					System.out.println("Error in user auth, redirecting to /auth0logout");
+					redirect("/auth0logout");
+				}
 
                 agencies = tx.agencies.values().toArray(new Agency[tx.agencies.size()]);
 
