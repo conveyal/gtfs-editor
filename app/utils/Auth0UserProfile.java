@@ -251,6 +251,7 @@ public class Auth0UserProfile {
     }
 
     public String[] getFeedsForPermission(String projectID, String permissionType) {
+        List<String> feeds = new ArrayList<>();
         if(canAdministerProject(projectID)) {
             String[] all = { "*" };
             return all;
@@ -258,7 +259,11 @@ public class Auth0UserProfile {
         for(Project project : app_metadata.datatools.projects) {
             for(Permission permission : project.permissions) {
                 if(permission.type.equals(permissionType)) {
-                    return permission.feeds;
+                    if (permission.feeds != null)
+                        feeds.addAll(Arrays.asList(permission.feeds));
+                    if (project.defaultFeeds != null)
+                        feeds.addAll(Arrays.asList(project.defaultFeeds));
+                    return feeds.toArray(new String[0]);
                 }
             }
         }

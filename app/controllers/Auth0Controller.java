@@ -32,8 +32,8 @@ public class Auth0Controller extends Controller {
             session.put("username", profile.getEmail());
             
             String projectID = Play.configuration.getProperty("application.projectId");
-            
-            String editableFeeds = StringUtils.join(profile.getEditableFeeds(projectID), ",");
+            String[] feeds = profile.getEditableFeeds(projectID);
+            String editableFeeds = StringUtils.join(feeds, ",");
             session.put("editableFeeds", editableFeeds);
 
             String manageableFeeds = StringUtils.join(profile.getManageableFeeds(projectID), ",");
