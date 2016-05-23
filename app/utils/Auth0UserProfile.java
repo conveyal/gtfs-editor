@@ -274,6 +274,10 @@ public class Auth0UserProfile {
         return getFeedsForPermission(projectID, "edit-gtfs");
     }
 
+    public String[] getApproveableFeeds(String projectID) {
+        return getFeedsForPermission(projectID, "approve-gtfs");
+    }
+
     public String[] getManageableFeeds(String projectID) {
         return getFeedsForPermission(projectID, "manage-feed");
     }

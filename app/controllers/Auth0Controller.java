@@ -28,17 +28,22 @@ public class Auth0Controller extends Controller {
 
         try {
             Auth0UserProfile profile = getUserInfo(token);
-            System.out.println("got userinfo for " + profile.getEmail());
             session.put("username", profile.getEmail());
             
             String projectID = Play.configuration.getProperty("application.projectId");
-            String[] feeds = profile.getEditableFeeds(projectID);
-            String editableFeeds = StringUtils.join(feeds, ",");
+
+            String editableFeeds = StringUtils.join(profile.getEditableFeeds(projectID), ",");
             session.put("editableFeeds", editableFeeds);
 
             String manageableFeeds = StringUtils.join(profile.getManageableFeeds(projectID), ",");
-            System.out.println("manageableFeeds = " + manageableFeeds);
             session.put("manageableFeeds", manageableFeeds);
+
+            String approveableFeeds = StringUtils.join(profile.getApproveableFeeds(projectID), ",");
+            session.put("approveableFeeds", approveableFeeds);
+
+            String isProjectAdmin = profile.canAdministerProject(projectID) ? "true" : "false";
+            session.put("isProjectAdmin", isProjectAdmin);
+
         }
         catch (Exception e) {
             e.printStackTrace();

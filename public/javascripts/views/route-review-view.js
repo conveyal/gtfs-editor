@@ -42,15 +42,24 @@ var GtfsEditor = GtfsEditor || {};
 
       var data = G.Utils.serializeForm($(evt.target));
 
-      this.model.save(data, {
-        wait: true,
-        success: _.bind(function() {
-          G.Utils.success('Route successfully saved');
-        }, this),
-        error: function() {
-          G.Utils.error('Route save failed');
-        }
-      });
+      var feedSourceId = G.session.agencies[G.session.agencyId].sourceId;
+      console.log('saving route, data/fs/af', data, feedSourceId, G.session.approveableFeeds)
+      if(data.status === 'PENDING_APPROVAL' || data.status === 'IN_PROGRESS' ||
+          G.session.approveableFeeds.indexOf(feedSourceId) !== -1 ||
+          G.session.approveableFeeds.indexOf("*") !== -1) {
+        this.model.save(data, {
+          wait: true,
+          success: _.bind(function() {
+            G.Utils.success('Route successfully saved');
+          }, this),
+          error: function() {
+            G.Utils.error('Route save failed');
+          }
+        });
+      }
+      else {
+        G.Utils.error('Insufficient permissions to approve/disable routes');
+      }
     }
 
   });
