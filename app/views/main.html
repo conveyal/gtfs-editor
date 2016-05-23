@@ -230,7 +230,7 @@ cf = play.Play.configuration
       });
 
       // set up single logout
-      var lock = new Auth0Lock(GtfsEditor.config.auth0ClientId, GtfsEditor.config.auth0Domain);
+      /*var lock = new Auth0Lock(GtfsEditor.config.auth0ClientId, GtfsEditor.config.auth0Domain);
       setInterval(function() {
         console.log('sso signout check')
         // if the token is not in local storage, there is nothing to check (i.e. the user is already logged out)
@@ -244,7 +244,7 @@ cf = play.Play.configuration
           // then remove the token and redirect to #login
           logout();
         });
-      }, 5000)
+      }, 5000)*/
     });
 
     function logout() {
