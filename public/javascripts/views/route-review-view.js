@@ -43,7 +43,6 @@ var GtfsEditor = GtfsEditor || {};
       var data = G.Utils.serializeForm($(evt.target));
 
       var feedSourceId = G.session.agencies[G.session.agencyId].sourceId;
-      console.log('saving route, data/fs/af', data, feedSourceId, G.session.approveableFeeds)
       if(data.status === 'PENDING_APPROVAL' || data.status === 'IN_PROGRESS' ||
           G.session.approveableFeeds.indexOf(feedSourceId) !== -1 ||
           G.session.approveableFeeds.indexOf("*") !== -1) {
