@@ -129,16 +129,15 @@ cf = play.Play.configuration
     </div>
 
     <div class="container-fluid">
-      #{secure.check 'editor'}
       <ul class="nav nav-pills" id="tools-nav">
       	<li class="dropdown active"><a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-wrench"></i> ${session.agencyName} <b class="caret"></b></a>
           <ul class="dropdown-menu scrollable-menu" role="menu">
             #{list items:agencies, as:'agency' }
-              <li><a href="#" class="agency-select" data-agency="${agency.id}"> ${agency.name}</a></li>
+              <li><a href="#" class="agency-select" data-agency="${agency.id}">${agency.name}</a></li>
             #{/list}
           </ul>
       	</li>
-        <!--<li><a href="/"><i class="icon-list-alt"></i> News &amp; Updates</a></li>-->
+        #{if session.agencyId}
         <li><a href="@{Application.search()}"><i class="icon-map-marker"></i> &{'shared.explore-search-routes'}</a></li>
         <li><a href="@{Application.route()}"><i class="icon-pencil"></i> &{'shared.new-route'}</a></li>
         <li><a href="@{Application.exceptions()}"><i class="icon-calendar"></i> &{'shared.schedule-exceptions'}</a></li>
@@ -149,8 +148,8 @@ cf = play.Play.configuration
             <li><a href="@{Application.exportGis}" class="manage-route-types">&{'export.gis.title'}</a></li>
           </ul>
       	</li>
+        #{/if}
       </ul>
-      #{/secure.check}
 
       #{doLayout /}
 
@@ -183,7 +182,7 @@ cf = play.Play.configuration
         manageableFeeds: "${session.manageableFeeds}",
         approveableFeeds: "${session.approveableFeeds}"
       };
-      
+
       G.config.auth0Domain = "&{auth0Domain}";
       G.config.auth0ClientId = "&{auth0ClientId}";
       G.config.projectId = "&{projectId}";

@@ -104,7 +104,8 @@ public class Application extends Controller {
 	            	agencies = new Agency[] { tx.agencies.get(userProfile.getManagedFeeds(projectID)) };
 	            }*/
 
-                renderArgs.put("agencies", agencies);
+				System.out.println("** setting agencies array, len=" + agencies.length);
+				renderArgs.put("agencies", agencies);
             }
 	        else {
 	
@@ -128,9 +129,13 @@ public class Application extends Controller {
 	            session.put("agencyName", agency.name);
 	            session.put("lat", agency.defaultLat);
 	            session.put("lon", agency.defaultLon);
-	            session.put("zoom", 12); 
-	            
+	            session.put("zoom", 12);
+
 	        }
+			else if(agencies.length == 0) {
+				session.put("agencyId", null);
+				session.put("agencyName", null);
+			}
 	        
 	        // Make a map for the user interface
 	        Map<String, Agency> agencyMap = new HashMap<String, Agency>();
