@@ -108,12 +108,12 @@ public class Application extends Controller {
             }
 	        else {
 	
-	        	if(tx.accounts.size() == 0)
-	        		Bootstrap.index();
-	        	else {
+//	        	if(tx.accounts.size() == 0)
+//	        		Bootstrap.index();
+//	        	else {
 	        	    System.out.println("logging in to " + request.path);
 	        	    Secure.login(request.path);
-	        	}
+//	        	}
 	        	
 	        	return;
 	        }
