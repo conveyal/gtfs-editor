@@ -12,13 +12,13 @@
 {{#routes}}
 <tr>
   <td>{{gtfsAgencyId}}</td>
-  <td><a href="&{managerUrl}/#feed/{{sourceId}}">Link</a></td>
+  <td><a href="&{managerUrl}/feed/{{sourceId}}">Link</a></td>
   <td>{{name}}</td>
   <td>{{url}}</td>
   <td>
     <i class="icon-pencil agency-edit" title="&{'shared.button.edit'}" data-id="{{id}}"></i>
     <i class="icon-trash agency-delete" title="&{'shared.button.delete'}" data-id="{{id}}"></i>
-    <i class="icon-resize-full agency-duplicate" title="&{'shared.button.duplicate'}" data-id="{{id}}"></i>
+    <!--<i class="icon-resize-full agency-duplicate" title="&{'shared.button.duplicate'}" data-id="{{id}}"></i>-->
   </td>
 </tr>
 {{/routes}}
@@ -36,24 +36,29 @@
 {{#agencies}}
 <tr>
   <td>{{sourceName}}</td>
-  <!--<td>{{hasFeed}}</td>-->
   <td>
-    <button
-      type="button"
-      data-source-id="{{sourceId}}"
-      data-agency-id="{{agencyId}}"
-      class="btn btn-primary load-agency-button"
-      aria-hidden="true"
-      data-toggle="modal"
-      data-target="#agency-modal">
-        Create New GTFS For Agency
-    </button>
+	{{#isLoaded}}
+	  <i>Feed already imported. Delete feed from "Imported Feeds" list before re-importing.</i>
+    {{/isLoaded}}
+    {{^isLoaded}}
+	  <button
+	    type="button"
+	    data-source-id="{{sourceId}}"
+	    data-agency-id="{{agencyId}}"
+	    class="btn btn-primary load-agency-button"
+	    aria-hidden="true"
+	    data-toggle="modal"
+	    data-target="#agency-modal">
+	  	Create New GTFS For Agency
+	  </button>
 
-	{{#latestVersionId}}
-	  <a class="btn btn-success" href="/fetchgtfs?feedVersionId={{latestVersionId}}&feedSourceId={{sourceId}}">
-	    Import Latest GTFS for Editing
-	  </a>
-    {{/latestVersionId}}
+	  {{#latestVersionId}}
+	    <a class="btn btn-success" href="/fetchgtfs?feedVersionId={{latestVersionId}}&feedSourceId={{sourceId}}">
+	      Import Latest GTFS for Editing
+		</a>
+	  {{/latestVersionId}}
+    {{/isLoaded}}
+
   </td>
 </tr>
 {{/agencies}}
@@ -760,19 +765,16 @@
 	</div>
 </form>
 
-<h3>Agencies Available for Editing</h3>
-
-<table id="agency-list-content" class="table table">
-
-    <tr><th>&{'manage.agencies.gtfs-agency-id'}</th><th>Manager ID</th><th>&{'manage.agencies.name'}</th><th>&{'manage.agencies.url'}</th><th></th></tr>
-
-</table>
+	<h3>Imported Feeds Ready for Editing</h3>
+	<table id="agency-list-content" class="table table">
+    	<tr><th>&{'manage.agencies.gtfs-agency-id'}</th><th>Manager ID</th><th>&{'manage.agencies.name'}</th><th>&{'manage.agencies.url'}</th><th></th></tr>
+	</table>
 
 <!--
 <button type="button" id="agency-dialog-button" class="btn btn-primary" aria-hidden="true" data-toggle="modal" data-target="#agency-modal">&{'manage.route-types.create-new-type-button'}</button>
 -->
 
-<h3>Available Data Manager Agencies</h3>
+<h3>Data Manager Feeds Available to be Imported</h3>
 
 <table id="available-agency-list-content" class="table table">
 
