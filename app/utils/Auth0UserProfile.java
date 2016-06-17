@@ -1,4 +1,4 @@
-package com.conveyal.datatools.manager.auth;
+package utils;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
