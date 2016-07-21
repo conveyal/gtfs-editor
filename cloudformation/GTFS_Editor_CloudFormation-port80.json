@@ -1,6 +1,6 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "AWS CloudFormation template to build an instance for the web-based GTFS editing framework.",
+    "Description": "AWS CloudFormation template to build an instance for the web-based GTFS editing framework. Tweaked to run on port 80 to help with blocked ports.",
     "Mappings": {
         "AWSInstanceType2Arch": {
           "t1.micro": { "Arch": "PV64" },
