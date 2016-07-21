@@ -84,7 +84,7 @@ var GtfsEditor = GtfsEditor || {};
      });
 
 
-      _.bindAll(this, 'sizeContent', 'duplicateTripPattern', 'addDuplicateTripPattern', 'cancelDuplicateTripPattern', 'editTripPattern', 'submitEditTripPattern', 'cancelEditTripPattern', 'onStopFilterChange', 'loadTransitWand', 'calcTimesFromVelocity', 'saveTripPatternLine', 'onTripPatternChange', 'onTripPatternStopSelectChange', 'updateStops', 'zoomToPatternExtent', 'clearPatternButton', 'deletePatternButton', 'stopUpdateButton', 'stopRemoveButton', 'updateTransitWandOverlay', 'onSatelliteToggle', 'stopAddAgainButton', 'stopCalcSpeedButton');
+      _.bindAll(this, 'onStartShapeEdit', 'onEndShapeEdit', 'sizeContent', 'duplicateTripPattern', 'addDuplicateTripPattern', 'cancelDuplicateTripPattern', 'editTripPattern', 'submitEditTripPattern', 'cancelEditTripPattern', 'onStopFilterChange', 'loadTransitWand', 'calcTimesFromVelocity', 'saveTripPatternLine', 'onTripPatternChange', 'onTripPatternStopSelectChange', 'updateStops', 'zoomToPatternExtent', 'clearPatternButton', 'deletePatternButton', 'stopUpdateButton', 'stopRemoveButton', 'updateTransitWandOverlay', 'onSatelliteToggle', 'stopAddAgainButton', 'stopCalcSpeedButton');
         $(window).resize(this.sizeContent);
     },
 
@@ -125,7 +125,7 @@ var GtfsEditor = GtfsEditor || {};
       this.map = L.map(this.$('#map').get(0), {
         center: G.session.mapCenter,
         zoom: G.session.mapZoom,
-        maxZoom: 17
+        maxZoom: 19
       });
       this.map.addLayer(baseLayer);
 
@@ -160,6 +160,10 @@ var GtfsEditor = GtfsEditor || {};
       this.map.addControl(drawControl);
 
       this.map.on('draw:edited', this.saveTripPatternLine);
+
+      this.map.on('draw:editstart', this.onStartShapeEdit);
+
+      this.map.on('draw:editstop', this.onEndShapeEdit);
 
       /** Connections from stops to pattern shapes */
       this.stopConnections = new L.FeatureGroup();
@@ -203,9 +207,17 @@ var GtfsEditor = GtfsEditor || {};
       return this;
     },
 
+    onStartShapeEdit : function() {
+      this.confirmBeforeChangeStep = "There are unsaved changes to the route alignment that will be lost. Are you sure you want to change views?";
+    },
+
+    onEndShapeEdit : function() {
+      this.confirmBeforeChangeStep = false;
+    },
+
     onSatelliteToggle: function(evt) {
 
-      if($('input[name="trip-pattern-use-satellite"]').attr('checked')) {
+      if($('input[name="trip-pattern-use-satellite"]').is(':checked')) {
           G.session.useSatellite  = true;
       }
       else {
@@ -485,6 +497,12 @@ var GtfsEditor = GtfsEditor || {};
     },
 
     createNewTripPattern: function() {
+
+      if(this.confirmBeforeChangeStep) {
+        if(!confirm(this.confirmBeforeChangeStep))
+          return;
+      }
+
       this.$('#delete-pattern-btn').hide();
       this.$('.trippattern-create-btn').hide();
       this.$('.trippattern-duplicate-btn').hide();
@@ -508,6 +526,11 @@ var GtfsEditor = GtfsEditor || {};
     },
 
     duplicateTripPattern: function() {
+
+      if(this.confirmBeforeChangeStep) {
+        if(!confirm(this.confirmBeforeChangeStep))
+          return;
+      }
 
       var selectedPatternId  = this.$('#trip-pattern-select').val();
 
@@ -533,6 +556,7 @@ var GtfsEditor = GtfsEditor || {};
     editTripPattern: function() {
 
       var selectedPatternId  = this.$('#trip-pattern-select').val();
+
 
       if(selectedPatternId != undefined && selectedPatternId != "") {
 
@@ -568,6 +592,7 @@ var GtfsEditor = GtfsEditor || {};
     },
 
     cancelEditTripPattern: function() {
+
       this.$('#delete-pattern-btn').show();
       this.$('.trippattern-create-btn').show();
       this.$('.trippattern-duplicate-btn').show();
@@ -794,7 +819,15 @@ var GtfsEditor = GtfsEditor || {};
     },
 
 
-    onTripPatternChange: function() {
+    onTripPatternChange: function(evt) {
+
+      if(this.confirmBeforeChangeStep) {
+        if(!confirm(this.confirmBeforeChangeStep)) {
+          this.$('#trip-pattern-select').val($.data(this.$('#trip-pattern-select')[0], 'current')); // added parenthesis (edit)
+          return false;
+        }
+      }
+
 
       G.session.tripPattern = this.$('#trip-pattern-select').val();
 
@@ -802,6 +835,7 @@ var GtfsEditor = GtfsEditor || {};
       this.updateStops();
       this.updatePatternLine();
 
+      $.data(this.$('#trip-pattern-select')[0], 'current',this.$('#trip-pattern-select').val());
     },
 
     updatePatternLine: function() {
@@ -1039,12 +1073,14 @@ var GtfsEditor = GtfsEditor || {};
       // TODO: find the correct form control here
       var selectedStopId  = this.$('#trip-pattern-stop-select').val();
 
-      var selectedPatternStop = this.model.tripPatterns.get(selectedPatternId).getPatternStop(selectedStopId);
+      var selectedPatternStops = this.model.tripPatterns.get(selectedPatternId).getPatternStops(selectedStopId);
 
-      if(selectedPatternStop == undefined)
+      if(selectedPatternStops == undefined || selectedPatternStops.length == 0)
         return;
 
-      this.map.setView(new L.LatLng(selectedPatternStop.stop.location.lat, selectedPatternStop.stop.location.lng), 15);
+      var stop = this.options.stops.get(selectedPatternStops[0].stopId);
+
+      this.map.panTo(new L.LatLng(stop.get("lat"), stop.get("lon")));
     },
 
     deletePatternButton: function(evt) {

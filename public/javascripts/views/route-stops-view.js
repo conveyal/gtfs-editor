@@ -32,7 +32,7 @@ var GtfsEditor = GtfsEditor || {};
       this.agencyMajorStopIcon = L.divIcon({
         iconSize: [10, 10],
         iconAnchor: [5, 5],
-        popupAnchor: [5, 5],
+        popupAnchor: [0, -8],
         className: 'stop stop-major'
       });
 
@@ -40,14 +40,14 @@ var GtfsEditor = GtfsEditor || {};
       this.agencyMinorStopIcon = L.divIcon({
         iconSize: [10, 10],
         iconAnchor: [5, 5],
-        popupAnchor: [5, 5],
+        popupAnchor: [0, -8],
         className: 'stop stop-minor'
       });
 
       this.selectedStopIcon = L.divIcon({
         iconSize: [8, 8],
         iconAnchor: [4, 4],
-        popupAnchor: [4, 4],
+        popupAnchor: [0, -8],
         className: 'stop stop-selected'
       });
 
@@ -95,7 +95,7 @@ var GtfsEditor = GtfsEditor || {};
       this.map = L.map(this.$('#map').get(0), {
         center: G.session.mapCenter, //TODO: add to the config file for now
         zoom: G.session.mapZoom,
-        maxZoom: 17
+        maxZoom: 19
       });
       this.map.addLayer(baseLayer);
 
@@ -408,7 +408,7 @@ var GtfsEditor = GtfsEditor || {};
 
     onSatelliteToggle: function(evt) {
 
-      if($('input[name="stop-use-satellite"]').attr('checked')) {
+      if($('input[name="stop-use-satellite"]').is(':checked')) {
           G.session.useSatellite  = true;
       }
       else {

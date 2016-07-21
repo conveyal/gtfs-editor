@@ -600,6 +600,7 @@ G.Trip = Backbone.Model.extend({
   G.Snapshot = Backbone.Model.extend({
     defaults: {
       name: null,
+      comment: null,
       id: null,
       agencyId: null,
       snapshotTime: null,

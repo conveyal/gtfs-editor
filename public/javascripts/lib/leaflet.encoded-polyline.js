@@ -91,7 +91,8 @@ function createEncodedPolyline(polyline) {
 	}
  
 	// close polyline
-	encoded_points += this._encodePoint(plat, plng, coords[0][0], coords[0][1]);
+	// we don't want the polyline closed, and this doesn't close it anyhow because we want coords[0].lat and coords[0].lng
+	// encoded_points += this._encodePoint(plat, plng, coords[0][0], coords[0][1]);
  
 	return encoded_points;
 }

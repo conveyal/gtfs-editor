@@ -728,7 +728,10 @@ var GtfsEditor = GtfsEditor || {};
 
       this.$('#trip-details').html("");
 
-      this.$('#trip option[value=' + G.session.trip+ ']').prop('selected', true);
+      // only select trip in select if we have a trip to select
+      if (G.session.trip) {
+        this.$('#trip option[value=' + G.session.trip+ ']').prop('selected', true);
+      }
 
       this.bindPopovers();
 

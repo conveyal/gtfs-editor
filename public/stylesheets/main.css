@@ -20,3 +20,6 @@ body {
   overflow-x: hidden;
   overflow-y: scroll;
 }
+
+/* only for screen readers; not included in bootstrap 2.3.2 */
+.sr-only { position: absolute; left: 100000px }

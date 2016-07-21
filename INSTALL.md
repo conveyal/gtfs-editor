@@ -35,4 +35,32 @@ In order to test the instance we've included some information on how to import s
 
 * [Importing a GTFS feed](docs/Import.md).
 
+<<<<<<< HEAD
 You can see the results in [these screenshots](docs/Screenshots.md)
+=======
+
+Configure gtfs-editor application.conf
+
+	cp conf/application.conf.template conf/application.conf
+
+Install dependencies
+
+        [path to play1.2.5]/play dependencies
+
+
+Run application
+
+	[path to play1.2.5]/play run
+
+
+Request site via web browser
+
+http://localhost:9000/
+
+
+Follow setup instructions
+
+Troubleshooting:
+
+1) Ensure that you have access to port 9000 and that it is allowed through any firewall or routing configuration. For example, Amazon AWS won’t allow access by unless explicitly granted for port 9000.
+>>>>>>> conveyal/master

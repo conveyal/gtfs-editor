@@ -1,20 +1,17 @@
 package datastore;
 
-import java.util.Iterator;
-import java.util.NavigableSet;
-import java.util.Map.Entry;
-
+import com.google.common.base.Function;
+import com.google.common.collect.Iterators;
 import org.mapdb.BTreeMap;
 import org.mapdb.DB;
 import org.mapdb.DB.BTreeMapMaker;
 import org.mapdb.Fun.Tuple2;
-import org.mapdb.DBMaker;
-
-import com.google.common.base.Function;
-import com.google.common.collect.Iterators;
-
 import play.Logger;
 import utils.ClassLoaderSerializer;
+
+import java.util.Iterator;
+import java.util.Map.Entry;
+import java.util.NavigableSet;
 
 /** A wrapped transaction, so the database just looks like a POJO */
 public class DatabaseTx {
@@ -23,11 +20,19 @@ public class DatabaseTx {
 	
 	/** has this transaction been closed? */
 	boolean closed = false;
+
+	/** is this transaction read-only? */
+	protected boolean readOnly;
 	
 	/** Convenience function to get a map */
 	protected final <T1, T2> BTreeMap <T1, T2> getMap (String name) {
-		return getMapMaker(tx, name)
-				.makeOrGet();
+		try {
+			return getMapMaker(tx, name)
+					.makeOrGet();
+		} catch (UnsupportedOperationException e) {
+			// read-only data store
+			return null;
+		}
 	}
 	
 	/** get a map maker, that can then be further modified */
@@ -42,8 +47,13 @@ public class DatabaseTx {
 	 * if we make a schema change we drop and recreate them.
 	 */
 	protected final <T> NavigableSet <T> getSet (String name) {
-		return tx.createTreeSet(name)
-				.makeOrGet();
+		try {
+			return tx.createTreeSet(name)
+					.makeOrGet();
+		} catch (UnsupportedOperationException e) {
+			// read-only data store
+			return null;
+		}
 	}
 	
 	protected DatabaseTx (DB tx) {
@@ -51,12 +61,21 @@ public class DatabaseTx {
 	}
 	
 	public void commit() {
-		tx.commit();
-		closed = true;
+		try {
+			tx.commit();
+		} catch (UnsupportedOperationException e) {
+			// probably read only, but warn
+			Logger.warn("Rollback failed; if this is a read-only database this is not unexpected");
+		}		closed = true;
 	}
 	
 	public void rollback() {
-		tx.rollback();
+		try {
+			tx.rollback();
+		} catch (UnsupportedOperationException e) {
+			// probably read only, but warn
+			Logger.warn("Rollback failed; if this is a read-only database this is not unexpected");
+		}
 		closed = true;
 	}
 	

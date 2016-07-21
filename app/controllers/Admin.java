@@ -107,7 +107,7 @@ public class Admin extends Controller {
 		boolean exists = tx.accounts.containsKey(username);
 		tx.rollback();
 		
-		if (!exists)
+		if (exists)
 			badRequest();
 		else
 			ok();

@@ -140,7 +140,7 @@ public class TripPattern extends Model implements Cloneable, Serializable {
      * of course, we check to ensure that that is the case and fail if it's not
      * this lets us easily detect what has happened simply by length
      */
-    public static void reconcilePatternStops(TripPattern originalTripPattern, TripPattern newTripPattern, AgencyTx tx) {        
+    public static void reconcilePatternStops(TripPattern originalTripPattern, TripPattern newTripPattern, AgencyTx tx) {
     	// convenience
     	List<TripPatternStop> originalStops = originalTripPattern.patternStops;
     	List<TripPatternStop> newStops = newTripPattern.patternStops;
@@ -204,8 +204,10 @@ public class TripPattern extends Model implements Cloneable, Serializable {
             
             for (Trip trip : tx.getTripsByPattern(originalTripPattern.id)) {
             	StopTime removed = trip.stopTimes.remove(differenceLocation);
-            	
-            	if (!removed.stopId.equals(removedStopId)) {
+
+				// the removed stop can be null if it was skipped. trip.stopTimes.remove will throw an exception
+				// rather than returning null if we try to do a remove out of bounds.
+            	if (removed != null && !removed.stopId.equals(removedStopId)) {
             		throw new IllegalStateException("Attempted to remove wrong stop!");
             	}
             	
@@ -434,7 +436,7 @@ public class TripPattern extends Model implements Cloneable, Serializable {
 			// create and index the subshape
 			// recalculate shape dist traveled and idx
 			subShape = (LineString) shapeIdx.extractLine(getLoc(shapeDist, lastShapeDistTraveled), getLoc(shapeDist, nextShapeDistTraveled));
-			
+
 			if (subShape.getLength() < 0.00000001) {
 				Logger.warn("Two stops on trip pattern %s map to same point on shape", id);
 				shapeDistTraveled[i] = lastShapeDistTraveled;
@@ -469,6 +471,7 @@ public class TripPattern extends Model implements Cloneable, Serializable {
 			gc.setStartingGeographicPoint(prev.location.getX(), prev.location.getY());
 			gc.setDestinationGeographicPoint(stop.location.getX(), stop.location.getY());
 			previousDistance = ps.shapeDistTraveled = previousDistance + gc.getOrthodromicDistance();
+			prev = stop;
 		}
 	}
 
@@ -488,7 +491,8 @@ public class TripPattern extends Model implements Cloneable, Serializable {
 		for (int i = 1; i < distances.length; i++) {
 			if (distTraveled <= distances[i]) {
 				// we have found the appropriate segment
-				double frac = (distTraveled - distances[i - 1]) / (distances[i] - distances[i - 1]);
+				double segLen = (distances[i] - distances[i - 1]);
+				double frac = segLen > 1e-6 ? (distTraveled - distances[i - 1]) / segLen : 0;
 				return new LinearLocation(i - 1, frac);
 			}
 		}

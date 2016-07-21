@@ -85,12 +85,21 @@ var GtfsEditor = GtfsEditor || {};
       var stepRegex = new RegExp('^([^\/]+)?\/?('+_steps.join('|')+')?\/?$');
       this.route(stepRegex, 'setStep');
 
+      var _this = this;
+
       $('.route-link').on('click', function (evt) {
         evt.preventDefault();
         var href;
 
         // Only trigger if not disabled. TODO: make this smarter
         if ($(this).parent('li').hasClass('disabled') === false) {
+
+          if(_this.view && _this.view.confirmBeforeChangeStep) {
+            if(!confirm(_this.view.confirmBeforeChangeStep)) {
+              return false;
+            }
+          }
+
           href = $(this).get(0).getAttribute('href').split(Backbone.history.options.root)[1];
           _router.navigate(href, {trigger: true});
         }
@@ -114,13 +123,14 @@ var GtfsEditor = GtfsEditor || {};
       if (id) {
         model = _routeCollection.get(id);
 
+        this.showStep(step, model);
+
         if (model) {
           $('.route-link').each(function(i, el) {
             $(el).attr('href', G.config.baseUrl + 'route/' + id + '/' +$(el).attr('data-route-step'));
           });
 
           this.enableDependentSteps();
-          this.showStep(step, model);
         }
       } else {
         this.disableDependentSteps();
@@ -142,13 +152,15 @@ var GtfsEditor = GtfsEditor || {};
     // the view worry about rendering? Would make the map part easier.
     showStep: function (step, model) {
 
-      var view = _views[step](model);
+      this.view = _views[step](model);
 
       // Update the active step classes
       $('#route-nav li').removeClass('active');
       $('.route-link[data-route-step="'+step+'"]').parent('li').addClass('active');
 
-      view.render();
+      this.view.render();
+
+      return true;
     },
 
     enableDependentSteps: function() {

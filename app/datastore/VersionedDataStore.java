@@ -1,46 +1,20 @@
 package datastore;
 
-import java.io.File;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.NavigableSet;
-import java.util.Set;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicLong;
-
-import models.Account;
-import models.OAuthToken;
+import com.google.common.collect.Maps;
 import models.Snapshot;
-import models.transit.Agency;
-import models.transit.Route;
-import models.transit.RouteType;
-import models.transit.ScheduleException;
-import models.transit.ServiceCalendar;
 import models.transit.Stop;
-import models.transit.Trip;
-import models.transit.TripPattern;
-
-import org.mapdb.Atomic;
-import org.mapdb.BTreeKeySerializer;
 import org.mapdb.BTreeMap;
-import org.mapdb.Bind;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
-import org.mapdb.Bind.MapWithModificationListener;
-import org.mapdb.Fun;
-import org.mapdb.Fun.Tuple2;
-import org.mapdb.Serializer;
 import org.mapdb.TxMaker;
-
-import com.google.common.base.Function;
-import com.google.common.collect.Collections2;
-import com.google.common.collect.Maps;
-import com.google.protobuf.ServiceException;
-
 import play.Logger;
 import play.Play;
 import utils.ClassLoaderSerializer;
+
+import java.io.File;
+import java.util.List;
+import java.util.Map;
+import java.util.NavigableSet;
 
 /**
  * Create a new versioned datastore. A versioned data store handles multiple databases,
@@ -104,7 +78,7 @@ public class VersionedDataStore {
 	}
 	
 	/** Take a snapshot of an agency database. The snapshot will be saved in the global database. */
-	public static Snapshot takeSnapshot (String agencyId, String name) {
+	public static Snapshot takeSnapshot (String agencyId, String name, String comment) {
 		AgencyTx tx = getAgencyTx(agencyId);
 		GlobalTx gtx = getGlobalTx();
 		int version = -1;
@@ -123,6 +97,7 @@ public class VersionedDataStore {
 
 			ret.snapshotTime = System.currentTimeMillis();
 			ret.name = name;
+			ret.comment = comment;
 			ret.current = true;
 			
 			snapshot = getSnapshotDb(agencyId, version, false);
@@ -213,7 +188,13 @@ public class VersionedDataStore {
 		tx.rollback();
 		return exists;
 	}
-	
+
+	/** Get a (read-only) agency TX into a particular snapshot version of an agency */
+	public static AgencyTx getAgencyTx(String agencyId, int version) {
+		DB db = getSnapshotDb(agencyId, version, true);
+		return new AgencyTx(db, false);
+	}
+
 	/** A wrapped transaction, so the database just looks like a POJO */
 	public static class DatabaseTx {
 		/** the database (transaction). subclasses must initialize. */
