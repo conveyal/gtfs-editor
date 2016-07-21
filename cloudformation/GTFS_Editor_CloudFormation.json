@@ -103,6 +103,7 @@
                               "unzip play-1.2.5.zip\n",
                               "git clone https://github.com/conveyal/gtfs-editor.git\n",
                               "cd gtfs-editor\n",
+                              "sudo mkdir public/data\n",
                               "cp conf/application.conf.template conf/application.conf\n",
                               "../play-1.2.5/play dependencies\n",
                               "../play-1.2.5/play run\n"
