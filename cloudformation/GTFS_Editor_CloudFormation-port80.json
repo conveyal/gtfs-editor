@@ -101,7 +101,7 @@
                               "sudo apt-get --yes install git unzip openjdk-7-jre\n",
                               "wget http://downloads.typesafe.com/releases/play-1.2.5.zip\n",
                               "unzip play-1.2.5.zip\n",
-                              "git clone https://github.com/conveyal/gtfs-editor.git\n",
+                              "git clone https://github.com/brunosan/gtfs-editor.git\n",
                               "cd gtfs-editor\n",
                               "sudo mkdir public/data\n",
                               "cp conf/application.conf.template conf/application.conf\n",
