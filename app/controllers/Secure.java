@@ -1,10 +1,17 @@
 package controllers;
 
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
 import java.util.List;
 import java.util.Date;
+import java.util.Map;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import datastore.VersionedDataStore;
 import datastore.GlobalTx;
 import models.OAuthToken;
@@ -17,95 +24,29 @@ import play.data.validation.*;
 import play.libs.*;
 import play.utils.*;
 
+import com.auth0.jwt.JWTVerifier;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import play.mvc.Controller;
+import play.mvc.Http.Request;
+import utils.Auth0UserProfile;
+
+import javax.net.ssl.HttpsURLConnection;
+
 public class Secure extends Controller {
-
-    @Before(unless={"login", "authenticate", "logout", "get_token"})
-    static void checkAccess() throws Throwable {
-        // Authent, or OAuth
-        // don't persist an OAuth key if the user is authenticated
-        if (request.params.get("oauth_token") != null && !session.contains("username"))
-            // persist the token
-            session.put("oauth_token", request.params.get("oauth_token"));
-        
-        if(!session.contains("username") && !Application.checkOAuth(request, session)) {
-            flash.put("url", "GET".equals(request.method) ? request.url : Play.ctxPath + "/"); // seems a good default
-            login();
-        }
-        // Checks
-        Check check = getActionAnnotation(Check.class);
-        if(check != null) {
-            check(check);
-        }
-        check = getControllerInheritedAnnotation(Check.class);
-        if(check != null) {
-            check(check);
-        }
-    }
-
-    private static void check(Check check) throws Throwable {
-        for(String profile : check.value()) {
-            boolean hasProfile = (Boolean)Security.invoke("check", profile);
-            if(!hasProfile) {
-                Security.invoke("onCheckFailed", profile);
-            }
-        }
-    }
 
     // ~~~ Login
 
-    public static void login() throws Throwable {
-        Http.Cookie remember = request.cookies.get("rememberme");
-        if(remember != null) {
-            int firstIndex = remember.value.indexOf("-");
-            int lastIndex = remember.value.lastIndexOf("-");
-            if (lastIndex > firstIndex) {
-                String sign = remember.value.substring(0, firstIndex);
-                String restOfCookie = remember.value.substring(firstIndex + 1);
-                String username = remember.value.substring(firstIndex + 1, lastIndex);
-                String time = remember.value.substring(lastIndex + 1);
-                Date expirationDate = new Date(Long.parseLong(time)); // surround with try/catch?
-                Date now = new Date();
-                if (expirationDate == null || expirationDate.before(now)) {
-                    logout();
-                }
-                if(Crypto.sign(restOfCookie).equals(sign)) {
-                    session.put("username", username);
-                    redirectToOriginalURL();
-                }
-            }
-        }
-        flash.keep("url");
-        render();
-    }
+    //public static void loginAndRedirect(String redirectTo) throws Throwable {
+    //}
 
-    public static void authenticate(@Required String username, String password, boolean remember) throws Throwable {
-        // Check tokens
-        Boolean allowed = false;
-        try {
-            // This is the deprecated method name
-            allowed = (Boolean)Security.invoke("authentify", username, password);
-        } catch (UnsupportedOperationException e ) {
-            // This is the official method name
-            allowed = (Boolean)Security.invoke("authenticate", username, password);
-        }
-        if(validation.hasErrors() || !allowed) {
-            flash.keep("url");
-            flash.error("secure.error");
-            params.flash();
-            login();
-        }
-        // Mark user as connected
-        session.put("username", username);
-        // Remember if needed
-        if(remember) {
-            Date expiration = new Date();
-            String duration = "30d";  // maybe make this override-able 
-            expiration.setTime(expiration.getTime() + Time.parseDuration(duration));
-            response.setCookie("rememberme", Crypto.sign(username + "-" + expiration.getTime()) + "-" + username + "-" + expiration.getTime(), duration);
-
-        }
-        // Redirect to the original URL (or /)
-        redirectToOriginalURL();
+    public static void login(String redirectTo) throws Throwable {
+        System.out.println("redirectTo = " + redirectTo);
+        System.out.println("login path = " + request.path);
+        String auth0Domain = Play.configuration.getProperty("application.auth0Domain");
+        String auth0ClientId = Play.configuration.getProperty("application.auth0ClientId");
+        String logo = Play.configuration.getProperty("application.logo");
+        render(redirectTo, auth0Domain, auth0ClientId, logo);
     }
 
     public static void logout() throws Throwable {
@@ -114,41 +55,7 @@ public class Secure extends Controller {
         response.removeCookie("rememberme");
         Security.invoke("onDisconnected");
         flash.success("secure.logout");
-        login();
-    }
-    
-    // Get an OAuth token, possibly with particular agencies
-    public static void get_token (@Required String client_id, @Required String client_secret, String agencyId) {
-        // check if the client secret and client ID are correct, and if OAuth is enabled
-        if (!"true".equals(Play.configuration.getProperty("application.oauthEnabled"))) {
-            badRequest();
-        } else if (client_id.equals(Play.configuration.getProperty("application.managerId")) &&
-                client_secret.equals(Play.configuration.getProperty("application.managerSecret"))) {
-            // create an OAuth key
-        	String tokenRaw = UUID.randomUUID().toString().replace("-", "").substring(0, 16);
-            OAuthToken token = new OAuthToken(tokenRaw, agencyId);
-            
-            GlobalTx tx = VersionedDataStore.getGlobalTx();
-            tx.tokens.put(token.id, token);
-            tx.commit();
-            
-            renderText(tokenRaw);
-        }
-        else {
-            Logger.info("Invalid client ID or secret");
-            badRequest();
-        }
-    }
-
-    // ~~~ Utils
-
-    static void redirectToOriginalURL() throws Throwable {
-        Security.invoke("onAuthenticated");
-        String url = flash.get("url");
-        if(url == null) {
-            url = Play.ctxPath + "/";
-        }
-        redirect(url);
+        //login();
     }
 
     public static class Security extends Controller {

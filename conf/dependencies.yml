@@ -1,7 +1,7 @@
 # Application dependencies
 
 require:
-    - play
+    - play 1.2.5.3
     - com.typesafe.akka -> akka-actor 2.0.3
     - com.typesafe.akka -> akka-remote 2.0.3
     - gov.sandia.foundry -> gov-sandia-cognition-common-core 3.3.2
@@ -12,9 +12,12 @@ require:
     - org.geotools -> gt-geojson 12.2
     - com.fasterxml.jackson.core -> jackson-core 2.4.4
     - com.fasterxml.jackson.core -> jackson-databind 2.4.4
+    - commons-codec -> commons-codec 1.10
     - org.opentripplanner -> otp 0.14.0
     - net.sf.opencsv -> opencsv 2.0
     - org.mapdb -> mapdb 1.0.7
+    - com.auth0 -> java-jwt 2.1.0
+
     
     
 repositories:

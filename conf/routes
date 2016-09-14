@@ -12,6 +12,9 @@ GET     /route/.*                        		Application.route
 GET     /get_token								Secure.get_token
 GET     /snapshots                              Application.snapshots
 
+GET     /auth0login                             Auth0Controller.auth0Login
+GET     /auth0logout                            Auth0Controller.auth0Logout
+
 GET     /export/gtfs                      		Application.exportGtfs
 GET     /export/creategtfs                      Application.createGtfs
 
@@ -22,6 +25,8 @@ GET     /export/schedule                      	Application.createCsvSchedule
 
 GET     /manage/routetypes                      Application.manageRouteTypes
 GET     /manage/agencies                      	Application.manageAgencies
+
+GET     /fetchgtfs                              Application.fetchGtfs
 
 GET     /bootstrap/index                      	Bootstrap.index
 
@@ -85,6 +90,10 @@ GET     /api/snapshot/{id}                    api.SnapshotController.getSnapshot
 PUT     /api/snapshot/{id}                    api.SnapshotController.updateSnapshot
 POST    /api/snapshot                         api.snapshotController.createSnapshot
 POST    /api/snapshot/{id}/restore            api.snapshotController.restoreSnapshot
+
+OPTIONS /api/mgrsnapshot                      api.ManagerApiController.options
+GET     /api/mgrsnapshot/?                    api.ManagerApiController.getSnapshot
+GET     /api/mgrsnapshot/{id}.zip             api.ManagerApiController.exportSnapshot
 
 # Ignore favicon requests
 GET     /favicon.ico                            404

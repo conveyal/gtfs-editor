@@ -33,6 +33,7 @@ public class Agency extends Model implements Cloneable, Serializable, Comparable
     
     public String routeTypeId;
 
+    public String sourceId;
     /*
     @JsonCreator
     public static Agency factory(long id) {

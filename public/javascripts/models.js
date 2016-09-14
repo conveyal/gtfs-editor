@@ -24,7 +24,7 @@ var GtfsEditor = GtfsEditor || {};
     url: G.config.baseUrl + 'api/agency/'
   });
 
-G.RouteType = Backbone.Model.extend({
+  G.RouteType = Backbone.Model.extend({
     urlRoot: G.config.baseUrl + 'api/routetype/',
 
     defaults: {
@@ -36,7 +36,7 @@ G.RouteType = Backbone.Model.extend({
     }
   });
 
-G.RouteTypes = Backbone.Collection.extend({
+  G.RouteTypes = Backbone.Collection.extend({
     type: 'RouteTypes',
     model: G.RouteType,
     url: G.config.baseUrl + 'api/routetype/'
@@ -464,7 +464,7 @@ G.RouteTypes = Backbone.Collection.extend({
     }
   });
 
-G.Trip = Backbone.Model.extend({
+  G.Trip = Backbone.Model.extend({
     defaults: {
       tripDescription: null,
       patternId: null,
