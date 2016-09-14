@@ -6,7 +6,7 @@ cf = play.Play.configuration
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>Test #{get 'title' /}</title>
+    <title>#{get 'title' /}</title>
     <meta charset="${_response_encoding}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
@@ -38,8 +38,6 @@ cf = play.Play.configuration
 
     <link rel="shortcut icon" type="image/png" href="@{'/public/images/favicon.png'}">
 
-	<script src="https://cdn.auth0.com/js/lock-9.1.4.min.js"></script>
-
   </head>
   <body>
     <div class="navbar navbar-fixed-top">
@@ -55,25 +53,47 @@ cf = play.Play.configuration
           <div class="nav-collapse collapse">
 
             <ul class="nav">
-              <li><a href="&{managerUrl}/project">Manager</a></li>
-              <li class="active"><a href="@{Application.index}">Editor</a></li>
-              <li><a href="&{managerUrl}/alerts">Alerts</a></li>
-              <li><a href="&{managerUrl}/admin">Users</a></li>
-              <li><a href="&{managerUrl}/signs">Sign Config</a></li>
+              <li class="active"><a href="@{Application.index}">&{'nav-bar.home'}</a></li>
 <!--              <li><a href="#agency">&{'nav-bar.agency'}</a></li>
               <li><a href="#contact">&{'nav-bar.contact'}</a></li> -->
-            </ul>
 
-            <ul class="nav pull-right">
               <li class="dropdown">
-                <a href="#" role="button" class="dropdown-toggle" data-toggle="dropdown">
-                  <i class="icon-user"></i> &{'nav-bar.user-greeting', user}<b class="caret"></b>
-                </a>
-                <ul class="dropdown-menu" role="menu">
-                  <!--<li><a href="@{Application.changePassword}">Change Password</a></li>-->
-                  <li><a id="logoutLink" href="#">&{'nav-bar.logout'}</a></li>
+                <a href="#" role="button" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-wrench"></i> ${session.agencyName} <b class="caret"></b></a>
+                <ul class="dropdown-menu scrollable-menu" role="menu">
+                  #{list items:agencies, as:'agency' }
+                    <li><a href="#" class="agency-select" data-agency="${agency.id}"> ${agency.name}</a></li>
+                  #{/list}
                 </ul>
               </li>
+
+              <li class="dropdown">
+                <a href="#" role="button" class="dropdown-toggle" data-toggle="dropdown">&{'nav-bar.export'}<b class="caret"></b></a>
+                <ul class="dropdown-menu" role="menu">
+                  <li><a href="@{Application.exportGtfs}" class="manage-route-types">&{'export.gtfs.title'}</a></li>
+                  <li><a href="@{Application.exportGis}" class="manage-route-types">&{'export.gis.title'}</a></li>
+                  <!-- <li><a href="#export" class="manage-route-types">&{'export.kml.title'}</a></li> -->
+                  <!-- <li><a href="@{Application.manageStopTypes}" class="manage-stop-types">&{'manage.stop-types.title'}</a></li>  -->
+                  <!-- <li><a href="@{Application.manageRouteTypes}" class="manage-users" data-lang="en">Manage Users</a></li> -->
+                  <!-- <li><a href="@{Application.exportGis}" class="manage-agenices">&{'export.shapefile-stops.title'}</a></li>  -->
+                  <!-- <li><a href="@{Application.exportGis}" class="manage-agenices">&{'export.shapefile-routes.title'}</a></li>  -->
+
+                </ul>
+              </li>
+
+              #{secure.check 'admin'}
+                <li class="dropdown">
+                  <a href="#" role="button" class="dropdown-toggle" data-toggle="dropdown">&{'nav-bar.admin'}<b class="caret"></b></a>
+                  <ul class="dropdown-menu" role="menu">
+                    <li><a href="@{Application.manageRouteTypes}" class="manage-route-types">&{'manage.route-types.title'}</a></li>
+                    <!-- <li><a href="@{Application.manageStopTypes}" class="manage-stop-types">&{'manage.stop-types.title'}</a></li>  -->
+                    <!-- <li><a href="@{Application.manageRouteTypes}" class="manage-users" data-lang="en">Manage Users</a></li> -->
+                    <li><a href="@{Application.manageAgencies}" class="manage-agenices">&{'manage.agencies.title'}</a></li>
+                    <li><a href="@{Admin.accounts}" class="manage-accounts">&{'manage.accounts.title'}</a></li>
+                    <li><a href="@{Application.importGtfs}" class="import-gtfs">&{'manage.import-gtfs.title'}</a></li>
+                  </ul>
+                </li>
+              #{/secure.check}
+
             </ul>
 
             <ul class="nav pull-right">
@@ -105,23 +125,17 @@ cf = play.Play.configuration
               </li>
             </ul>
 
-            #{secure.check 'manager'}
             <ul class="nav pull-right">
               <li class="dropdown">
-                <a href="#" role="button" class="dropdown-toggle" data-toggle="dropdown">&{'nav-bar.admin'}<b class="caret"></b></a>
+                <a href="#" role="button" class="dropdown-toggle" data-toggle="dropdown">
+                  <i class="icon-user"></i>&{'nav-bar.user-greeting', user}<b class="caret"></b>
+                </a>
                 <ul class="dropdown-menu" role="menu">
-                  #{secure.check 'admin'}
-                    <li><a href="@{Application.manageRouteTypes}" class="manage-route-types">&{'manage.route-types.title'}</a></li>
-                  #{/secure.check}
-                  <!-- <li><a href="@{Application.manageStopTypes}" class="manage-stop-types">&{'manage.stop-types.title'}</a></li>  -->
-                  <!-- <li><a href="@{Application.manageRouteTypes}" class="manage-users" data-lang="en">Manage Users</a></li> -->
-                  <li><a href="@{Application.manageAgencies}" class="manage-agenices">&{'manage.agencies.title'}</a></li>
-                  <!-- <li><a href="@{Admin.accounts}" class="manage-accounts">&{'manage.accounts.title'}</a></li> -->
-                  <!-- <li><a href="@{Application.importGtfs}" class="import-gtfs">&{'manage.import-gtfs.title'}</a></li>-->
+                  <li><a href="@{Application.changePassword}">Change Password</a></li>
+                  <li><a href="@{Secure.logout}">&{'nav-bar.logout'}</a></li>
                 </ul>
               </li>
             </ul>
-            #{/secure.check}
 
           </div><!--/.nav-collapse -->
         </div>
@@ -130,29 +144,14 @@ cf = play.Play.configuration
 
     <div class="container-fluid">
       <ul class="nav nav-pills" id="tools-nav">
-      	<li class="dropdown active"><a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-wrench"></i> ${session.agencyName} <b class="caret"></b></a>
-          <ul class="dropdown-menu scrollable-menu" role="menu">
-            #{list items:agencies, as:'agency' }
-              <li><a href="#" class="agency-select" data-agency="${agency.id}">${agency.name}</a></li>
-            #{/list}
-          </ul>
-      	</li>
-        #{if session.agencyId}
+        <!--<li><a href="/"><i class="icon-list-alt"></i> News &amp; Updates</a></li>-->
         <li><a href="@{Application.search()}"><i class="icon-map-marker"></i> &{'shared.explore-search-routes'}</a></li>
         <li><a href="@{Application.route()}"><i class="icon-pencil"></i> &{'shared.new-route'}</a></li>
         <li><a href="@{Application.exceptions()}"><i class="icon-calendar"></i> &{'shared.schedule-exceptions'}</a></li>
         <li><a href="@{Application.snapshots()}"><i class="icon-camera"></i> &{'snapshot.snapshots'}</a></li>
-      	<li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-download"></i> &{'nav-bar.export'}<b class="caret"></b></a>
-      	  <ul class="dropdown-menu" role="menu">
-      	  	<li><a href="@{Application.exportGtfs}" class="manage-route-types">&{'export.gtfs.title'}</a></li>
-            <li><a href="@{Application.exportGis}" class="manage-route-types">&{'export.gis.title'}</a></li>
-          </ul>
-      	</li>
-        #{/if}
       </ul>
 
       #{doLayout /}
-
     </div>
 
     <script src="@{'/public/javascripts/lib/jquery.min.js'}"></script> <!-- http://cdnjs.cloudflare.com/ajax/libs/jquery/1.8.2/jquery.min.js -->
@@ -172,21 +171,14 @@ cf = play.Play.configuration
     (function(G, $) {
 
       G.session = {
+
         agencyId: "${session.agencyId}",
         agencies: ${agenciesJson.raw()},
         mapCenter: [${session.lat}, ${session.lon}],
-        mapZoom: 10, //${session.zoom},
+        mapZoom: ${session.zoom},
         tripPattern: null,
-        trip: null,
-        editableFeeds: "${session.editableFeeds}",
-        manageableFeeds: "${session.manageableFeeds}",
-        approveableFeeds: "${session.approveableFeeds}"
+        trip: null
       };
-
-      G.config.auth0Domain = "&{auth0Domain}";
-      G.config.auth0ClientId = "&{auth0ClientId}";
-      G.config.projectId = "&{projectId}";
-      G.config.managerUrl = "&{managerUrl}";
 
       G.strings = {
         stopsDeleteStopConfirm: "&{'route.stops-delete-stop-confirm'}",
@@ -207,10 +199,8 @@ cf = play.Play.configuration
 
     })(GtfsEditor, jQuery);
 
-    $("#logoutLink").click(logout);
 
     $(document).ready(function() {
-
       // page init scripts
 
       // add language select handler
@@ -228,30 +218,10 @@ cf = play.Play.configuration
         e.preventDefault();
 
       });
-
-      // set up single logout
-      /*var lock = new Auth0Lock(GtfsEditor.config.auth0ClientId, GtfsEditor.config.auth0Domain);
-      setInterval(function() {
-        console.log('sso signout check')
-        // if the token is not in local storage, there is nothing to check (i.e. the user is already logged out)
-        if (!localStorage.getItem('userToken')) return;
-
-        lock.$auth0.getSSOData(function(err, data) {
-          // if there is still a session, do nothing
-          if (err || (data && data.sso)) return;
-
-          // if we get here, it means there is no session on Auth0,
-          // then remove the token and redirect to #login
-          logout();
-        });
-      }, 5000)*/
     });
 
-    function logout() {
-      localStorage.removeItem('userToken');
-      var redirect = window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port: '') + '/auth0logout';
-      window.location = 'https://' + GtfsEditor.config.auth0Domain + '/v2/logout?returnTo=' + redirect;
-    }
+
+
 
   </script>
 

@@ -19,16 +19,17 @@ public class Security extends Secure.Security {
     }
     
     static boolean check(String profile) {
-        if("manager".equals(profile)) {
-            return session.contains("manageableFeeds") && session.get("manageableFeeds").length() > 0;
-        }
-        if("editor".equals(profile)) {
-            return session.contains("editableFeeds") && session.get("editableFeeds").length() > 0;
-        }
-        if("admin".equals(profile)) {
-            return session.contains("isProjectAdmin") && session.get("isProjectAdmin").equals("true");
-        }
-        return false;
+    	GlobalTx tx = VersionedDataStore.getGlobalTx();
+    	
+    	try {
+	        if("admin".equals(profile))
+	        	return tx.accounts.containsKey(connected()) && tx.accounts.get(connected()).isAdmin(); 
+	        else
+	        	return false;
+    	}
+    	finally {
+    		tx.rollback();
+    	}
     }
  
     static Account getAccount()

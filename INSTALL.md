@@ -1,41 +1,28 @@
-# GTFS Editor Installation
+Installation Instructions
+=========================
 
-![Editor Home](screenshots/GTFS_Editor___Home.png)
+The following instructions assume installation on an Ubuntu server with sudo permissions. These steps assume Ubuntu 12.04.5 LTS, if using different version of Ubuntu the available versions of software may change requiring slight modifications to these steps.
 
-## Generic Ubuntu
+Install java jre
 
-If you just want to install the GTFS Editor on a generic Ubuntu machine, you can just execute [this script](cloudfront/install.sh):
+	sudo apt-get install openjdk-7-jre
 
-```
-#!/bin/bash -xe
-sudo apt-get --yes update
-sudo apt-get --yes install git unzip openjdk-7-jre
-wget http://downloads.typesafe.com/releases/play-1.2.5.zip
-unzip play-1.2.5.zip
-git clone https://github.com/conveyal/gtfs-editor.git
-cd gtfs-editor
-cp conf/application.conf.template conf/application.conf
-../play-1.2.5/play dependencies
-../play-1.2.5/play run
-```
 
-## Ubuntu on Amazon AWS
+Install play framework 1.2.5 (this software depends on v1.2.x, version 2.x+ is not compatable)
 
-To install the GTFS Editor you have two options described here:
+	wget http://downloads.typesafe.com/releases/play-1.2.5.zip
 
-* You can install it [from scratch](docs/Install.md) creating a new VM.
 
-* Or you can simplify the process [using Amazon CloudFormation](docs/Install_CloudFormation.md).
+Unzip play framework
 
-We have created [installation scripts](cloudformation/) to make this process as straightforward as possible.
+	unzip play-1.2.5.zip
 
-## Next steps
+Download gtfs-editor software
 
-In order to test the instance we've included some information on how to import some popular GTFS feeds:
+	git clone https://github.com/conveyal/gtfs-editor.git
 
-* [Importing a GTFS feed](docs/Import.md).
+	cd gtfs-editor
 
-You can see the results in [these screenshots](docs/Screenshots.md)
 
 Configure gtfs-editor application.conf
 

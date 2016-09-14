@@ -1,118 +1,5 @@
 (function(G, $, ich) {
 
-  var canManageFeed = function (feedSourceId) {
-    var manageableFeeds = G.session.manageableFeeds;
-    return manageableFeeds.indexOf(feedSourceId) !== -1 || manageableFeeds.indexOf('*') !== -1
-  }
-
-  G.AvailableAgencyListView = Backbone.View.extend({
-
-      events: {
-        'click .load-agency-button': 'loadAgency'
-      },
-
-      initialize: function (opts) {
-        var self = this;
-        var managerUrl = GtfsEditor.config.managerUrl;
-        var token = localStorage.getItem('userToken');
-
-        $.ajax({
-          url : managerUrl + "/api/manager/secure/project/" + G.config.projectId,
-          headers: {
-            'Authorization' : 'Bearer ' + token
-          },
-          success: function(project) {
-            $.ajax({
-              url : managerUrl + "/api/manager/secure/feedsource",
-              data : {
-                projectId: G.config.projectId
-              },
-              headers: {
-                'Authorization' : 'Bearer ' + token
-              },
-              success: function(feedSources) {
-                self.agencies = [];
-                feedSources.sort(function(a,b) {
-                  if(a.name < b.name) return -1;
-                  if(a.name > b.name) return 1;
-                  return 0;
-                })
-
-                feedSources.forEach(function(feed) {
-                  if(!canManageFeed(feed.id)) return;
-                  var agencyId = feed.name;
-                  if(feed.externalProperties && feed.externalProperties.MTC) {
-                    agencyId = feed.externalProperties.MTC.AgencyId;
-                  }
-                  var hasFeed = feed.latestValidation && feed.latestValidation.agencies ? "Yes" : "No";
-                  var isLoaded = self.isLoaded(feed.id)
-                  self.agencies.push({
-                    sourceId: feed.id.toString(),
-                    sourceName: feed.name,
-                    agencyId: agencyId,
-                    hasFeed: hasFeed,
-                    isLoaded: isLoaded,
-                    latestVersionId: feed.latestVersionId,
-                    defaultLat: project.defaultLocationLat,
-                    defaultLon: project.defaultLocationLon,
-                    defaultLanguage: project.defaultLanguage,
-                    defaultTimeZone: project.defaultTimeZone
-                  });
-                });
-                self.render();
-              },
-              error: (err) => {
-                console.log('error getting feed sources', err)
-              }
-            });
-          },
-          error: (err) => {
-            console.log('error getting feed collection', err);
-          }
-        });
-
-      },
-
-      render: function() {
-        this.$el.html(ich['available-agency-table-tpl']({
-          agencies: this.agencies
-        }));
-      },
-
-      loadAgency : function (evt) {
-        var sourceId = $(evt.currentTarget).data("source-id").toString();
-        var agencyId = $(evt.currentTarget).data("agency-id").toString();
-        var agency = this.getAgency(sourceId, agencyId);
-        if(agency != null) {
-          this.options.agencyListView.createAgency(null, {
-            gtfsAgencyId: agency.agencyId,
-            name : agency.sourceName,
-            sourceId: agency.sourceId,
-            defaultLat: agency.defaultLat,
-            defaultLon: agency.defaultLon,
-            defaultLanguage: agency.defaultLanguage,
-            defaultTimeZone: agency.defaultTimeZone
-          });
-        }
-      },
-
-      getAgency : function (sourceId, agencyId) {
-        for(var i=0; i < this.agencies.length; i++) {
-          var agency = this.agencies[i];
-          if(agency.sourceId === sourceId && agency.agencyId === agencyId) return agency;
-        }
-        return null;
-      },
-
-      isLoaded : function(feedSourceId) {
-        if(!G.session.agencies) return false;
-        for(var agencyId in G.session.agencies) {
-            if(G.session.agencies[agencyId].sourceId === feedSourceId) return true;
-        }
-        return false;
-      }
-  });
-
   G.AgencyListView = Backbone.View.extend({
 
       events: {
@@ -122,7 +9,6 @@
       },
 
       initialize: function (opts) {
-
         this.collection = new G.Agencies();
 
         var self = this;
@@ -130,24 +16,20 @@
         this.collection.on('remove', this.render, this);
 
         this.collection.fetch().complete(function() {
-          // filter only manageable agencies
-          self.collection = new G.Agencies(self.collection.filter(function(agency) {
-            return canManageFeed(agency.get('sourceId'))
-          }));
 
           self.render();
-        });
 
+        });
 
         this.clickMarkerIcon = L.icon({
-          iconUrl: G.config.baseUrl + 'public/images/markers/marker-0d85e9.png',
-          iconSize: [25, 41],
-          iconAnchor: [12, 41],
-          popupAnchor: [1, -34],
-          shadowUrl: G.config.baseUrl + 'public/images/markers/marker-shadow.png',
-          shadowSize: [41, 41],
-          labelAnchor: [10, -16]
-        });
+        iconUrl: G.config.baseUrl + 'public/images/markers/marker-0d85e9.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowUrl: G.config.baseUrl + 'public/images/markers/marker-shadow.png',
+        shadowSize: [41, 41],
+        labelAnchor: [10, -16]
+      });
 
         _.bindAll(this, 'editAgency', 'createAgency', 'deleteAgency');
       },
@@ -174,6 +56,7 @@
 
           if(data.id == "" ) {
 
+
             view.collection.create(_.omit(data, 'id'), {error: function(){
 
               $('#agency-modal').modal('hide');
@@ -187,6 +70,8 @@
               location.reload();
 
             }});
+
+
           }
           else {
 
@@ -206,7 +91,8 @@
             }});
 
           }
-        });
+  });
+
       },
 
       editAgency: function(evt) {
@@ -236,12 +122,9 @@
 
       },
 
-      createAgency: function(evt, values) {
+      createAgency: function(evt) {
 
-        $('#agency-modal-body').html(ich['agency-dialog-tpl'](values));
-
-        $('#agency-modal-body').find('#timezone').val(values.defaultTimeZone);
-        $('#agency-modal-body').find('#lang').val(values.defaultLanguage);
+        $('#agency-modal-body').html(ich['agency-dialog-tpl']());
 
         this.buildMap();
 
@@ -319,9 +202,8 @@
         var id = $(evt.currentTarget).data("id");
 
         var view = this;
-        if (G.Utils.confirm('Delete feed?')) {
+        if (G.Utils.confirm('Delete route?')) {
           view.collection.get(id).destroy();
-          window.location.reload();
         }
       },
 

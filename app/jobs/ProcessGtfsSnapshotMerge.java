@@ -44,17 +44,9 @@ public class ProcessGtfsSnapshotMerge implements Runnable {
 
 	/** once the merge runs this will have the ID of the created agency */
 	public String agencyId;
-
-	public String sourceId;
-
-	public ProcessGtfsSnapshotMerge (File gtfsFile) {
-		this(gtfsFile, null);
-	}
-
-	public ProcessGtfsSnapshotMerge (File gtfsFile, String sourceId) {
+	
+	public ProcessGtfsSnapshotMerge (File gtfsFile)	{
 		this.gtfsFile = gtfsFile;
-		this.sourceId = sourceId;
-		System.out.println(">> Merge w/ sourceID " + sourceId);
 	}
 
 	public void run () {
@@ -79,7 +71,6 @@ public class ProcessGtfsSnapshotMerge implements Runnable {
         	for (com.conveyal.gtfs.model.Agency gtfsAgency : input.agency.values()) {
    	       		Agency agency = new Agency(gtfsAgency);
 				agencyId = agency.id;
-				agency.sourceId = sourceId;
         		// don't save the agency until we've come up with the stop centroid, below.
         		agencyCount++;
         		// we do want to use the modified agency ID here, because everything that refers to it has a reference

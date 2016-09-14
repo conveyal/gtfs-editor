@@ -31,7 +31,7 @@ public class SnapshotController extends Controller {
 	static void initSession() throws Throwable {
 		 
 		if(!Security.isConnected() && !Application.checkOAuth(request, session))
-			Secure.login("");
+			Secure.login();
 	}
 	
 	public static void getSnapshot(String agencyId, String id) throws IOException {

@@ -29,7 +29,7 @@ public class CalendarController extends Controller {
 	static void initSession() throws Throwable {
 		 
 		if(!Security.isConnected() && !Application.checkOAuth(request, session))
-			Secure.login("");
+			Secure.login();
 	}
 	
     public static void getCalendar(String id, String agencyId, final String patternId) {

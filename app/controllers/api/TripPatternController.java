@@ -30,7 +30,7 @@ public class TripPatternController extends Controller {
 	static void initSession() throws Throwable {
 		 
 		if(!Security.isConnected() && !Application.checkOAuth(request, session))
-			Secure.login("");
+			Secure.login();
 	}
 	
     public static void getTripPattern(String id, String routeId, String agencyId) {

@@ -19,7 +19,7 @@ application.name=Transit Database
 nav-bar.agency=Agency Information
 nav-bar.home=Home
 nav-bar.contact=Contact
-nav-bar.user-greeting=%s!
+nav-bar.user-greeting=Welcome %s!
 
 nav-bar.export=Export
 nav-bar.admin=Admin

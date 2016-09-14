@@ -1,7 +1,6 @@
 package controllers;
 
 import com.google.common.collect.Maps;
-
 import datastore.AgencyTx;
 import datastore.GlobalTx;
 import datastore.VersionedDataStore;
@@ -11,10 +10,8 @@ import jobs.ProcessGtfsSnapshotMerge;
 import models.Account;
 import models.OAuthToken;
 import models.transit.*;
-
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
-
 import play.Play;
 import play.i18n.Lang;
 import play.i18n.Messages;
@@ -23,105 +20,68 @@ import play.mvc.Controller;
 import play.mvc.Http.Request;
 import play.mvc.Scope.Session;
 import play.mvc.With;
-import utils.Auth0UserProfile;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
 @With(Secure.class)
 public class Application extends Controller {
-    /** used to give almost-friendly names to exported files */
-    public static AtomicLong nextExportId = new AtomicLong(1);
-
+	/** used to give almost-friendly names to exported files */
+	public static AtomicLong nextExportId = new AtomicLong(1);
+	
     @Before
     static void initSession() throws Throwable {
 
-        GlobalTx tx = VersionedDataStore.getGlobalTx();
-        try {
-            Agency[] agencies = new Agency[0];
-
-            // pass auth-related config args to client
-            renderArgs.put("managerUrl", Play.configuration.getProperty("application.managerUrl"));
-            renderArgs.put("auth0Domain", Play.configuration.getProperty("application.auth0Domain"));
-            renderArgs.put("auth0ClientId", Play.configuration.getProperty("application.auth0ClientId"));
-            renderArgs.put("projectId", Play.configuration.getProperty("application.projectId"));
-
-            System.out.println("app username = " + session.get("username"));
-            System.out.println("app path = " + request.path);
-            if(Security.isConnected()) {
-                renderArgs.put("user", Security.connected());
-
-                Account account = tx.accounts.get(Security.connected());
-                String projectID = Play.configuration.getProperty("application.projectId");
-				String token = session.get("token");
-                System.out.println("application can see token: " + token);
-
-                Auth0UserProfile userProfile = null;
-				try {
-					userProfile = Auth0Controller.getUserInfo(token);
-					System.out.println("got userinfo for " + userProfile.getEmail());
-				}
-				catch (Exception e) {
-					e.printStackTrace();
-					System.out.println("Error in user auth, redirecting to /auth0logout");
-					redirect("/auth0logout");
-				}
-
-                agencies = tx.agencies.values().toArray(new Agency[tx.agencies.size()]);
-
-                String editableFeeds = session.get("editableFeeds");
-
-                List<Agency> filteredAgencies= new ArrayList<Agency>();
-
-                if(editableFeeds != null) {
-                    System.out.println("filtering agencies" + editableFeeds);
-                    
-                    String[] edIds = editableFeeds.split(",");
-                    for(Agency agency : agencies) {
-                        if(Arrays.asList(edIds).contains(agency.sourceId) || Arrays.asList(edIds).contains("*")) {
-                            filteredAgencies.add(agency);
-                        }
-                    }
-                }
-                
-                agencies = filteredAgencies.toArray(new Agency[filteredAgencies.size()]);
-				
-                /*if(userProfile == null) {
+    	GlobalTx tx = VersionedDataStore.getGlobalTx();
+    	
+    	try {
+    		Agency[] agencies;
+    		
+	    	if(Security.isConnected()) {
+	            renderArgs.put("user", Security.connected());
+	            
+	            Account account = tx.accounts.get(Security.connected());
+	            
 	            if(account == null && tx.accounts.size() == 0) {
 	            	Bootstrap.index();
 	            }
-	            if(userProfile.canAdministerProject(projectID))
-					if(account.admin != null && account.admin)
+	            
+	            if(account.admin != null && account.admin)
 	            	agencies = tx.agencies.values().toArray(new Agency[tx.agencies.size()]);
 	            else {
-					agencies = new Agency[] { tx.agencies.get(account.agencyId) };
-	            	agencies = new Agency[] { tx.agencies.get(userProfile.getManagedFeeds(projectID)) };
-	            }*/
-
-				System.out.println("** setting agencies array, len=" + agencies.length);
-				renderArgs.put("agencies", agencies);
-            }
+	            	agencies = new Agency[] { tx.agencies.get(account.agencyId) };           	
+	            }
+	            
+	            renderArgs.put("agencies", agencies);
+	        }
+	    	else if (checkOAuth(request, session, tx)) {
+	    	    renderArgs.put("user", Messages.get("secure.anonymous"));
+	    	    
+	    	    OAuthToken token = getToken(request, session, tx);
+	    	    
+	    	    if (token.agencyId != null) {
+	            	agencies = new Agency[] { tx.agencies.get(token.agencyId) };           	
+	    	    }
+	    	    else {
+	            	agencies = tx.agencies.values().toArray(new Agency[tx.agencies.size()]);
+	    	    }
+	    	    
+	    	    renderArgs.put("agencies", agencies);
+	    	}
 	        else {
 	
-//	        	if(tx.accounts.size() == 0)
-//	        		Bootstrap.index();
-//	        	else {
-	        	    System.out.println("logging in to " + request.path);
-	        	    Secure.login(request.path);
-//	        	}
+	        	if(tx.accounts.size() == 0)
+	        		Bootstrap.index();
+	        	else
+	        	    Secure.login();
 	        	
 	        	return;
 	        }
 	    	
 	    	Arrays.sort(agencies);
 
-	        if(session.get("agencyId") == null && agencies.length >0) {
+	        if(session.get("agencyId") == null) {
 	            
 	        	Agency agency = agencies[0];
 	
@@ -129,13 +89,9 @@ public class Application extends Controller {
 	            session.put("agencyName", agency.name);
 	            session.put("lat", agency.defaultLat);
 	            session.put("lon", agency.defaultLon);
-	            session.put("zoom", 12);
-
+	            session.put("zoom", 12); 
+	            
 	        }
-			else if(agencies.length == 0) {
-				session.put("agencyId", null);
-				session.put("agencyName", null);
-			}
 	        
 	        // Make a map for the user interface
 	        Map<String, Agency> agencyMap = new HashMap<String, Agency>();
@@ -310,8 +266,7 @@ public class Application extends Controller {
     	
     	try {
     		Collection<RouteType> routeTypes = tx.routeTypes.values();
-    		String managerUrl = Play.configuration.getProperty("application.managerUrl");
-    		render(routeTypes, managerUrl);
+    		render(routeTypes);
     	} finally {
     		tx.rollback();
     	}
@@ -437,95 +392,39 @@ public class Application extends Controller {
     	
     	render();
     }
-
-	public static void uploadGtfs(File gtfsUpload) {
-
-		System.out.println("uploadGtfs " + gtfsUpload);
-
-		validation.required(gtfsUpload).message("GTFS file required.");
-
-		if(gtfsUpload != null && !gtfsUpload.getName().contains(".zip"))
-			validation.addError("gtfsUpload", "GTFS must have .zip extension.");
-
-		if(validation.hasErrors()) {
-			params.flash();
-			validation.keep();
-			importGtfs();
-		}
-		else {
+    
+    public static void uploadGtfs(File gtfsUpload) {
+   
+    	validation.required(gtfsUpload).message("GTFS file required.");
+    	
+    	if(gtfsUpload != null && !gtfsUpload.getName().contains(".zip"))
+    		validation.addError("gtfsUpload", "GTFS must have .zip extension.");
+    	
+    	if(validation.hasErrors()) {
+    		params.flash();
+    		validation.keep();
+    		importGtfs();
+        }
+    	else {
 			ProcessGtfsSnapshotMerge merge;
 			try {
 				merge = new ProcessGtfsSnapshotMerge(gtfsUpload);
 				merge.run();
-			}
+			}	
 			catch (Exception e) {
 				e.printStackTrace();
 				validation.addError("gtfsUpload", "Unable to process file.");
 				params.flash();
-				validation.keep();
-				importGtfs();
+	    		validation.keep();
+	    		importGtfs();
 				return;
 			}
 
 			// if there are multiple agencies this will pick one randomly
 			search(merge.agencyId);
-		}
-	}
-
-	public static void fetchGtfs(String gtfsUrl) {
-		String feedVersionId = request.params.get("feedVersionId");
-		String feedSourceId = request.params.get("feedSourceId");
-		System.out.println("fetchGtfs " + feedVersionId);
-
-		InputStream is = null;
-		FileOutputStream fos = null;
-
-		String tempDir = System.getProperty("java.io.tmpdir");
-		String outputPath = tempDir + "/" + feedVersionId;
-
-		try {
-			//connect
-			URL url = new URL("http://localhost:9000/api/manager/secure/feedversion/" + feedVersionId + "/download");
-			System.out.println("downloading " + url);
-
-			System.out.println("token= " + session.get("token"));
-
-			URLConnection urlConn = url.openConnection();
-			urlConn.setRequestProperty("Authorization", "Bearer " + session.get("token"));
-
-			//get inputstream from connection
-			is = urlConn.getInputStream();
-			fos = new FileOutputStream(outputPath);
-
-			// 4KB buffer
-			byte[] buffer = new byte[4096];
-			int length;
-
-			// read from source and write into local file
-			while ((length = is.read(buffer)) > 0) {
-				fos.write(buffer, 0, length);
-			}
-
-			is.close();
-			fos.close();
-
-			System.out.println("wrote path " + outputPath);
-			File file = new File(outputPath);
-			System.out.println("qfile = " + file);
-
-			ProcessGtfsSnapshotMerge merge;
-			merge = new ProcessGtfsSnapshotMerge(file, feedSourceId);
-			merge.run();
-
-			// if there are multiple agencies this will pick one randomly
-			search(merge.agencyId);
-
-
-		} catch(Exception e) {
-			e.printStackTrace();
-		}
-	}
-
+    	}    	
+    }
+    
     /** snapshots page */
     public static void snapshots() {
     	render();
