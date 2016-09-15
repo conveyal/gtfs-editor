@@ -1,0 +1,156 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "AWS CloudFormation template to build an instance for the web-based GTFS editing framework.",
+    "Mappings": {
+        "AWSInstanceType2Arch": {
+          "t1.micro": { "Arch": "PV64" },
+          "m1.small": { "Arch": "PV64" },
+          "m1.medium": { "Arch": "PV64" },
+          "m1.large": { "Arch": "PV64" },
+          "m1.xlarge": { "Arch": "PV64" },
+          "m2.xlarge": { "Arch": "PV64" },
+          "m2.2xlarge": { "Arch": "PV64" },
+          "m2.4xlarge": { "Arch": "PV64" },
+          "c1.medium": { "Arch": "PV64" },
+          "c1.xlarge": { "Arch": "PV64" }
+        },
+        "AWSRegionArch2AMI": {
+            "ap-northeast-1": { "PV64": "ami-b0b3a8b1" },
+            "ap-southeast-1": { "PV64": "ami-aec1ebfc" },
+            "ap-southeast-2": { "PV64": "ami-f1eb9fcb" },
+            "eu-central-1": { "PV64": "ami-b4b587a9" },
+            "eu-west-1": { "PV64": "ami-f3810f84" },
+            "sa-east-1": { "PV64": "ami-5bf14e46" },
+            "us-east-1": { "PV64": "ami-487a3920" },
+            "us-west-1": { "PV64": "ami-febba3bb" },
+            "us-west-2": { "PV64": "ami-13471c23" }
+        }
+    },
+    "Outputs": {
+        "InstanceIPAddress": {
+            "Description": "IP address of the newly created EC2 instance",
+            "Value": { "Ref": "IPAddress" }
+        },
+        "InstanceId": {
+            "Description": "InstanceId of the newly created EC2 instance",
+            "Value": { "Ref": "EC2Instance" }
+        }
+    },
+    "Parameters": {
+        "InstanceType": {
+            "AllowedValues": [
+                "t1.micro",
+                "m1.small",
+                "m1.medium",
+                "m1.large",
+                "m1.xlarge",
+                "m2.xlarge",
+                "m2.2xlarge",
+                "m2.4xlarge",
+                "c1.medium",
+                "c1.xlarge"
+            ],
+            "ConstraintDescription": "Must be a valid EC2 instance type.",
+            "Default": "m2.xlarge",
+            "Description": "Memory optimized instance type",
+            "Type": "String"
+        },
+        "IpLocation": {
+            "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+            "ConstraintDescription": "Must be a valid IP CIDR range of the form x.x.x.x/x.",
+            "Default": "0.0.0.0/0",
+            "Description": "The IP address range that can be used to browse and SSH to the EC2 instance.",
+            "MaxLength": "18",
+            "MinLength": "9",
+            "Type": "String"
+        },
+        "KeyName": {
+            "ConstraintDescription": "Must be the name of an existing EC2 KeyPair.",
+            "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instance.",
+            "Type": "AWS::EC2::KeyPair::KeyName"
+        }
+    },
+    "Resources": {
+        "EC2Instance": {
+            "Properties": {
+                "ImageId": {
+                    "Fn::FindInMap": [
+                        "AWSRegionArch2AMI",
+                        { "Ref": "AWS::Region" },
+                        { "Fn::FindInMap": [ "AWSInstanceType2Arch", { "Ref": "InstanceType" }, "Arch" ] }
+                    ]
+                },
+                "InstanceType": {
+                    "Ref": "InstanceType"
+                },
+                "KeyName": {
+                    "Ref": "KeyName"
+                },
+                "SecurityGroups": [
+                    {
+                        "Ref": "InstanceSecurityGroup"
+                    }
+                ],
+                "UserData": {
+                    "Fn::Base64": {
+                        "Fn::Join": [
+                            "",
+                            [
+                              "#!/bin/bash -xe\n",
+                              "sudo apt-get --yes update\n",
+                              "sudo apt-get --yes install git unzip openjdk-7-jre\n",
+                              "wget http://downloads.typesafe.com/releases/play-1.2.5.zip\n",
+                              "unzip play-1.2.5.zip\n",
+                              "git clone https://github.com/brunosan/gtfs-editor.git\n",
+                              "cd gtfs-editor\n",
+                              "sudo mkdir public/data\n",
+                              "cp conf/application.conf.template conf/application.conf\n",
+                              "../play-1.2.5/play dependencies\n",
+                              "../play-1.2.5/play run\n"
+                            ]
+                        ]
+                    }
+                }
+            },
+            "Type": "AWS::EC2::Instance"
+        },
+        "IPAddress": {
+            "Type": "AWS::EC2::EIP"
+        },
+        "IPAssoc": {
+            "Properties": {
+                "EIP": {
+                    "Ref": "IPAddress"
+                },
+                "InstanceId": {
+                    "Ref": "EC2Instance"
+                }
+            },
+            "Type": "AWS::EC2::EIPAssociation"
+        },
+        "InstanceSecurityGroup": {
+            "Properties": {
+                "GroupDescription": "Enable SSH access",
+                "SecurityGroupIngress": [
+                    {
+                        "CidrIp": {
+                            "Ref": "IpLocation"
+                        },
+                        "FromPort": "22",
+                        "IpProtocol": "tcp",
+                        "ToPort": "22"
+                    },
+                    {
+                        "CidrIp": {
+                            "Ref": "IpLocation"
+                        },
+                        "FromPort": "9000",
+                        "IpProtocol": "tcp",
+                        "ToPort": "9000"
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::SecurityGroup"
+        }
+    }
+}

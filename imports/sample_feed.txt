@@ -1,0 +1,32 @@
+19:14:47.405 INFO (Entity.java:228) Table feed_info was missing but it is not required.
+19:14:47.408 INFO (GTFSFeed.java:90) Feed ID is undefined.
+19:14:47.409 INFO (GTFSFeed.java:92) Feed ID is 'null'.
+19:14:47.410 INFO (Entity.java:232) Loading GTFS table agency from agency.txt
+19:14:47.416 INFO (Entity.java:232) Loading GTFS table calendar from calendar.txt
+19:14:47.417 INFO (Entity.java:232) Loading GTFS table calendar_dates from calendar_dates.txt
+19:14:47.490 INFO (Entity.java:232) Loading GTFS table fare_attributes from fare_attributes.txt
+19:14:47.492 INFO (Entity.java:232) Loading GTFS table fare_rules from fare_rules.txt
+19:14:47.493 INFO (Entity.java:232) Loading GTFS table routes from routes.txt
+19:14:47.495 INFO (Entity.java:232) Loading GTFS table shapes from shapes.txt
+19:14:47.495 INFO (Entity.java:232) Loading GTFS table stops from stops.txt
+19:14:47.497 INFO (Entity.java:228) Table transfers was missing but it is not required.
+19:14:47.498 INFO (Entity.java:232) Loading GTFS table trips from trips.txt
+19:14:47.499 INFO (Entity.java:232) Loading GTFS table frequencies from frequencies.txt
+19:14:47.501 INFO (Entity.java:232) Loading GTFS table stop_times from stop_times.txt
+19:14:47.504 INFO (GTFSFeed.java:105) 0 errors
+19:14:47,506 INFO  ~ GtfsImporter: importing agencies...
+19:14:47,573 INFO  ~ Agencies loaded: 1
+19:14:47,573 INFO  ~ GtfsImporter: importing stops...
+19:14:47,609 INFO  ~ Stops loaded: 0
+19:14:47,609 INFO  ~ GtfsImporter: importing routes...
+19:14:47,613 INFO  ~ Routes loaded:5
+19:14:47,613 INFO  ~ GtfsImporter: importing Shapes...
+19:14:47,613 INFO  ~ Shape points loaded: 0
+19:14:47,613 INFO  ~ Shapes loaded: 0
+19:14:47,614 INFO  ~ GtfsImporter: importing Service Calendars...
+19:14:47,616 INFO  ~ Service calendars loaded: 2
+19:14:47,616 INFO  ~ GtfsImporter: importing trips...
+19:14:47.619 INFO (GTFSFeed.java:189) Total patterns: 9
+19:14:47,691 INFO  ~ Trips loaded: 11
+19:14:47,772 INFO  ~ Imported GTFS file: 1 agencies; 5 routes;0 stops; 0 stopTimes; 11 trips;0 shapePoints
+19:15:47,251 ERROR ~ DB transaction left unclosed, this signifies a memory leak!

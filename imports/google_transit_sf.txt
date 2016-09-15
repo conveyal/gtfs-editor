@@ -1,0 +1,73 @@
+19:28:57.961 INFO (Entity.java:232) Loading GTFS table feed_info from feed_info.txt
+19:28:57.963 INFO (GTFSFeed.java:90) Feed ID is undefined.
+19:28:57.963 INFO (GTFSFeed.java:92) Feed ID is 'null'.
+19:28:57.963 INFO (Entity.java:232) Loading GTFS table agency from agency.txt
+19:28:57.963 INFO (Entity.java:232) Loading GTFS table calendar from calendar.txt
+19:28:57.964 INFO (Entity.java:232) Loading GTFS table calendar_dates from calendar_dates.txt
+19:28:57.966 INFO (Entity.java:232) Loading GTFS table fare_attributes from fare_attributes.txt
+19:28:57.966 INFO (Entity.java:232) Loading GTFS table fare_rules from fare_rules.txt
+19:28:57.969 INFO (Entity.java:232) Loading GTFS table routes from routes.txt
+19:28:57.970 INFO (Entity.java:232) Loading GTFS table shapes from shapes.txt
+19:28:58.769 INFO (Entity.java:232) Loading GTFS table stops from stops.txt
+19:28:58.770 INFO (Entity.java:232) Loading GTFS table transfers from transfers.txt
+19:28:58.771 INFO (Entity.java:232) Loading GTFS table trips from trips.txt
+19:28:58.777 INFO (Entity.java:232) Loading GTFS table frequencies from frequencies.txt
+19:28:58.784 INFO (Entity.java:232) Loading GTFS table stop_times from stop_times.txt
+19:28:59.064 INFO (GTFSFeed.java:105) 0 errors
+19:28:59,065 INFO  ~ GtfsImporter: importing agencies...
+19:28:59,118 INFO  ~ Agencies loaded: 1
+19:28:59,118 INFO  ~ GtfsImporter: importing stops...
+19:28:59,312 INFO  ~ Stops loaded: 0
+19:28:59,312 INFO  ~ GtfsImporter: importing routes...
+19:28:59,312 INFO  ~ Routes loaded:6
+19:28:59,312 INFO  ~ GtfsImporter: importing Shapes...
+19:29:05,377 INFO  ~ Shape points loaded: 24712
+19:29:05,377 INFO  ~ Shapes loaded: 12
+19:29:05,377 INFO  ~ GtfsImporter: importing Service Calendars...
+19:29:05,387 INFO  ~ Service calendars loaded: 3
+19:29:05,387 INFO  ~ GtfsImporter: importing trips...
+19:29:05.431 INFO (GTFSFeed.java:189) Total patterns: 35
+19:29:05,435 INFO  ~ Fixed 2 / 2 stops after first round for trip pattern 356a1e58-92cf-4ffc-8e10-c5b2dfcd3aa2 (Coliseum/Oakland Airport) on route 11ff52f3-e120-4291-aca9-fbed0430a749
+19:29:05,641 INFO  ~ Fixed 4 / 4 stops after first round for trip pattern 60377352-fb6f-492c-bf57-eea8883b4f89 (Dublin/Pleasanton) on route 6a1ea5f7-dab8-453b-987c-a0db99a0d151
+19:29:05,826 INFO  ~ Fixed 23 / 23 stops after first round for trip pattern 47f12007-09c1-4482-9417-3df517be4ca5 (Millbrae) on route b47df7cd-2f7d-40a9-abac-deadd9bda1ad
+19:29:05,980 INFO  ~ Fixed 11 / 11 stops after first round for trip pattern a8b9b032-ffdb-4614-89db-b52fc1ecc801 (Montgomery St.) on route 4b5c9abc-16dc-4b13-afc5-49bf0976d7cc
+19:29:06,231 INFO  ~ Fixed 20 / 20 stops after first round for trip pattern 6f4e85c5-7394-4a07-8cc1-6a62d02769ae (North Concord/Martinez) on route 4b5c9abc-16dc-4b13-afc5-49bf0976d7cc
+19:29:06,477 INFO  ~ Fixed 23 / 23 stops after first round for trip pattern 47a00f5a-ef0a-40d8-a6bc-96c6a6cdd01e (Richmond) on route b47df7cd-2f7d-40a9-abac-deadd9bda1ad
+19:29:06,718 INFO  ~ Fixed 20 / 20 stops after first round for trip pattern 83bf65e4-9286-4f63-a3f4-0b37041c37f7 (Daly City) on route 4b5c9abc-16dc-4b13-afc5-49bf0976d7cc
+19:29:06,844 INFO  ~ Fixed 13 / 13 stops after first round for trip pattern fceddb30-2f6e-4450-a091-c13273554fba (Daly City) on route 6a1ea5f7-dab8-453b-987c-a0db99a0d151
+19:29:06,854 WARN  ~ Unable to tell if shape is backwards for trip pattern 6235c06f-8469-4090-ac5c-f2200f4858fe (Daly City) on route cd77cf66-7140-486b-b5e1-b3d0c6c0d208, assuming it is correct
+19:29:06,856 WARN  ~ Stop is more than 1km from its shape, using straight-line distances
+19:29:06,898 WARN  ~ Unable to tell if shape is backwards for trip pattern 52e53b23-d080-42c1-8863-c67391f3762f (Fremont) on route 928f4f3e-bb6d-415b-8ead-5dce137d93a5, assuming it is correct
+19:29:06,899 WARN  ~ Stop is more than 1km from its shape, using straight-line distances
+19:29:07,195 INFO  ~ Fixed 18 / 18 stops after first round for trip pattern f6d35ff8-4338-4e45-a49e-c600b086427e (Daly City) on route 6a1ea5f7-dab8-453b-987c-a0db99a0d151
+19:29:07,224 INFO  ~ Loaded 1000 / 2508 trips
+19:29:07,390 INFO  ~ Fixed 12 / 12 stops after first round for trip pattern 34e9bfa3-9900-4692-a7cc-3fc2caf68847 (Concord) on route 4b5c9abc-16dc-4b13-afc5-49bf0976d7cc
+19:29:07,857 INFO  ~ Fixed 15 / 15 stops after first round for trip pattern b0338a4e-162d-4b90-954c-d81ab9b60c5d (Dublin/Pleasanton) on route 6a1ea5f7-dab8-453b-987c-a0db99a0d151
+19:29:08,053 INFO  ~ Fixed 18 / 18 stops after first round for trip pattern 4274b92d-222c-42d7-8224-3f73d16eee64 (Pittsburg/Bay Point) on route 4b5c9abc-16dc-4b13-afc5-49bf0976d7cc
+19:29:08,221 INFO  ~ Fixed 14 / 14 stops after first round for trip pattern beb9f22a-133d-41f7-a6e5-3466ef048280 (Montgomery St.) on route 4b5c9abc-16dc-4b13-afc5-49bf0976d7cc
+19:29:08,231 WARN  ~ Unable to tell if shape is backwards for trip pattern 57f6d617-17ac-4b31-939c-8a43f8100a85 (Fremont) on route cd77cf66-7140-486b-b5e1-b3d0c6c0d208, assuming it is correct
+19:29:08,233 WARN  ~ Stop is more than 1km from its shape, using straight-line distances
+19:29:08,432 INFO  ~ Fixed 19 / 19 stops after first round for trip pattern 35f661d5-f2ff-4fcb-8d23-6cefeefa96e2 (Daly City) on route 4b5c9abc-16dc-4b13-afc5-49bf0976d7cc
+19:29:08,638 INFO  ~ Fixed 21 / 21 stops after first round for trip pattern 1ad6bf61-4b37-4331-aa4b-2f050ab29b0a (Daly City) on route 4b5c9abc-16dc-4b13-afc5-49bf0976d7cc
+19:29:08,803 INFO  ~ Fixed 19 / 19 stops after first round for trip pattern 57cec413-b41d-464d-9bc6-68f62fea6db9 (Richmond) on route b47df7cd-2f7d-40a9-abac-deadd9bda1ad
+19:29:09,389 INFO  ~ Fixed 18 / 18 stops after first round for trip pattern a95b82b8-d366-4550-bbe1-51840111cf9c (Dublin/Pleasanton) on route 6a1ea5f7-dab8-453b-987c-a0db99a0d151
+19:29:09,608 INFO  ~ Fixed 15 / 15 stops after first round for trip pattern 928200fe-1be3-46ad-be47-a980233f3181 (Pittsburg/Bay Point) on route 4b5c9abc-16dc-4b13-afc5-49bf0976d7cc
+19:29:09,611 INFO  ~ Fixed 2 / 2 stops after first round for trip pattern 8d584ff9-a7eb-4254-b14e-a38ab0e659ef (Oakland Int'l Airport) on route 11ff52f3-e120-4291-aca9-fbed0430a749
+19:29:09,991 INFO  ~ Fixed 25 / 25 stops after first round for trip pattern ee49875b-7b3e-47db-81de-d8a2d052fa41 (Pittsburg/Bay Point) on route 4b5c9abc-16dc-4b13-afc5-49bf0976d7cc
+19:29:10,028 WARN  ~ Unable to tell if shape is backwards for trip pattern 9c86d22f-a29a-4766-b4a9-4f2664c9c44c (Richmond) on route 928f4f3e-bb6d-415b-8ead-5dce137d93a5, assuming it is correct
+19:29:10,030 WARN  ~ Stop is more than 1km from its shape, using straight-line distances
+19:29:10,038 INFO  ~ Loaded 2000 / 2508 trips
+19:29:10,247 INFO  ~ Fixed 18 / 18 stops after first round for trip pattern eaccbb08-638d-4b27-b277-24e21c0ea75b (Daly City) on route 4b5c9abc-16dc-4b13-afc5-49bf0976d7cc
+19:29:10,490 INFO  ~ Fixed 21 / 21 stops after first round for trip pattern 5dab45a7-3439-4c5c-a502-b0048b617bed (Pittsburg/Bay Point) on route 4b5c9abc-16dc-4b13-afc5-49bf0976d7cc
+19:29:10,637 WARN  ~ Stop is more than 1km from its shape, using straight-line distances
+19:29:10,893 INFO  ~ Fixed 25 / 25 stops after first round for trip pattern 21207922-b666-471a-be4f-4e8046a9f862 (San Francisco Int'l Airport) on route 4b5c9abc-16dc-4b13-afc5-49bf0976d7cc
+19:29:11,197 INFO  ~ Fixed 19 / 19 stops after first round for trip pattern 7a61b93d-9538-44ce-bfad-a4ad19edd844 (Concord) on route 4b5c9abc-16dc-4b13-afc5-49bf0976d7cc
+19:29:11,330 INFO  ~ Fixed 4 / 4 stops after first round for trip pattern 1ed682a0-9e72-40aa-8c16-322fa1c92461 (Bay Fair) on route 6a1ea5f7-dab8-453b-987c-a0db99a0d151
+19:29:11,646 INFO  ~ Fixed 25 / 26 stops after first round for trip pattern c38b1529-6bb8-4005-9ceb-c797543ed2f9 (Pittsburg/Bay Point) on route 4b5c9abc-16dc-4b13-afc5-49bf0976d7cc
+19:29:11,712 WARN  ~ Unable to tell if shape is backwards for trip pattern 30d8babb-65a6-4228-b19c-b92b515da49b (Richmond) on route 928f4f3e-bb6d-415b-8ead-5dce137d93a5, assuming it is correct
+19:29:11,716 WARN  ~ Stop is more than 1km from its shape, using straight-line distances
+19:29:11,877 INFO  ~ Fixed 16 / 16 stops after first round for trip pattern 4e473810-7781-4b90-a4dc-93dd6d7bef7a (24th St. Mission) on route 4b5c9abc-16dc-4b13-afc5-49bf0976d7cc
+19:29:12,095 WARN  ~ Stop is more than 1km from its shape, using straight-line distances
+19:29:12,311 INFO  ~ Fixed 19 / 19 stops after first round for trip pattern 1950d6ca-b379-442e-b861-0414cfc0b5f4 (Daly City) on route b47df7cd-2f7d-40a9-abac-deadd9bda1ad
+19:29:12,322 INFO  ~ Trips loaded: 2508
+19:29:12,786 INFO  ~ Imported GTFS file: 1 agencies; 6 routes;0 stops; 0 stopTimes; 2508 trips;24712 shapePoints
