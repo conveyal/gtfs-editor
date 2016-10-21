@@ -5,7 +5,7 @@ The following instructions assume installation on an Ubuntu server with sudo per
 
 Install java jre
 
-	sudo apt-get install openjdk-7-jre
+	sudo apt-get install openjdk-7-jre-headless
 
 
 Install play framework 1.2.5 (this software depends on v1.2.x, version 2.x+ is not compatable)
