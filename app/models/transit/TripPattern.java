@@ -147,8 +147,22 @@ public class TripPattern extends Model implements Cloneable, Serializable {
     	
     	// no need to do anything
     	// see #174
-    	if (originalStops.size() == 0)
-    		return;
+    	if (originalStops.size() == 0) {
+            for (Trip trip : tx.getTripsByPattern(originalTripPattern.id)) {
+                List<StopTime> stopTimes = trip.stopTimes;
+                int stopTimesLen = stopTimes.size();
+                for (int i = 0; i < Math.max(0, newStops.size() - stopTimesLen); i++) {
+                    stopTimes.add(null);
+                }
+                stopTimesLen = stopTimes.size();
+                for (int i = 0; i < Math.max(0, stopTimesLen - newStops.size()); i++) {
+                    stopTimes.remove(stopTimesLen - 1 - i);
+                }
+                // TODO: safe?
+                tx.trips.put(trip.id, trip);
+            }
+            return;
+        }
         
         // ADDITIONS
         if (originalStops.size() == newStops.size() - 1) {
