@@ -31,6 +31,6 @@ repositories:
 
     - conveyal:
         type: iBiblio
-        root: "http://maven.conveyal.com/"
+        root: "https://maven.conveyal.com/"
         contains:
             - org.opentripplanner -> *
