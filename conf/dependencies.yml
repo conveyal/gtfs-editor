@@ -28,9 +28,18 @@ repositories:
         root: "http://download.osgeo.org/webdav/geotools/"
         contains:
             - org.geotools -> *
+            - javax.media -> *
+            - java3d -> *
+            - jgridshift -> *
 
     - conveyal:
         type: iBiblio
         root: "http://maven.conveyal.com/"
         contains:
             - org.opentripplanner -> *
+
+    - akka:
+        type: iBiblio
+        root: "http://repo.akka.io/releases/"
+        contains:
+            - voldemort.store.compress -> *
